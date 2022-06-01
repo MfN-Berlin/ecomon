@@ -1,6 +1,7 @@
 from time import sleep
 import threading, queue
 from isort import file
+from py import process
 import yaml
 from datetime import timedelta, datetime
 from os import path
@@ -20,6 +21,8 @@ all_analyzed_event = threading.Event()
 def load_files_list():
     print("load files list")
     lines = []
+
+    files_count = 0
     with open(PROCESSED_FILES, "r") as processed_f:
         lines = processed_f.readlines()
     processed_dict = {}
@@ -27,32 +30,26 @@ def load_files_list():
         processed_dict[filepath] = True
 
     for filepath in glob.iglob(FILES_FOLDER + "**/*.wav", recursive=True):
+        files_count += 1
         if processed_dict.get(filepath, False):
             # if file is allready processed do not add
             continue
         files_queue.put(filepath)
+    return len(lines), files_count
 
 
-def analyze_loop():
-    while not files_queue.empty():
-        filepath = files_queue.get()
-        print("analyze {}".format(filepath))
-        # put raw filepath and analyze result filepath
-        results_queue.put([filepath, "s_{}".format(filepath)])
-        sleep(0.5)
-    print("############ all analyzed ############")
-    all_analyzed_event.set()
-
+# load_file_list
+processed_count, files_count = load_files_list()
 
 # Created the Threads
 analyze_thread = threading.Thread(
-    target=analyze_loop_factory(files_queue, results_queue, all_analyzed_event)
+    target=analyze_loop_factory(files_queue, results_queue, all_analyzed_event,)
 )
 store_thread = threading.Thread(
-    target=store_loop_factory(PROCESSED_FILES, all_analyzed_event, results_queue)
+    target=store_loop_factory(
+        PROCESSED_FILES, all_analyzed_event, results_queue, processed_count, files_count
+    )
 )
-# load_file_list
-load_files_list()
 
 # Started the threads
 print("Start analyze_thread")
