@@ -1,25 +1,8 @@
 from time import sleep
 from tqdm import tqdm
-import mariadb
-import sys
-import os
 
 
-def connect_to_db():
-    try:
-        conn = mariadb.connect(
-            user=os.getenv("BAI_MARIADB_USER"),
-            password=os.getenv("BAI_MARIADB_PASSWORD"),
-            host=os.getenv("BAI_MARIADB_HOST"),
-            port=int(os.getenv("BAI_MARIADB_PORT")),
-            database=os.getenv("BAI_MARIADB_DATABASE"),
-        )
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB Platform: {e}")
-        sys.exit(1)
-
-    # Get Cursor
-    return conn.cursor()
+from db import connect_to_db
 
 
 def store_loop_factory(
@@ -29,7 +12,7 @@ def store_loop_factory(
     processed_count,
     files_count,
 ):
-    db_cursor = connect_to_db()
+    # db_cursor = connect_to_db()
 
     def loop():
 

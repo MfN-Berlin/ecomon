@@ -1,14 +1,11 @@
 from time import sleep
 import threading, queue
-from isort import file
-from py import process
 import yaml
-from datetime import timedelta, datetime
-from os import path
 import glob
-from store import store_loop_factory
-from analyze import analyze_loop_factory
 from dotenv import load_dotenv
+from analyze import analyze_loop_factory
+from store import store_loop_factory
+from db import init_db
 
 load_dotenv()  # load environment variables from .env
 
@@ -41,6 +38,7 @@ def load_files_list():
     return len(lines), files_count
 
 
+init_db("test")
 # load_file_list
 processed_count, files_count = load_files_list()
 
