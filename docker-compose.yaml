@@ -1,0 +1,17 @@
+# docker-compose.yml
+version: "3"
+services:
+    db:
+        container_name: "bai-mariadb"
+        image: mariadb/server:latest
+        restart: always
+        environment:
+            MARIADB_ROOT_PASSWORD: "${BAI_MARIADB_ROOT_PASSWORD}"
+            MARIADB_DATABASE: "${BAI_MARIADB_DATABASE}"
+            MARIADB_USER: "${BAI_MARIADB_USER}"
+            MARIADB_PASSWORD: "${BAI_MARIADB_PASSWORD}"
+        ports:
+            - "${BAI_MARIADB_PORT}:3306"
+        volumes:
+            - ./db-data/data:/var/lib/mysql
+            - ./db-data/conf:/etc/mysql
