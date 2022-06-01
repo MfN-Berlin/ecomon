@@ -8,6 +8,9 @@ from os import path
 import glob
 from store import store_loop_factory
 from analyze import analyze_loop_factory
+from dotenv import load_dotenv
+
+load_dotenv()  # load environment variables from .env
 
 files_queue = queue.Queue()
 results_queue = queue.Queue()

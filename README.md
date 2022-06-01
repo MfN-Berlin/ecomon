@@ -4,11 +4,22 @@ Use script to analyze big collections auf recordings
 ## Packages needed:
 ```bash
 pip install tqdm
+pip install python-dotenv
+# if you have problems with mariadb try to install sudo apt-get install libmariadbclient-dev first
+pip3 install mariadb
+
 ```
 
 
 ## HOW TO USE
-* clone repository
-* copy .env-default to .env
-* change enviroment variables in .env as you like
-* start database with `docker-compose up`
+1. clone repository
+2. copy .env-default to .env
+3. change enviroment variables in .env as you like
+4. start database with `docker-compose up`
+   
+# MARIABDB - MYSQLWORCKBENCH
+If you have problems to connect to MARIADB because of SSL required 
+got to Advanced Tab in the connection dialog and add
+```
+useSSL=0
+```
