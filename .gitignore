@@ -1,0 +1,4 @@
+__pycache__
+processed_files.txt
+.vscode
+*.code-workspace
