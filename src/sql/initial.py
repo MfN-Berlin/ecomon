@@ -30,19 +30,23 @@ def create_record_table(prefix):
     )
 
 
-def create_predictions_table(prefix):
+def create_predictions_table(prefix, species):
+
+    rows = " ".join(["  `{}` FLOAT NOT NULL,\n".format(s) for s in species])
+
     return """
-CREATE TABLE `{}_predictions` (
+CREATE TABLE `{p}_predictions` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `record_id` INT NULL,
     `start_time` DECIMAL(11 , 6 ) NULL,
     `end_time` DECIMAL(11 , 6 ) NULL,
     `channel` INT NULL,
+ {r}
     PRIMARY KEY (`id`),
-    FOREIGN KEY (`record_id`)
-        REFERENCES `{}_record` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`record_id`) 
+        REFERENCES `{p}_records` (`id`) ON DELETE CASCADE,
     UNIQUE INDEX `id_UNIQUE` (`id` ASC)
 );
     """.format(
-        prefix, prefix
+        p=prefix, r=rows
     )

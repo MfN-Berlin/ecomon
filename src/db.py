@@ -24,13 +24,18 @@ def connect_to_db():
     return connection
 
 
-def init_db(batch_prefix):
+def init_db(batch_prefix, index_to_name):
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()
     records_exists = False
     predictions_exists = False
     records_count = 0
     predictions_count = 0
+    items = index_to_name.items()
+    species = [""] * len(items)
+    for key, value in items:
+        species[int(key)] = value.lower().replace(" ", "_")
+
     try:
         records_count = db_cursor.execute(
             queries.check_record_table_exists(batch_prefix)
@@ -69,7 +74,8 @@ def init_db(batch_prefix):
         db_connection.commit()
     if not predictions_exists:
         print("Create {}_predictions table".format(batch_prefix))
-        db_cursor.execute(queries.create_predictions_table(batch_prefix))
+        query_str = queries.create_predictions_table(batch_prefix, species)
+        db_cursor.execute(query_str)
         db_connection.commit()
     db_connection.close()
 
