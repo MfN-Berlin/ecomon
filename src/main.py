@@ -13,10 +13,10 @@ load_dotenv()  # load environment variables from .env
 files_queue = queue.Queue()
 results_queue = queue.Queue()
 
-FILES_FOLDER = "/home/bewr/Dokumente/Audioaufnahmen /Britz02/"
+FILES_FOLDER = "/home/bewr/Dokumente/Audioaufnahmen/Britz02/"
 INDEX_TO_NAME_FILE = "birdid-europe-254_index_to_name.json"
 PROCESSED_FILES = "processed_files.txt"
-
+PREFIX = "first"
 all_analyzed_event = threading.Event()
 
 
@@ -39,7 +39,7 @@ def load_files_list():
     for filepath in glob.iglob(FILES_FOLDER + "**/*.wav", recursive=True):
         files_count += 1
         if processed_dict.get(filepath, False):
-            # if file is allready processed do not add
+            # if file is already processed do not add
             continue
         files_queue.put(filepath)
     return len(lines), files_count
@@ -52,7 +52,7 @@ def load_json(filepath):
 
 index_to_name = load_json(INDEX_TO_NAME_FILE)
 
-init_db("test", index_to_name)
+init_db(PREFIX, index_to_name)
 # load_file_list
 processed_count, files_count = load_files_list()
 
@@ -60,9 +60,15 @@ processed_count, files_count = load_files_list()
 analyze_thread = threading.Thread(
     target=analyze_loop_factory(files_queue, results_queue, all_analyzed_event,)
 )
+
 store_thread = threading.Thread(
     target=store_loop_factory(
-        PROCESSED_FILES, all_analyzed_event, results_queue, processed_count, files_count
+        PREFIX,
+        PROCESSED_FILES,
+        all_analyzed_event,
+        results_queue,
+        processed_count,
+        files_count,
     )
 )
 

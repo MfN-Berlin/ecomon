@@ -2,7 +2,8 @@ from telnetlib import NOP
 import mariadb
 import sys
 import os
-
+from sql.insert import insert_prediction, insert_record
+from sql.query import get_record_id_by_filepath
 
 import sql.initial as queries
 
@@ -71,10 +72,10 @@ def init_db(batch_prefix, index_to_name):
 
     if records_exists or predictions_exists:
         line = ""
-        while line != "y":
-            line = input("Tables already exists do you want to resume analysis? (y/n):")
-            if line == "n":
-                sys.exit(1)
+        # while line != "y":
+        #     line = input("Tables already exists do you want to resume analysis? (y/n):")
+        #     if line == "n":
+        #         sys.exit(1)
 
     if not records_exists:
         print("Create {}_records table".format(batch_prefix))
@@ -89,11 +90,34 @@ def init_db(batch_prefix, index_to_name):
 
 
 class DbWorker:
-    def __init__(self, index_to_name):
-        self.species = __create_species__array(index_to_name)
+    def __init__(self, batch_prefix):
+        self.batch_prefix = batch_prefix
+        self.db_connection = connect_to_db()
+        self.db_cursor = self.db_connection.cursor()
 
-    def add_file(filepath, datetime, duration, channels):
-        pass
+    def add_file(
+        self, filepath, filename, record_datetime, duration, channels, commit=True
+    ):
 
-    def add_prediction(file_id, start, stop, channel, predictions):
-        pass
+        sql_query = insert_record(
+            self.batch_prefix, filepath, filename, record_datetime, duration, channels
+        )
+
+        self.db_cursor.execute(sql_query)
+        if commit:
+            self.db_connection.commit()
+        sql_query = get_record_id_by_filepath(self.batch_prefix, filepath)
+        self.db_cursor.execute(sql_query)
+        for i in self.db_cursor:
+            return i[0]
+
+    def add_prediction(self, record_id, start, stop, channel, predictions, commit=True):
+        sql_query = insert_prediction(
+            self.batch_prefix, record_id, start, stop, channel, predictions
+        )
+        self.db_cursor.execute(sql_query)
+        if commit:
+            self.db_connection.commit()
+
+    def commit(self):
+        self.db_connection.commit()

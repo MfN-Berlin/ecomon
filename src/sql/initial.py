@@ -18,13 +18,14 @@ def create_record_table(prefix):
     return """
  CREATE TABLE `{}_records` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `filepath` VARCHAR(45) NULL,
-  `filename` VARCHAR(45) NULL,
+  `filepath` VARCHAR(160) NOT NULL,
+  `filename` VARCHAR(45) NOT NULL,
   `record_datetime` DATETIME NULL,
-  `duration` DECIMAL(11, 6) NULL,
-  `channels` TINYINT NULL,
+  `duration` DECIMAL(11, 6) NOT NULL,
+  `channels` TINYINT NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `id_UNIQUE` (`id` ASC)
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
+  UNIQUE INDEX `filepath_UNIQUE` (`id` ASC)
   );
     """.format(
         prefix
