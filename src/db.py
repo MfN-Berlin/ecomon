@@ -7,7 +7,17 @@ import os
 import sql.initial as queries
 
 
+def __create_species__array(index_to_name):
+    items = index_to_name.items()
+    species = [""] * len(items)
+    for key, value in items:
+        species[int(key)] = value.lower().replace(" ", "_")
+    return species
+
+
 def connect_to_db():
+    print(os.getenv("BAI_MARIADB_HOST"))
+
     try:
         connection = mariadb.connect(
             user=os.getenv("BAI_MARIADB_USER"),
@@ -31,10 +41,8 @@ def init_db(batch_prefix, index_to_name):
     predictions_exists = False
     records_count = 0
     predictions_count = 0
-    items = index_to_name.items()
-    species = [""] * len(items)
-    for key, value in items:
-        species[int(key)] = value.lower().replace(" ", "_")
+
+    species = __create_species__array(index_to_name)
 
     try:
         records_count = db_cursor.execute(
@@ -59,7 +67,7 @@ def init_db(batch_prefix, index_to_name):
             )
         )
     except mariadb.Error:
-        NOP
+        pass
 
     if records_exists or predictions_exists:
         line = ""
@@ -79,3 +87,13 @@ def init_db(batch_prefix, index_to_name):
         db_connection.commit()
     db_connection.close()
 
+
+class DbWorker:
+    def __init__(self, index_to_name):
+        self.species = __create_species__array(index_to_name)
+
+    def add_file(filepath, datetime, duration, channels):
+        pass
+
+    def add_prediction(file_id, start, stop, channel, predictions):
+        pass

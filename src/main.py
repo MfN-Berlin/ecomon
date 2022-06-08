@@ -13,7 +13,7 @@ load_dotenv()  # load environment variables from .env
 files_queue = queue.Queue()
 results_queue = queue.Queue()
 
-FILES_FOLDER = "/home/bewr/Dokumente/Audioaufnahmen/Britz02/"
+FILES_FOLDER = "/home/bewr/Dokumente/Audioaufnahmen /Britz02/"
 INDEX_TO_NAME_FILE = "birdid-europe-254_index_to_name.json"
 PROCESSED_FILES = "processed_files.txt"
 
@@ -25,8 +25,13 @@ def load_files_list():
     lines = []
 
     files_count = 0
-    with open(PROCESSED_FILES, "r") as processed_f:
-        lines = processed_f.readlines()
+    try:
+        with open(PROCESSED_FILES, "r") as processed_f:
+            lines = processed_f.readlines()
+    except FileNotFoundError as e:
+        # no cached process file exist -> it is a new run
+        pass
+
     processed_dict = {}
     for filepath in lines:
         processed_dict[filepath] = True

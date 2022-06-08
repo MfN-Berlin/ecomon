@@ -19,7 +19,8 @@ def create_record_table(prefix):
  CREATE TABLE `{}_records` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `filepath` VARCHAR(45) NULL,
-  `datetime` DATETIME NULL,
+  `filename` VARCHAR(45) NULL,
+  `record_datetime` DATETIME NULL,
   `duration` DECIMAL(11, 6) NULL,
   `channels` TINYINT NULL,
   PRIMARY KEY (`id`),

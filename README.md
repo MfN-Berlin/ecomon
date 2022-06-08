@@ -3,8 +3,8 @@ Use script to analyze big collections auf recordings
 
 ## Packages needed:
 ```bash
-pip install tqdm
-pip install python-dotenv
+pip3 install tqdm
+pip3 install python-dotenv
 # if you have problems with mariadb try to install first
 # sudo apt-get install libmariadbclient-dev
 pip3 install mariadb
