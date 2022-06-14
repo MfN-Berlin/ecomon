@@ -61,7 +61,7 @@ def load_files_list():
         config["absolut_records_path"] + "**/*.wav", recursive=True
     ):
         files_count += 1
-        if processed_dict.get(filepath, False):
+        if processed_dict.get(filepath + "\n", False):
             # if file is already processed do not add
             continue
         files_queue.put(filepath)
