@@ -15,3 +15,122 @@ services:
         volumes:
             - ./db-data/data:/var/lib/mysql
             - ./db-data/conf:/etc/mysql
+    birdid-0:
+        container_name: "bai-birdid-0"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "0"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9000:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+    birdid-1:
+        container_name: "bai-birdid-1"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "1"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9001:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+    birdid-2:
+        container_name: "bai-birdid-2"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "2"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9002:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+
+    birdid-3:
+        container_name: "bai-birdid-3"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "0"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9003:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+    birdid-4:
+        container_name: "bai-birdid-4"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "1"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9004:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+    birdid-5:
+        container_name: "bai-birdid-5"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "2"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9005:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+
+    birdid-6:
+        container_name: "bai-birdid-6"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "0"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9006:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+    birdid-7:
+        container_name: "bai-birdid-7"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "1"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9007:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt
+    birdid-8:
+        container_name: "bai-birdid-8"
+        image: birdid-europe254-2103-flask-v03
+        restart: always
+        runtime: nvidia
+        ipc: host
+        environment:
+            NVIDIA_VISIBLE_DEVICES: "2"
+            NVIDIA_DRIVER_CAPABILITIES: "all"
+        ports:
+            - "9008:4000"
+        volumes:
+            - ${BAI_DATA_FOLDER}:/mnt

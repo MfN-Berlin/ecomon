@@ -7,17 +7,38 @@ from analyze import analyze_loop_factory
 from store import store_loop_factory
 from db import init_db
 import json
+import os
 
 load_dotenv()  # load environment variables from .env
 
 files_queue = queue.Queue()
 results_queue = queue.Queue()
-
-FILES_FOLDER = "/home/bewr/Dokumente/Audioaufnahmen/Britz02/"
-INDEX_TO_NAME_FILE = "birdid-europe-254_index_to_name.json"
-PROCESSED_FILES = "processed_files.txt"
-PREFIX = "first"
 all_analyzed_event = threading.Event()
+
+CONFIG_FILEPATH = "./config.yaml"
+
+
+def load_config(filepath):
+    with open(filepath, "r") as file:
+        config_dict = yaml.safe_load(file)
+        config_dict["data_folder"] = os.getenv("BAI_DATA_FOLDER")
+        config_dict["absolut_records_path"] = os.path.join(
+            config_dict["data_folder"], config_dict["recordFolder"]
+        )
+        config_dict["absolut_result_path"] = os.path.join(
+            config_dict["data_folder"], config_dict["resultFolder"]
+        )
+        config_dict["progress_cache_filepath"] = "./{}-progress.cache".format(
+            config_dict["prefix"]
+        )
+        config_dict["error_cache_filepath"] = "./{}-error.cache".format(
+            config_dict["prefix"]
+        )
+
+    return config_dict
+
+
+config = load_config(CONFIG_FILEPATH)
 
 
 def load_files_list():
@@ -26,7 +47,7 @@ def load_files_list():
 
     files_count = 0
     try:
-        with open(PROCESSED_FILES, "r") as processed_f:
+        with open(config["progress_cache_filepath"], "r") as processed_f:
             lines = processed_f.readlines()
     except FileNotFoundError as e:
         # no cached process file exist -> it is a new run
@@ -36,7 +57,9 @@ def load_files_list():
     for filepath in lines:
         processed_dict[filepath] = True
 
-    for filepath in glob.iglob(FILES_FOLDER + "**/*.wav", recursive=True):
+    for filepath in glob.iglob(
+        config["absolut_records_path"] + "**/*.wav", recursive=True
+    ):
         files_count += 1
         if processed_dict.get(filepath, False):
             # if file is already processed do not add
@@ -50,36 +73,131 @@ def load_json(filepath):
         return json.load(read_file)
 
 
-index_to_name = load_json(INDEX_TO_NAME_FILE)
+index_to_name = load_json(config["indexToNameFile"])
 
-init_db(PREFIX, index_to_name)
+init_db(config["prefix"], index_to_name)
 # load_file_list
 processed_count, files_count = load_files_list()
 
 # Created the Threads
-analyze_thread = threading.Thread(
-    target=analyze_loop_factory(files_queue, results_queue, all_analyzed_event,)
-)
+analyze_threads = [
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9000,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9001,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9002,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9003,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9004,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9005,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9006,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9007,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+    threading.Thread(
+        target=analyze_loop_factory(
+            files_queue,
+            results_queue,
+            all_analyzed_event,
+            9008,
+            config["data_folder"],
+            config["resultFolder"],
+        )
+    ),
+]
+
 
 store_thread = threading.Thread(
     target=store_loop_factory(
-        PREFIX,
-        PROCESSED_FILES,
+        config["prefix"],
+        config["progress_cache_filepath"],
         all_analyzed_event,
         results_queue,
         processed_count,
         files_count,
+        config["error_cache_filepath"],
     )
 )
 
 # Started the threads
 print("Start analyze_thread")
-analyze_thread.start()
+for thread in analyze_threads:
+    thread.start()
+
 print("Start store_thread")
 store_thread.start()
 
 
 # Joined the threads
-analyze_thread.join()
+for thread in analyze_threads:
+    thread.join()
+
 store_thread.join()
 

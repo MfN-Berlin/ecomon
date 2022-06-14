@@ -17,8 +17,6 @@ def __create_species__array(index_to_name):
 
 
 def connect_to_db():
-    print(os.getenv("BAI_MARIADB_HOST"))
-
     try:
         connection = mariadb.connect(
             user=os.getenv("BAI_MARIADB_USER"),
