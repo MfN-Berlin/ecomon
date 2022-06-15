@@ -4,3 +4,4 @@ processed_files.txt
 *.code-workspace
 .env
 db-data
+*.cache
