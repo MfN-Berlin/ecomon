@@ -91,86 +91,86 @@ analyze_threads = [
             config["resultFolder"],
         )
     ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9001,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9002,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9003,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9004,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9005,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9006,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9007,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
-    threading.Thread(
-        target=analyze_loop_factory(
-            files_queue,
-            results_queue,
-            all_analyzed_event,
-            9008,
-            config["data_folder"],
-            config["resultFolder"],
-        )
-    ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9001,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9002,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9003,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9004,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9005,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9006,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9007,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
+    # threading.Thread(
+    #     target=analyze_loop_factory(
+    #         files_queue,
+    #         results_queue,
+    #         all_analyzed_event,
+    #         9008,
+    #         config["data_folder"],
+    #         config["resultFolder"],
+    #     )
+    # ),
 ]
 
 

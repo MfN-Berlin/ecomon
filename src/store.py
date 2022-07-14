@@ -84,11 +84,18 @@ def store_loop_factory(
                             sleep(1)
                             continue
 
-                        input_filepath, prediction_result_filepath = results_queue.get()
+                        (
+                            input_filepath,
+                            prediction_result_filepath,
+                            error,
+                        ) = results_queue.get()
 
                         filename = path.basename(input_filepath)
+                        if error is not None:
+                            raise error
                         # read audio file information
                         try:
+
                             with wave.open(input_filepath) as fp:
                                 channels = fp.getnchannels()
                                 sample_rate = fp.getframerate()
@@ -104,10 +111,7 @@ def store_loop_factory(
                                 start_times = resultDict["startTimes"]
                                 channels_confidences = resultDict["probs"]
                                 last_start = start_times[len(start_times) - 1]
-                            if (
-                                last_start + duration >= int(duration)
-                                and last_start + duration >= 300
-                            ):
+
                                 # sanity checks if analyze worked correctly
                                 record_id = db_worker.add_file(
                                     input_filepath,
@@ -137,12 +141,14 @@ def store_loop_factory(
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")
                                 processed_f.flush()
-                            else:
-                                print("Error during analysis on {}".format(filename))
-                                error_f.write(input_filepath + "\n")
-                                error_f.flush()
+
                         except Exception as e:
-                            print("Error during analysis on {}".format(filename))
+                            print(
+                                "Error during analysis on {} width Error:".format(
+                                    filename
+                                )
+                            )
+                            print(e)
                             error_f.write(input_filepath + "\n")
                             error_f.flush()
                         progress.update(1)

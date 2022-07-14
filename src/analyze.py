@@ -2,6 +2,7 @@ from time import sleep
 import requests
 import requests
 from os import path
+import time
 
 
 def analyze_loop_factory(
@@ -9,6 +10,7 @@ def analyze_loop_factory(
 ):
     def loop():
         while not files_queue.empty():
+
             filepath = files_queue.get()
             # print("analyze {}".format(filepath))
             # put raw filepath and analyze result filepath
@@ -25,9 +27,11 @@ def analyze_loop_factory(
                 filepath=path.join("/mnt/", relative_file),
                 resultpath=path.join("/mnt/", relative_resultpath),
             )
-            requests.get(requeststring)
-
-            results_queue.put([filepath, resultpath])
+            try:
+                requests.get(requeststring,)
+                results_queue.put([filepath, resultpath, None])
+            except Exception as e:
+                results_queue.put([filepath, None, e])
 
         # print("############ all analyzed ############")
         all_analyzed_event.set()

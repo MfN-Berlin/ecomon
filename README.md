@@ -17,7 +17,9 @@ pip3 install mariadb
 1. clone repository
 2. copy .env-default to .env
 3. change enviroment variables in .env as you like
-4. start database with `docker-compose up`
+4. start database with `docker-compose up -d`
+5. run main.py
+
    
 # MARIABDB - MYSQLWORCKBENCH
 If you have problems to connect to MARIADB because of SSL required 
