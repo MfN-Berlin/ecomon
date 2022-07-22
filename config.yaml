@@ -5,3 +5,16 @@ resultFolder: AudioData/AMMOD/BRITZ01/results
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 prefix: "BRITZ01"
+
+
+cloudUpload:
+  baseUrl: ammod.gfbio.dev/api/v1
+  rawDataEndpoint: metadata
+  deviceID: 
+  serialNumber:
+  uploadedFilepath: ./uploaded.cache
+  errorFilepath: ./uploaded_error.cache
+  location:
+    lat:
+    lng:
+    alt:
