@@ -59,3 +59,8 @@ resultDict['classIds']
 resultDict['classNamesScientific']
 resultDict['startTimes']
 resultDict['probs']     # Prediction Matrix: nChannels x nSegments x nClasses
+
+# How to upload raw data to ammod cloud
+```bash
+
+```

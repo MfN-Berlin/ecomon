@@ -1,5 +1,8 @@
+import glob
+import math
+import os
 from typing import NamedTuple
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 import hashlib
 from os import path
@@ -61,13 +64,16 @@ def parse_filename_for_location_date_time(filename):
 
 
 # timedelta is in seconds
-def add_time_to_datetime(dt, timedelta):
-    return dt + datetime.timedelta(seconds=timedelta)
+def add_time_to_datetime(dt, delta):
+    seconds = int(math.floor(delta))
+    milliseconds = int(round((delta - seconds) * 1000))
+
+    return dt + timedelta(seconds=seconds, milliseconds=milliseconds)
 
 
 def create_metadata_dict(filepath, config):
     filename = path.basename(filepath)
-    file_name_information = parse_filename_for_location_date_time()
+    file_name_information = parse_filename_for_location_date_time(filename)
     file_size = round(int(path.getsize(filepath)) / 1048576 * 100) / 100
     checksum = calc_checksum(filepath)
 
@@ -78,12 +84,12 @@ def create_metadata_dict(filepath, config):
         duration = round(frames / sample_rate * 100) / 100
 
         metadata = {
-            "deviceID": config["deviceId"],
+            "deviceId": config["deviceId"],
             "serialNumber": config["serialNumber"],
             "timestamp": {
-                "start": file_name_information.record_time.isoformat(),
+                "start": file_name_information.record_datetime.isoformat(),
                 "stop": add_time_to_datetime(
-                    file_name_information.record_time, duration
+                    file_name_information.record_datetime, duration
                 ).isoformat(),
             },
             "location": {
@@ -117,10 +123,10 @@ def load_config(filepath):
     with open(filepath, "r") as file:
         config_dict = yaml.safe_load(file)
         config_dict["data_folder"] = os.getenv("BAI_DATA_FOLDER")
-        config_dict["absolut_records_path"] = os.path.join(
+        config_dict["absolute_records_path"] = os.path.join(
             config_dict["data_folder"], config_dict["recordFolder"]
         )
-        config_dict["absolut_result_path"] = os.path.join(
+        config_dict["absolute_result_path"] = os.path.join(
             config_dict["data_folder"], config_dict["resultFolder"]
         )
         config_dict["progress_cache_filepath"] = "./{}-progress.cache".format(
@@ -155,7 +161,7 @@ def load_files_list(config, files_queue):
         processed_dict[filepath] = True
 
     for filepath in glob.iglob(
-        config["absolut_records_path"] + "**/*.wav", recursive=True
+        config["absolute_records_path"] + "**/*.wav", recursive=True
     ):
         files_count += 1
         if processed_dict.get(filepath + "\n", False):

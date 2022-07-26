@@ -1,20 +1,21 @@
 # Folder Path to be relative to BAI_DATA_FOLDER environment variable
-recordFolder: AudioData/AMMOD/BRITZ01/
-resultFolder: AudioData/AMMOD/BRITZ01/results
+recordFolder: ./
+resultFolder: ./results
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 prefix: "BRITZ01"
 
-
 cloudUpload:
+  tmp: ./tmp
   baseUrl: ammod.gfbio.dev/api/v1
   rawDataEndpoint: metadata
-  deviceID: 
-  serialNumber:
+  deviceId: "001"
+  serialNumber: "002"
+  
   uploadedFilepath: ./uploaded.cache
   errorFilepath: ./uploaded_error.cache
   location:
-    lat:
-    lng:
-    alt:
+    lat: "35.00"
+    lng: "32.00"  
+    alt: "30"
