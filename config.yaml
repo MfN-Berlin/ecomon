@@ -10,7 +10,7 @@ cloudUpload:
   tmp: ./tmp
   baseUrl: ammod.gfbio.dev/api/v1
   rawDataEndpoint: metadata
-  deviceId: "001"
+  deviceId: "7977"
   serialNumber: "002"
   
   uploadedFilepath: ./uploaded.cache

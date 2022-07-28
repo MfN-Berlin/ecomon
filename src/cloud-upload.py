@@ -36,11 +36,13 @@ def cloud_upload_loop_factory(config, files_queue):
                         "file2": open(metadata_filepath, "rb"),
                     }
 
+                    url = path.join(config["baseUrl"], "/metadata")
                     try:
-                        requests.post(config["url"], files=files, headers=headers)
+                        requests.post(url, files=files, headers=headers)
                         upload_f.write(filepath + "\n")
                         upload_f.flush()
                     except Exception as e:
+
                         error_f.write(filepath + "\n")
                         error_f.flush()
                     finally:
