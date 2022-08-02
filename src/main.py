@@ -183,6 +183,7 @@ store_thread = threading.Thread(
         processed_count,
         files_count,
         config["error_cache_filepath"],
+        test_run=config["testRun"],
     )
 )
 

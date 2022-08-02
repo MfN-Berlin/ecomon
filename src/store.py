@@ -62,6 +62,7 @@ def store_loop_factory(
     processed_count,
     files_count,
     error_files_filepath,
+    test_run=False,
 ):
     # db_cursor = connect_to_db()
 
@@ -113,14 +114,15 @@ def store_loop_factory(
                                 last_start = start_times[len(start_times) - 1]
 
                                 # sanity checks if analyze worked correctly
-                                record_id = db_worker.add_file(
-                                    input_filepath,
-                                    filename,
-                                    parse_result.record_datetime,
-                                    duration,
-                                    channels,
-                                    commit=True,
-                                )
+                                if test_run is False:
+                                    record_id = db_worker.add_file(
+                                        input_filepath,
+                                        filename,
+                                        parse_result.record_datetime,
+                                        duration,
+                                        channels,
+                                        commit=True,
+                                    )
                                 # add predictions
                                 for channel_num, channel_confidences in zip(
                                     range(channels), channels_confidences
@@ -128,15 +130,17 @@ def store_loop_factory(
                                     for start_p, confidences in zip(
                                         start_times, channel_confidences
                                     ):
-                                        db_worker.add_prediction(
-                                            record_id,
-                                            start_p,
-                                            start_p + segment_duration,
-                                            channel_num,
-                                            confidences,
-                                            commit=False,
-                                        )
-                                db_worker.commit()
+                                        if test_run is False:
+                                            db_worker.add_prediction(
+                                                record_id,
+                                                start_p,
+                                                start_p + segment_duration,
+                                                channel_num,
+                                                confidences,
+                                                commit=False,
+                                            )
+                                if test_run is False:
+                                    db_worker.commit()
                                 # print("store {}".format(filepath[1]))
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")

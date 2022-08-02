@@ -1,9 +1,7 @@
 # Folder Path to be relative to BAI_DATA_FOLDER environment variable
-recordFolder: TSA_Collection/soundscapes/INPEDIV_2019/INPEDIV_2019_mp3_Original/01_Baumberg_Trockenrasen/FOLDER_A
-
+recordFolder: AudioData/AMMOD/BRITZ01/
 resultFolder: AudioData/AMMOD/BRITZ01/results
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
-prefix: "INPEDIV"
-testRun: true
+prefix: "BRITZ01"
