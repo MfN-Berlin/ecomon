@@ -6,8 +6,7 @@ from dotenv import load_dotenv
 from analyze import analyze_loop_factory
 from store import store_loop_factory
 from db import init_db
-import json
-import os
+from tools import load_config, load_files_list, load_json, load_files_list
 
 load_dotenv()  # load environment variables from .env
 
@@ -18,66 +17,14 @@ all_analyzed_event = threading.Event()
 CONFIG_FILEPATH = "./config.yaml"
 
 
-def load_config(filepath):
-    with open(filepath, "r") as file:
-        config_dict = yaml.safe_load(file)
-        config_dict["data_folder"] = os.getenv("BAI_DATA_FOLDER")
-        config_dict["absolut_records_path"] = os.path.join(
-            config_dict["data_folder"], config_dict["recordFolder"]
-        )
-        config_dict["absolut_result_path"] = os.path.join(
-            config_dict["data_folder"], config_dict["resultFolder"]
-        )
-        config_dict["progress_cache_filepath"] = "./{}-progress.cache".format(
-            config_dict["prefix"]
-        )
-        config_dict["error_cache_filepath"] = "./{}-error.cache".format(
-            config_dict["prefix"]
-        )
-
-    return config_dict
-
-
 config = load_config(CONFIG_FILEPATH)
-
-
-def load_files_list():
-    print("load files list")
-    lines = []
-
-    files_count = 0
-    try:
-        with open(config["progress_cache_filepath"], "r") as processed_f:
-            lines = processed_f.readlines()
-    except FileNotFoundError as e:
-        # no cached process file exist -> it is a new run
-        pass
-
-    processed_dict = {}
-    for filepath in lines:
-        processed_dict[filepath] = True
-
-    for filepath in glob.iglob(
-        config["absolut_records_path"] + "**/*.wav", recursive=True
-    ):
-        files_count += 1
-        if processed_dict.get(filepath + "\n", False):
-            # if file is already processed do not add
-            continue
-        files_queue.put(filepath)
-    return len(lines), files_count
-
-
-def load_json(filepath):
-    with open(filepath, "r") as read_file:
-        return json.load(read_file)
 
 
 index_to_name = load_json(config["indexToNameFile"])
 
 init_db(config["prefix"], index_to_name)
 # load_file_list
-processed_count, files_count = load_files_list()
+processed_count, files_count = load_files_list(config, files_queue)
 
 # Created the Threads
 analyze_threads = [

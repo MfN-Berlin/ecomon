@@ -7,3 +7,17 @@ indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 prefix: "INPEDIV"
 testRun: true
+
+cloudUpload:
+  tmp: ./tmp
+  baseUrl: ammod.gfbio.dev/api/v1
+  rawDataEndpoint: metadata
+  deviceId: "7977"
+  serialNumber: "002"
+
+  uploadedFilepath: ./uploaded.cache
+  errorFilepath: ./uploaded_error.cache
+  location:
+    lat: "35.00"
+    lng: "32.00"
+    alt: "30"

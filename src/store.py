@@ -6,52 +6,8 @@ from db import connect_to_db, DbWorker
 from os import path
 from datetime import date, datetime
 from pathlib import Path
+from tools import parse_filename_for_location_date_time
 import pickle
-
-
-FileNameInformation = NamedTuple(
-    "FileNameInformation_name_date_time",
-    [("location_name", str), ("record_datetime", date),],
-)
-
-
-def parse_datetime(date_string):
-    try:
-        return datetime.strptime(date_string, "%Y%m%d_%H%M%S")
-    except ValueError as e:
-        print(e)
-        pass
-    try:
-        return datetime.strptime(date_string, "%y%m%d_%H%M%S")
-    except ValueError:
-        pass
-    return datetime.strptime(date_string, "Y%m%d_%H%M%S00")
-
-
-def parse_filename_for_location_date_time(filename):
-    tmp = Path(filename).stem
-    parts = tmp.replace("-", "_").split(sep="_", maxsplit=1)
-
-    location_name = parts[0]
-    record_datetime = ""
-
-    if len(parts[1].split(sep="_")) > 2:
-        subparts = parts[1].split(sep="_")
-        try:
-            record_datetime = parse_datetime("{}_{}".format(subparts[0], subparts[1]))
-        except ValueError:
-            print("Warning could not extract datetime from {}".format(filename))
-            record_datetime = None
-
-    else:
-        try:
-            record_datetime = parse_datetime(parts[1])
-        except ValueError:
-            print("Warning could not extract datetime from {}".format(filename))
-            record_datetime = None
-    return FileNameInformation(
-        location_name=location_name, record_datetime=record_datetime,
-    )
 
 
 def store_loop_factory(

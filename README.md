@@ -59,3 +59,20 @@ resultDict['classIds']
 resultDict['classNamesScientific']
 resultDict['startTimes']
 resultDict['probs']     # Prediction Matrix: nChannels x nSegments x nClasses
+
+# AMMOD Data Portal
+* production https://data.ammod.de
+* staging https://ammod.gfbio.dev/
+* docu https://gitlab.gwdg.de/gfbio/ammod/-/wikis/AMMOD%20Data%20portal%20documentation
+* examples https://gitlab.gwdg.de/gfbio/ammod-examples-schemas
+
+## AMMOD Stations
+* Britz:
+  * 4 Channel Microphone Array Serial Number: 002 -> deviceID: 8223
+  * Ultrasound Microphone Serial Number: 003 -> deviceID: 8224
+
+
+# How to upload raw data to ammod cloud
+```bash
+
+```
