@@ -27,7 +27,8 @@ services:
     ports:
       - "9000:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
   birdid-1:
     container_name: "bai-birdid-1"
     image: birdid-europe254-2103-flask-v04
@@ -40,7 +41,8 @@ services:
     ports:
       - "9001:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
   birdid-2:
     container_name: "bai-birdid-2"
     image: birdid-europe254-2103-flask-v04
@@ -53,7 +55,8 @@ services:
     ports:
       - "9002:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
 
   birdid-3:
     container_name: "bai-birdid-3"
@@ -67,7 +70,8 @@ services:
     ports:
       - "9003:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
   birdid-4:
     container_name: "bai-birdid-4"
     image: birdid-europe254-2103-flask-v04
@@ -80,7 +84,8 @@ services:
     ports:
       - "9004:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
   birdid-5:
     container_name: "bai-birdid-5"
     image: birdid-europe254-2103-flask-v04
@@ -93,7 +98,8 @@ services:
     ports:
       - "9005:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
 
   birdid-6:
     container_name: "bai-birdid-6"
@@ -107,7 +113,8 @@ services:
     ports:
       - "9006:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
   birdid-7:
     container_name: "bai-birdid-7"
     image: birdid-europe254-2103-flask-v04
@@ -120,7 +127,8 @@ services:
     ports:
       - "9007:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result
   birdid-8:
     container_name: "bai-birdid-8"
     image: birdid-europe254-2103-flask-v04
@@ -133,4 +141,5 @@ services:
     ports:
       - "9008:4000"
     volumes:
-      - ${BAI_DATA_FOLDER}:/mnt
+      - ${BAI_DATA_FOLDER}:/mnt/data
+      - ${BAI_RESULT_FOLDER}:/mnt/result

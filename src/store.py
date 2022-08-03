@@ -6,8 +6,9 @@ from db import connect_to_db, DbWorker
 from os import path
 from datetime import date, datetime
 from pathlib import Path
-from tools import parse_filename_for_location_date_time
+from tools import parse_filename_for_location_date_time_function_dict
 import pickle
+import ffmpeg
 
 
 def store_loop_factory(
@@ -19,6 +20,7 @@ def store_loop_factory(
     files_count,
     error_files_filepath,
     test_run=False,
+    filename_parsing="ammod",
 ):
     # db_cursor = connect_to_db()
 
@@ -52,16 +54,15 @@ def store_loop_factory(
                             raise error
                         # read audio file information
                         try:
-
-                            with wave.open(input_filepath) as fp:
-                                channels = fp.getnchannels()
-                                sample_rate = fp.getframerate()
-                                frames = fp.getnframes()
-                                duration = round(frames / sample_rate * 100) / 100
-                            parse_result = parse_filename_for_location_date_time(
+                            metadata = ffmpeg.probe(input_filepath)["streams"][0]
+                            channels = metadata["channels"]
+                            duration = metadata["duration"]
+                            parse_result = parse_filename_for_location_date_time_function_dict[
+                                filename_parsing
+                            ](
                                 filename
                             )
-
+                            # print(parse_result)
                             with open(prediction_result_filepath, "rb") as f:
                                 resultDict = pickle.load(f)
                                 segment_duration = resultDict["segmentDuration"]

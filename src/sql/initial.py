@@ -18,8 +18,8 @@ def create_record_table(prefix):
     return """
  CREATE TABLE `{}_records` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `filepath` VARCHAR(160) NOT NULL,
-  `filename` VARCHAR(45) NOT NULL,
+  `filepath` VARCHAR(320) NOT NULL,
+  `filename` VARCHAR(64) NOT NULL,
   `record_datetime` DATETIME NULL,
   `duration` DECIMAL(11, 6) NOT NULL,
   `channels` TINYINT NOT NULL,

@@ -1,7 +1,8 @@
 from time import sleep
+import dotenv
 import requests
 import requests
-from os import path
+from os import path, getenv
 import time
 
 
@@ -21,23 +22,24 @@ def analyze_loop_factory(
             # put raw filepath and analyze result filepath
             # "http://localhost:4001/identify?path=/mnt/file.wav&outputDir=/mnt/Results&outputStyle=resultDict"
             relative_file = path.relpath(filepath, start=data_path)
+            a = getenv("BAI_RESULT_FOLDER")
             result_path = path.join(
-                data_path,
+                getenv("BAI_RESULT_FOLDER"),
                 relative_result_path,
                 "{}.pkl".format((path.basename(filepath)).split(".")[0]),
             )
 
             request_string = "http://localhost:{port}/identify?path={filepath}&outputDir={result_path}&outputStyle=resultDict".format(
                 port=port,
-                filepath=path.join("/mnt/", relative_file),
-                result_path=path.join("/mnt/", relative_result_path),
+                filepath=path.join("/mnt/data", relative_file),
+                result_path=path.join("/mnt/result", relative_result_path),
             )
             try:
                 requests.get(request_string,)
                 results_queue.put([filepath, result_path, None])
             except Exception as e:
                 results_queue.put([filepath, None, e])
-
+            # results_queue.put([filepath, None, None])
         # print("############ all analyzed ############")
         all_analyzed_event.set()
 

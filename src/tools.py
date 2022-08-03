@@ -37,7 +37,23 @@ def parse_datetime(date_string):
     return datetime.strptime(date_string, "Y%m%d_%H%M%S00")
 
 
-def parse_filename_for_location_date_time(filename):
+def parse_filename_inpediv(filename):
+    tmp = Path(filename).stem
+    parts = tmp.replace("-", "_").split(sep="_")
+    record_datetime = ""
+
+    try:
+        record_datetime = parse_datetime("{}_{}".format(parts[6], parts[7]))
+    except ValueError:
+        try:
+            record_datetime = parse_datetime("{}_{}".format(parts[7], parts[8]))
+        except ValueError:
+            print("Warning could not extract datetime from {}".format(filename))
+            record_datetime = None
+    return FileNameInformation(location_name=None, record_datetime=record_datetime,)
+
+
+def parse_filename_ammod(filename):
     tmp = Path(filename).stem
     parts = tmp.replace("-", "_").split(sep="_", maxsplit=1)
 
@@ -63,6 +79,12 @@ def parse_filename_for_location_date_time(filename):
     )
 
 
+parse_filename_for_location_date_time_function_dict = {
+    "ammod": parse_filename_ammod,
+    "inpediv": parse_filename_inpediv,
+}
+
+
 # timedelta is in seconds
 def add_time_to_datetime(dt, delta):
     seconds = int(math.floor(delta))
@@ -73,7 +95,9 @@ def add_time_to_datetime(dt, delta):
 
 def create_metadata_dict(filepath, config):
     filename = path.basename(filepath)
-    file_name_information = parse_filename_for_location_date_time(filename)
+    file_name_information = parse_filename_for_location_date_time_function_dict[
+        config["filenameParsing"]
+    ](filename)
     file_size = round(int(path.getsize(filepath)) / 1048576 * 100) / 100
     checksum = calc_checksum(filepath)
 
@@ -145,7 +169,6 @@ def load_json(filepath):
 
 
 def load_files_list(config, files_queue):
-    print("load files list")
     lines = []
 
     files_count = 0
@@ -160,9 +183,16 @@ def load_files_list(config, files_queue):
     for filepath in lines:
         processed_dict[filepath] = True
 
-    for filepath in glob.iglob(
-        config["absolute_records_path"] + "**/*.wav", recursive=True
-    ):
+    # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"]))
+    files = []
+    for ext in config["fileEnding"]:
+        files.extend(
+            glob.iglob(
+                config["absolute_records_path"] + "**/*.{}".format(ext), recursive=True,
+            )
+        )
+
+    for filepath in files:
         files_count += 1
         if processed_dict.get(filepath + "\n", False):
             # if file is already processed do not add
