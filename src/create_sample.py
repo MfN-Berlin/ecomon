@@ -132,12 +132,6 @@ if __name__ == "__main__":
     parser.add_argument("--audio_padding", type=int, default=5)
     parser.add_argument("--start_datetime", type=str, default=None)
     parser.add_argument("--end_datetime", type=str, default=None)
-    parser.add_argument(
-        "--force_padding",
-        type=parse_boolean,
-        default=False,
-        help="Flag for dropping not creating index.",
-    )
     args = parser.parse_args()
     main(
         prefix=args.prefix,

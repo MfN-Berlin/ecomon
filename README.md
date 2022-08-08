@@ -76,3 +76,34 @@ resultDict['probs']     # Prediction Matrix: nChannels x nSegments x nClasses
 ```bash
 
 ```
+
+# Script for extracting a sample
+1. Add credentials to .env variable
+2. `python src/create_sample.py -h` shows all paramaeters
+## Example 
+```bash
+python src/create_sample.py \
+--prefix BRITZ01 \
+--species fringilla_coelebs \
+--threshold=0.95 \
+--sample_size=10 \
+--audio_padding 5 \
+--start_datetime="2020-05-09 10:15:00" \
+--end_datetime="2020-05-10 10:15:00" 
+```
+## Parameters
+### --prefix 
+Prefix of tables in database
+### --species
+Latin name of species, starting with small letter and _ as seperator
+### --threshold
+float value between 1 and 0
+### --sample_size
+sample size which will be randomly taken
+### audio_padding
+float value in seconds will be taken before and after the prediction window
+### start_datetime
+string in this format "YYYY-MM-DD HH:MM:SS"
+### end_datetime
+string in this format "YYYY-MM-DD HH:MM:SS"
+
