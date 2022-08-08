@@ -9,6 +9,7 @@ from pathlib import Path
 from tools import parse_filename_for_location_date_time_function_dict
 import pickle
 import ffmpeg
+import time
 
 
 def store_loop_factory(
@@ -97,7 +98,14 @@ def store_loop_factory(
                                                 commit=False,
                                             )
                                 if test_run is False:
+                                    # mesaure time between last prediction and end of file
+                                    start = time.time()
                                     db_worker.commit()
+                                    end = time.time()
+                                    print(
+                                        "The time of execution of above program is :",
+                                        end - start,
+                                    )
                                 # print("store {}".format(filepath[1]))
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")

@@ -19,11 +19,12 @@ def create_record_table(prefix):
  CREATE TABLE `{}_records` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `filepath` VARCHAR(320) NOT NULL,
-  `filename` VARCHAR(64) NOT NULL,
+  `filename` VARCHAR(128) NOT NULL,
   `record_datetime` DATETIME NULL,
   `duration` DECIMAL(11, 6) NOT NULL,
   `channels` TINYINT NOT NULL,
   PRIMARY KEY (`id`),
+  INDEX record_datetime_index(record_datetime)
   UNIQUE INDEX `id_UNIQUE` (`id` ASC),
   UNIQUE INDEX `filepath_UNIQUE` (`id` ASC)
   );
