@@ -1,10 +1,10 @@
 import argparse
 from os import path
-from uuid import uuid4
 from dotenv import load_dotenv
 from db import connect_to_db
 from sql.query import get_prediction_random_sample
-from uuid import uuid5
+from uuid import uuid4
+from tools import parse_boolean
 import ffmpeg
 import zipfile
 import os
@@ -46,13 +46,28 @@ def pad_int_with_zeros(num, digits):
 
 
 def main(
-    prefix=PREFIX, species=SPECIES, threshold=0.95, sample_size=10, audio_padding=5
+    prefix=PREFIX,
+    species=SPECIES,
+    threshold=0.95,
+    sample_size=10,
+    audio_padding=5,
+    start_datetime=None,
+    end_datetime=None,
 ):
     load_dotenv()
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()
 
-    query = get_prediction_random_sample(prefix, sample_size, species, threshold)
+    query = get_prediction_random_sample(
+        prefix,
+        sample_size,
+        species,
+        threshold,
+        audio_padding=audio_padding,
+        start_datetime=start_datetime,
+        end_datetime=end_datetime,
+    )
+    # print(query)
     db_cursor.execute(query)
     result = db_cursor.fetchall()
 
@@ -90,6 +105,7 @@ def main(
         "record_datetime",
         "start_time",
         "end_time",
+        "duration",
         "channel",
         species,
     ]
@@ -113,12 +129,23 @@ if __name__ == "__main__":
     parser.add_argument("--species", default=SPECIES)
     parser.add_argument("--threshold", type=float, default=0.95)
     parser.add_argument("--sample_size", type=int, default=10)
-
+    parser.add_argument("--audio_padding", type=int, default=5)
+    parser.add_argument("--start_datetime", type=str, default=None)
+    parser.add_argument("--end_datetime", type=str, default=None)
+    parser.add_argument(
+        "--force_padding",
+        type=parse_boolean,
+        default=False,
+        help="Flag for dropping not creating index.",
+    )
     args = parser.parse_args()
     main(
         prefix=args.prefix,
         species=args.species,
         threshold=args.threshold,
         sample_size=args.sample_size,
+        audio_padding=args.audio_padding,
+        start_datetime=args.start_datetime,
+        end_datetime=args.end_datetime,
     )
 

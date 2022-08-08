@@ -199,3 +199,14 @@ def load_files_list(config, files_queue):
             continue
         files_queue.put(filepath)
     return len(lines), files_count
+
+
+def parse_boolean(value):
+    value = value.lower()
+
+    if value in ["true", "yes", "y", "1", "t"]:
+        return True
+    elif value in ["false", "no", "n", "0", "f"]:
+        return False
+
+    return False

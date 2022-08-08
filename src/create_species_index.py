@@ -1,7 +1,7 @@
 import argparse
 from dotenv import load_dotenv
 from db import connect_to_db
-
+from tools import parse_boolean
 
 PREFIX = "INPEDIV"
 
@@ -56,17 +56,6 @@ def main(prefix=PREFIX, drop=False):
             print(e)
 
     return
-
-
-def parse_boolean(value):
-    value = value.lower()
-
-    if value in ["true", "yes", "y", "1", "t"]:
-        return True
-    elif value in ["false", "no", "n", "0", "f"]:
-        return False
-
-    return False
 
 
 if __name__ == "__main__":
