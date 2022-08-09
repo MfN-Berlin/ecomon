@@ -58,3 +58,27 @@ def get_prediction_random_sample(
         random_seed=random_seed,
     )
 
+
+def get_column_names_of_sql_table_query(table_name):
+    return """
+    SELECT column_name FROM information_schema.columns WHERE table_name = '{}'
+    """.format(
+        table_name
+    )
+
+
+def create_index_for_sql_table(table_name, column_name):
+    return """
+    CREATE INDEX {}_index ON {}({})
+    """.format(
+        column_name, table_name, column_name
+    )
+
+
+# drop index for column with index_name and table_name
+def drop_index_for_sql_table(table_name, column_name):
+    return """
+    ALTER TABLE {} DROP INDEX {}_index 
+    """.format(
+        table_name, column_name
+    )

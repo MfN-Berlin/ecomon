@@ -1,34 +1,15 @@
 import argparse
 from dotenv import load_dotenv
 from db import connect_to_db
+from sql.query import create_index_for_sql_table, drop_index_for_sql_table, get_column_names_of_sql_table_query
 from tools import parse_boolean
 
 PREFIX = "INPEDIV"
 
 # create index for column with index_name
-def create_index_for_sql_table(table_name, column_name):
-    return """
-    CREATE INDEX {}_index ON {}({})
-    """.format(
-        column_name, table_name, column_name
-    )
 
 
-# drop index for column with index_name and table_name
-def drop_index_for_sql_table(table_name, column_name):
-    return """
-    ALTER TABLE {} DROP INDEX {}_index 
-    """.format(
-        table_name, column_name
-    )
 
-
-def get_column_names_of_sql_table_query(table_name):
-    return """
-    SELECT column_name FROM information_schema.columns WHERE table_name = '{}'
-    """.format(
-        table_name
-    )
 
 
 def main(prefix=PREFIX, drop=False):
