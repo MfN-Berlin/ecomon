@@ -24,6 +24,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from create_sample import create_sample
 from concurrent.futures import ThreadPoolExecutor
+from fastapi.responses import FileResponse
 
 sample_executor = ThreadPoolExecutor(10)
 
@@ -164,12 +165,52 @@ async def drop_index_from_prefix(prefix_name: str, column_name: str):
 
 
 # route to get random sample from prediction table
-@app.post("/prefix/{prefix_name}/random_sample")
-async def get_random_sample(prefix_name: str, request: RandomSampleRequest):
+@app.get("/random_sample")
+async def get_random_sample(
+    prefix: str,
+    species: str,
+    threshold: float,
+    sample_size: int = 10,
+    audio_padding: int = 0,
+    start_datetime: str = None,
+    end_datetime: str = None,
+):
     # syncronus function in thread for asyncio compatibility
+    tmp_directory = os.getenv("WEB_SERVICE_TMP_DIRECTORY")
+    if not path.exists(tmp_directory):
+        os.makedirs(tmp_directory)
+
+    result_directory = os.getenv("WEB_SERVICE_RESULT_DIRECTORY")
+    if not path.exists(result_directory):
+        os.makedirs(result_directory)
+    result_filename = "{prefix}_{species}_lq_{threshold}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
+        prefix=prefix,
+        species=species,
+        threshold=threshold,
+        from_date=start_datetime,
+        until=end_datetime,
+        samples=sample_size,
+        padding=audio_padding,
+    )
+    result_filepath = os.path.join(result_directory, result_filename,)
 
     def func():
-        create_sample(prefix=prefix_name, **request.dict())
+        create_sample(
+            prefix=prefix,
+            result_filepath=result_filepath,
+            tmp_directory=tmp_directory,
+            species=species,
+            threshold=threshold,
+            sample_size=sample_size,
+            audio_padding=audio_padding,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+        )
 
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(sample_executor, func)
+    # return file stream
+    return FileResponse(
+        result_filepath, media_type="application/zip", filename=result_filename
+    )
+

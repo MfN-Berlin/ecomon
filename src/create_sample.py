@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from db import connect_to_db
 from sql.query import get_prediction_random_sample
 from uuid import uuid4
-from tools import parse_boolean
 import ffmpeg
 import zipfile
 import os
@@ -53,6 +52,8 @@ def create_sample(
     audio_padding=5,
     start_datetime=None,
     end_datetime=None,
+    result_filepath=None,
+    tmp_directory=None,
 ):
     load_dotenv()
     db_connection = connect_to_db()
@@ -73,7 +74,11 @@ def create_sample(
 
     # create folder for samples
     directoryName = uuid4().hex
-    directory = path.join(os.getcwd(), "tmp", directoryName)
+    directory = ""
+    if tmp_directory is None:
+        directory = path.join(os.getcwd(), "tmp", directoryName)
+    else:
+        directory = path.join(tmp_directory, directoryName)
     os.makedirs(directory, exist_ok=True)
     # create csv of results
 
@@ -116,10 +121,15 @@ def create_sample(
         header=header,
     )
 
-    zip_filename = "{}_{}_{}_{}.zip".format(directoryName, prefix, species, threshold)
-    zip_folder(directory, zip_filename)
-    print(zip_filename)
-    return zip_filename
+    if result_filepath is not None:
+        zip_folder(directory, result_filepath)
+        return result_filepath
+    else:
+        zip_filename = "{}_{}_{}_{}.zip".format(
+            directoryName, prefix, species, threshold
+        )
+        zip_folder(directory, zip_filename)
+        return zip_filename
 
 
 if __name__ == "__main__":
@@ -132,6 +142,8 @@ if __name__ == "__main__":
     parser.add_argument("--audio_padding", type=int, default=5)
     parser.add_argument("--start_datetime", type=str, default=None)
     parser.add_argument("--end_datetime", type=str, default=None)
+    parser.add_argument("--result_filepath", type=str, default=None)
+    parser.add_argument("--tmp_directory", type=str, default=None)
     args = parser.parse_args()
     create_sample(
         prefix=args.prefix,
@@ -141,5 +153,7 @@ if __name__ == "__main__":
         audio_padding=args.audio_padding,
         start_datetime=args.start_datetime,
         end_datetime=args.end_datetime,
+        result_filepath=args.result_filepath,
+        tmp_directory=args.tmp_directory,
     )
 
