@@ -22,9 +22,9 @@ def analyze_loop_factory(
             # put raw filepath and analyze result filepath
             # "http://localhost:4001/identify?path=/mnt/file.wav&outputDir=/mnt/Results&outputStyle=resultDict"
             relative_file = path.relpath(filepath, start=data_path)
-            a = getenv("BAI_RESULT_FOLDER")
+            a = getenv("BAI_RESULT_DIRECTORY")
             result_path = path.join(
-                getenv("BAI_RESULT_FOLDER"),
+                getenv("BAI_RESULT_DIRECTORY"),
                 relative_result_path,
                 "{}.pkl".format((path.basename(filepath)).split(".")[0]),
             )

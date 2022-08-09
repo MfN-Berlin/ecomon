@@ -1,4 +1,4 @@
-# Folder Path to be relative to BAI_DATA_FOLDER environment variable
+# Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
 recordFolder: AudioData/AMMOD/BRITZ01/
 resultFolder: AudioData/AMMOD/BRITZ01/results
 # Index to name File of your used model

@@ -146,7 +146,7 @@ def create_metadata_dict(filepath, config):
 def load_config(filepath):
     with open(filepath, "r") as file:
         config_dict = yaml.safe_load(file)
-        config_dict["data_folder"] = os.getenv("BAI_DATA_FOLDER")
+        config_dict["data_folder"] = os.getenv("BAI_DATA_DIRECTORY")
         config_dict["absolute_records_path"] = os.path.join(
             config_dict["data_folder"], config_dict["recordFolder"]
         )
