@@ -45,9 +45,9 @@ def pad_int_with_zeros(num, digits):
     return str(num).zfill(digits)
 
 
-def main(
-    prefix=PREFIX,
-    species=SPECIES,
+def create_sample(
+    prefix: str = PREFIX,
+    species: str = SPECIES,
     threshold=0.95,
     sample_size=10,
     audio_padding=5,
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     parser.add_argument("--start_datetime", type=str, default=None)
     parser.add_argument("--end_datetime", type=str, default=None)
     args = parser.parse_args()
-    main(
+    create_sample(
         prefix=args.prefix,
         species=args.species,
         threshold=args.threshold,

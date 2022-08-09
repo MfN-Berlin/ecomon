@@ -107,3 +107,12 @@ string in this format "YYYY-MM-DD HH:MM:SS"
 ### end_datetime
 string in this format "YYYY-MM-DD HH:MM:SS"
 
+# web_service
+## Requirements
+- fastapi
+- dotenv
+- uvicorn
+- databases
+if have problems with fastapi try version fastapi-0.74.1.
+
+## How to run

@@ -59,7 +59,7 @@ def get_prediction_random_sample(
     )
 
 
-def get_column_names_of_sql_table_query(table_name):
+def get_column_names_of_sql_table_query(table_name: str):
     return """
     SELECT column_name FROM information_schema.columns WHERE table_name = '{}'
     """.format(
@@ -67,7 +67,7 @@ def get_column_names_of_sql_table_query(table_name):
     )
 
 
-def create_index_for_sql_table(table_name, column_name):
+def create_index_for_sql_table(table_name: str, column_name: str):
     return """
     CREATE INDEX {}_index ON {}({})
     """.format(
@@ -81,4 +81,20 @@ def drop_index_for_sql_table(table_name, column_name):
     ALTER TABLE {} DROP INDEX {}_index 
     """.format(
         table_name, column_name
+    )
+
+
+def count_entries_in_sql_table(table_name: str):
+    return """
+    SELECT count(*) FROM {}
+    """.format(
+        table_name
+    )
+
+
+def get_index_names_of_sql_table_ending_with(table_name: str, ending: str):
+    return """
+    SELECT index_name FROM information_schema.statistics WHERE table_name = '{}' AND index_name like '%{}'
+    """.format(
+        table_name, ending
     )

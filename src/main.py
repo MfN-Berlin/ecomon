@@ -6,7 +6,13 @@ from dotenv import load_dotenv
 from analyze import analyze_loop_factory
 from store import store_loop_factory
 from db import init_db
-from tools import load_config, load_files_list, load_json, load_files_list
+from tools import (
+    load_config,
+    load_files_list,
+    load_json,
+    load_files_list,
+    count_entries_in_sql_table,
+)
 
 
 load_dotenv()  # load environment variables from .env
