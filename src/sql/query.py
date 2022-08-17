@@ -59,6 +59,22 @@ def get_prediction_random_sample(
     )
 
 
+def get_datetime_of_first_record_in_sql_table(table_name: str):
+    return """
+    SELECT * FROM {} ORDER BY record_datetime ASC LIMIT 1
+    """.format(
+        table_name
+    )
+
+
+def get_datetime_of_last_record_in_sql_table(table_name: str):
+    return """
+    SELECT * FROM {} ORDER BY record_datetime DESC LIMIT 1
+    """.format(
+        table_name
+    )
+
+
 def get_column_names_of_sql_table_query(table_name: str):
     return """
     SELECT column_name FROM information_schema.columns WHERE table_name = '{}'
@@ -97,4 +113,39 @@ def get_index_names_of_sql_table_ending_with(table_name: str, ending: str):
     SELECT index_name FROM information_schema.statistics WHERE table_name = '{}' AND index_name like '%{}'
     """.format(
         table_name, ending
+    )
+
+
+def sum_values_of_sql_table_cloumn(table_name: str, column_name: str):
+    return """
+    SELECT sum({}) FROM {}
+    """.format(
+        column_name, table_name
+    )
+
+
+def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
+    return """
+    SELECT count(*) FROM {prefix}_predictions
+    JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
+    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}'
+    """.format(
+        start_datetime=start_datetime, end_datetime=end_datetime, prefix=prefix,
+    )
+
+
+def count_species_over_threshold_in_date_range(
+    prefix, species, threshold, start_datetime, end_datetime
+):
+    return """
+    SELECT count(*) FROM {prefix}_predictions
+    JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
+
+    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND {species} >= '{threshold}'
+    """.format(
+        start_datetime=start_datetime,
+        end_datetime=end_datetime,
+        species=species,
+        threshold=threshold,
+        prefix=prefix,
     )

@@ -1,30 +1,31 @@
 import asyncio
 import os
-from typing import Union
+from pickletools import read_uint1
+import re
 import databases
-import sqlalchemy
 from sql.query import (
     create_index_for_sql_table,
     drop_index_for_sql_table,
     get_column_names_of_sql_table_query,
     count_entries_in_sql_table,
     get_index_names_of_sql_table_ending_with,
+    sum_values_of_sql_table_cloumn,
+    count_predictions_in_date_range,
+    count_species_over_threshold_in_date_range,
+    get_datetime_of_first_record_in_sql_table,
+    get_datetime_of_last_record_in_sql_table,
 )
 
-
 from fastapi import FastAPI
-import argparse
+from fastapi.middleware.cors import CORSMiddleware
 from os import path
 from dotenv import load_dotenv
-from db import connect_to_db
-from sql.query import get_prediction_random_sample
-from uuid import uuid4
-from tools import parse_boolean
 from typing import List, Optional
 from pydantic import BaseModel
 from create_sample import create_sample
 from concurrent.futures import ThreadPoolExecutor
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
+from datetime import datetime
 
 sample_executor = ThreadPoolExecutor(10)
 
@@ -63,6 +64,11 @@ class Collection(BaseModel):
     indicated_species_columns: List[str]
 
 
+class Species(BaseModel):
+    name: str
+    has_index: bool
+
+
 class RandomSampleRequest(BaseModel):
     species: str
     sample_size: int
@@ -72,7 +78,36 @@ class RandomSampleRequest(BaseModel):
     threshold: Optional[float] = None
 
 
+class QueryRequest(BaseModel):
+    species: str
+    start_datetime: Optional[str] = None
+    end_datetime: Optional[str] = None
+    threshold: Optional[float] = None
+
+
+class QueryResponse(BaseModel):
+    predictions_count: int
+    species_count: int
+
+
+class Record(BaseModel):
+    id: int
+    filepath: str
+    filename: str
+    record_datetime: datetime
+    duration: float
+    channels: int
+
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
@@ -87,7 +122,7 @@ async def shutdown():
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return RedirectResponse("/docs", status_code=302)
 
 
 @app.get("/prefix/list")
@@ -97,7 +132,7 @@ async def read_prefix():
 
 
 @app.get("/prefix/{prefix_name}")
-async def get_prefix_informations(prefix_name: str):
+async def get_prefix_informations(prefix_name: str) -> Collection:
 
     result = await database.fetch_all(
         get_column_names_of_sql_table_query("{}_predictions".format(prefix_name))
@@ -144,6 +179,97 @@ async def get_prefix_informations(prefix_name: str):
     )
 
 
+@app.get("/prefix/{prefix_name}/species")
+async def get_prefix_species(prefix_name: str) -> List[Species]:
+    result = await database.fetch_all(
+        get_column_names_of_sql_table_query("{}_predictions".format(prefix_name))
+    )
+
+    indicated_species_index = await database.fetch_all(
+        get_index_names_of_sql_table_ending_with(
+            "{}_predictions".format(prefix_name), "_index"
+        )
+    )
+
+    indicated_species_columns = [
+        remove_substring_from_end(i[0], "_index") for i in indicated_species_index
+    ]
+
+    species = []
+    for i in result:
+        column = i[0]
+        if column in NON_SPECIES_COLUMN:
+            continue
+        species.append(
+            Species(name=column, has_index=column in indicated_species_columns)
+        )
+
+    return species
+
+
+@app.get("/prefix/{prefix_name}/records/first")
+async def get_first_record_of_prefix(prefix_name: str) -> Record:
+    result = await database.fetch_one(
+        get_datetime_of_first_record_in_sql_table("{}_records".format(prefix_name))
+    )
+    print(type(result[3]))
+    return Record(
+        id=result[0],
+        filepath=result[1],
+        filename=result[2],
+        record_datetime=result[3],
+        duration=result[4],
+        channels=result[5],
+    )
+
+
+@app.get("/prefix/{prefix_name}/records/last")
+async def get_last_record_of_prefix(prefix_name: str) -> Record:
+    result = await database.fetch_one(
+        get_datetime_of_last_record_in_sql_table("{}_records".format(prefix_name))
+    )
+    print(type(result[3]))
+    return Record(
+        id=result[0],
+        filepath=result[1],
+        filename=result[2],
+        record_datetime=result[3],
+        duration=result[4],
+        channels=result[5],
+    )
+
+
+@app.get("/prefix/{prefix_name}/records/count")
+async def get_prefix_records_count(prefix_name: str) -> int:
+    return (
+        await database.fetch_one(
+            count_entries_in_sql_table("{}_records".format(prefix_name))
+        )
+    )[0]
+
+
+@app.get("/prefix/{prefix_name}/records/duration")
+async def get_prefix_records_duration(prefix_name: str) -> float:
+    return (
+        await (
+            database.fetch_one(
+                sum_values_of_sql_table_cloumn(
+                    "{}_records".format(prefix_name), "duration"
+                )
+            )
+        )
+    )[0]
+
+
+@app.get("/prefix/{prefix_name}/predictions/count")
+async def get_prefix_predictions_count(prefix_name: str) -> int:
+    return (
+        await database.fetch_one(
+            count_entries_in_sql_table("{}_predictions".format(prefix_name))
+        )
+    )[0]
+
+
 # route to add index to prediction table
 @app.post("/prefix/{prefix_name}/add_index/{column_name}")
 async def add_index_to_prefix(prefix_name: str, column_name: str):
@@ -162,6 +288,37 @@ async def drop_index_from_prefix(prefix_name: str, column_name: str):
         drop_index_for_sql_table("{}_predictions".format(prefix_name), column_name)
     )
     return {"message": "index dropped"}
+
+
+# route to query prediction table
+@app.post("/prefix/{prefix_name}/predictions")
+async def query_prediction_table(
+    prefix_name: str, request: QueryRequest
+) -> QueryResponse:
+    print(request)
+    predictions_count = (
+        await database.fetch_one(
+            count_predictions_in_date_range(
+                prefix_name, request.start_datetime, request.end_datetime
+            )
+        )
+    )[0]
+
+    species_count = (
+        await database.fetch_one(
+            count_species_over_threshold_in_date_range(
+                prefix_name,
+                request.species,
+                request.threshold,
+                request.start_datetime,
+                request.end_datetime,
+            )
+        )
+    )[0]
+    print(species_count)
+    return QueryResponse(
+        predictions_count=predictions_count, species_count=species_count
+    )
 
 
 # route to get random sample from prediction table
