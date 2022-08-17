@@ -33,10 +33,9 @@ import { duration } from 'moment';
 import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
 
-import FloatInput from '../components/FloatInput';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import IntInput from '../components/IntInput';
+import NumberInput from '../components/NumberInput';
 
 interface CollectionProps {
     children?: React.ReactNode;
@@ -236,8 +235,9 @@ export default function Collection(props: CollectionProps) {
                                 }}
                                 options={
                                     collectionSpeciesList.filter(x => x.has_index).map(x => ({ value: x.name, label: firstLetterUpperAndReplaceSpace(x.name) }))} />
-                            <FloatInput
+                            <NumberInput
                                 numberValue={threshold}
+                                numberType="float"
                                 onNumberChange={setThreshold}
                                 label=" >= threshold" />
 
@@ -293,9 +293,10 @@ export default function Collection(props: CollectionProps) {
                                     }}>
                                         Create Random Sample
                                     </Typography>
-                                    <IntInput label="Sample Size"
+                                    <NumberInput label="Sample Size"
+                                        numberType='int'
                                         numberValue={sampleSize}
-                                        onNumberChange={setSampleSize}></IntInput>
+                                        onNumberChange={setSampleSize}></NumberInput>
                                     <Button color="secondary" variant="contained" disabled={!selectedSpecies} endIcon={<DownloadIcon />} sx={{
 
                                         padding: 1.5,

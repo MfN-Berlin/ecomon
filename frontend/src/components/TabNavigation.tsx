@@ -27,24 +27,26 @@ export default function TabNavigation() {
     const currentTab = location.pathname
 
     return (
+        <React.Fragment>
+            {loading ? <div>Loading...</div> : (
+                <Tabs value={currentTab} indicatorColor="secondary"
+                    textColor="inherit"
+                    aria-label={'home ' + collectionList.join(' ')}>
+                    <Tab aria-label="Home" value="/" to="/" component={Link} icon={<HomeIcon />} />
+                    {
+                        loading ? (<Tab label="Loading ..." key="loading" disabled iconPosition="start" icon={<HourglassEmptyIcon />} />) : (
+                            collectionList.map(item => (
+                                <Tab label={item}
+                                    key={item}
+                                    aria-label={item}
+                                    value={"/collection/" + item}
+                                    to={"/collection/" + item}
+                                    component={Link} />
+                            )))
+                    }
 
-        <Tabs value={currentTab} indicatorColor="secondary"
-            textColor="inherit"
-            aria-label={'home ' + collectionList.join(' ')}>
-            <Tab aria-label="Home" value="/" to="/" component={Link} icon={<HomeIcon />} />
-            {
-                loading ? (<Tab label="Loading ..." key="loading" disabled iconPosition="start" icon={<HourglassEmptyIcon />} />) : (
-                    collectionList.map(item => (
-                        <Tab label={item}
-                            key={item}
-                            aria-label={item}
-                            value={"/collection/" + item}
-                            to={"/collection/" + item}
-                            component={Link} />
-                    )))
-            }
-
-        </Tabs>
+                </Tabs>)}
+        </React.Fragment>
 
     );
 }
