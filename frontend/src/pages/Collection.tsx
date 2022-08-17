@@ -237,7 +237,7 @@ export default function Collection(props: CollectionProps) {
                                     collectionSpeciesList.filter(x => x.has_index).map(x => ({ value: x.name, label: firstLetterUpperAndReplaceSpace(x.name) }))} />
                             <NumberInput
                                 numberValue={threshold}
-                                numberType="float"
+                                numberType={"float"}
                                 onNumberChange={setThreshold}
                                 label=" >= threshold" />
 
@@ -294,7 +294,7 @@ export default function Collection(props: CollectionProps) {
                                         Create Random Sample
                                     </Typography>
                                     <NumberInput label="Sample Size"
-                                        numberType='int'
+                                        numberType={'int'}
                                         numberValue={sampleSize}
                                         onNumberChange={setSampleSize}></NumberInput>
                                     <Button color="secondary" variant="contained" disabled={!selectedSpecies} endIcon={<DownloadIcon />} sx={{

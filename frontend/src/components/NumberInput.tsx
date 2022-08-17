@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 interface NumberInputProps extends StandardTextFieldProps {
     onNumberChange?: (value: number) => void;
     numberValue?: number | null | undefined;
-    numberType: "int" | "float";
+    numberType?: "int" | "float";
 }
 
 
@@ -22,6 +22,7 @@ export default function NumberInput(props: NumberInputProps) {
 
     delete tmp_props.onNumberChange;
     delete tmp_props.numberValue;
+    delete tmp_props.numberType;
 
     const regexp = props.numberType == "int" ? /^([0-9]+)$/ : /^([0-9]+([.]?[0-9]*)?|[.][0-9]+)$/;
     const parseFunction = props.numberType == "int" ? parseInt : parseFloat;
