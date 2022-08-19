@@ -6,7 +6,6 @@ processed_files.txt
 db-data
 *.cache
 
-
 # dependencies
 node_modules
 /.pnp
