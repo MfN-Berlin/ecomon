@@ -24,12 +24,12 @@ export default function NumberInput(props: NumberInputProps) {
     delete tmp_props.numberValue;
     delete tmp_props.numberType;
 
-    const regexp = props.numberType == "int" ? /^([0-9]+)$/ : /^([0-9]+([.]?[0-9]*)?|[.][0-9]+)$/;
-    const parseFunction = props.numberType == "int" ? parseInt : parseFloat;
+    const regexp = props.numberType === "int" ? /^([0-9]+)$/ : /^([0-9]+([.]?[0-9]*)?|[.][0-9]+)$/;
+    const parseFunction = props.numberType === "int" ? parseInt : parseFloat;
 
     useEffect(() => {
         setStringValue('' + props.numberValue);
-    }, []);
+    }, [props.numberValue]);
 
     useEffect(() => {
         const tmp = parseFunction(stringValue);
@@ -40,14 +40,14 @@ export default function NumberInput(props: NumberInputProps) {
             setNumberValue(0);
 
         }
-    }, [stringValue]);
+    }, [stringValue, parseFunction]);
     useEffect(() => {
         if (props.onNumberChange) {
             console.log("NumberInput: onNumberChange: " + numberValue);
             props.onNumberChange(numberValue);
         }
 
-    }, [numberValue]);
+    }, [numberValue, props.onNumberChange, props]);
 
 
 
@@ -56,7 +56,7 @@ export default function NumberInput(props: NumberInputProps) {
 
     function handleNumberChange(event: React.ChangeEvent<HTMLInputElement>) {
         // check if target is a number
-        if (event.target.value == "") {
+        if (event.target.value === "") {
             setStringValue("");
             setNumberValue(0);
         } else

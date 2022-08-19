@@ -56,9 +56,7 @@ export default function Collection(props: CollectionProps) {
     const { recordDuration, loading: durationLoading } = useRecordDuration(id);
     const { firstRecord, loading: firstRecordLoading } = useFirstRecord(id);
     const { lastRecord, loading: lastRecordLoading } = useLastRecord(id);
-    const { predictionQueryResponse, loading: queryLoading, updateQuery, abortQuery, clearResonse } = useCollectionPredictionQuery(id);
-
-
+    const { predictionQueryResponse, loading: queryLoading, updateQuery, abortQuery, clearResponse } = useCollectionPredictionQuery(id);
     const [selectedSpecies, setSelectedSpecies] = useState<string>();
     const [from, setFrom] = useState<Date | null>();
     const [until, setUntil] = useState<Date | null>();
@@ -75,8 +73,8 @@ export default function Collection(props: CollectionProps) {
     // effect clear prediction query response on change
     useEffect(() => {
         abortQuery();
-        clearResonse();
-    }, [selectedSpecies, from, until, threshold]);
+        clearResponse();
+    }, [selectedSpecies, from, until, abortQuery, clearResponse]);
 
 
 
@@ -99,13 +97,10 @@ export default function Collection(props: CollectionProps) {
         document.body.removeChild(link);
     }
 
-
     return (<Box sx={{ flexGrow: 1, padding: 2 }}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Grid container spacing={1}>
                 <Grid xs={12} md={4} xl={2}>
-
-
                     <Paper sx={{
                         padding: 1,
 
