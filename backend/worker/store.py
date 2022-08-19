@@ -2,11 +2,11 @@ from time import sleep
 from tqdm import tqdm
 import wave
 from typing import NamedTuple
-from db import connect_to_db, DbWorker
+from backend.util.db import connect_to_db, DbWorker
 from os import path
 from datetime import date, datetime
 from pathlib import Path
-from tools import parse_filename_for_location_date_time_function_dict
+from backend.util.tools import parse_filename_for_location_date_time_function_dict
 import pickle
 import ffmpeg
 import time

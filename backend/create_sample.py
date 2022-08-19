@@ -1,7 +1,7 @@
 import argparse
 from os import path
 from dotenv import load_dotenv
-from db import connect_to_db
+from backend.util.db import connect_to_db
 from sql.query import get_prediction_random_sample
 from uuid import uuid4
 import ffmpeg

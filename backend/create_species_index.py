@@ -1,15 +1,16 @@
 import argparse
 from dotenv import load_dotenv
-from db import connect_to_db
-from sql.query import create_index_for_sql_table, drop_index_for_sql_table, get_column_names_of_sql_table_query
-from tools import parse_boolean
+from backend.util.db import connect_to_db
+from sql.query import (
+    create_index_for_sql_table,
+    drop_index_for_sql_table,
+    get_column_names_of_sql_table_query,
+)
+from backend.util.tools import parse_boolean
 
 PREFIX = "INPEDIV"
 
 # create index for column with index_name
-
-
-
 
 
 def main(prefix=PREFIX, drop=False):

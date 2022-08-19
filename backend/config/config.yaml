@@ -9,7 +9,7 @@ fileEnding:
   - FLAC
 resultFolder: birdid-europe254-2103/INPEDIV
 # Index to name File of your used model
-indexToNameFile: ./birdid-europe-254_index_to_name.json
+indexToNameFile: ../birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "inpediv" # "ammod | inpediv"
 prefix: "INPEDIV"
@@ -22,8 +22,8 @@ cloudUpload:
   deviceId: "7977"
   serialNumber: "002"
 
-  uploadedFilepath: ./uploaded.cache
-  errorFilepath: ./uploaded_error.cache
+  uploadedFilepath: ../runtime-data/backend/uploaded.cache
+  errorFilepath: ../runtime-data/backend/uploaded_error.cache
   location:
     lat: "35.00"
     lng: "32.00"
