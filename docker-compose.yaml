@@ -1,6 +1,10 @@
 # docker-compose.yml
 version: "3"
 services:
+
+  frontend: 
+    image: bai/database
+    build: ./frontend
   db:
     container_name: "bai-mariadb"
     image: mariadb/server:latest
