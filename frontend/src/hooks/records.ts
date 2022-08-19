@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-
+import { API_PATH } from '../consts'
 interface Record {
    id: number
    filepath: string
@@ -15,7 +15,7 @@ export function useRecordCount(collectionName: string | undefined) {
 
    useEffect(() => {
       async function fetchRecordCount() {
-         fetch('http://127.0.0.1:8000/prefix/' + collectionName + '/records/count')
+         fetch(`${API_PATH}/prefix/${collectionName}/records/count`)
             .then((res) => res.json())
             .then((data) => {
                setRecordCount(data)
@@ -35,7 +35,7 @@ export function useRecordDuration(collectionName: string | undefined) {
 
    useEffect(() => {
       async function fetchRecordDuration() {
-         fetch('http://127.0.0.1:8000/prefix/' + collectionName + '/records/duration')
+         fetch(`${API_PATH}/prefix/${collectionName}/records/duration`)
             .then((res) => res.json())
             .then((data) => {
                setRecordDuration(data)
@@ -55,7 +55,7 @@ export function useFirstRecord(collectionName: string | undefined) {
 
    useEffect(() => {
       async function fetchRecordDuration() {
-         fetch('http://127.0.0.1:8000/prefix/' + collectionName + '/records/first')
+         fetch(`${API_PATH}/prefix/${collectionName}/records/first`)
             .then((res) => res.json())
             .then((data) => {
                data.record_datetime = new Date(data.record_datetime)
@@ -75,10 +75,11 @@ export function useLastRecord(collectionName: string | undefined) {
 
    useEffect(() => {
       async function fetchRecordDuration() {
-         fetch('http://127.0.0.1:8000/prefix/' + collectionName + '/records/last')
+         fetch(`${API_PATH}/prefix/${collectionName}/records/last`)
             .then((res) => res.json())
             .then((data) => {
                data.record_datetime = new Date(data.record_datetime)
+               console.log("recieved data: ", data)
                setLastRecord(data)
                setLoading(false)
             })

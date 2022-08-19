@@ -3,10 +3,10 @@ import threading, queue
 import yaml
 import glob
 from dotenv import load_dotenv
-from backend.worker.analyze import analyze_loop_factory
-from backend.worker.store import store_loop_factory
-from backend.util.db import init_db
-from backend.util.tools import (
+from worker.analyze import analyze_loop_factory
+from worker.store import store_loop_factory
+from util.db import init_db
+from util.tools import (
     load_config,
     load_files_list,
     load_json,

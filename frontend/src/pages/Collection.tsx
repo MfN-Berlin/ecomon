@@ -26,6 +26,7 @@ import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import NumberInput from '../components/NumberInput'
+import { API_PATH } from '../consts'
 
 interface CollectionProps {
    children?: React.ReactNode
@@ -67,7 +68,7 @@ export default function Collection(props: CollectionProps) {
    useEffect(() => {
       abortQuery()
       clearResponse()
-   }, [selectedSpecies, from, until, abortQuery, clearResponse])
+   }, [selectedSpecies, from, until])
 
    // Event handlers
    function handleQueryButtonClick() {
@@ -82,7 +83,7 @@ export default function Collection(props: CollectionProps) {
    // download file from url
    function handleDownloadButtonClick() {
       const link = document.createElement('a')
-      link.href = `http://localhost:8000/random_sample?prefix=${id}&species=${selectedSpecies}&sample_size=${sampleSize}&start_datetime=${from?.toISOString()}&end_datetime=${until?.toISOString()}&threshold=${threshold}`
+      link.href = `${API_PATH}/random_sample?prefix=${id}&species=${selectedSpecies}&sample_size=${sampleSize}&start_datetime=${from?.toISOString()}&end_datetime=${until?.toISOString()}&threshold=${threshold}`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)

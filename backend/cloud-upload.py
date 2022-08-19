@@ -7,7 +7,7 @@ import requests
 from os import path, getenv, makedirs
 import os
 import json
-from backend.util.tools import create_metadata_dict, load_config, load_files_list
+from util.tools import create_metadata_dict, load_config, load_files_list
 from uuid import uuid4
 
 # upload file to cloud endpoint

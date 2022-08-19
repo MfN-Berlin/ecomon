@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-
+import { API_PATH } from '../consts'
 interface CollectionInfo {
    name: string
    species_list: string[]
@@ -17,7 +17,7 @@ export function useCollectionList() {
    const [collectionList, setCollectionsList] = useState<string[]>([])
    const [loading, setLoading] = useState(true)
    function fetchCollections() {
-      fetch('http://127.0.0.1:8000/prefix/list')
+      fetch(`${API_PATH}/prefix/list`)
          .then((res) => res.json())
          .then((data) => {
             setCollectionsList(data)
@@ -38,7 +38,7 @@ export function useCollectionInfo(collectionName: string | undefined) {
 
    useEffect(() => {
       async function fetchCollectionInfo() {
-         fetch('http://127.0.0.1:8000/prefix/' + collectionName)
+         fetch(`${API_PATH}/prefix/` + collectionName)
             .then((res) => res.json())
             .then((data) => {
                setCollectionInfo(data)
@@ -58,7 +58,7 @@ export function useCollectionSpeciesList(collectionName: string | undefined) {
 
    useEffect(() => {
       async function fetchCollectionSpeciesList() {
-         fetch('http://127.0.0.1:8000/prefix/' + collectionName + '/species')
+         fetch(`${API_PATH}/prefix/${collectionName}/species`)
             .then((res) => res.json())
             .then((data) => {
                // sort Array of Species by name
@@ -107,7 +107,7 @@ export function useCollectionPredictionQuery(collectionName: string | undefined)
 
       setLoading(true)
 
-      fetch('http://127.0.0.1:8000/prefix/' + collectionName + '/predictions/', {
+      fetch(`${API_PATH}/prefix/${collectionName}/predictions`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json'

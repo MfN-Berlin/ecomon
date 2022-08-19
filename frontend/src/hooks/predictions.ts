@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { API_PATH } from '../consts'
 
 export function usePredictionCount(collectionName: string | undefined) {
    const [predictionCount, setPredictionCount] = useState<number>(0)
@@ -6,7 +7,7 @@ export function usePredictionCount(collectionName: string | undefined) {
 
    useEffect(() => {
       async function fetchPredictionCount() {
-         fetch('http://127.0.0.1:8000/prefix/' + collectionName + '/predictions/count')
+         fetch(`${API_PATH}/prefix/${collectionName}/predictions/count`)
             .then((res) => res.json())
             .then((data) => {
                setPredictionCount(data)

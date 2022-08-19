@@ -1,7 +1,7 @@
 import argparse
 from os import path
 from dotenv import load_dotenv
-from backend.util.db import connect_to_db
+from util.db import connect_to_db
 from sql.query import get_prediction_random_sample
 from uuid import uuid4
 import ffmpeg
@@ -53,7 +53,7 @@ def create_sample(
     start_datetime=None,
     end_datetime=None,
     result_filepath=None,
-    tmp_directory=None,
+    BAI_TMP_DIRECTORY=None,
 ):
     load_dotenv()
     db_connection = connect_to_db()
@@ -75,10 +75,10 @@ def create_sample(
     # create folder for samples
     directoryName = uuid4().hex
     directory = ""
-    if tmp_directory is None:
+    if BAI_TMP_DIRECTORY is None:
         directory = path.join(os.getcwd(), "tmp", directoryName)
     else:
-        directory = path.join(tmp_directory, directoryName)
+        directory = path.join(BAI_TMP_DIRECTORY, directoryName)
     os.makedirs(directory, exist_ok=True)
     # create csv of results
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument("--start_datetime", type=str, default=None)
     parser.add_argument("--end_datetime", type=str, default=None)
     parser.add_argument("--result_filepath", type=str, default=None)
-    parser.add_argument("--tmp_directory", type=str, default=None)
+    parser.add_argument("--BAI_TMP_DIRECTORY", type=str, default=None)
     args = parser.parse_args()
     create_sample(
         prefix=args.prefix,
@@ -154,6 +154,6 @@ if __name__ == "__main__":
         start_datetime=args.start_datetime,
         end_datetime=args.end_datetime,
         result_filepath=args.result_filepath,
-        tmp_directory=args.tmp_directory,
+        BAI_TMP_DIRECTORY=args.BAI_TMP_DIRECTORY,
     )
 

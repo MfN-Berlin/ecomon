@@ -1,7 +1,5 @@
 import asyncio
 import os
-from pickletools import read_uint1
-import re
 import databases
 from sql.query import (
     create_index_for_sql_table,
@@ -32,8 +30,11 @@ sample_executor = ThreadPoolExecutor(10)
 NON_SPECIES_COLUMN = ["id", "record_id", "start_time", "end_time", "channel"]
 
 load_dotenv()
+
+path_prefix = os.getenv("ROOT_PATH")
 # initiliaze database connection
 user = os.getenv("BAI_MARIADB_USER")
+
 password = os.getenv("BAI_MARIADB_PASSWORD")
 host = os.getenv("BAI_MARIADB_HOST")
 port = int(os.getenv("BAI_MARIADB_PORT"))
@@ -41,6 +42,9 @@ database = os.getenv("BAI_MARIADB_DATABASE")
 database_connection_string = "mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4".format(
     user=user, password=password, host=host, port=port, dbname=database
 )
+print(database_connection_string)
+print(user)
+print(password)
 
 database = databases.Database(database_connection_string)
 
@@ -122,7 +126,9 @@ async def shutdown():
 
 @app.get("/")
 def read_root():
-    return RedirectResponse("/docs", status_code=302)
+    return RedirectResponse(
+        "{}/docs".format(path_prefix if path_prefix else ""), status_code=302
+    )
 
 
 @app.get("/prefix/list")
@@ -333,11 +339,11 @@ async def get_random_sample(
     end_datetime: str = None,
 ):
     # syncronus function in thread for asyncio compatibility
-    tmp_directory = os.getenv("WEB_SERVICE_TMP_DIRECTORY")
-    if not path.exists(tmp_directory):
-        os.makedirs(tmp_directory)
+    BAI_TMP_DIRECTORY = os.getenv("BAI_TMP_DIRECTORY")
+    if not path.exists(BAI_TMP_DIRECTORY):
+        os.makedirs(BAI_TMP_DIRECTORY)
 
-    result_directory = os.getenv("WEB_SERVICE_RESULT_DIRECTORY")
+    result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
     if not path.exists(result_directory):
         os.makedirs(result_directory)
     result_filename = "{prefix}_{species}_lq_{threshold}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
@@ -355,7 +361,7 @@ async def get_random_sample(
         create_sample(
             prefix=prefix,
             result_filepath=result_filepath,
-            tmp_directory=tmp_directory,
+            BAI_TMP_DIRECTORY=BAI_TMP_DIRECTORY,
             species=species,
             threshold=threshold,
             sample_size=sample_size,

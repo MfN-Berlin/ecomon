@@ -23,7 +23,7 @@ export default function NumberInput(props: NumberInputProps) {
 
    useEffect(() => {
       setStringValue('' + props.numberValue)
-   }, [props.numberValue])
+   }, [])
 
    useEffect(() => {
       const tmp = parseFunction(stringValue)
