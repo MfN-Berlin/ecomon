@@ -22,7 +22,8 @@ import { duration } from 'moment'
 
 import SendIcon from '@mui/icons-material/Send'
 import Button from '@mui/material/Button'
-
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import NumberInput from '../components/NumberInput'
@@ -56,6 +57,8 @@ export default function Collection(props: CollectionProps) {
    const [until, setUntil] = useState<Date | null>()
    const [threshold, setThreshold] = useState<number>(0)
    const [sampleSize, setSampleSize] = useState<number>(100)
+   const [hasIndex, setHasIndex] = useState<boolean>(false)
+
    // effects
    useEffect(() => {
       setFrom(firstRecord ? firstRecord.record_datetime : null)
@@ -213,21 +216,25 @@ export default function Collection(props: CollectionProps) {
                               setUntil(newValue)
                            }}
                         />
-
-                        <Select
-                           isClearable
-                           isLoading={speciesLoading}
-                           onChange={(newValue) => {
-                              if (newValue) setSelectedSpecies(newValue.value)
-                              else setSelectedSpecies(undefined)
-                           }}
-                           options={collectionSpeciesList
-                              .filter((x) => x.has_index)
-                              .map((x) => ({
-                                 value: x.name,
-                                 label: firstLetterUpperAndReplaceSpace(x.name)
-                              }))}
-                        />
+                        <Stack direction="row" spacing={0}  justifyContent="space-evenly"  alignItems="stretch">
+                        <div style={{minWidth: '250px'}}>
+                            <Select
+                              
+                               isClearable
+                               isLoading={speciesLoading}
+                               onChange={(newValue) => {
+                                  if (newValue) setSelectedSpecies(newValue.value)
+                                  else setSelectedSpecies(undefined)
+                               }}
+                               options={collectionSpeciesList
+                                  .filter((x) => hasIndex ? x.has_index : true)
+                                  .map((x) => ({
+                                     value: x.name,
+                                     label: firstLetterUpperAndReplaceSpace(x.name)
+                                  }))}
+                            /></div>
+                             <FormControlLabel control={<Checkbox value={hasIndex} onChange={()=>{setHasIndex(!hasIndex)}} />} label="has Index" />
+                        </Stack>
                         <NumberInput
                            numberValue={threshold}
                            numberType={'float'}
