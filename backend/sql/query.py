@@ -130,7 +130,9 @@ def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
     WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}'
     """.format(
-        start_datetime=start_datetime, end_datetime=end_datetime, prefix=prefix,
+        start_datetime=start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        end_datetime=end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        prefix=prefix,
     )
 
 
@@ -143,8 +145,8 @@ def count_species_over_threshold_in_date_range(
 
     WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND {species} >= '{threshold}'
     """.format(
-        start_datetime=start_datetime,
-        end_datetime=end_datetime,
+        start_datetime=start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        end_datetime=end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         species=species,
         threshold=threshold,
         prefix=prefix,
