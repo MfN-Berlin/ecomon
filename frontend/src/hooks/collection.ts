@@ -56,7 +56,7 @@ export function useCollectionSpeciesList(collectionName: string | undefined) {
    const [collectionSpeciesList, setCollectionSpeciesList] = useState<Species[]>([])
    const [loading, setLoading] = useState(true)
 
-   useEffect(() => {
+   async function update() {
       async function fetchCollectionSpeciesList() {
          fetch(`${API_PATH}/prefix/${collectionName}/species`)
             .then((res) => res.json())
@@ -76,10 +76,14 @@ export function useCollectionSpeciesList(collectionName: string | undefined) {
             })
       }
       setLoading(true)
-      fetchCollectionSpeciesList()
+      return fetchCollectionSpeciesList()
+   }
+
+   useEffect(() => {
+      update()
    }, [collectionName])
 
-   return { collectionSpeciesList, loading }
+   return { collectionSpeciesList, loading, update }
 }
 
 interface QueryParameters {

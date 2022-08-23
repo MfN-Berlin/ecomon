@@ -13,8 +13,7 @@ import DialogContentText from '@mui/material/DialogContentText'
 import Button from '@mui/material/Button'
 import DialogActions from '@mui/material/DialogActions'
 import Select from 'react-select'
-import CircularProgress from '@material-ui/core/CircularProgress';
-
+import CircularProgress from '@material-ui/core/CircularProgress'
 
 type Item = {
    label: string
@@ -35,7 +34,6 @@ interface ChipListProps {
 }
 
 export default function ChipList(props: ChipListProps) {
-
    const [currentItem, setCurrentItem] = useState<Item>()
    const [loadingDeletion, setLoadingDeletion] = useState(false)
    const [loadingAdd, setLoadingAdd] = useState(false)
@@ -43,12 +41,10 @@ export default function ChipList(props: ChipListProps) {
    const [showAddDialog, setShowAddDialog] = useState(false)
 
    function handleDelete(item: Item) {
-
       if (props.onDelete) {
          props.onDelete(item)
       }
    }
-
 
    return (
       <React.Fragment>
@@ -78,7 +74,6 @@ export default function ChipList(props: ChipListProps) {
                   Cancel
                </Button>
                <Button
-
                   disabled={currentItem === undefined || loadingAdd}
                   onClick={async () => {
                      setLoadingAdd(true)
@@ -95,8 +90,7 @@ export default function ChipList(props: ChipListProps) {
                   }}
                >
                   {loadingAdd && <CircularProgress size={14} />}
-                  {!loadingAdd && "Add"}
-
+                  {!loadingAdd && 'Add'}
                </Button>
             </DialogActions>
          </Dialog>
@@ -123,7 +117,6 @@ export default function ChipList(props: ChipListProps) {
                   Cancel
                </Button>
                <Button
-
                   onClick={async () => {
                      setLoadingDeletion(true)
                      if (props.onDelete && currentItem) {
@@ -135,8 +128,7 @@ export default function ChipList(props: ChipListProps) {
                   }}
                >
                   {loadingDeletion && <CircularProgress size={14} />}
-                  {!loadingDeletion && "Delete"}
-
+                  {!loadingDeletion && 'Delete'}
                </Button>
             </DialogActions>
          </Dialog>
@@ -189,7 +181,6 @@ export default function ChipList(props: ChipListProps) {
                      }}
                      variant={props.variant}
                      onDelete={() => {
-
                         if (props.ensureDelete) {
                            setCurrentItem(item)
                            setShowDeleteDialog(true)

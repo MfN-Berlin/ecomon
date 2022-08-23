@@ -40,7 +40,7 @@ function firstLetterUpperAndReplaceSpace(str: string) {
 
 export default function Collection(props: CollectionProps) {
    const { id } = useParams()
-   const { collectionSpeciesList, loading: speciesLoading } = useCollectionSpeciesList(id)
+   const { collectionSpeciesList, loading: speciesLoading, update: updateSpeciesList } = useCollectionSpeciesList(id)
    const { predictionCount, loading: predictionLoading } = usePredictionCount(id)
    const { recordCount, loading: recordLoading } = useRecordCount(id)
    const { recordDuration, loading: durationLoading } = useRecordDuration(id)
@@ -72,6 +72,7 @@ export default function Collection(props: CollectionProps) {
    useEffect(() => {
       abortQuery()
       clearResponse()
+      // eslint-disable-next-line
    }, [selectedSpecies, from, until])
 
    // Event handlers
@@ -95,12 +96,14 @@ export default function Collection(props: CollectionProps) {
 
    async function handleAddSpeciesIndex(item: { label: string; key: string }): Promise<void> {
       console.log(item)
-      id && await addDbKeyToSpecies(id, item.key)
+      id && (await addDbKeyToSpecies(id, item.key))
+      await updateSpeciesList()
    }
 
    async function handleDeleteSpeciesIndex(item: { label: string; key: string }): Promise<void> {
       console.log(item)
-      id && await deleteDbKeyFromSpecies(id, item.key)
+      id && (await deleteDbKeyFromSpecies(id, item.key))
+      await updateSpeciesList()
    }
    return (
       <Box sx={{ flexGrow: 1, padding: 2 }}>

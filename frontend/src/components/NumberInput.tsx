@@ -23,6 +23,7 @@ export default function NumberInput(props: NumberInputProps) {
 
    useEffect(() => {
       setStringValue('' + props.numberValue)
+      // eslint-disable-next-line
    }, [])
 
    useEffect(() => {
@@ -35,7 +36,6 @@ export default function NumberInput(props: NumberInputProps) {
    }, [stringValue, parseFunction])
    useEffect(() => {
       if (props.onNumberChange) {
-         console.log('NumberInput: onNumberChange: ' + numberValue)
          props.onNumberChange(numberValue)
       }
    }, [numberValue, props.onNumberChange, props])

@@ -5,6 +5,7 @@ processed_files.txt
 .env
 db-data
 *.cache
+*.zip
 
 # dependencies
 node_modules
