@@ -22,13 +22,14 @@ import { duration } from 'moment'
 
 import SendIcon from '@mui/icons-material/Send'
 import Button from '@mui/material/Button'
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Checkbox from '@mui/material/Checkbox'
 import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import NumberInput from '../components/NumberInput'
 import { API_PATH } from '../consts'
-
+import ChipList from '../components/ChipList'
+import { addDbKeyToSpecies, deleteDbKeyFromSpecies } from '../tools/dbKeyHandling'
 interface CollectionProps {
    children?: React.ReactNode
 }
@@ -92,6 +93,15 @@ export default function Collection(props: CollectionProps) {
       document.body.removeChild(link)
    }
 
+   async function handleAddSpeciesIndex(item: { label: string; key: string }): Promise<void> {
+      console.log(item)
+      id && await addDbKeyToSpecies(id, item.key)
+   }
+
+   async function handleDeleteSpeciesIndex(item: { label: string; key: string }): Promise<void> {
+      console.log(item)
+      id && await deleteDbKeyFromSpecies(id, item.key)
+   }
    return (
       <Box sx={{ flexGrow: 1, padding: 2 }}>
          <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -150,7 +160,7 @@ export default function Collection(props: CollectionProps) {
                            readOnly={true}
                            ampm={false}
                            loading={firstRecordLoading}
-                           onChange={(date) => {}}
+                           onChange={(date) => { }}
                         />
                         <DateTimePicker
                            renderInput={(props) => <TextField {...props} />}
@@ -159,8 +169,28 @@ export default function Collection(props: CollectionProps) {
                            readOnly={true}
                            ampm={false}
                            loading={lastRecordLoading}
-                           onChange={(date) => {}}
+                           onChange={(date) => { }}
                         />
+
+                        <ChipList
+                           addDialogTitle={'Add database index to species'}
+                           addDialogContentText={'Select a species to add a database index to'}
+                           ensureDelete={true}
+                           onAdd={handleAddSpeciesIndex}
+                           onDelete={handleDeleteSpeciesIndex}
+                           deleteDialogTitleTemnplate={(species) => `Drop database index of  ${species.label}?`}
+                           label="Species with DB-Index:"
+                           items={collectionSpeciesList
+                              .filter((x) => x.has_index)
+                              .map((item) => ({
+                                 label: firstLetterUpperAndReplaceSpace(item.name),
+                                 key: item.name
+                              }))}
+                           options={collectionSpeciesList.map((item) => ({
+                              label: firstLetterUpperAndReplaceSpace(item.name),
+                              key: item.name
+                           }))}
+                        ></ChipList>
                      </Stack>
                   </Paper>
                </Grid>
@@ -216,24 +246,34 @@ export default function Collection(props: CollectionProps) {
                               setUntil(newValue)
                            }}
                         />
-                        <Stack direction="row" spacing={0}  justifyContent="space-evenly"  alignItems="stretch">
-                        <div style={{minWidth: '250px'}}>
-                            <Select
-                              
-                               isClearable
-                               isLoading={speciesLoading}
-                               onChange={(newValue) => {
-                                  if (newValue) setSelectedSpecies(newValue.value)
-                                  else setSelectedSpecies(undefined)
-                               }}
-                               options={collectionSpeciesList
-                                  .filter((x) => hasIndex ? x.has_index : true)
-                                  .map((x) => ({
-                                     value: x.name,
-                                     label: firstLetterUpperAndReplaceSpace(x.name)
-                                  }))}
-                            /></div>
-                             <FormControlLabel control={<Checkbox value={hasIndex} onChange={()=>{setHasIndex(!hasIndex)}} />} label="has Index" />
+                        <Stack direction="row" spacing={0} justifyContent="space-evenly" alignItems="stretch">
+                           <div style={{ minWidth: '250px' }}>
+                              <Select
+                                 isClearable
+                                 isLoading={speciesLoading}
+                                 onChange={(newValue) => {
+                                    if (newValue) setSelectedSpecies(newValue.value)
+                                    else setSelectedSpecies(undefined)
+                                 }}
+                                 options={collectionSpeciesList
+                                    .filter((x) => (hasIndex ? x.has_index : true))
+                                    .map((x) => ({
+                                       value: x.name,
+                                       label: firstLetterUpperAndReplaceSpace(x.name)
+                                    }))}
+                              />
+                           </div>
+                           <FormControlLabel
+                              control={
+                                 <Checkbox
+                                    value={hasIndex}
+                                    onChange={() => {
+                                       setHasIndex(!hasIndex)
+                                    }}
+                                 />
+                              }
+                              label="has Index"
+                           />
                         </Stack>
                         <NumberInput
                            numberValue={threshold}
