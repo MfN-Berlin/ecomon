@@ -163,7 +163,7 @@ export default function Collection(props: CollectionProps) {
                            readOnly={true}
                            ampm={false}
                            loading={firstRecordLoading}
-                           onChange={(date) => { }}
+                           onChange={(date) => {}}
                         />
                         <DateTimePicker
                            renderInput={(props) => <TextField {...props} />}
@@ -172,7 +172,7 @@ export default function Collection(props: CollectionProps) {
                            readOnly={true}
                            ampm={false}
                            loading={lastRecordLoading}
-                           onChange={(date) => { }}
+                           onChange={(date) => {}}
                         />
 
                         <ChipList
