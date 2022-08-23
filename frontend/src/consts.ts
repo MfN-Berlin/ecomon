@@ -6,7 +6,7 @@ function getApiPath() {
    if (process.env.NODE_ENV === 'production') {
       return '/api/v1'
    }
-   return 'http://localhost:8000'
+   return 'http://localhost:8888'
 }
 
 export const API_PATH = getApiPath()

@@ -1,2 +1,2 @@
 #!/bin/bash
-uvicorn app:app --reload
+uvicorn app:app --reload --port 8888

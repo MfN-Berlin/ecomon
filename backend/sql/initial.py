@@ -57,16 +57,14 @@ CREATE TABLE `{p}_predictions` (
 
 def create_jobs_table():
     return """
- CREATE TABLE `jobs` (
+ CREATE TABLE IF NOT EXISTS `jobs` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `prefix` VARCHAR(64) NOT NULL,
   `status` ENUM('running', 'finished', 'failed','initializing') NOT NULL DEFAULT 'running',
   `type` ENUM('add_index', 'drop_index', 'create_sample'),
   `metadata` JSON, 
-  CHECK (JSON_VALID(metadata))
+  CHECK (JSON_VALID(`metadata`)),
   PRIMARY KEY (`id`),
-  INDEX record_datetime_index(record_datetime)
-  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
-  UNIQUE INDEX `filepath_UNIQUE` (`id` ASC)
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC)
   );
     """

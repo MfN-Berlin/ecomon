@@ -151,3 +151,9 @@ def count_species_over_threshold_in_date_range(
         threshold=threshold,
         prefix=prefix,
     )
+
+
+def get_all_prediction_table_names():
+    return """
+    SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = 'bai' and TABLE_NAME like '%_predictions'
+    """
