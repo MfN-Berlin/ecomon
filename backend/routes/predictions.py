@@ -1,13 +1,17 @@
+from sqlite3 import DatabaseError
 from sql.query import (
+    add_job,
     create_index_for_sql_table,
     drop_index_for_sql_table,
     count_entries_in_sql_table,
     count_predictions_in_date_range,
     count_species_over_threshold_in_date_range,
+    update_job_status,
 )
 from pydantic import BaseModel
 from datetime import datetime, timezone
 from typing import Optional
+from asyncio import ensure_future
 
 
 class QueryRequest(BaseModel):
@@ -20,6 +24,15 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     predictions_count: int
     species_count: int
+
+
+async def do_add_index_job(database, job_id, prefix_name, column_name):
+    await database.execute(update_job_status(job_id, "running"))
+    await database.execute(
+        create_index_for_sql_table("{}_predictions".format(prefix_name), column_name)
+    )
+    await database.execute(update_job_status(job_id, "done"))
+    return
 
 
 def router(app, root, database):
@@ -35,12 +48,14 @@ def router(app, root, database):
     @app.put(root + "/{prefix_name}/predictions/{column_name}/index")
     async def add_index_to_prefix(prefix_name: str, column_name: str):
         # TODO: query parameter sanity check
-        await database.execute(
-            create_index_for_sql_table(
-                "{}_predictions".format(prefix_name), column_name
-            )
+        query = add_job(
+            prefix_name, "add_index", "pending", {"column_name": column_name},
         )
-        return {"message": "index created"}
+
+        job_id = await database.execute(query)
+        print(job_id)
+        ensure_future(do_add_index_job(database, job_id, prefix_name, column_name))
+        return {"job_id": job_id}
 
     # route to drop index from prediction table
     @app.delete(root + "/{prefix_name}/predictions/{column_name}/index")

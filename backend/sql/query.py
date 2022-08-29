@@ -1,4 +1,6 @@
+import json
 import random
+from pymysql.converters import escape_string
 
 
 def get_record_id_by_filepath(prefix, filepath):
@@ -157,3 +159,48 @@ def get_all_prediction_table_names():
     return """
     SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = 'bai' and TABLE_NAME like '%_predictions'
     """
+
+
+def get_all_jobs(prefix=None, type=None, status=None) -> str:
+    filters = [
+        f
+        for f in [("prefix", prefix), ("type", type), ("status", status)]
+        if f[1] is not None
+    ]
+    if len(filters) == 0:
+        return """
+        SELECT * FROM jobs
+        """
+    else:
+        return """
+        SELECT * FROM jobs WHERE {}
+        """.format(
+            " AND ".join(
+                ["{} = '{}'".format(c_name, value) for c_name, value in filters]
+            )
+        )
+
+
+def add_job(prefix: str, type: str, status: str, metadata: dict):
+    metadata_str = escape_string(json.dumps(metadata))
+    return """
+    INSERT INTO jobs (prefix, type, status,metadata) VALUES ('{}', '{}', '{}', '{}')
+    """.format(
+        prefix, type, status, metadata_str
+    )
+
+
+def update_job_status(job_id, status):
+    return """
+    UPDATE jobs SET status = '{}' WHERE id = {}
+    """.format(
+        status, job_id
+    )
+
+
+def delete_job(job_id):
+    return """
+    DELETE FROM jobs WHERE id = {}
+    """.format(
+        job_id
+    )

@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from routes.records import router as records_router
 from routes.predictions import router as predictions_router
 from routes.collections import router as collections_router
+from routes.jobs import router as jobs_router
 from routes.random import router as random_router
 from sql.initial import create_jobs_table
 
@@ -48,6 +49,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await database.connect()
+
     # check if table jobs exists and create if not
     await database.execute(create_jobs_table())
 
@@ -69,5 +71,6 @@ def read_root():
 records_router(app, "/prefix", database)
 predictions_router(app, "/prefix", database)
 collections_router(app, "/prefix", database)
+jobs_router(app, "/jobs", database)
 random_router(app, "", database)
 

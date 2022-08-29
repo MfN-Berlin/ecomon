@@ -6,6 +6,8 @@ import os
 from os import path
 from concurrent.futures import ThreadPoolExecutor
 from fastapi.responses import FileResponse
+from routes.predictions import do_add_index_job
+from sql.query import add_job, update_job_status
 
 from create_sample import create_sample
 
@@ -64,6 +66,7 @@ def router(app, root, database):
         result_filepath = os.path.join(result_directory, result_filename,)
 
         def func():
+
             create_sample(
                 prefix=prefix,
                 result_filepath=result_filepath,
@@ -80,9 +83,34 @@ def router(app, root, database):
                 ),
             )
 
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(sample_executor, func)
-        # return file stream
-        return FileResponse(
-            result_filepath, media_type="application/zip", filename=result_filename
+        async def task(database, job_id):
+            loop = asyncio.get_event_loop()
+            await database.execute(update_job_status(job_id, "running"))
+            await loop.run_in_executor(sample_executor, func)
+            await database.execute(update_job_status(job_id, "done"))
+
+        job_id = await database.execute(
+            add_job(
+                prefix,
+                "create_sample",
+                "pending",
+                {
+                    "filename": result_filename,
+                    "filepath": result_filepath,
+                    "prefix": prefix,
+                    "species": species,
+                    "threshold": threshold,
+                    "from_date": start_datetime,
+                    "until": end_datetime,
+                    "samples": sample_size,
+                    "padding": audio_padding,
+                },
+            )
         )
+        asyncio.ensure_future(task(database, job_id))
+        return {"job_id": job_id}
+        # return file stream
+
+        # return FileResponse(
+        #     result_filepath, media_type="application/zip", filename=result_filename
+        # )

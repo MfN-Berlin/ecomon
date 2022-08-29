@@ -60,7 +60,7 @@ def create_jobs_table():
  CREATE TABLE IF NOT EXISTS `jobs` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `prefix` VARCHAR(64) NOT NULL,
-  `status` ENUM('running', 'finished', 'failed','initializing') NOT NULL DEFAULT 'running',
+  `status` ENUM('running', 'done', 'failed','pending') NOT NULL DEFAULT 'running',
   `type` ENUM('add_index', 'drop_index', 'create_sample'),
   `metadata` JSON, 
   CHECK (JSON_VALID(`metadata`)),

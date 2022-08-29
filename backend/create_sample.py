@@ -9,6 +9,7 @@ import zipfile
 import os
 import shutil
 
+
 PREFIX = "BRITZ01"
 SPECIES = "fringilla_coelebs"
 
@@ -84,52 +85,57 @@ def create_sample(
 
     # create wav file for each prediction
     csv_list = []
-    for i in result:
-        filepath = i[0]
-        filename = path.basename(filepath)
-        [stem, ext] = path.splitext(filename)
-        extract_part_from_audio_file_by_start_and_end_time(
-            i[0],
-            path.join(
-                directory,
-                "./{}_{}{}".format(stem, pad_int_with_zeros(int(i[2] * 1000), 9), ext),
-            ),
-            i[2],
-            i[3],
-            padding=audio_padding,
-        )
-        tmp = list(i)
-        tmp.insert(
-            1, "{}_{}{}".format(stem, pad_int_with_zeros(int(i[2] * 1000), 9), ext)
-        )
-        csv_list.append(tmp)
+    try:
+        for i in result:
+            filepath = i[0]
+            filename = path.basename(filepath)
+            [stem, ext] = path.splitext(filename)
+            out_filename = "{}_{}_c{}{}".format(
+                stem, pad_int_with_zeros(int(i[2] * 1000), 9), i[5], ext
+            )
 
-    header = [
-        "original_filepath",
-        "filepath",
-        "record_datetime",
-        "start_time",
-        "end_time",
-        "duration",
-        "channel",
-        species,
-    ]
+            extract_part_from_audio_file_by_start_and_end_time(
+                i[0],
+                path.join(directory, out_filename),
+                i[2],
+                i[3],
+                padding=audio_padding,
+            )
+            tmp = list(i)
+            tmp.insert(1, out_filename)
+            csv_list.append(tmp)
 
-    write_csv_file_from_list(
-        path.join(directory, "{}_{}_{}.csv".format(prefix, species, threshold)),
-        csv_list,
-        header=header,
-    )
+        header = [
+            "original_filepath",
+            "filepath",
+            "record_datetime",
+            "start_time",
+            "end_time",
+            "duration",
+            "channel",
+            species,
+        ]
 
-    if result_filepath is not None:
-        zip_folder(directory, result_filepath)
-        return result_filepath
-    else:
-        zip_filename = "{}_{}_{}_{}.zip".format(
-            directoryName, prefix, species, threshold
+        write_csv_file_from_list(
+            path.join(directory, "{}_{}_{}.csv".format(prefix, species, threshold)),
+            csv_list,
+            header=header,
         )
-        zip_folder(directory, zip_filename)
-        return zip_filename
+
+        if result_filepath is not None:
+            zip_folder(directory, result_filepath)
+            return result_filepath
+        else:
+            zip_filename = "{}_{}_{}_{}.zip".format(
+                directoryName, prefix, species, threshold
+            )
+            zip_folder(directory, zip_filename)
+            return zip_filename
+    except Exception as e:
+        # remove directory if it exists
+        if path.exists(directory):
+            shutil.rmtree(directory)
+        raise e
 
 
 if __name__ == "__main__":
