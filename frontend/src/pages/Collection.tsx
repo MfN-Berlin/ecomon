@@ -227,19 +227,20 @@ export default function Collection(props: CollectionProps) {
                         <DateTimePicker
                            renderInput={(props) => <TextField {...props} />}
                            label="from"
-                           value={firstRecord?.record_datetime}
+                           value={from}
                            minDateTime={firstRecord?.record_datetime}
                            maxDateTime={lastRecord?.record_datetime}
                            ampm={false}
                            loading={firstRecordLoading || lastRecordLoading}
                            onChange={(newValue) => {
+                              console.log('changed', newValue)
                               setFrom(newValue)
                            }}
                         />
                         <DateTimePicker
                            renderInput={(props) => <TextField {...props} />}
                            label="until"
-                           value={lastRecord?.record_datetime}
+                           value={until}
                            minDateTime={firstRecord?.record_datetime}
                            maxDateTime={lastRecord?.record_datetime}
                            ampm={false}
