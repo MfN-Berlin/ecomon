@@ -198,6 +198,22 @@ def update_job_status(job_id, status):
     )
 
 
+def update_job_progress(job_id, progress):
+    return """
+    UPDATE jobs SET progress = '{}' WHERE id = {}
+    """.format(
+        progress, job_id
+    )
+
+
+def update_job_failed(job_id, error):
+    return """
+    UPDATE jobs SET status = 'failed', error = '{}' WHERE id = {}
+    """.format(
+        error, job_id
+    )
+
+
 def delete_job(job_id):
     return """
     DELETE FROM jobs WHERE id = {}

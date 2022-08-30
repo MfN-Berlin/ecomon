@@ -2,7 +2,11 @@ import argparse
 from os import path
 from dotenv import load_dotenv
 from util.db import connect_to_db
-from sql.query import get_prediction_random_sample
+from sql.query import (
+    get_prediction_random_sample,
+    update_job_failed,
+    update_job_progress,
+)
 from uuid import uuid4
 import ffmpeg
 import zipfile
@@ -55,6 +59,7 @@ def create_sample(
     end_datetime=None,
     result_filepath=None,
     BAI_TMP_DIRECTORY=None,
+    job_id=None,
 ):
     load_dotenv()
     db_connection = connect_to_db()
@@ -85,25 +90,34 @@ def create_sample(
 
     # create wav file for each prediction
     csv_list = []
+    progress = 0
+    length = len(result)
+
     try:
-        for i in result:
-            filepath = i[0]
+        for index, row in enumerate(result):
+            filepath = row[0]
             filename = path.basename(filepath)
             [stem, ext] = path.splitext(filename)
             out_filename = "{}_{}_c{}{}".format(
-                stem, pad_int_with_zeros(int(i[2] * 1000), 9), i[5], ext
+                stem, pad_int_with_zeros(int(row[2] * 1000), 9), row[5], ext
             )
 
             extract_part_from_audio_file_by_start_and_end_time(
-                i[0],
+                row[0],
                 path.join(directory, out_filename),
-                i[2],
-                i[3],
+                row[2],
+                row[3],
                 padding=audio_padding,
             )
-            tmp = list(i)
+            tmp = list(row)
             tmp.insert(1, out_filename)
             csv_list.append(tmp)
+            if progress < round(index / length * 100):
+                print("{}%".format(round(index / length * 100)))
+                progress = round(index / length * 100)
+                if job_id is not None:
+                    db_cursor.execute(update_job_progress(job_id, progress))
+                    db_cursor.connection.commit()
 
         header = [
             "original_filepath",
@@ -135,6 +149,11 @@ def create_sample(
         # remove directory if it exists
         if path.exists(directory):
             shutil.rmtree(directory)
+        if (job_id is not None) and (db_cursor is not None):
+            # cut error message to fit in db field
+            error_message = str(e)[:255]
+            db_cursor.execute(update_job_failed(job_id, error_message))
+            db_cursor.connection.commit()
         raise e
 
 

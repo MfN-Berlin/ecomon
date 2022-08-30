@@ -25,8 +25,8 @@ class RandomSampleRequest(BaseModel):
     prefix: str
     species: str
     sample_size: int
-    threshold: Optional[float] = None
-    audio_padding: Optional[int] = None
+    threshold: float
+    audio_padding: Optional[int] = 5
     start_datetime: Optional[str] = None
     end_datetime: Optional[str] = None
 

@@ -64,6 +64,9 @@ def create_jobs_table():
   `type` ENUM('add_index', 'drop_index', 'create_sample'),
   `metadata` JSON, 
   `progress` INT NOT NULL DEFAULT 0,
+  `error` VARCHAR(256) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  
   CHECK (JSON_VALID(`metadata`)),
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC)
