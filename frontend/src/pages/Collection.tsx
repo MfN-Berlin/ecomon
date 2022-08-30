@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import Typography from '@mui/material/Typography'
 import { useParams } from 'react-router-dom'
 import { useCollectionSpeciesList, useCollectionPredictionQuery } from '../hooks/collection'
@@ -30,6 +30,9 @@ import NumberInput from '../components/NumberInput'
 import { API_PATH } from '../consts'
 import ChipList from '../components/ChipList'
 import { addDbKeyToSpecies, deleteDbKeyFromSpecies } from '../tools/dbKeyHandling'
+import { store } from '../components/JobsProvider'
+import MaterialTable from '@material-table/core'
+
 interface CollectionProps {
    children?: React.ReactNode
 }
@@ -60,6 +63,9 @@ export default function Collection(props: CollectionProps) {
    const [sampleSize, setSampleSize] = useState<number>(100)
    const [hasIndex, setHasIndex] = useState<boolean>(false)
 
+   const globalState = useContext(store)
+   const { state } = globalState
+
    // effects
    useEffect(() => {
       setFrom(firstRecord ? firstRecord.record_datetime : null)
@@ -87,11 +93,25 @@ export default function Collection(props: CollectionProps) {
    }
    // download file from url
    function handleDownloadButtonClick() {
-      const link = document.createElement('a')
-      link.href = `${API_PATH}/random_sample?prefix=${id}&species=${selectedSpecies}&sample_size=${sampleSize}&start_datetime=${from?.toISOString()}&end_datetime=${until?.toISOString()}&threshold=${threshold}`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      const url = `${API_PATH}/random_sample`
+      fetch(url, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            prefix: id,
+            species: selectedSpecies,
+            sample_size: sampleSize,
+            start_datetime: from?.toISOString(),
+            end_datetime: until?.toISOString(),
+            threshold: threshold
+         })
+      })
+         .then((res) => res.json())
+         .then((data) => {
+            // setLoading(false)
+         })
    }
 
    async function handleAddSpeciesIndex(item: { label: string; key: string }): Promise<void> {
@@ -383,6 +403,53 @@ export default function Collection(props: CollectionProps) {
                         )}
                      </Stack>
                   </Paper>
+               </Grid>
+
+               <Grid xs={12}>
+                  <MaterialTable
+                     title="Jobs"
+                     columns={[
+                        { title: 'status', field: 'status', sorting: true },
+                        {
+                           title: 'species',
+                           field: 'metadata.species',
+                           sorting: true,
+                           type: 'string'
+                        },
+                        {
+                           title: 'Threshold',
+                           field: 'metadata.threshold',
+                           sorting: true,
+                           type: 'numeric'
+                        },
+                        {
+                           title: 'from',
+                           field: 'metadata.from_date',
+                           sorting: true,
+                           type: 'datetime'
+                        },
+                        {
+                           title: 'until',
+                           field: 'metadata.until',
+                           sorting: true,
+                           type: 'datetime'
+                        },
+                        {
+                           title: 'samples',
+                           field: 'metadata.samples',
+                           sorting: true,
+                           type: 'numeric'
+                        }
+                     ]}
+                     data={state.jobs.filter((x) => x.collection === id && x.type === 'create_sample')}
+                     options={{
+                        pageSize: 10,
+                        paging: true,
+                        filtering: false
+                     }}
+                  >
+                     {' '}
+                  </MaterialTable>
                </Grid>
             </Grid>
          </LocalizationProvider>

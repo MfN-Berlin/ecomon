@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
@@ -15,10 +15,30 @@ import TabNavigation from './components/TabNavigation'
 // pages
 import Collection from './pages/Collection'
 import Start from './pages/Start'
-
+import { store } from './components/JobsProvider'
+import { API_PATH } from './consts'
 const mdTheme = createTheme()
 
 function App() {
+   // load and update current jobs status store in JobsProvider
+   const globalState = useContext(store)
+   const { dispatch } = globalState
+   useEffect(() => {
+      setInterval(() => {
+         dispatch({ type: 'set_loading', loading: true })
+         fetch(`${API_PATH}/jobs`)
+            .then((res) => res.json())
+            .then((jobs) => {
+               dispatch({ type: 'set_jobs', jobs })
+               dispatch({ type: 'set_loading', loading: false })
+            })
+            .catch((err) => {
+               dispatch({ type: 'set_error', error: err })
+               dispatch({ type: 'set_loading', loading: false })
+            })
+      }, 1000)
+   }, [])
+
    return (
       <div className="App">
          <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />

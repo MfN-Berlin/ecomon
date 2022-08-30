@@ -82,7 +82,7 @@ export function useCollectionSpeciesList(collectionName: string | undefined) {
    useEffect(() => {
       update()
    }, [collectionName])
-
+   // eslint-disable-next-line
    return { collectionSpeciesList, loading, update }
 }
 

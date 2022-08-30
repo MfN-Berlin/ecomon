@@ -9,14 +9,14 @@ from pydantic import BaseModel
 # define class of job
 class Job(BaseModel):
     id: int
-    prefix_name: str
+    collection: str
     job_type: str
     job_status: str
     metadata: str
 
 
 def router(app, root, database):
-    @app.get(root + "/")
+    @app.get(root)
     async def get_all_jobs(
         prefix: Union[str, None] = None,
         type: Union[str, None] = None,
@@ -30,9 +30,9 @@ def router(app, root, database):
             result.append(
                 {
                     "id": job[0],
-                    "prefix_name": job[1],
-                    "job_type": job[2],
-                    "job_status": job[3],
+                    "collection": job[1],
+                    "type": job[3],
+                    "status": job[2],
                     "metadata": json.loads(job[4]),
                 }
             )
