@@ -49,6 +49,18 @@ def pad_int_with_zeros(num, digits):
     return str(num).zfill(digits)
 
 
+# transform milliseconds to hh:mm:ss format
+def s_to_time(s):
+    centseconds = round(((s + 0.2) % 1) * 100)
+    seconds = s
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    result = "%02d%02d%02d%02d" % (hours, minutes, seconds, centseconds)
+
+    return result
+
+
 def create_sample(
     prefix: str = PREFIX,
     species: str = SPECIES,
@@ -97,23 +109,26 @@ def create_sample(
         for index, row in enumerate(result):
             filepath = row[0]
             filename = path.basename(filepath)
+            start = float(row[2]) - audio_padding
+            end = float(row[3]) + audio_padding
             [stem, ext] = path.splitext(filename)
-            out_filename = "{}_{}_c{}{}".format(
-                stem, pad_int_with_zeros(int(row[2] * 1000), 9), row[5], ext
+            out_filename = "{stem}_S{start}_E{end}{ext}".format(
+                stem=stem, start=s_to_time(start), end=s_to_time(end), ext=ext
             )
-
-            extract_part_from_audio_file_by_start_and_end_time(
-                row[0],
-                path.join(directory, out_filename),
-                row[2],
-                row[3],
-                padding=audio_padding,
-            )
+            # check if file not exists
+            if not path.exists(path.join(directory, out_filename)):
+                extract_part_from_audio_file_by_start_and_end_time(
+                    row[0],
+                    path.join(directory, out_filename),
+                    row[2],
+                    row[3],
+                    padding=audio_padding,
+                )
             tmp = list(row)
             tmp.insert(1, out_filename)
             csv_list.append(tmp)
             if progress < round(index / length * 100):
-                print("{}%".format(round(index / length * 100)))
+                # print("{}%".format(round(index / length * 100)))
                 progress = round(index / length * 100)
                 if job_id is not None:
                     db_cursor.execute(update_job_progress(job_id, progress))

@@ -43,6 +43,24 @@ def router(app, root, database):
         BAI_TMP_DIRECTORY = os.getenv("BAI_TMP_DIRECTORY")
         if not path.exists(BAI_TMP_DIRECTORY):
             os.makedirs(BAI_TMP_DIRECTORY)
+        # parse start string to datetime object
+
+        if request.start_datetime:
+            start_datetime = datetime.fromisoformat(
+                request.start_datetime[:-1] + "+00:00"
+            )
+
+        else:
+            start_datetime = None
+        # parse end string to datetime object
+        if request.end_datetime:
+            end_datetime = datetime.fromisoformat(request.end_datetime[:-1] + "+00:00")
+        else:
+            end_datetime = None
+
+        # print datetime to format YYYYMMSS_HHMMSS
+        start_datetime_str = start_datetime.strftime("%Y%m%d_%H%M%S")
+        end_datetime_str = end_datetime.strftime("%Y%m%d_%H%M%S")
 
         result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
         if not path.exists(result_directory):
@@ -51,8 +69,8 @@ def router(app, root, database):
             prefix=request.prefix,
             species=request.species,
             threshold=request.threshold,
-            from_date=request.start_datetime,
-            until=request.end_datetime,
+            from_date=start_datetime_str,
+            until=end_datetime_str,
             samples=request.sample_size,
             padding=request.audio_padding,
         )
