@@ -71,6 +71,7 @@ export function useCollectionSpeciesList(collectionName: string | undefined) {
                   }
                   return 0
                })
+               console.log(data)
                setCollectionSpeciesList(data)
                setLoading(false)
             })

@@ -17,24 +17,31 @@ import Collection from './pages/Collection'
 import Start from './pages/Start'
 import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
+import {useUpdateJobs} from './hooks/jobs'
 const mdTheme = createTheme()
 
 function App() {
    // load and update current jobs status store in JobsProvider
    const globalState = useContext(store)
    const { dispatch } = globalState
+   const { updateJobs } = useUpdateJobs()
+   let lastUpdate = null as Date | null
    useEffect(() => {
       setInterval(() => {
-         dispatch({ type: 'set_loading', loading: true })
-         fetch(`${API_PATH}/jobs`)
+         fetch(`${API_PATH}/jobs/last_update`)
             .then((res) => res.json())
-            .then((jobs) => {
-               dispatch({ type: 'set_jobs', jobs })
-               dispatch({ type: 'set_loading', loading: false })
+            .then((result) => {
+               const tmp = new Date(result.last_update)
+               // check if tmp is newer than lastUpdate
+        
+               if (!lastUpdate || tmp > lastUpdate) {
+                  lastUpdate = tmp
+                  updateJobs()
+                
+               }
             })
             .catch((err) => {
                dispatch({ type: 'set_error', error: err })
-               dispatch({ type: 'set_loading', loading: false })
             })
       }, 1000)
    }, [])

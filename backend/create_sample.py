@@ -138,12 +138,19 @@ def create_sample(
 
         if result_filepath is not None:
             zip_folder(directory, result_filepath)
+            if job_id is not None:
+                db_cursor.execute(update_job_progress(job_id, 100))
+                db_cursor.connection.commit()
             return result_filepath
         else:
             zip_filename = "{}_{}_{}_{}.zip".format(
                 directoryName, prefix, species, threshold
             )
             zip_folder(directory, zip_filename)
+
+            if job_id is not None:
+                db_cursor.execute(update_job_progress(job_id, 100))
+                db_cursor.connection.commit()
             return zip_filename
     except Exception as e:
         # remove directory if it exists

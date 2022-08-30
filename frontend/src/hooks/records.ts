@@ -79,7 +79,6 @@ export function useLastRecord(collectionName: string | undefined) {
             .then((res) => res.json())
             .then((data) => {
                data.record_datetime = new Date(data.record_datetime)
-               console.log('recieved data: ', data)
                setLastRecord(data)
                setLoading(false)
             })

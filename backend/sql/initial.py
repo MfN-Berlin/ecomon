@@ -66,9 +66,11 @@ def create_jobs_table():
   `progress` INT NOT NULL DEFAULT 0,
   `error` VARCHAR(256) NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CHECK (JSON_VALID(`metadata`)),
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `id_UNIQUE` (`id` ASC)
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
+  INDEX `updated_at_index` (`updated_at` DESC),
+  INDEX `created_at_index` (`updated_at` DESC)
   );
     """

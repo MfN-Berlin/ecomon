@@ -108,3 +108,9 @@ def router(app, root, database):
         # return FileResponse(
         #     result_filepath, media_type="application/zip", filename=result_filename
         # )
+
+    @app.get("/random_sample/file/{filename}")
+    async def get_random_sample(filename: str) -> FileResponse:
+        result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
+        result_filepath = os.path.join(result_directory, filename)
+        return FileResponse(result_filepath, media_type="application/zip")

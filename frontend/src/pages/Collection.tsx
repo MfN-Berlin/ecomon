@@ -16,7 +16,8 @@ import Stack from '@mui/material/Stack'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
-import DownloadIcon from '@mui/icons-material/Download'
+
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import Select from 'react-select'
 import { duration } from 'moment'
 
@@ -32,6 +33,8 @@ import ChipList from '../components/ChipList'
 import { addDbKeyToSpecies, deleteDbKeyFromSpecies } from '../tools/dbKeyHandling'
 import { store } from '../components/JobsProvider'
 import MaterialTable from '@material-table/core'
+import SampleJobStatus from '../components/SampleJobsStatus'
+import {useUpdateJobs} from '../hooks/jobs'
 
 interface CollectionProps {
    children?: React.ReactNode
@@ -65,6 +68,7 @@ export default function Collection(props: CollectionProps) {
 
    const globalState = useContext(store)
    const { state } = globalState
+   const { updateJobs } = useUpdateJobs()
 
    // effects
    useEffect(() => {
@@ -80,6 +84,10 @@ export default function Collection(props: CollectionProps) {
       clearResponse()
       // eslint-disable-next-line
    }, [selectedSpecies, from, until])
+
+   useEffect(()=> {
+      updateSpeciesList()
+   },[state.jobs])
 
    // Event handlers
    function handleQueryButtonClick() {
@@ -129,7 +137,37 @@ export default function Collection(props: CollectionProps) {
       <Box sx={{ flexGrow: 1, padding: 2 }}>
          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Grid container spacing={1}>
-               <Grid xs={12} md={4} xl={2}>
+               <Grid xs={12}>
+                  <ChipList
+                     addDialogTitle={'Add database index to species'}
+                     addDialogContentText={'Select a species to add a database index to'}
+                     ensureDelete={true}
+                     onAdd={handleAddSpeciesIndex}
+                     onDelete={handleDeleteSpeciesIndex}
+                     deleteDialogTitleTemnplate={(species) => `Drop database index of  ${species.label}?`}
+                     label="Species with DB-Index:"
+                     items={collectionSpeciesList
+                        .filter((x) => x.has_index)
+                        .map((item) => ({
+                           label: firstLetterUpperAndReplaceSpace(item.name),
+                           key: item.name
+                        }))}
+                     pendingItems={state.jobs
+                        .filter((x) => x.collection === id && x.status === 'pending' && x.type === 'add_index')
+                        .map((item) => ({
+                           label: firstLetterUpperAndReplaceSpace(item.metadata?.column_name),
+                           key: item.metadata?.column_name
+                        }))}
+                     
+                     options={collectionSpeciesList
+                        .filter((x) => !x.has_index)
+                        .map((item) => ({
+                           label: firstLetterUpperAndReplaceSpace(item.name),
+                           key: item.name
+                        }))}
+                  ></ChipList>
+               </Grid>
+               <Grid xs={12} md={4}>
                   <Paper
                      sx={{
                         padding: 1
@@ -194,26 +232,6 @@ export default function Collection(props: CollectionProps) {
                            loading={lastRecordLoading}
                            onChange={(date) => {}}
                         />
-
-                        <ChipList
-                           addDialogTitle={'Add database index to species'}
-                           addDialogContentText={'Select a species to add a database index to'}
-                           ensureDelete={true}
-                           onAdd={handleAddSpeciesIndex}
-                           onDelete={handleDeleteSpeciesIndex}
-                           deleteDialogTitleTemnplate={(species) => `Drop database index of  ${species.label}?`}
-                           label="Species with DB-Index:"
-                           items={collectionSpeciesList
-                              .filter((x) => x.has_index)
-                              .map((item) => ({
-                                 label: firstLetterUpperAndReplaceSpace(item.name),
-                                 key: item.name
-                              }))}
-                           options={collectionSpeciesList.map((item) => ({
-                              label: firstLetterUpperAndReplaceSpace(item.name),
-                              key: item.name
-                           }))}
-                        ></ChipList>
                      </Stack>
                   </Paper>
                </Grid>
@@ -384,14 +402,14 @@ export default function Collection(props: CollectionProps) {
                                  color="secondary"
                                  variant="contained"
                                  disabled={!selectedSpecies}
-                                 endIcon={<DownloadIcon />}
+                                 endIcon={<AddCircleOutlineIcon />}
                                  sx={{
                                     padding: 1.5
                                  }}
                                  onClick={handleDownloadButtonClick}
                               >
                                  {' '}
-                                 Download Random Sample
+                                 Create Random Sample
                               </Button>
                            </React.Fragment>
                         ) : queryLoading ? (
@@ -409,13 +427,27 @@ export default function Collection(props: CollectionProps) {
                   <MaterialTable
                      title="Jobs"
                      columns={[
-                        { title: 'status', field: 'status', sorting: true },
+                        {
+                           title: 'status',
+                           field: 'status',
+                           sorting: true,
+                           render: (rowData) => (
+                              <SampleJobStatus
+                                 status={rowData.status}
+                                 progress={rowData.progress}
+                                 error={rowData.error}
+                                 url={`${API_PATH}/random_sample/file/${rowData.metadata.filename}`}
+                              />
+                           )
+                        },
+
                         {
                            title: 'species',
                            field: 'metadata.species',
                            sorting: true,
                            type: 'string'
                         },
+
                         {
                            title: 'Threshold',
                            field: 'metadata.threshold',
@@ -439,13 +471,43 @@ export default function Collection(props: CollectionProps) {
                            field: 'metadata.samples',
                            sorting: true,
                            type: 'numeric'
+                        },
+                        {
+                           title: 'created',
+                           field: 'created_at',
+                           sorting: true,
+                           type: 'datetime'
                         }
+                     ]}
+                     actions={[
+                        (rowData) => ({
+                           icon: 'delete',
+                           tooltip: 'Delete Job',
+                           disabled: rowData.status === 'pending' || rowData.status === 'running',
+                           onClick: (event, rowData) => {
+                              if (window.confirm('Are you sure you want to delete?')) {
+                                 // if rowData is not an array
+                                 if (!Array.isArray(rowData)) {
+                                    fetch(`${API_PATH}/jobs/${rowData.id}`, {
+                                       method: 'DELETE'
+                                    }).finally(updateJobs)
+                                 }
+                              }
+                           }
+                        })
                      ]}
                      data={state.jobs.filter((x) => x.collection === id && x.type === 'create_sample')}
                      options={{
                         pageSize: 10,
                         paging: true,
-                        filtering: false
+                        filtering: false,
+
+                        // @ts-ignore
+                        cellStyle: {
+                           padding: '2px',
+                           paddingLeft: '5px',
+                           paddingRight: '5px'
+                        }
                      }}
                   >
                      {' '}

@@ -1,4 +1,5 @@
 import React, { createContext, useReducer } from 'react'
+import { API_PATH } from '../consts'
 
 type Job = {
    id: number
@@ -30,6 +31,8 @@ type JobsAction =
         error: Error
      }
 
+     
+
 interface NavProps {
    children?: React.ReactNode
 }
@@ -49,6 +52,7 @@ const { Provider } = store
 function jobsReducer(state: JobsState, action: JobsAction): JobsState {
    switch (action.type) {
       case 'set_jobs':
+         console.log('set_jobs')
          return {
             ...state,
             jobs: action.jobs

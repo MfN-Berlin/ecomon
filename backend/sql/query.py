@@ -169,16 +169,24 @@ def get_all_jobs(prefix=None, type=None, status=None) -> str:
     ]
     if len(filters) == 0:
         return """
-        SELECT * FROM jobs
+        SELECT * FROM jobs ORDER BY created_at DESC
         """
     else:
         return """
-        SELECT * FROM jobs WHERE {}
+        SELECT * FROM jobs WHERE {} ORDER BY created_at DESC
         """.format(
             " AND ".join(
                 ["{} = '{}'".format(c_name, value) for c_name, value in filters]
             )
         )
+
+
+def get_job_by_id(job_id):
+    return """
+    SELECT * FROM jobs WHERE id = {}
+    """.format(
+        job_id
+    )
 
 
 def add_job(prefix: str, type: str, status: str, metadata: dict):
@@ -207,10 +215,11 @@ def update_job_progress(job_id, progress):
 
 
 def update_job_failed(job_id, error):
+    escaped = escape_string(error)
     return """
     UPDATE jobs SET status = 'failed', error = '{}' WHERE id = {}
     """.format(
-        error, job_id
+        escaped, job_id
     )
 
 
@@ -220,3 +229,10 @@ def delete_job(job_id):
     """.format(
         job_id
     )
+
+
+def get_max_updated_at_from_jobs():
+    return """
+    SELECT max(updated_at) FROM jobs
+    """
+

@@ -6,6 +6,7 @@ from sql.query import (
     count_entries_in_sql_table,
     count_predictions_in_date_range,
     count_species_over_threshold_in_date_range,
+    update_job_failed,
     update_job_status,
 )
 from pydantic import BaseModel
@@ -27,11 +28,18 @@ class QueryResponse(BaseModel):
 
 
 async def do_add_index_job(database, job_id, prefix_name, column_name):
-    await database.execute(update_job_status(job_id, "running"))
-    await database.execute(
-        create_index_for_sql_table("{}_predictions".format(prefix_name), column_name)
-    )
-    await database.execute(update_job_status(job_id, "done"))
+    try:
+
+        await database.execute(
+            create_index_for_sql_table(
+                "{}_predictions".format(prefix_name), column_name
+            )
+        )
+
+        await database.execute(update_job_status(job_id, "done"))
+    except Exception as e:
+        await database.execute(update_job_failed(job_id, str(e)))
+
     return
 
 
@@ -48,12 +56,9 @@ def router(app, root, database):
     @app.put(root + "/{prefix_name}/predictions/{column_name}/index")
     async def add_index_to_prefix(prefix_name: str, column_name: str):
         # TODO: query parameter sanity check
-        query = add_job(
-            prefix_name, "add_index", "pending", {"column_name": column_name},
+        job_id = await database.execute(
+            add_job(prefix_name, "add_index", "pending", {"column_name": column_name},)
         )
-
-        job_id = await database.execute(query)
-        print(job_id)
         ensure_future(do_add_index_job(database, job_id, prefix_name, column_name))
         return {"job_id": job_id}
 

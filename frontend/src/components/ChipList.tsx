@@ -18,12 +18,14 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 type Item = {
    label: string
    key: string
+   icon?: React.ReactNode
 }
 
 interface ChipListProps {
    deleteDialogTitleTemnplate?: (item: Item) => string
    label?: string
    items: Item[]
+   pendingItems?: Item[]
    options: Item[]
    variant?: 'outlined' | 'filled'
    onDelete?: (item: Item) => void
@@ -31,6 +33,7 @@ interface ChipListProps {
    ensureDelete?: boolean
    addDialogContentText?: string
    addDialogTitle?: string
+   onPendingItemsChange?: () => void
 }
 
 export default function ChipList(props: ChipListProps) {
@@ -45,6 +48,12 @@ export default function ChipList(props: ChipListProps) {
          props.onDelete(item)
       }
    }
+   React.useEffect(() => {
+      if (props.onPendingItemsChange) {
+         props.onPendingItemsChange()
+      }
+      console.log('pending changed')},[props.pendingItems])
+
 
    return (
       <React.Fragment>
@@ -171,7 +180,20 @@ export default function ChipList(props: ChipListProps) {
                      onClick={() => setShowAddDialog(true)}
                   />
                )}
-
+               {props.pendingItems &&
+                  props.pendingItems.map((item) => (
+                     <Chip
+                        label={item.label}
+                        key={item.key}
+                        sx={{
+                           margin: 0.2
+                        }}
+                        icon={<CircularProgress size={14} />}
+                        color="secondary"
+                        variant="outlined"
+                     />
+                  ))}
+               ,
                {props.items.map((item) => (
                   <Chip
                      label={item.label}
