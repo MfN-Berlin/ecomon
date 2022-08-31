@@ -10,6 +10,9 @@ from util.tools import parse_filename_for_location_date_time_function_dict
 import pickle
 import ffmpeg
 import time
+import numpy as np
+
+# calc max pairwise of n dimensional list
 
 
 def store_loop_factory(
@@ -68,10 +71,10 @@ def store_loop_factory(
                                 resultDict = pickle.load(f)
                                 segment_duration = resultDict["segmentDuration"]
                                 start_times = resultDict["startTimes"]
-                                channels_confidences = resultDict["probs"]
-                                last_start = start_times[len(start_times) - 1]
+                                channels_segments_confidences = resultDict["probs"]
 
                                 # sanity checks if analyze worked correctly
+                                record_id = 0
                                 if test_run is False:
                                     record_id = db_worker.add_file(
                                         input_filepath,
@@ -79,33 +82,56 @@ def store_loop_factory(
                                         parse_result.record_datetime,
                                         duration,
                                         channels,
-                                        commit=True,
+                                        commit=False,
                                     )
                                 # add predictions
-                                for channel_num, channel_confidences in zip(
-                                    range(channels), channels_confidences
+
+                                for channel_num, segments_confidences in zip(
+                                    range(channels), channels_segments_confidences
                                 ):
                                     for start_p, confidences in zip(
-                                        start_times, channel_confidences
+                                        start_times, segments_confidences
                                     ):
                                         if test_run is False:
                                             db_worker.add_prediction(
                                                 record_id,
                                                 start_p,
                                                 start_p + segment_duration,
-                                                channel_num,
+                                                "ch_{}".format(channel_num),
                                                 confidences,
                                                 commit=False,
                                             )
+
+                                max_segements_confidences = np.max(
+                                    channels_segments_confidences, axis=0
+                                )
+
+                                for start_p, confidences in zip(
+                                    start_times, max_segements_confidences
+                                ):
+                                    # add max_confidences
+                                    if test_run is False:
+                                        db_worker.add_prediction(
+                                            record_id,
+                                            start_p,
+                                            start_p + segment_duration,
+                                            "ch_max".format(channel_num),
+                                            confidences,
+                                            commit=False,
+                                        )
+
                                 if test_run is False:
                                     # mesaure time between last prediction and end of file
                                     start = time.time()
                                     db_worker.commit()
+
                                     end = time.time()
                                     print(
                                         "The time of execution of above program is :",
                                         end - start,
                                     )
+                                else:
+                                    db_worker.rollback()
                                 # print("store {}".format(filepath[1]))
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")
@@ -120,6 +146,7 @@ def store_loop_factory(
                             print(e)
                             error_f.write(input_filepath + "\n")
                             error_f.flush()
+                            db_worker.rollback()
                         progress.update(1)
 
     return loop

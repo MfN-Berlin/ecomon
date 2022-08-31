@@ -119,3 +119,8 @@ class DbWorker:
 
     def commit(self):
         self.db_connection.commit()
+
+    def rollback(self):
+        self.db_connection.rollback()
+
+    #     self.db_connection.fl

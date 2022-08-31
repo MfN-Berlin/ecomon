@@ -24,9 +24,9 @@ def create_record_table(prefix):
   `duration` DECIMAL(11, 6) NOT NULL,
   `channels` TINYINT NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX record_datetime_index(record_datetime)
+  INDEX record_datetime_index(`record_datetime` ASC),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC),
-  UNIQUE INDEX `filepath_UNIQUE` (`id` ASC)
+  UNIQUE INDEX `filepath_UNIQUE` (`filepath` ASC)
   );
     """.format(
         prefix
@@ -39,16 +39,17 @@ def create_predictions_table(prefix, species):
 
     return """
 CREATE TABLE `{p}_predictions` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `record_id` INT NULL,
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `record_id` INT NOT NULL,
     `start_time` DECIMAL(11 , 6 ) NULL,
     `end_time` DECIMAL(11 , 6 ) NULL,
-    `channel` INT NULL,
- {r}
+    `channel` VARCHAR(8) NOT NULL,
+    {r}
     PRIMARY KEY (`id`),
-    FOREIGN KEY (`record_id`) 
-        REFERENCES `{p}_records` (`id`) ON DELETE CASCADE,
-    UNIQUE INDEX `id_UNIQUE` (`id` ASC)
+    FOREIGN KEY (`record_id`) REFERENCES `{p}_records` (`id`) ON DELETE CASCADE,
+    UNIQUE INDEX `id_UNIQUE` (`id` ASC),
+    INDEX `channel_index` (`channel` ASC)
+
 );
     """.format(
         p=prefix, r=rows
@@ -57,7 +58,7 @@ CREATE TABLE `{p}_predictions` (
 
 def create_jobs_table():
     return """
- CREATE TABLE IF NOT EXISTS `jobs` (
+CREATE TABLE IF NOT EXISTS `jobs` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `prefix` VARCHAR(64) NOT NULL,
   `status` ENUM('running', 'done', 'failed','pending') NOT NULL DEFAULT 'running',

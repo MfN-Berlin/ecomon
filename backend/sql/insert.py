@@ -10,7 +10,7 @@ VALUES (null, '{}', '{}', '{}', {}, {});""".format(
 
 def insert_prediction(prefix, record_id, start_time, end_time, channel, predictions):
     prediction_list = ",".join([str(x) for x in predictions])
-    return """INSERT INTO {}_predictions VALUES (null,{}, {}, {}, {}, {})
+    return """INSERT INTO {}_predictions VALUES (null,{}, {}, {}, '{}', {})
     """.format(
         prefix, record_id, start_time, end_time, channel, prediction_list
     )

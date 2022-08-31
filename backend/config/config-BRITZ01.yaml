@@ -1,7 +1,16 @@
 # Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
-recordFolder: AudioData/AMMOD/BRITZ01/
-resultFolder: AudioData/AMMOD/BRITZ01/results
+recordFolder: /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/
+fileEnding:
+  - mp3 # wav
+  - wav
+  - MP3
+  - WAV
+  - flac
+  - FLAC
+resultFolder: /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/results
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
-prefix: "BRITZ01"
+filenameParsing:  "ammod" # | "inpediv"
+prefix: "TEST2"
+testRun: True
