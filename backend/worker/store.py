@@ -1,11 +1,7 @@
 from time import sleep
 from tqdm import tqdm
-import wave
-from typing import NamedTuple
 from util.db import connect_to_db, DbWorker
 from os import path
-from datetime import date, datetime
-from pathlib import Path
 from util.tools import parse_filename_for_location_date_time_function_dict
 import pickle
 import ffmpeg
@@ -25,6 +21,7 @@ def store_loop_factory(
     error_files_filepath,
     test_run=False,
     filename_parsing="ammod",
+    species_index_list=[],
 ):
     # db_cursor = connect_to_db()
 
@@ -42,7 +39,11 @@ def store_loop_factory(
                 with open(error_files_filepath, "a") as error_f:
                     db_worker = DbWorker(prefix)
 
-                    while not results_queue.empty() or not all_analyzed_event.is_set():
+                    while (
+                        # False
+                        not results_queue.empty()
+                        or not all_analyzed_event.is_set()
+                    ):
                         if results_queue.empty():
                             sleep(1)
                             continue
@@ -86,21 +87,21 @@ def store_loop_factory(
                                     )
                                 # add predictions
 
-                                for channel_num, segments_confidences in zip(
-                                    range(channels), channels_segments_confidences
-                                ):
-                                    for start_p, confidences in zip(
-                                        start_times, segments_confidences
-                                    ):
-                                        if test_run is False:
-                                            db_worker.add_prediction(
-                                                record_id,
-                                                start_p,
-                                                start_p + segment_duration,
-                                                "ch_{}".format(channel_num),
-                                                confidences,
-                                                commit=False,
-                                            )
+                                # for channel_num, segments_confidences in zip(
+                                #     range(channels), channels_segments_confidences
+                                # ):
+                                #     for start_p, confidences in zip(
+                                #         start_times, segments_confidences
+                                #     ):
+                                #         if test_run is False:
+                                #             db_worker.add_prediction(
+                                #                 record_id,
+                                #                 start_p,
+                                #                 start_p + segment_duration,
+                                #                 "ch_{}".format(channel_num),
+                                #                 confidences,
+                                #                 commit=False,
+                                #             )
 
                                 max_segements_confidences = np.max(
                                     channels_segments_confidences, axis=0
@@ -115,7 +116,7 @@ def store_loop_factory(
                                             record_id,
                                             start_p,
                                             start_p + segment_duration,
-                                            "ch_max".format(channel_num),
+                                            "ch_max",
                                             confidences,
                                             commit=False,
                                         )
@@ -126,10 +127,10 @@ def store_loop_factory(
                                     db_worker.commit()
 
                                     end = time.time()
-                                    print(
-                                        "The time of execution of above program is :",
-                                        end - start,
-                                    )
+                                    # print(
+                                    #     "The time of execution of above program is :",
+                                    #     end - start,
+                                    # )
                                 else:
                                     db_worker.rollback()
                                 # print("store {}".format(filepath[1]))
@@ -148,5 +149,15 @@ def store_loop_factory(
                             error_f.flush()
                             db_worker.rollback()
                         progress.update(1)
+                    # now add index to species columns
+                    print("Start adding index to species columns")
+                    for species in species_index_list:
+                        print("Adding index to {}".format(species))
+                        try:
+                            db_worker.add_index(prefix, species)
+                            print("Finished adding index to species columns")
+                        except Exception as e:
+                            print(e)
+                            db_worker.rollback()
 
     return loop

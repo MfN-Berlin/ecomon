@@ -43,7 +43,7 @@ function App() {
             .catch((err) => {
                dispatch({ type: 'set_error', error: err })
             })
-      }, 1000)
+      }, 5000)
    }, [])
 
    return (

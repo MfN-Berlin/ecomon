@@ -13,7 +13,7 @@ from util.tools import (
     load_files_list,
 )
 
-ANALYZE_THREADS = 1
+ANALYZE_THREADS = 7
 
 load_dotenv()  # load environment variables from .env
 
@@ -63,6 +63,7 @@ store_thread = threading.Thread(
         config["error_cache_filepath"],
         test_run=config["testRun"],
         filename_parsing=config["filenameParsing"],
+        species_index_list=config["speciesIndexList"],
     )
 )
 

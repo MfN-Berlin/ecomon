@@ -1,6 +1,7 @@
 from sqlite3 import DatabaseError
 from sql.query import (
     add_job,
+    count_predictions,
     create_index_for_sql_table,
     drop_index_for_sql_table,
     count_entries_in_sql_table,
@@ -46,11 +47,9 @@ async def do_add_index_job(database, job_id, prefix_name, column_name):
 def router(app, root, database):
     @app.get(root + "/{prefix_name}/predictions/count")
     async def get_prefix_predictions_count(prefix_name: str) -> int:
-        return (
-            await database.fetch_one(
-                count_entries_in_sql_table("{}_predictions".format(prefix_name))
-            )
-        )[0]
+        query = count_predictions(prefix_name)
+        print(query)
+        return (await database.fetch_one(query))[0]
 
     # route to add index to prediction table
     @app.put(root + "/{prefix_name}/predictions/{column_name}/index")
@@ -75,36 +74,27 @@ def router(app, root, database):
     async def query_prediction_table(
         prefix_name: str, request: QueryRequest
     ) -> QueryResponse:
-        print(request)
-        predictions_count = (
-            await database.fetch_one(
-                count_predictions_in_date_range(
-                    prefix_name,
-                    datetime.fromisoformat(request.start_datetime[:-1]).astimezone(
-                        timezone.utc
-                    ),
-                    datetime.fromisoformat(request.end_datetime[:-1]).astimezone(
-                        timezone.utc
-                    ),
-                )
-            )
-        )[0]
+        query = count_predictions_in_date_range(
+            prefix_name,
+            datetime.fromisoformat(request.start_datetime[:-1]).astimezone(
+                timezone.utc
+            ),
+            datetime.fromisoformat(request.end_datetime[:-1]).astimezone(timezone.utc),
+        )
+        print(query)
 
-        species_count = (
-            await database.fetch_one(
-                count_species_over_threshold_in_date_range(
-                    prefix_name,
-                    request.species,
-                    request.threshold,
-                    datetime.fromisoformat(request.start_datetime[:-1]).astimezone(
-                        timezone.utc
-                    ),
-                    datetime.fromisoformat(request.end_datetime[:-1]).astimezone(
-                        timezone.utc
-                    ),
-                )
-            )
-        )[0]
+        predictions_count = (await database.fetch_one(query))[0]
+        query = count_species_over_threshold_in_date_range(
+            prefix_name,
+            request.species,
+            request.threshold,
+            datetime.fromisoformat(request.start_datetime[:-1]).astimezone(
+                timezone.utc
+            ),
+            datetime.fromisoformat(request.end_datetime[:-1]).astimezone(timezone.utc),
+        )
+        print(query)
+        species_count = (await database.fetch_one(query))[0]
         print(species_count)
         return QueryResponse(
             predictions_count=predictions_count, species_count=species_count

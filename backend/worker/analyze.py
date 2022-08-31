@@ -28,14 +28,16 @@ def analyze_loop_factory(
                 relative_result_path,
                 "{}.pkl".format((path.basename(filepath)).split(".")[0]),
             )
-
-            request_string = "http://localhost:{port}/identify?path={filepath}&outputDir={result_path}&outputStyle=resultDict".format(
-                port=port,
-                filepath=path.join("/mnt/data", relative_file),
-                result_path=path.join("/mnt/result", relative_result_path),
-            )
+            # check if result file does not exists
             try:
-                requests.get(request_string,)
+                if not path.exists(result_path):
+                    request_string = "http://localhost:{port}/identify?path={filepath}&outputDir={result_path}&outputStyle=resultDict".format(
+                        port=port,
+                        filepath=path.join("/mnt/data", relative_file),
+                        result_path=path.join("/mnt/result", relative_result_path),
+                    )
+
+                    requests.get(request_string,)
                 results_queue.put([filepath, result_path, None])
             except Exception as e:
                 results_queue.put([filepath, None, e])

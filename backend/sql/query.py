@@ -110,6 +110,14 @@ def count_entries_in_sql_table(table_name: str):
     )
 
 
+def count_predictions(prefix):
+    return """
+    SELECT count(*) FROM {prefix}_predictions 
+    """.format(
+        prefix=prefix
+    )
+
+
 def get_index_names_of_sql_table_ending_with(table_name: str, ending: str):
     return """
     SELECT index_name FROM information_schema.statistics WHERE table_name = '{}' AND index_name like '%{}'
@@ -128,7 +136,7 @@ def sum_values_of_sql_table_cloumn(table_name: str, column_name: str):
 
 def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
     return """
-    SELECT count(*) FROM {prefix}_predictions
+    SELECT count(*) FROM {prefix}_predictions  
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
     WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}'
     """.format(

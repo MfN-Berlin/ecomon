@@ -86,7 +86,7 @@ def create_sample(
         start_datetime=start_datetime,
         end_datetime=end_datetime,
     )
-    # print(query)
+    print(query)
     db_cursor.execute(query)
     result = db_cursor.fetchall()
 
