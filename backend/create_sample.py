@@ -12,7 +12,7 @@ import ffmpeg
 import zipfile
 import os
 import shutil
-
+import xlsxwriter
 
 PREFIX = "BRITZ01"
 SPECIES = "fringilla_coelebs"
@@ -26,6 +26,33 @@ def write_csv_file_from_list(filepath, list_of_lists, sep=",", header=None):
             f.write(sep.join(header) + "\n")
         for i in list_of_lists:
             f.write(sep.join(to_list_of_strings(i)) + "\n")
+
+
+def write_execl_file(filepath, rows, header):
+    # which is the filename that we want to create.
+    workbook = xlsxwriter.Workbook(filepath)
+
+    # The workbook object is then used to add new
+    # worksheet via the add_worksheet() method.
+    worksheet = workbook.add_worksheet()
+    # Iterate over the data and write it out row by row.
+    for index, value in enumerate(header):
+        worksheet.write(0, index, value[0])
+        worksheet.set_column(index, index, len(value[0]))
+    for row_index, row in enumerate(rows):
+        for col_index, header_val in enumerate(header):
+            if header_val[1] is not None:
+                if header_val[1] == "filename":
+                    worksheet.write_url(
+                        row_index + 1,
+                        col_index,
+                        "./{}".format(row[header_val[1]]),
+                        string=row[header_val[1]],
+                    )
+                else:
+                    worksheet.write(row_index + 1, col_index, row[header_val[1]])
+
+    workbook.close()
 
 
 def extract_part_from_audio_file_by_start_and_end_time(
@@ -112,6 +139,7 @@ def create_sample(
             start = float(row[2]) - audio_padding
             end = float(row[3]) + audio_padding
             [stem, ext] = path.splitext(filename)
+
             out_filename = "{stem}_S{start}_E{end}{ext}".format(
                 stem=stem, start=s_to_time(start), end=s_to_time(end), ext=ext
             )
@@ -124,8 +152,24 @@ def create_sample(
                     row[3],
                     padding=audio_padding,
                 )
-            tmp = list(row)
-            tmp.insert(1, out_filename)
+            # filepath,
+            # record_datetime,
+            # start_time,
+            # end_time,
+            # duration,
+            # channel,
+            # {species}
+            tmp = {
+                "filename": out_filename,
+                "record_datetime": row[1],
+                "start_time": row[2] - audio_padding,
+                "end_time": row[3] + audio_padding,
+                "duration": row[4],
+                "channel": row[5],
+                "confidence": row[6],
+                "audio_padding": audio_padding,
+                "species": species,
+            }
             csv_list.append(tmp)
             if progress < round(index / length * 100):
                 # print("{}%".format(round(index / length * 100)))
@@ -135,20 +179,23 @@ def create_sample(
                     db_cursor.connection.commit()
 
         header = [
-            "original_filepath",
-            "filepath",
-            "record_datetime",
-            "start_time",
-            "end_time",
-            "duration",
-            "channel",
-            species,
+            ("Channel", "channel"),
+            ("Begin Time (s)", "start_time"),
+            ("End Time (s)", "end_time"),
+            ("Delta Time (s)", "audio_padding"),
+            ("Snippet", "filename"),
+            ("PredictionClass", "species"),
+            ("SpeciesCode", None),
+            ("Confidence (p) ", "confidence"),
+            ("ManualValidation", None),
+            ("VocalizationTypeCode", None),
+            ("Note", None),
         ]
 
-        write_csv_file_from_list(
-            path.join(directory, "{}_{}_{}.csv".format(prefix, species, threshold)),
+        write_execl_file(
+            path.join(directory, "{}_{}_{}.xlsx".format(prefix, species, threshold)),
             csv_list,
-            header=header,
+            header,
         )
 
         if result_filepath is not None:

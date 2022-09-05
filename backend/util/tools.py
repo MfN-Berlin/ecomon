@@ -26,13 +26,14 @@ def calc_checksum(filename, hash_factory=hashlib.md5, chunk_num_blocks=128):
 
 def parse_datetime(date_string):
     try:
-        return datetime.strptime(date_string, "%Y%m%d_%H%M%S")
-    except ValueError as e:
-        pass
-    try:
         return datetime.strptime(date_string, "%y%m%d_%H%M%S")
     except ValueError:
         pass
+    try:
+        return datetime.strptime(date_string, "%Y%m%d_%H%M%S")
+    except ValueError as e:
+        pass
+
     return datetime.strptime(date_string, "Y%m%d_%H%M%S00")
 
 
@@ -182,7 +183,7 @@ def load_files_list(config, files_queue):
     for filepath in lines:
         processed_dict[filepath] = True
 
-    #print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
+    # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
     files = []
     for ext in config["fileEnding"]:
         files.extend(

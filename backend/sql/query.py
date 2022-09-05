@@ -31,7 +31,8 @@ def get_prediction_random_sample(
     end_time,
     duration,
     channel,
-    {species}
+    {species},
+    filename
     FROM {prefix}_predictions
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
     WHERE
@@ -96,7 +97,7 @@ def create_index_for_sql_table(table_name: str, column_name: str):
 # drop index for column with index_name and table_name
 def drop_index_for_sql_table(table_name, column_name):
     return """
-    ALTER TABLE {} DROP INDEX {}_index 
+    ALTER TABLE {} DROP INDEX {}_index
     """.format(
         table_name, column_name
     )
@@ -112,7 +113,7 @@ def count_entries_in_sql_table(table_name: str):
 
 def count_predictions(prefix):
     return """
-    SELECT count(*) FROM {prefix}_predictions 
+    SELECT count(*) FROM {prefix}_predictions
     """.format(
         prefix=prefix
     )
@@ -136,7 +137,7 @@ def sum_values_of_sql_table_cloumn(table_name: str, column_name: str):
 
 def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
     return """
-    SELECT count(*) FROM {prefix}_predictions  
+    SELECT count(*) FROM {prefix}_predictions
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
     WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}'
     """.format(
