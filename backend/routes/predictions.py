@@ -48,7 +48,7 @@ def router(app, root, database):
     @app.get(root + "/{prefix_name}/predictions/count")
     async def get_prefix_predictions_count(prefix_name: str) -> int:
         query = count_predictions(prefix_name)
-        print(query)
+        #print(query)
         return (await database.fetch_one(query))[0]
 
     # route to add index to prediction table
@@ -81,7 +81,7 @@ def router(app, root, database):
             ),
             datetime.fromisoformat(request.end_datetime[:-1]).astimezone(timezone.utc),
         )
-        print(query)
+        #print(query)
 
         predictions_count = (await database.fetch_one(query))[0]
         query = count_species_over_threshold_in_date_range(
@@ -93,9 +93,9 @@ def router(app, root, database):
             ),
             datetime.fromisoformat(request.end_datetime[:-1]).astimezone(timezone.utc),
         )
-        print(query)
+        #print(query)
         species_count = (await database.fetch_one(query))[0]
-        print(species_count)
+        #print(species_count)
         return QueryResponse(
             predictions_count=predictions_count, species_count=species_count
         )

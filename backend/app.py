@@ -25,9 +25,9 @@ database = os.getenv("BAI_MARIADB_DATABASE")
 database_connection_string = "mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4".format(
     user=user, password=password, host=host, port=port, dbname=database
 )
-print(database_connection_string)
-print(user)
-print(password)
+# print(database_connection_string)
+# print(user)
+# print(password)
 
 database = databases.Database(database_connection_string)
 

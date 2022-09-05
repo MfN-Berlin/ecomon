@@ -34,7 +34,7 @@ import { addDbKeyToSpecies, deleteDbKeyFromSpecies } from '../tools/dbKeyHandlin
 import { store } from '../components/JobsProvider'
 import MaterialTable from '@material-table/core'
 import SampleJobStatus from '../components/SampleJobsStatus'
-import {useUpdateJobs} from '../hooks/jobs'
+import { useUpdateJobs } from '../hooks/jobs'
 
 interface CollectionProps {
    children?: React.ReactNode
@@ -85,9 +85,9 @@ export default function Collection(props: CollectionProps) {
       // eslint-disable-next-line
    }, [selectedSpecies, from, until])
 
-   useEffect(()=> {
+   useEffect(() => {
       updateSpeciesList()
-   },[state.jobs])
+   }, [state.jobs])
 
    // Event handlers
    function handleQueryButtonClick() {
@@ -120,6 +120,18 @@ export default function Collection(props: CollectionProps) {
          .then((data) => {
             // setLoading(false)
          })
+   }
+
+   function secondsToYearsMonthDaysHoursMinutesSeconds(input: number) {
+      const years = Math.floor(input / 31536000)
+      const months = Math.floor((input % 31536000) / 2592000)
+      const days = Math.floor((input % 2592000) / 86400)
+      const hours = Math.floor((input % 86400) / 3600)
+      const minutes = Math.floor((input % 3600) / 60)
+      const seconds = Math.floor(input % 60)
+      return `${years ? years + ' Years  ' : ''}${months ? months + ' Months  ' : ''}${days ? days + ' Days  ' : ''}${
+         hours ? hours + ' Hours  ' : ''
+      }${minutes ? minutes + ' Minutes  ' : ''}${seconds ? seconds + ' Seconds  ' : ''}`
    }
 
    async function handleAddSpeciesIndex(item: { label: string; key: string }): Promise<void> {
@@ -158,7 +170,6 @@ export default function Collection(props: CollectionProps) {
                            label: firstLetterUpperAndReplaceSpace(item.metadata?.column_name),
                            key: item.metadata?.column_name
                         }))}
-                     
                      options={collectionSpeciesList
                         .filter((x) => !x.has_index)
                         .map((item) => ({
@@ -186,6 +197,26 @@ export default function Collection(props: CollectionProps) {
                         >
                            Stats
                         </Typography>
+                        <DateTimePicker
+                           renderInput={(props) => <TextField {...props} />}
+                           label="First Recording starts at"
+                           inputFormat="yyyy/MM/dd hh:mm:ss"
+                           value={firstRecord?.record_datetime}
+                           readOnly={true}
+                           ampm={false}
+                           loading={firstRecordLoading}
+                           onChange={(date) => {}}
+                        />
+                        <DateTimePicker
+                           renderInput={(props) => <TextField {...props} />}
+                           label="Last Recording starts at"
+                           inputFormat="yyyy/MM/dd hh:mm:ss"
+                           value={lastRecord?.record_datetime}
+                           readOnly={true}
+                           ampm={false}
+                           loading={lastRecordLoading}
+                           onChange={(date) => {}}
+                        />
 
                         <TextField
                            id="recordCount"
@@ -198,9 +229,13 @@ export default function Collection(props: CollectionProps) {
                         />
                         <TextField
                            id="recordDuration"
-                           label="Duration"
+                           label="Summed Duration of Recordings"
                            variant="standard"
-                           value={durationLoading ? 'loading...' : duration(recordDuration, 'seconds').humanize()}
+                           value={
+                              durationLoading
+                                 ? 'loading...'
+                                 : secondsToYearsMonthDaysHoursMinutesSeconds(recordDuration)
+                           }
                            InputProps={{
                               readOnly: true
                            }}
@@ -213,24 +248,6 @@ export default function Collection(props: CollectionProps) {
                            InputProps={{
                               readOnly: true
                            }}
-                        />
-                        <DateTimePicker
-                           renderInput={(props) => <TextField {...props} />}
-                           label="First Recording"
-                           value={firstRecord?.record_datetime}
-                           readOnly={true}
-                           ampm={false}
-                           loading={firstRecordLoading}
-                           onChange={(date) => {}}
-                        />
-                        <DateTimePicker
-                           renderInput={(props) => <TextField {...props} />}
-                           label="Last Recording"
-                           value={lastRecord?.record_datetime}
-                           readOnly={true}
-                           ampm={false}
-                           loading={lastRecordLoading}
-                           onChange={(date) => {}}
                         />
                      </Stack>
                   </Paper>
@@ -266,6 +283,7 @@ export default function Collection(props: CollectionProps) {
                            renderInput={(props) => <TextField {...props} />}
                            label="from"
                            value={from}
+                           inputFormat="yyyy/MM/dd hh:mm:ss"
                            minDateTime={firstRecord?.record_datetime}
                            maxDateTime={lastRecord?.record_datetime}
                            ampm={false}
@@ -279,6 +297,7 @@ export default function Collection(props: CollectionProps) {
                            renderInput={(props) => <TextField {...props} />}
                            label="until"
                            value={until}
+                           inputFormat="yyyy/MM/dd hh:mm:ss"
                            minDateTime={firstRecord?.record_datetime}
                            maxDateTime={lastRecord?.record_datetime}
                            ampm={false}

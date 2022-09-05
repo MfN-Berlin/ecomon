@@ -21,8 +21,8 @@ files_queue = queue.Queue()
 results_queue = queue.Queue()
 all_analyzed_event = threading.Event()
 
+# CONFIG_FILEPATH = "./backend/config/config-MBG01.yaml"
 CONFIG_FILEPATH = "./backend/config/config-BRITZ01.yaml"
-
 
 config = load_config(CONFIG_FILEPATH)
 

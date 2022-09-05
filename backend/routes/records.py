@@ -24,7 +24,7 @@ def router(app, root, database):
         result = await database.fetch_one(
             get_datetime_of_first_record_in_sql_table("{}_records".format(prefix_name))
         )
-        print(type(result[3]))
+        # print(type(result[3]))
         return Record(
             id=result[0],
             filepath=result[1],
@@ -39,7 +39,7 @@ def router(app, root, database):
         result = await database.fetch_one(
             get_datetime_of_last_record_in_sql_table("{}_records".format(prefix_name))
         )
-        print(type(result[3]))
+        # print(type(result[3]))
         return Record(
             id=result[0],
             filepath=result[1],

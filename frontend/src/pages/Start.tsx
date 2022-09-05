@@ -12,7 +12,7 @@ import SampleJobStatus from '../components/SampleJobsStatus'
 import { useContext } from 'react'
 import { store } from '../components/JobsProvider'
 import TabPanel from '../components/TabPanel'
-import {useUpdateJobs} from '../hooks/jobs'
+import { useUpdateJobs } from '../hooks/jobs'
 
 export default function Title() {
    const globalState = useContext(store)

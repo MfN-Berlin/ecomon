@@ -3,7 +3,11 @@ import mariadb
 import sys
 import os
 from sql.insert import insert_prediction, insert_record
-from sql.query import create_index_for_sql_table, get_record_id_by_filepath
+from sql.query import (
+    create_index_for_sql_table,
+    drop_index_for_sql_table,
+    get_record_id_by_filepath,
+)
 
 import sql.initial as queries
 
@@ -126,6 +130,12 @@ class DbWorker:
     def add_index(self, prefix, column):
         self.db_cursor.execute(
             create_index_for_sql_table("{}_predictions".format(prefix), column)
+        )
+        self.db_connection.commit()
+
+    def drop_index(self, prefix, column):
+        self.db_cursor.execute(
+            drop_index_for_sql_table("{}_predictions".format(prefix), column)
         )
         self.db_connection.commit()
 

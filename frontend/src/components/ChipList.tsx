@@ -52,8 +52,8 @@ export default function ChipList(props: ChipListProps) {
       if (props.onPendingItemsChange) {
          props.onPendingItemsChange()
       }
-      console.log('pending changed')},[props.pendingItems])
-
+      console.log('pending changed')
+   }, [props.pendingItems])
 
    return (
       <React.Fragment>

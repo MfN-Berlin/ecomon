@@ -1,3 +1,4 @@
+import os
 from time import sleep
 from tqdm import tqdm
 from util.db import connect_to_db, DbWorker
@@ -24,9 +25,7 @@ def store_loop_factory(
     species_index_list=[],
 ):
     # db_cursor = connect_to_db()
-
     def loop():
-
         with tqdm(
             total=files_count,
             initial=processed_count,
@@ -36,8 +35,20 @@ def store_loop_factory(
         ) as progress:
 
             with open(processed_files_filepath, "a") as processed_f:
-                with open(error_files_filepath, "a") as error_f:
+
+                if path.exists(error_files_filepath):
+                    os.remove(error_files_filepath)
+
+                with open(error_files_filepath, "a+") as error_f:
                     db_worker = DbWorker(prefix)
+
+                    for species in species_index_list:
+                        print("Dropping index to {}".format(species))
+                        try:
+                            db_worker.drop_index(prefix, species)
+                        except Exception as e:
+                            print(e)
+                            db_worker.rollback()
 
                     while (
                         # False
@@ -56,7 +67,7 @@ def store_loop_factory(
 
                         filename = path.basename(input_filepath)
                         if error is not None:
-                            raise error
+                            raise err
                         # read audio file information
                         try:
                             metadata = ffmpeg.probe(input_filepath)["streams"][0]
@@ -140,24 +151,37 @@ def store_loop_factory(
 
                         except Exception as e:
                             print(
-                                "Error during analysis on {} width Error:".format(
+                                "Store Worker: Error during analysis on {} width Error:".format(
                                     filename
                                 )
                             )
-                            print(e)
-                            error_f.write(input_filepath + "\n")
+                            # print(e)
+                            error_f.write("{}, {}".format(input_filepath, e) + "\n")
                             error_f.flush()
                             db_worker.rollback()
                         progress.update(1)
                     # now add index to species columns
-                    print("Start adding index to species columns")
-                    for species in species_index_list:
-                        print("Adding index to {}".format(species))
-                        try:
-                            db_worker.add_index(prefix, species)
-                            print("Finished adding index to species columns")
-                        except Exception as e:
-                            print(e)
-                            db_worker.rollback()
+                    # check if error file has entries
+                    error_f.seek(0)
+                    error_file_lines = error_f.readlines()
+                    # check if one line of  error_file_lines   inlcudes ffprobe error
+                    found_analyze_error = False
+                    for line in error_file_lines:
+                        if "ffprobe error" not in line:
+                            found_analyze_error = True
+                            print("found different error")
+
+                    if not found_analyze_error:
+                        print("Start adding index to species columns")
+                        for species in species_index_list:
+                            print("Adding index to {}".format(species))
+                            try:
+                                db_worker.add_index(prefix, species)
+                                print("Finished adding index to species columns")
+                            except Exception as e:
+                                print(e)
+                                db_worker.rollback()
+                    else:
+                        print("Error file has more than 10 entries. Not adding index")
 
     return loop

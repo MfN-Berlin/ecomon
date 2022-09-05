@@ -1,10 +1,7 @@
 import React, { useContext } from 'react'
 
-
 import { store } from '../components/JobsProvider'
 import { API_PATH } from '../consts'
-
-
 
 export function useUpdateJobs() {
    const globalState = useContext(store)
@@ -22,5 +19,4 @@ export function useUpdateJobs() {
          })
    }
    return { updateJobs }
-
 }

@@ -28,7 +28,6 @@ def parse_datetime(date_string):
     try:
         return datetime.strptime(date_string, "%Y%m%d_%H%M%S")
     except ValueError as e:
-        print(e)
         pass
     try:
         return datetime.strptime(date_string, "%y%m%d_%H%M%S")
@@ -183,7 +182,7 @@ def load_files_list(config, files_queue):
     for filepath in lines:
         processed_dict[filepath] = True
 
-    # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"]))
+    #print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
     files = []
     for ext in config["fileEnding"]:
         files.extend(

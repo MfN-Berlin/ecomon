@@ -31,8 +31,6 @@ type JobsAction =
         error: Error
      }
 
-     
-
 interface NavProps {
    children?: React.ReactNode
 }

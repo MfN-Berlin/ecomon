@@ -17,7 +17,7 @@ import Collection from './pages/Collection'
 import Start from './pages/Start'
 import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
-import {useUpdateJobs} from './hooks/jobs'
+import { useUpdateJobs } from './hooks/jobs'
 const mdTheme = createTheme()
 
 function App() {
@@ -33,11 +33,10 @@ function App() {
             .then((result) => {
                const tmp = new Date(result.last_update)
                // check if tmp is newer than lastUpdate
-        
+
                if (!lastUpdate || tmp > lastUpdate) {
                   lastUpdate = tmp
                   updateJobs()
-                
                }
             })
             .catch((err) => {
