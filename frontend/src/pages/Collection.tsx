@@ -200,7 +200,7 @@ export default function Collection(props: CollectionProps) {
                         <DateTimePicker
                            renderInput={(props) => <TextField {...props} />}
                            label="First Recording starts at"
-                           inputFormat="yyyy/MM/dd hh:mm:ss"
+                           inputFormat="yyyy/MM/dd HH:mm:ss"
                            value={firstRecord?.record_datetime}
                            readOnly={true}
                            ampm={false}
@@ -210,7 +210,7 @@ export default function Collection(props: CollectionProps) {
                         <DateTimePicker
                            renderInput={(props) => <TextField {...props} />}
                            label="Last Recording starts at"
-                           inputFormat="yyyy/MM/dd hh:mm:ss"
+                           inputFormat="yyyy/MM/dd HH:mm:ss"
                            value={lastRecord?.record_datetime}
                            readOnly={true}
                            ampm={false}
@@ -283,7 +283,7 @@ export default function Collection(props: CollectionProps) {
                            renderInput={(props) => <TextField {...props} />}
                            label="from"
                            value={from}
-                           inputFormat="yyyy/MM/dd hh:mm:ss"
+                           inputFormat="yyyy/MM/dd HH:mm:ss"
                            minDateTime={firstRecord?.record_datetime}
                            maxDateTime={lastRecord?.record_datetime}
                            ampm={false}
@@ -297,7 +297,7 @@ export default function Collection(props: CollectionProps) {
                            renderInput={(props) => <TextField {...props} />}
                            label="until"
                            value={until}
-                           inputFormat="yyyy/MM/dd hh:mm:ss"
+                           inputFormat="yyyy/MM/dd HH:mm:ss"
                            minDateTime={firstRecord?.record_datetime}
                            maxDateTime={lastRecord?.record_datetime}
                            ampm={false}
