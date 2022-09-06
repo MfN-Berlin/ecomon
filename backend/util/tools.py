@@ -147,9 +147,16 @@ def load_config(filepath):
     with open(filepath, "r") as file:
         config_dict = yaml.safe_load(file)
         config_dict["data_folder"] = os.getenv("BAI_DATA_DIRECTORY")
-        config_dict["absolute_records_path"] = os.path.join(
-            config_dict["data_folder"], config_dict["recordFolder"]
-        )
+        record_folders = config_dict["recordFolder"]
+        # if recordFolders is a string, convert it to a list
+        if isinstance(record_folders, str):
+            record_folders = [record_folders]
+        absolute_records_path = []
+        for record_folder in record_folders:
+            absolute_records_path.append(
+                os.path.join(config_dict["data_folder"], record_folder)
+            )
+        config_dict["absolute_records_path"] = absolute_records_path
         config_dict["absolute_result_path"] = os.path.join(
             config_dict["data_folder"], config_dict["resultFolder"]
         )
@@ -185,12 +192,16 @@ def load_files_list(config, files_queue):
 
     # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
     files = []
-    for ext in config["fileEnding"]:
-        files.extend(
-            glob.iglob(
-                config["absolute_records_path"] + "**/*.{}".format(ext), recursive=True,
+    absolute_paths = config["absolute_records_path"]
+    # if absolute_paths is not a list, make it one
+    if not isinstance(absolute_paths, list):
+        absolute_paths = [absolute_paths]
+
+    for absolute_path in absolute_paths:
+        for ext in config["fileEnding"]:
+            files.extend(
+                glob.iglob(absolute_path + "**/*.{}".format(ext), recursive=True,)
             )
-        )
 
     for filepath in files:
         files_count += 1

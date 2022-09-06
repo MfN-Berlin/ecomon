@@ -21,6 +21,7 @@ services:
     volumes:
       - ./runtime-data/backend/files:/files
       - ./runtime-data/backend/tmp:/tmp
+      - /net:/net
 
   frontend:
     image: bai-frontend

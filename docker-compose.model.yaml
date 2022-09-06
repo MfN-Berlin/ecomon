@@ -115,17 +115,17 @@ services:
     volumes:
       - ${BAI_DATA_DIRECTORY}:/mnt/data
       - ${BAI_RESULT_DIRECTORY}:/mnt/result
-  # birdid-8:
-  #   container_name: "bai-birdid-8"
-  #   image: birdid-europe254-2103-flask-v04
-  #   restart: always
-  #   runtime: nvidia
-  #   ipc: host
-  #   environment:
-  #     NVIDIA_VISIBLE_DEVICES: "2"
-  #     NVIDIA_DRIVER_CAPABILITIES: "all"
-  #   ports:
-  #     - "9008:4000"
-  #   volumes:
-  #     - ${BAI_DATA_DIRECTORY}:/mnt/data
-  #     - ${BAI_RESULT_DIRECTORY}:/mnt/result
+  birdid-8:
+    container_name: "bai-birdid-8"
+    image: birdid-europe254-2103-flask-v04
+    restart: always
+    runtime: nvidia
+    ipc: host
+    environment:
+      NVIDIA_VISIBLE_DEVICES: "2"
+      NVIDIA_DRIVER_CAPABILITIES: "all"
+    ports:
+      - "9008:4000"
+    volumes:
+      - ${BAI_DATA_DIRECTORY}:/mnt/data
+      - ${BAI_RESULT_DIRECTORY}:/mnt/result

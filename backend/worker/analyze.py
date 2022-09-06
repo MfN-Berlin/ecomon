@@ -38,9 +38,9 @@ def analyze_loop_factory(
                     )
 
                     requests.get(request_string,)
-                results_queue.put([filepath, result_path, None])
+                results_queue.put([filepath, result_path, None, port])
             except Exception as e:
-                results_queue.put([filepath, None, e])
+                results_queue.put([filepath, None, e, port])
             # results_queue.put([filepath, None, None])
         # print("############ all analyzed ############")
         all_analyzed_event.set()

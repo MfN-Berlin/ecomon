@@ -13,6 +13,7 @@ import zipfile
 import os
 import shutil
 import xlsxwriter
+import json
 
 PREFIX = "BRITZ01"
 SPECIES = "fringilla_coelebs"
@@ -29,6 +30,12 @@ def write_csv_file_from_list(filepath, list_of_lists, sep=",", header=None):
 
 
 def write_execl_file(filepath, rows, header):
+    # load olaf_id.json file into dictionary
+    olaf_id_list = json.load(open("./assets/olaf8_id.json"))
+    olaf_id_dict = {}
+    for entry in olaf_id_list:
+        olaf_id_dict[entry["latin_name"].lower().replace(" ", "_")] = entry["olaf8_id"]
+    # print(olaf_id_dict["fringilla_coelebs"])
     # which is the filename that we want to create.
     workbook = xlsxwriter.Workbook(filepath)
 
@@ -49,10 +56,21 @@ def write_execl_file(filepath, rows, header):
                         "./{}".format(row[header_val[1]]),
                         string=row[header_val[1]],
                     )
-                else:
-                    worksheet.write(row_index + 1, col_index, row[header_val[1]])
+                    continue
+                if header_val[0] == "SpeciesCode":
+                    worksheet.write(
+                        row_index + 1,
+                        col_index,
+                        olaf_id_dict[row[header_val[1]].lower().replace(" ", "_")],
+                    )
+                    continue
+                worksheet.write(row_index + 1, col_index, row[header_val[1]])
 
     workbook.close()
+
+
+def first_letter_to_upper_case(string):
+    return string[0].upper() + string[1:]
 
 
 def extract_part_from_audio_file_by_start_and_end_time(
@@ -60,6 +78,7 @@ def extract_part_from_audio_file_by_start_and_end_time(
 ):
     stime = start_time - padding if start_time - padding > 0 else 0
     etime = end_time + padding
+    print("Run extract on ", filepath)
     ffmpeg.input(filepath, ss=stime, to=etime, v="error").output(output_filepath).run()
 
 
@@ -168,7 +187,7 @@ def create_sample(
                 "channel": row[5],
                 "confidence": row[6],
                 "audio_padding": audio_padding,
-                "species": species,
+                "species": first_letter_to_upper_case(species).replace("_", " "),
             }
             csv_list.append(tmp)
             if progress < round(index / length * 100):
@@ -185,7 +204,7 @@ def create_sample(
             ("Delta Time (s)", "audio_padding"),
             ("Snippet", "filename"),
             ("PredictionClass", "species"),
-            ("SpeciesCode", None),
+            ("SpeciesCode", "species"),
             ("Confidence (p) ", "confidence"),
             ("ManualValidation", None),
             ("VocalizationTypeCode", None),

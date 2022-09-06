@@ -63,11 +63,12 @@ def store_loop_factory(
                             input_filepath,
                             prediction_result_filepath,
                             error,
+                            port,
                         ) = results_queue.get()
 
                         filename = path.basename(input_filepath)
                         if error is not None:
-                            raise err
+                            raise error
                         # read audio file information
                         try:
                             metadata = ffmpeg.probe(input_filepath)["streams"][0]
@@ -151,8 +152,8 @@ def store_loop_factory(
 
                         except Exception as e:
                             print(
-                                "Store Worker: Error during analysis on {} width Error:".format(
-                                    filename
+                                "Store Worker: {} error: Error during analysis on {} width Error:".format(
+                                    port, filename
                                 )
                             )
                             # print(e)
