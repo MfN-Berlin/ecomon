@@ -1,4 +1,5 @@
 import asyncio
+import time
 from pydantic import BaseModel
 from datetime import datetime, timezone
 from typing import Optional
@@ -65,7 +66,8 @@ def router(app, root, database):
         result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
         if not path.exists(result_directory):
             os.makedirs(result_directory)
-        result_filename = "{prefix}_{species}_lq_{threshold}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
+        result_filename = "{time}_{prefix}_{species}_lq_{threshold}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
+            time=round(time.time() * 1000),
             prefix=request.prefix,
             species=request.species,
             threshold=request.threshold,

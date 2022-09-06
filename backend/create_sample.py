@@ -216,7 +216,7 @@ def create_sample(
             csv_list,
             header,
         )
-
+        print("result_filepath", result_filepath)
         if result_filepath is not None:
             zip_folder(directory, result_filepath)
             if job_id is not None:
