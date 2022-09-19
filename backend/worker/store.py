@@ -9,6 +9,7 @@ import ffmpeg
 import time
 import numpy as np
 
+
 # calc max pairwise of n dimensional list
 
 
@@ -23,6 +24,7 @@ def store_loop_factory(
     test_run=False,
     filename_parsing="ammod",
     species_index_list=[],
+    timezone=None,
 ):
     # db_cursor = connect_to_db()
     def loop():
@@ -80,6 +82,11 @@ def store_loop_factory(
                                 filename
                             )
                             # print(parse_result)
+                            record_datetime = (
+                                parse_result.record_datetime
+                                if timezone is None
+                                else timezone.localize(parse_result.record_datetime)
+                            )
                             with open(prediction_result_filepath, "rb") as f:
                                 resultDict = pickle.load(f)
                                 segment_duration = resultDict["segmentDuration"]
@@ -92,7 +99,7 @@ def store_loop_factory(
                                     record_id = db_worker.add_file(
                                         input_filepath,
                                         filename,
-                                        parse_result.record_datetime,
+                                        record_datetime,
                                         duration,
                                         channels,
                                         commit=False,

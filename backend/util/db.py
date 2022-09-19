@@ -2,6 +2,7 @@ from telnetlib import NOP
 import mariadb
 import sys
 import os
+from pytz import utc
 from sql.insert import insert_prediction, insert_record
 from sql.query import (
     create_index_for_sql_table,
@@ -100,9 +101,15 @@ class DbWorker:
     def add_file(
         self, filepath, filename, record_datetime, duration, channels, commit=True
     ):
+        utc_datetime = record_datetime.astimezone(utc)
 
         sql_query = insert_record(
-            self.batch_prefix, filepath, filename, record_datetime, duration, channels
+            self.batch_prefix,
+            filepath,
+            filename,
+            utc_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            duration,
+            channels,
         )
 
         self.db_cursor.execute(sql_query)

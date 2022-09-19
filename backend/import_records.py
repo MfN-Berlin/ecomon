@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from worker.analyze import analyze_loop_factory
 from worker.store import store_loop_factory
 from util.db import init_db
+from pytz import timezone
 from util.tools import (
     load_config,
     load_files_list,
@@ -23,7 +24,8 @@ all_analyzed_event = threading.Event()
 
 # CONFIG_FILEPATH = "./backend/config/config-MBG01.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-BRITZ01.yaml"
-CONFIG_FILEPATH = "./backend/config/config-WALLBERGE.yaml"
+# CONFIG_FILEPATH = "./backend/config/config-WALLBERGE.yaml"
+CONFIG_FILEPATH = "./backend/config/config.yaml"
 
 
 config = load_config(CONFIG_FILEPATH)
@@ -66,6 +68,7 @@ store_thread = threading.Thread(
         test_run=config["testRun"],
         filename_parsing=config["filenameParsing"],
         species_index_list=config["speciesIndexList"],
+        timezone=timezone(config["timezone"]) if config["timezone"] else None,
     )
 )
 

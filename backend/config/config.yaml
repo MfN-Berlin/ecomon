@@ -1,5 +1,5 @@
 # Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
-recordFolder: TSA_Collection/soundscapes/INPEDIV_2019/
+recordFolder: /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/2022/
 fileEnding:
   - mp3 # wav
   - wav
@@ -7,24 +7,28 @@ fileEnding:
   - WAV
   - flac
   - FLAC
-resultFolder: birdid-europe254-2103/INPEDIV
+resultFolder: birdid-europe254-2103/AMMOD/BRITZ01
 # Index to name File of your used model
-indexToNameFile: ../birdid-europe-254_index_to_name.json
+indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
-filenameParsing: "inpediv" # "ammod | inpediv"
-prefix: "INPEDIV"
-testRun: false
-
-cloudUpload:
-  tmp: ./tmp
-  baseUrl: ammod.gfbio.dev/api/v1
-  rawDataEndpoint: metadata
-  deviceId: "7977"
-  serialNumber: "002"
-
-  uploadedFilepath: ../runtime-data/backend/uploaded.cache
-  errorFilepath: ../runtime-data/backend/uploaded_error.cache
-  location:
-    lat: "35.00"
-    lng: "32.00"
-    alt: "30"
+filenameParsing:  "ammod" # | "inpediv"
+prefix: "Test"
+testRun: False
+timezone: CET
+speciesIndexList:
+  - grus_grus
+  - ardea_cinerea
+  - dendrocopos_medius
+  - dendrocopos_major
+  - lophophanes_cristatus
+  - phylloscopus_trochilus
+  - phylloscopus_collybita
+  - locustella_luscinioides
+  - sylvia_atricapilla
+  - regulus_ignicapilla
+  - turdus_merula
+  - turdus_viscivorus
+  - erithacus_rubecula
+  - luscinia_luscinia
+  - phoenicurus_phoenicurus
+  - fringilla_coelebs

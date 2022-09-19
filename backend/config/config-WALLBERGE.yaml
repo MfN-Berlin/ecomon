@@ -20,7 +20,7 @@ indexToNameFile: ./birdid-europe-254_index_to_name.json
 filenameParsing:  "ammod" # | "inpediv"
 prefix: "WALLBERGE_2022"
 testRun: False
-
+timezone: CET
 speciesIndexList:
   - grus_grus
   - ardea_cinerea
