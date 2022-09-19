@@ -94,8 +94,8 @@ export default function Collection(props: CollectionProps) {
       if (selectedSpecies)
          updateQuery({
             species: selectedSpecies,
-            start_datetime: from,
-            end_datetime: until,
+            start_datetime: from?.toISOString(),
+            end_datetime: until?.toISOString(),
             threshold: threshold
          })
    }
