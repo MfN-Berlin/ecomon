@@ -24,12 +24,13 @@ def router(app, root, database):
         result = await database.fetch_one(
             get_datetime_of_first_record_in_sql_table("{}_records".format(prefix_name))
         )
-        # print(type(result[3]))
+        # transform datetime to what it is utc timestamp
+        record_datetime = result[3].replace(tzinfo=timezone.utc)
         return Record(
             id=result[0],
             filepath=result[1],
             filename=result[2],
-            record_datetime=result[3],
+            record_datetime=record_datetime.isoformat(),
             duration=result[4],
             channels=result[5],
         )
