@@ -30,6 +30,7 @@ class RandomSampleRequest(BaseModel):
     audio_padding: Optional[int] = 5
     start_datetime: Optional[str] = None
     end_datetime: Optional[str] = None
+    random: Optional[bool] = False
 
 
 sample_executor = ThreadPoolExecutor(10)
@@ -38,8 +39,9 @@ sample_executor = ThreadPoolExecutor(10)
 def router(app, root, database):
 
     # route to get random sample from prediction table
-    @app.post("/random_sample")
+    @app.post("/sample")
     async def get_random_sample(request: RandomSampleRequest):
+        print(request)
         # syncronus function in thread for asyncio compatibility
         BAI_TMP_DIRECTORY = os.getenv("BAI_TMP_DIRECTORY")
         if not path.exists(BAI_TMP_DIRECTORY):
@@ -97,6 +99,7 @@ def router(app, root, database):
                         request.end_datetime[:-1]
                     ).astimezone(timezone.utc),
                     job_id=job_id,
+                    random=request.random,
                 )
 
             await database.execute(update_job_status(job_id, "running"))

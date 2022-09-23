@@ -100,8 +100,8 @@ export default function Collection(props: CollectionProps) {
          })
    }
    // download file from url
-   function handleDownloadButtonClick() {
-      const url = `${API_PATH}/random_sample`
+   function createSampleButtonClick(random: boolean) {
+      const url = `${API_PATH}/sample`
       fetch(url, {
          method: 'POST',
          headers: {
@@ -113,7 +113,8 @@ export default function Collection(props: CollectionProps) {
             sample_size: sampleSize,
             start_datetime: from?.toISOString(),
             end_datetime: until?.toISOString(),
-            threshold: threshold
+            threshold: threshold,
+            random
          })
       })
          .then((res) => res.json())
@@ -417,19 +418,35 @@ export default function Collection(props: CollectionProps) {
                                  numberValue={sampleSize}
                                  onNumberChange={setSampleSize}
                               ></NumberInput>
-                              <Button
-                                 color="secondary"
-                                 variant="contained"
-                                 disabled={!selectedSpecies}
-                                 endIcon={<AddCircleOutlineIcon />}
-                                 sx={{
-                                    padding: 1.5
-                                 }}
-                                 onClick={handleDownloadButtonClick}
-                              >
-                                 {' '}
-                                 Create Random Sample
-                              </Button>
+                              <Stack   direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-evenly"
+  alignItems="center">
+                                 <Button
+                                    color="secondary"
+                                    variant="contained"
+                                    disabled={!selectedSpecies}
+                                    endIcon={<AddCircleOutlineIcon />}
+                                    sx={{
+                                       padding: 1.5
+                                    }}
+                                    onClick={()=>createSampleButtonClick(true)}
+                                 >
+                                    {' '}
+                                    Create Random Sample
+                                 </Button>
+                                 <Button
+                                    color="primary"
+                                    variant="contained"
+                                    disabled={!selectedSpecies}
+                                    endIcon={<AddCircleOutlineIcon />}
+                                    sx={{
+                                       padding: 1.5
+                                    }}
+                                    onClick={()=>createSampleButtonClick(false)}
+                                 >
+                                    {' '}
+                                    Create Full Sample
+                                 </Button>
+                              </Stack>
                            </React.Fragment>
                         ) : queryLoading ? (
                            <Grid>

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from util.db import connect_to_db
 from sql.query import (
     get_prediction_random_sample,
+    get_predictions,
     update_job_failed,
     update_job_progress,
 )
@@ -118,21 +119,33 @@ def create_sample(
     result_filepath=None,
     BAI_TMP_DIRECTORY=None,
     job_id=None,
+    random=True,
 ):
     load_dotenv()
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()
 
-    query = get_prediction_random_sample(
-        prefix,
-        sample_size,
-        species,
-        threshold,
-        audio_padding=audio_padding,
-        start_datetime=start_datetime,
-        end_datetime=end_datetime,
+    query = (
+        get_prediction_random_sample(
+            prefix,
+            sample_size,
+            species,
+            threshold,
+            audio_padding=audio_padding,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+        )
+        if random
+        else get_predictions(
+            prefix,
+            species,
+            threshold,
+            audio_padding=audio_padding,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+        )
     )
-    print(query)
+
     db_cursor.execute(query)
     result = db_cursor.fetchall()
 

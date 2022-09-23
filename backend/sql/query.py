@@ -44,7 +44,6 @@ def get_prediction_random_sample(
     limit {sample_size}
     """.format(
         prefix=prefix,
-        sample_size=sample_size,
         species=species,
         padding="AND start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
             audio_padding=audio_padding
@@ -59,6 +58,50 @@ def get_prediction_random_sample(
         else "",
         threshold=threshold,
         random_seed=random_seed,
+        sample_size=sample_size,
+    )
+
+
+def get_predictions(
+    prefix,
+    species,
+    threshold,
+    audio_padding=None,
+    start_datetime=None,
+    end_datetime=None,
+):
+    return """
+    SELECT
+    filepath,
+    record_datetime,
+    start_time,
+    end_time,
+    duration,
+    channel,
+    {species},
+    filename
+    FROM {prefix}_predictions
+    JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
+    WHERE
+    {start_datetime}
+    {end_datetime}
+    {species} >= '{threshold}'
+    {padding}
+    """.format(
+        prefix=prefix,
+        species=species,
+        padding="AND start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
+            audio_padding=audio_padding
+        )
+        if audio_padding != None
+        else "",
+        start_datetime="record_datetime >= '{}' AND".format(start_datetime)
+        if start_datetime != None
+        else "",
+        end_datetime="record_datetime <= '{}' AND".format(end_datetime)
+        if end_datetime != None
+        else "",
+        threshold=threshold,
     )
 
 
@@ -139,7 +182,7 @@ def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
     return """
     SELECT count(*) FROM {prefix}_predictions
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
-    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}'
+    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND start_time >= 5 AND end_time + 5 <= duration
     """.format(
         start_datetime=start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         end_datetime=end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
@@ -154,7 +197,7 @@ def count_species_over_threshold_in_date_range(
     SELECT count(*) FROM {prefix}_predictions
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
 
-    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND {species} >= '{threshold}'
+    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND {species} >= '{threshold}' AND start_time >= 5 AND end_time + 5 <= duration
     """.format(
         start_datetime=start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         end_datetime=end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
