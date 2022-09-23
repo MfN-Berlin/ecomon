@@ -507,6 +507,12 @@ export default function Collection(props: CollectionProps) {
                            type: 'datetime'
                         },
                         {
+                           title: 'random',
+                           field: 'metadata.random',
+                           sorting: true,
+                           type: 'boolean'
+                        },
+                        {
                            title: 'samples',
                            field: 'metadata.samples',
                            sorting: true,
@@ -536,7 +542,13 @@ export default function Collection(props: CollectionProps) {
                            }
                         })
                      ]}
-                     data={state.jobs.filter((x) => x.collection === id && x.type === 'create_sample')}
+                     data={state.jobs
+                        .filter((x) => x.collection === id && x.type === 'create_sample')
+                        .map((x) => {
+                           // if random field is missing it is a random sample (backwards compatibility)
+                           x.metadata.random = !(x.metadata.random === false)
+                           return x
+                        })}
                      options={{
                         pageSize: 10,
                         paging: true,

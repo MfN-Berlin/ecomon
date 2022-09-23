@@ -250,6 +250,15 @@ def add_job(prefix: str, type: str, status: str, metadata: dict):
     )
 
 
+def update_job_metadata(job_id, metadata):
+    metadata_str = escape_string(json.dumps(metadata))
+    return """
+    UPDATE jobs SET metadata = '{}' WHERE id = {}
+    """.format(
+        metadata_str, job_id
+    )
+
+
 def update_job_status(job_id, status):
     return """
     UPDATE jobs SET status = '{}' WHERE id = {}

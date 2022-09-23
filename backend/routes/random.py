@@ -8,7 +8,7 @@ from os import path
 from concurrent.futures import ThreadPoolExecutor
 from fastapi.responses import FileResponse
 from routes.predictions import do_add_index_job
-from sql.query import add_job, update_job_status
+from sql.query import add_job, update_job_status, get_job_by_id
 
 from create_sample import create_sample
 
@@ -25,13 +25,13 @@ class Record(BaseModel):
 class RandomSampleRequest(BaseModel):
     prefix: str
     species: str
-    sample_size: int
+    sample_size: Optional[int] = 10
     threshold: float
     audio_padding: Optional[int] = 5
     start_datetime: Optional[str] = None
     end_datetime: Optional[str] = None
     random: Optional[bool] = False
-    highpass_frequency: Optional[int] = 0
+    high_pass_frequency: Optional[int] = 0
 
 
 sample_executor = ThreadPoolExecutor(10)
@@ -43,7 +43,7 @@ def router(app, root, database):
     @app.post("/sample")
     async def get_random_sample(request: RandomSampleRequest):
         print(request)
-        # syncronus function in thread for asyncio compatibility
+        # synchronous function in thread for asyncio compatibility
         BAI_TMP_DIRECTORY = os.getenv("BAI_TMP_DIRECTORY")
         if not path.exists(BAI_TMP_DIRECTORY):
             os.makedirs(BAI_TMP_DIRECTORY)
@@ -105,6 +105,7 @@ def router(app, root, database):
                 )
 
             await database.execute(update_job_status(job_id, "running"))
+
             await loop.run_in_executor(sample_executor, func)
             await database.execute(update_job_status(job_id, "done"))
 
@@ -121,7 +122,8 @@ def router(app, root, database):
                     "threshold": request.threshold,
                     "from_date": request.start_datetime,
                     "until": request.end_datetime,
-                    "samples": request.sample_size,
+                    "random": request.random,
+                    "samples": None if request.random else request.sample_size,
                     "padding": request.audio_padding,
                 },
             )

@@ -5,8 +5,10 @@ from util.db import connect_to_db
 from sql.query import (
     get_prediction_random_sample,
     get_predictions,
+    get_job_by_id,
     update_job_failed,
     update_job_progress,
+    update_job_metadata,
 )
 from uuid import uuid4
 import ffmpeg
@@ -165,6 +167,13 @@ def create_sample(
     csv_list = []
     progress = 0
     length = len(result)
+    if job_id is not None:
+        db_cursor.execute(get_job_by_id(job_id))
+        job = db_cursor.fetchone()
+        metadata = json.loads(job[4])
+        metadata["samples"] = length
+        db_cursor.execute(update_job_metadata(job_id, metadata))
+        db_connection.commit()
 
     try:
         for index, row in enumerate(result):
@@ -248,7 +257,7 @@ def create_sample(
             if job_id is not None:
                 db_cursor.execute(update_job_progress(job_id, 100))
                 db_cursor.connection.commit()
-            return zip_filename
+            return zip_filename, length
     except Exception as e:
         # remove directory if it exists
         if path.exists(directory):
