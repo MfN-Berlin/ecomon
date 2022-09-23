@@ -157,7 +157,7 @@ export default function Collection(props: CollectionProps) {
                      ensureDelete={true}
                      onAdd={handleAddSpeciesIndex}
                      onDelete={handleDeleteSpeciesIndex}
-                     deleteDialogTitleTemnplate={(species) => `Drop database index of  ${species.label}?`}
+                     deleteDialogTitleTemplate={(species) => `Drop database index of  ${species.label}?`}
                      label="Species with DB-Index:"
                      items={collectionSpeciesList
                         .filter((x) => x.has_index)
@@ -418,8 +418,12 @@ export default function Collection(props: CollectionProps) {
                                  numberValue={sampleSize}
                                  onNumberChange={setSampleSize}
                               ></NumberInput>
-                              <Stack   direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-evenly"
-  alignItems="center">
+                              <Stack
+                                 direction={{ xs: 'column', sm: 'row' }}
+                                 spacing={2}
+                                 justifyContent="space-evenly"
+                                 alignItems="center"
+                              >
                                  <Button
                                     color="secondary"
                                     variant="contained"
@@ -428,7 +432,7 @@ export default function Collection(props: CollectionProps) {
                                     sx={{
                                        padding: 1.5
                                     }}
-                                    onClick={()=>createSampleButtonClick(true)}
+                                    onClick={() => createSampleButtonClick(true)}
                                  >
                                     {' '}
                                     Create Random Sample
@@ -441,7 +445,7 @@ export default function Collection(props: CollectionProps) {
                                     sx={{
                                        padding: 1.5
                                     }}
-                                    onClick={()=>createSampleButtonClick(false)}
+                                    onClick={() => createSampleButtonClick(false)}
                                  >
                                     {' '}
                                     Create Full Sample

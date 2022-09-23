@@ -170,7 +170,7 @@ def get_index_names_of_sql_table_ending_with(table_name: str, ending: str):
     )
 
 
-def sum_values_of_sql_table_cloumn(table_name: str, column_name: str):
+def sum_values_of_sql_table_column(table_name: str, column_name: str):
     return """
     SELECT sum({}) FROM {}
     """.format(

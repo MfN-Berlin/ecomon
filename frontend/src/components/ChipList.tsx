@@ -22,7 +22,7 @@ type Item = {
 }
 
 interface ChipListProps {
-   deleteDialogTitleTemnplate?: (item: Item) => string
+   deleteDialogTitleTemplate?: (item: Item) => string
    label?: string
    items: Item[]
    pendingItems?: Item[]
@@ -110,8 +110,8 @@ export default function ChipList(props: ChipListProps) {
             aria-describedby="alert-dialog-slide-description"
          >
             <DialogTitle>
-               {props.deleteDialogTitleTemnplate && currentItem
-                  ? props.deleteDialogTitleTemnplate(currentItem)
+               {props.deleteDialogTitleTemplate && currentItem
+                  ? props.deleteDialogTitleTemplate(currentItem)
                   : `Do you really want to delete ${currentItem && currentItem.label}`}
             </DialogTitle>
 

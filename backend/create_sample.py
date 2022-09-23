@@ -36,7 +36,6 @@ def write_execl_file(filepath, rows, header):
     olaf_id_dict = {}
     for entry in olaf_id_list:
         olaf_id_dict[entry["latin_name"].lower().replace(" ", "_")] = entry["olaf8_id"]
-    # print(olaf_id_dict["fringilla_coelebs"])
     # which is the filename that we want to create.
     workbook = xlsxwriter.Workbook(filepath)
 
@@ -75,12 +74,14 @@ def first_letter_to_upper_case(string):
 
 
 def extract_part_from_audio_file_by_start_and_end_time(
-    filepath, output_filepath, start_time, end_time, padding=0
+    filepath, output_filepath, start_time, end_time, padding=0, high_pass_frequency=0,
 ):
     stime = start_time - padding if start_time - padding > 0 else 0
     etime = end_time + padding
     print("Run extract on ", filepath)
-    ffmpeg.input(filepath, ss=stime, to=etime, v="error").output(output_filepath).run()
+    input = ffmpeg.input(filepath, ss=stime, to=etime, v="error",)
+    audio = input.audio.filter("highpass", f=1000) if high_pass_frequency > 0 else input
+    ffmpeg.output(audio, output_filepath).run()
 
 
 def zip_folder(folder_path, output_filepath):
@@ -98,12 +99,12 @@ def pad_int_with_zeros(num, digits):
 
 # transform milliseconds to hh:mm:ss format
 def s_to_time(s):
-    centseconds = round(((s + 0.2) % 1) * 100)
+    cent_seconds = round(((s + 0.2) % 1) * 100)
     seconds = s
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
     seconds = seconds % 60
-    result = "%02d%02d%02d%02d" % (hours, minutes, seconds, centseconds)
+    result = "%02d%02d%02d%02d" % (hours, minutes, seconds, cent_seconds)
 
     return result
 
@@ -120,6 +121,7 @@ def create_sample(
     BAI_TMP_DIRECTORY=None,
     job_id=None,
     random=True,
+    high_pass_frequency=0,
 ):
     load_dotenv()
     db_connection = connect_to_db()
@@ -183,6 +185,7 @@ def create_sample(
                     row[2],
                     row[3],
                     padding=audio_padding,
+                    high_pass_frequency=high_pass_frequency,
                 )
             # filepath,
             # record_datetime,
@@ -259,7 +262,7 @@ def create_sample(
 
 
 if __name__ == "__main__":
-    # read commandline arguments is prefix and drop flag
+    # read command line arguments is prefix and drop flag
     parser = argparse.ArgumentParser()
     parser.add_argument("--prefix", default=PREFIX)
     parser.add_argument("--species", default=SPECIES)

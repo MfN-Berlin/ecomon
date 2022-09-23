@@ -8,7 +8,7 @@ def check_record_table_exists(prefix):
 
 def check_record_predictions_exists(prefix):
     return """
-    SELECT count(id) FROM {}_predictions 
+    SELECT count(id) FROM {}_predictions
     """.format(
         prefix
     )
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `jobs` (
   `prefix` VARCHAR(64) NOT NULL,
   `status` ENUM('running', 'done', 'failed','pending') NOT NULL DEFAULT 'running',
   `type` ENUM('add_index', 'drop_index', 'create_sample'),
-  `metadata` JSON, 
+  `metadata` JSON,
   `progress` INT NOT NULL DEFAULT 0,
   `error` VARCHAR(256) NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -75,3 +75,4 @@ CREATE TABLE IF NOT EXISTS `jobs` (
   INDEX `created_at_index` (`updated_at` DESC)
   );
     """
+

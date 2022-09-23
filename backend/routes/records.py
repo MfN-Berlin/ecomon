@@ -1,6 +1,6 @@
 from sql.query import (
     count_entries_in_sql_table,
-    sum_values_of_sql_table_cloumn,
+    sum_values_of_sql_table_column,
     get_datetime_of_first_record_in_sql_table,
     get_datetime_of_last_record_in_sql_table,
 )
@@ -64,7 +64,7 @@ def router(app, root, database):
         return (
             await (
                 database.fetch_one(
-                    sum_values_of_sql_table_cloumn(
+                    sum_values_of_sql_table_column(
                         "{}_records".format(prefix_name), "duration"
                     )
                 )

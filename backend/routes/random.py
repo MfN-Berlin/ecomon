@@ -31,6 +31,7 @@ class RandomSampleRequest(BaseModel):
     start_datetime: Optional[str] = None
     end_datetime: Optional[str] = None
     random: Optional[bool] = False
+    highpass_frequency: Optional[int] = 0
 
 
 sample_executor = ThreadPoolExecutor(10)
@@ -100,6 +101,7 @@ def router(app, root, database):
                     ).astimezone(timezone.utc),
                     job_id=job_id,
                     random=request.random,
+                    high_pass_frequency=request.high_pass_frequency,
                 )
 
             await database.execute(update_job_status(job_id, "running"))
