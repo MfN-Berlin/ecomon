@@ -82,7 +82,11 @@ def extract_part_from_audio_file_by_start_and_end_time(
     etime = end_time + padding
     print("Run extract on ", filepath)
     input = ffmpeg.input(filepath, ss=stime, to=etime, v="error",)
-    audio = input.audio.filter("highpass", f=1000) if high_pass_frequency > 0 else input
+    audio = (
+        input.audio.filter("highpass", f=high_pass_frequency)
+        if high_pass_frequency > 0
+        else input
+    )
     ffmpeg.output(audio, output_filepath).run()
 
 
@@ -125,6 +129,7 @@ def create_sample(
     random=True,
     high_pass_frequency=0,
 ):
+    print("High pass frequency: ", high_pass_frequency)
     load_dotenv()
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()

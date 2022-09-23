@@ -65,6 +65,8 @@ export default function Collection(props: CollectionProps) {
    const [threshold, setThreshold] = useState<number>(0)
    const [sampleSize, setSampleSize] = useState<number>(100)
    const [hasIndex, setHasIndex] = useState<boolean>(false)
+   const [filterFrequency, setFilterFrequency] = useState<number>(100)
+   const [useFilter, setFilterUse] = useState<boolean>(false)
 
    const globalState = useContext(store)
    const { state } = globalState
@@ -114,7 +116,8 @@ export default function Collection(props: CollectionProps) {
             start_datetime: from?.toISOString(),
             end_datetime: until?.toISOString(),
             threshold: threshold,
-            random
+            random,
+            high_pass_frequency: useFilter ? filterFrequency : undefined
          })
       })
          .then((res) => res.json())
@@ -400,18 +403,45 @@ export default function Collection(props: CollectionProps) {
                                  }}
                               />
                               <Divider light />
-                              <Typography
-                                 variant="h6"
-                                 component="h6"
-                                 align="left"
-                                 sx={{
-                                    marginTop: 1,
-                                    marginLeft: 2,
-                                    paddingBottom: 0.5
-                                 }}
+                              <Stack
+                                 direction={{ md: 'column', lg: 'row' }}
+                                 spacing={2}
+                                 justifyContent="space-evenly"
+                                 alignItems="stretch"
                               >
-                                 Create Random Sample
-                              </Typography>
+                                 <Typography
+                                    variant="h6"
+                                    component="h6"
+                                    align="left"
+                                    sx={{
+                                       marginTop: 1,
+                                       marginLeft: 2,
+                                       paddingBottom: 0.5
+                                    }}
+                                 >
+                                    Create Random Sample
+                                 </Typography>
+                                 <Stack direction="row" spacing={2}>
+                                    <NumberInput
+                                       label="Highpass frequency"
+                                       style={{ width: 130 }}
+                                       numberValue={filterFrequency}
+                                       numberType={'int'}
+                                       onNumberChange={setFilterFrequency}
+                                    />
+                                    <FormControlLabel
+                                       control={
+                                          <Checkbox
+                                             value={useFilter}
+                                             onChange={() => {
+                                                setFilterUse(!useFilter)
+                                             }}
+                                          />
+                                       }
+                                       label="high pass"
+                                    />
+                                 </Stack>
+                              </Stack>
                               <NumberInput
                                  label="Sample Size"
                                  numberType={'int'}
@@ -427,7 +457,7 @@ export default function Collection(props: CollectionProps) {
                                  <Button
                                     color="secondary"
                                     variant="contained"
-                                    disabled={!selectedSpecies}
+                                    disabled={!selectedSpecies || sampleSize >= predictionQueryResponse?.species_count}
                                     endIcon={<AddCircleOutlineIcon />}
                                     sx={{
                                        padding: 1.5
@@ -440,7 +470,7 @@ export default function Collection(props: CollectionProps) {
                                  <Button
                                     color="primary"
                                     variant="contained"
-                                    disabled={!selectedSpecies}
+                                    disabled={!selectedSpecies || predictionQueryResponse?.species_count === 0}
                                     endIcon={<AddCircleOutlineIcon />}
                                     sx={{
                                        padding: 1.5
@@ -505,6 +535,12 @@ export default function Collection(props: CollectionProps) {
                            field: 'metadata.until',
                            sorting: true,
                            type: 'datetime'
+                        },
+                        {
+                           title: 'high pass',
+                           field: 'metadata.high_pass_frequency',
+                           sorting: true,
+                           type: 'string'
                         },
                         {
                            title: 'random',

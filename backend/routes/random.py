@@ -125,6 +125,7 @@ def router(app, root, database):
                     "random": request.random,
                     "samples": None if request.random else request.sample_size,
                     "padding": request.audio_padding,
+                    "high_pass_frequency": request.high_pass_frequency,
                 },
             )
         )
