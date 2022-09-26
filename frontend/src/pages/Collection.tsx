@@ -11,15 +11,16 @@ import { useRecordCount, useRecordDuration, useFirstRecord, useLastRecord } from
 import Paper from '@mui/material/Paper'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Unstable_Grid2'
-import TextField from '@mui/material/TextField'
+import TextField, { TextFieldProps } from '@mui/material/TextField'
 import Stack from '@mui/material/Stack'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+// import LocalizationProvider from '@mui/lab/LocalizationProvider'
+// import DateTimePicker from '@mui/lab/DateTimePicker'
 
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import Select from 'react-select'
-import { duration } from 'moment'
 
 import SendIcon from '@mui/icons-material/Send'
 import Button from '@mui/material/Button'
@@ -35,7 +36,14 @@ import { store } from '../components/JobsProvider'
 import MaterialTable from '@material-table/core'
 import SampleJobStatus from '../components/SampleJobsStatus'
 import { useUpdateJobs } from '../hooks/jobs'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
 
+dayjs.extend(utc)
+dayjs.extend(timezone)
+// Set to Central European Winter time, weird notation offset is inverse
+dayjs.tz.setDefault('Etc/GMT-1')
 interface CollectionProps {
    children?: React.ReactNode
 }
@@ -67,6 +75,8 @@ export default function Collection(props: CollectionProps) {
    const [hasIndex, setHasIndex] = useState<boolean>(false)
    const [filterFrequency, setFilterFrequency] = useState<number>(100)
    const [useFilter, setFilterUse] = useState<boolean>(false)
+   const [useFixTimezone, setFixTimezone] = useState<boolean>(true)
+   const [timeZone, setTimeZone] = useState<number>(1)
 
    const globalState = useContext(store)
    const { state } = globalState
@@ -117,7 +127,8 @@ export default function Collection(props: CollectionProps) {
             end_datetime: until?.toISOString(),
             threshold: threshold,
             random,
-            high_pass_frequency: useFilter ? filterFrequency : undefined
+            high_pass_frequency: useFilter ? filterFrequency : undefined,
+            zip_hours_off_set: 1 // UTC+1
          })
       })
          .then((res) => res.json())
@@ -151,7 +162,8 @@ export default function Collection(props: CollectionProps) {
    }
    return (
       <Box sx={{ flexGrow: 1, padding: 2 }}>
-         <LocalizationProvider dateAdapter={AdapterDateFns}>
+         <LocalizationProvider dateAdapter={AdapterDayjs} dateLibInstance={dayjs.tz}>
+            hello
             <Grid container spacing={1}>
                <Grid xs={12}>
                   <ChipList
@@ -202,24 +214,24 @@ export default function Collection(props: CollectionProps) {
                            Stats
                         </Typography>
                         <DateTimePicker
-                           renderInput={(props) => <TextField {...props} />}
+                           renderInput={(props: TextFieldProps) => <TextField {...props} />}
                            label="First Recording starts at"
-                           inputFormat="yyyy/MM/dd HH:mm:ss"
-                           value={firstRecord?.record_datetime}
+                           inputFormat="YYYY/MM/DD HH:mm:ss"
+                           value={dayjs(firstRecord?.record_datetime)}
                            readOnly={true}
                            ampm={false}
                            loading={firstRecordLoading}
-                           onChange={(date) => {}}
+                           onChange={(value: Date | null) => {}}
                         />
                         <DateTimePicker
-                           renderInput={(props) => <TextField {...props} />}
+                           renderInput={(props: TextFieldProps) => <TextField {...props} />}
                            label="Last Recording starts at"
-                           inputFormat="yyyy/MM/dd HH:mm:ss"
-                           value={lastRecord?.record_datetime}
+                           inputFormat="YYYY/MM/DD HH:mm:ss"
+                           value={dayjs(lastRecord?.record_datetime.toISOString())}
                            readOnly={true}
                            ampm={false}
                            loading={lastRecordLoading}
-                           onChange={(date) => {}}
+                           onChange={(value: Date | null) => {}}
                         />
 
                         <TextField
@@ -284,31 +296,39 @@ export default function Collection(props: CollectionProps) {
                            Query Parameters
                         </Typography>
                         <DateTimePicker
-                           renderInput={(props) => <TextField {...props} />}
+                           renderInput={(props: TextFieldProps) => <TextField {...props} />}
                            label="from"
-                           value={from}
-                           inputFormat="yyyy/MM/dd HH:mm:ss"
-                           minDateTime={firstRecord?.record_datetime}
-                           maxDateTime={lastRecord?.record_datetime}
+                           value={dayjs(from)}
+                           inputFormat="YYYY/MM/DD HH:mm:ss"
+                           // @ts-ignore
+                           minDateTime={dayjs(firstRecord?.record_datetime)}
+                           // @ts-ignore
+                           maxDateTime={dayjs(lastRecord?.record_datetime)}
                            ampm={false}
                            loading={firstRecordLoading || lastRecordLoading}
-                           onChange={(newValue) => {
-                              console.log('changed', newValue)
-                              setFrom(newValue)
+                           onChange={(value: Date | null) => {
+                              console.log('changed', value)
+                              if (value) {
+                                 setFrom(value)
+                              }
                            }}
                         />
                         <DateTimePicker
-                           renderInput={(props) => <TextField {...props} />}
+                           renderInput={(props: TextFieldProps) => <TextField {...props} />}
                            label="until"
                            value={until}
-                           inputFormat="yyyy/MM/dd HH:mm:ss"
-                           minDateTime={firstRecord?.record_datetime}
-                           maxDateTime={lastRecord?.record_datetime}
+                           inputFormat="YYYY/MM/DD HH:mm:ss"
+                           // @ts-ignore
+                           minDateTime={dayjs(firstRecord?.record_datetime)}
+                           // @ts-ignore
+                           maxDateTime={dayjs(lastRecord?.record_datetime)}
                            ampm={false}
                            loading={firstRecordLoading || lastRecordLoading}
-                           onChange={(newValue) => {
-                              console.log('changed', newValue)
-                              setUntil(newValue)
+                           onChange={(value: Date | null) => {
+                              console.log('changed', value)
+                              if (value) {
+                                 setFrom(value)
+                              }
                            }}
                         />
                         <Stack direction="row" spacing={0} justifyContent="space-evenly" alignItems="stretch">

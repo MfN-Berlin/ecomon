@@ -1,7 +1,7 @@
 import asyncio
 import time
 from pydantic import BaseModel
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import os
 from os import path
@@ -32,6 +32,7 @@ class RandomSampleRequest(BaseModel):
     end_datetime: Optional[str] = None
     random: Optional[bool] = False
     high_pass_frequency: Optional[int] = 0
+    zip_hours_off_set: Optional[int] = 0  # add timezone delta to  export zip filename
 
 
 sample_executor = ThreadPoolExecutor(10)
@@ -57,14 +58,21 @@ def router(app, root, database):
         else:
             start_datetime = None
         # parse end string to datetime object
+        print(request.end_datetime)
         if request.end_datetime:
             end_datetime = datetime.fromisoformat(request.end_datetime[:-1] + "+00:00")
         else:
             end_datetime = None
-
+        print(end_datetime)
         # print datetime to format YYYYMMSS_HHMMSS
-        start_datetime_str = start_datetime.strftime("%Y%m%d_%H%M%S")
-        end_datetime_str = end_datetime.strftime("%Y%m%d_%H%M%S")
+
+        start_datetime_str = (
+            start_datetime + timedelta(hours=request.zip_hours_off_set)
+        ).strftime("%Y%m%d_%H%M%S")
+        end_datetime_str = (
+            end_datetime + timedelta(hours=request.zip_hours_off_set)
+        ).strftime("%Y%m%d_%H%M%S")
+        print(end_datetime_str)
 
         result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
         if not path.exists(result_directory):
@@ -93,12 +101,8 @@ def router(app, root, database):
                     threshold=request.threshold,
                     sample_size=request.sample_size,
                     audio_padding=request.audio_padding,
-                    start_datetime=datetime.fromisoformat(
-                        request.start_datetime[:-1]
-                    ).astimezone(timezone.utc),
-                    end_datetime=datetime.fromisoformat(
-                        request.end_datetime[:-1]
-                    ).astimezone(timezone.utc),
+                    start_datetime=start_datetime,
+                    end_datetime=end_datetime,
                     job_id=job_id,
                     random=request.random,
                     high_pass_frequency=request.high_pass_frequency,
