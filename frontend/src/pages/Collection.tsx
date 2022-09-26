@@ -163,7 +163,6 @@ export default function Collection(props: CollectionProps) {
    return (
       <Box sx={{ flexGrow: 1, padding: 2 }}>
          <LocalizationProvider dateAdapter={AdapterDayjs} dateLibInstance={dayjs.tz}>
-            hello
             <Grid container spacing={1}>
                <Grid xs={12}>
                   <ChipList
