@@ -25,8 +25,8 @@ all_analyzed_event = threading.Event()
 # CONFIG_FILEPATH = "./backend/config/config-MBG01.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-BRITZ01.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-WALLBERGE.yaml"
-CONFIG_FILEPATH = "./backend/config/config.yaml"
-
+# CONFIG_FILEPATH = "./backend/config/config.yaml"
+CONFIG_FILEPATH = "./backend/config/config-BRITZ02.yaml"
 
 config = load_config(CONFIG_FILEPATH)
 
@@ -37,7 +37,7 @@ init_db(config["prefix"], index_to_name)
 # load_file_list
 processed_count, files_count = load_files_list(config, files_queue)
 
-print("Files found {} allready processed {}".format(files_count, processed_count))
+print("Files found {} already processed {}".format(files_count, processed_count))
 # Created the Threads
 
 
