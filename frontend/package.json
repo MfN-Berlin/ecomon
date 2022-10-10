@@ -25,7 +25,7 @@
    },
    "scripts": {
       "start": "GENERATE_SOURCEMAP=false react-scripts start",
-      "dev:server": "REACT_APP_API_PATH=http://192.168.101.41/api/v1 react-scripts start",
+      "dev:server": "GENERATE_SOURCEMAP=false REACT_APP_API_PATH=http://192.168.101.41/api/v1 react-scripts start",
       "build": "react-scripts build",
       "test": "react-scripts test",
       "eject": "react-scripts eject",

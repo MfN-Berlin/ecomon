@@ -295,10 +295,18 @@ export default function Collection(props: CollectionProps) {
                            Query Parameters
                         </Typography>
                         <DateTimePicker
-                           renderInput={(props: TextFieldProps) => <TextField {...props} />}
+                           renderInput={(props: TextFieldProps) => (
+                              <TextField
+                                 {...props}
+                                 inputProps={{
+                                    ...props.inputProps,
+                                    readOnly: true
+                                 }}
+                              />
+                           )}
                            label="from"
                            value={dayjs(from)}
-                           inputFormat="YYYY/MM/DD HH:mm:ss"
+                           inputFormat="YYYY/MM/DD HH:mm"
                            // @ts-ignore
                            minDateTime={dayjs(firstRecord?.record_datetime)}
                            // @ts-ignore
@@ -306,17 +314,24 @@ export default function Collection(props: CollectionProps) {
                            ampm={false}
                            loading={firstRecordLoading || lastRecordLoading}
                            onChange={(value: Date | null) => {
-                              console.log('changed', value)
                               if (value) {
                                  setFrom(value)
                               }
                            }}
                         />
                         <DateTimePicker
-                           renderInput={(props: TextFieldProps) => <TextField {...props} />}
+                           renderInput={(props: TextFieldProps) => (
+                              <TextField
+                                 {...props}
+                                 inputProps={{
+                                    ...props.inputProps,
+                                    readOnly: true
+                                 }}
+                              />
+                           )}
                            label="until"
                            value={until}
-                           inputFormat="YYYY/MM/DD HH:mm:ss"
+                           inputFormat="YYYY/MM/DD HH:mm"
                            // @ts-ignore
                            minDateTime={dayjs(firstRecord?.record_datetime)}
                            // @ts-ignore
@@ -324,9 +339,8 @@ export default function Collection(props: CollectionProps) {
                            ampm={false}
                            loading={firstRecordLoading || lastRecordLoading}
                            onChange={(value: Date | null) => {
-                              console.log('changed', value)
                               if (value) {
-                                 setFrom(value)
+                                 setUntil(value)
                               }
                            }}
                         />
