@@ -62,6 +62,50 @@ def get_prediction_random_sample(
     )
 
 
+def get_predictions_with_file_id(
+    prefix,
+    species,
+    threshold,
+    audio_padding=None,
+    start_datetime=None,
+    end_datetime=None,
+):
+    return """
+    SELECT
+    record_id,
+    filepath,
+    record_datetime,
+    start_time,
+    end_time,
+    duration,
+    channel,
+    {species},
+    filename
+    FROM {prefix}_predictions
+    JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
+    WHERE
+    {start_datetime}
+    {end_datetime}
+    {species} >= '{threshold}'
+    {padding}
+    """.format(
+        prefix=prefix,
+        species=species,
+        padding="AND start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
+            audio_padding=audio_padding
+        )
+        if audio_padding != None
+        else "",
+        start_datetime="record_datetime >= '{}' AND".format(start_datetime)
+        if start_datetime != None
+        else "",
+        end_datetime="record_datetime <= '{}' AND".format(end_datetime)
+        if end_datetime != None
+        else "",
+        threshold=threshold,
+    )
+
+
 def get_predictions(
     prefix,
     species,

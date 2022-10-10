@@ -89,58 +89,7 @@ parse_filename_for_location_date_time_function_dict = {
 def add_time_to_datetime(dt, delta):
     seconds = int(math.floor(delta))
     milliseconds = int(round((delta - seconds) * 1000))
-
     return dt + timedelta(seconds=seconds, milliseconds=milliseconds)
-
-
-def create_metadata_dict(filepath, config):
-    filename = path.basename(filepath)
-    file_name_information = parse_filename_for_location_date_time_function_dict[
-        config["filenameParsing"]
-    ](filename)
-    file_size = round(int(path.getsize(filepath)) / 1048576 * 100) / 100
-    checksum = calc_checksum(filepath)
-
-    with wave.open(filepath) as fp:
-        channels = fp.getnchannels()
-        sample_rate = fp.getframerate()
-        frames = fp.getnframes()
-        duration = round(frames / sample_rate * 100) / 100
-
-        metadata = {
-            "deviceId": config["deviceId"],
-            "serialNumber": config["serialNumber"],
-            "timestamp": {
-                "start": file_name_information.record_datetime.isoformat(),
-                "stop": add_time_to_datetime(
-                    file_name_information.record_datetime, duration
-                ).isoformat(),
-            },
-            "location": {
-                "latitude": config["location"]["lat"],
-                "longitude": config["location"]["lng"],
-                "altitude": config["location"]["alt"],
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        config["location"]["lng"],
-                        config["location"]["lat"],
-                    ],
-                },
-            },
-            "usableForResearchPurposes": False,
-            "files": [
-                {"fileName": filename, "fileSize": file_size, "md5Checksum": checksum,}
-            ],
-            "sourceFiles": [],
-            "duration": duration,
-            "sampleRate": sample_rate,
-            "bitDepth": 16,
-            "channels": channels,
-            "mimeType": "audio/wav",
-        }
-
-        return metadata
 
 
 def load_config(filepath):

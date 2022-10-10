@@ -10,6 +10,7 @@ from routes.predictions import router as predictions_router
 from routes.collections import router as collections_router
 from routes.jobs import router as jobs_router
 from routes.random import router as random_router
+from routes.evaluation import router as evaluation_router
 from sql.initial import create_jobs_table
 
 load_dotenv()
@@ -72,5 +73,6 @@ records_router(app, "/prefix", database)
 predictions_router(app, "/prefix", database)
 collections_router(app, "/prefix", database)
 jobs_router(app, "/jobs", database)
+evaluation_router(app, "/evaluation", database)
 random_router(app, "", database)
 
