@@ -170,3 +170,9 @@ def parse_boolean(value):
         return False
 
     return False
+
+
+def species_row_to_name(string):
+    tmp = string[0].upper() + string[1:]
+    tmp.replace("_", " ")
+    return tmp

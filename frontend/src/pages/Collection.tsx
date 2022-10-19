@@ -73,6 +73,7 @@ export default function Collection(props: CollectionProps) {
    const [until, setUntil] = useState<Date | null>()
    const [thresholdMin, setThresholdMin] = useState<number>(0)
    const [thresholdMax, setThresholdMax] = useState<number>(1)
+   const [binWidth, setBinWidth] = useState<number>(0.025)
    const [sampleSize, setSampleSize] = useState<number>(100)
    const [hasIndex, setHasIndex] = useState<boolean>(false)
    const [filterFrequency, setFilterFrequency] = useState<number>(100)
@@ -141,6 +142,26 @@ export default function Collection(props: CollectionProps) {
          })
    }
 
+   function calcBinSizesButtonClick() {
+      const url = `${API_PATH}/evaluation/bin-sizes`
+      fetch(url, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            collection_name: id,
+            species: selectedSpecies,
+            bin_width: binWidth,
+            start_datetime: from?.toISOString(),
+            end_datetime: until?.toISOString()
+         })
+      })
+         .then((res) => res.json())
+         .then((data) => {
+            // setLoading(false)
+         })
+   }
    function secondsToYearsMonthDaysHoursMinutesSeconds(input: number) {
       const years = Math.floor(input / 31536000)
       const months = Math.floor((input % 31536000) / 2592000)
@@ -392,6 +413,29 @@ export default function Collection(props: CollectionProps) {
                               label=" <= threshold"
                            />
                         </Stack>
+                        <Stack direction="row" spacing={2}>
+                           <NumberInput
+                              numberValue={binWidth}
+                              numberType={'float'}
+                              onNumberChange={setBinWidth}
+                              label="Bin Width"
+                           />
+
+                           <Button
+                              color="primary"
+                              variant="contained"
+                              disabled={!selectedSpecies}
+                              endIcon={<AddCircleOutlineIcon />}
+                              sx={{
+                                 padding: 1.5
+                              }}
+                              onClick={() => calcBinSizesButtonClick()}
+                           >
+                              {' '}
+                              Calculate Bin Sizes
+                           </Button>
+                        </Stack>
+
                         <Button
                            variant="contained"
                            disabled={!selectedSpecies}
@@ -543,9 +587,15 @@ export default function Collection(props: CollectionProps) {
                      title="Jobs"
                      columns={[
                         {
+                           title: 'Type',
+                           field: 'type',
+                           sorting: true
+                        },
+                        {
                            title: 'status',
                            field: 'status',
                            sorting: true,
+
                            render: (rowData) => (
                               <SampleJobStatus
                                  status={rowData.status}
@@ -577,7 +627,7 @@ export default function Collection(props: CollectionProps) {
                         },
                         {
                            title: 'from',
-                           field: 'metadata.from_date',
+                           field: 'metadata.from',
                            sorting: true,
                            type: 'datetime'
                         },
@@ -630,16 +680,23 @@ export default function Collection(props: CollectionProps) {
                         })
                      ]}
                      data={state.jobs
-                        .filter((x) => x.collection === id && x.type === 'create_sample')
+                        .filter(
+                           (x) => (x.collection === id && x.type === 'create_sample') || x.type === 'calc_bin_sizes'
+                        )
                         .map((x) => {
                            // if random field is missing it is a random sample (backwards compatibility)
-                           x.metadata.random = !(x.metadata.random === false)
-                           if (typeof x.metadata.threshold !== 'undefined') {
-                              x.metadata.threshold_min = x.metadata.threshold
+                           if (x.type === 'create_sample') {
+                              x.metadata.random = !(x.metadata.random === false)
+                              if (typeof x.metadata.threshold !== 'undefined') {
+                                 x.metadata.threshold_min = x.metadata.threshold
+                              }
+                              if (typeof x.metadata.threshold_max === 'undefined') {
+                                 x.metadata.threshold_max = 1
+                              }
+                              // for legacy data if from is missing
+                              if (!x.metadata.from) x.metadata.from = x.metadata.from_date
                            }
-                           if (typeof x.metadata.threshold_max === 'undefined') {
-                              x.metadata.threshold_max = 1
-                           }
+
                            return x
                         })}
                      options={{

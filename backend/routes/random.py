@@ -132,7 +132,7 @@ def router(app, root, database):
                     "species": request.species,
                     "threshold_min": request.threshold_min,
                     "threshold_max": request.threshold_max,
-                    "from_date": request.start_datetime,
+                    "from": request.start_datetime,
                     "until": request.end_datetime,
                     "random": request.random,
                     "samples": None if request.random else request.sample_size,
