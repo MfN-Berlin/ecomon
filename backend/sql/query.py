@@ -15,7 +15,8 @@ def get_prediction_random_sample(
     prefix,
     sample_size,
     species,
-    threshold,
+    threshold_min,
+    threshold_max,
     random_seed=None,
     audio_padding=None,
     start_datetime=None,
@@ -38,14 +39,15 @@ def get_prediction_random_sample(
     WHERE
     {start_datetime}
     {end_datetime}
-    {species} >= '{threshold}'
+    {threshold_min}
+    {threshold_max}
     {padding}
     ORDER by rand({random_seed})
     limit {sample_size}
     """.format(
         prefix=prefix,
         species=species,
-        padding="AND start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
+        padding=" start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
             audio_padding=audio_padding
         )
         if audio_padding != None
@@ -56,7 +58,12 @@ def get_prediction_random_sample(
         end_datetime="record_datetime <= '{}' AND".format(end_datetime)
         if end_datetime != None
         else "",
-        threshold=threshold,
+        threshold_min="  {} >= '{}' AND".format(species, threshold_min)
+        if threshold_min != None or threshold_min == 0
+        else "",
+        threshold_max="  {} <= '{}' AND".format(species, threshold_max)
+        if threshold_max != None or threshold_min == 1
+        else "",
         random_seed=random_seed,
         sample_size=sample_size,
     )
@@ -65,7 +72,8 @@ def get_prediction_random_sample(
 def get_predictions_with_file_id(
     prefix,
     species,
-    threshold,
+    threshold_min,
+    threshold_max,
     audio_padding=None,
     start_datetime=None,
     end_datetime=None,
@@ -86,12 +94,13 @@ def get_predictions_with_file_id(
     WHERE
     {start_datetime}
     {end_datetime}
-    {species} >= '{threshold}'
+    {threshold_min}
+    {threshold_max}
     {padding}
     """.format(
         prefix=prefix,
         species=species,
-        padding="AND start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
+        padding=" start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
             audio_padding=audio_padding
         )
         if audio_padding != None
@@ -102,14 +111,20 @@ def get_predictions_with_file_id(
         end_datetime="record_datetime <= '{}' AND".format(end_datetime)
         if end_datetime != None
         else "",
-        threshold=threshold,
+        threshold_min=" {} >= '{}' AND".format(species, threshold_min)
+        if threshold_min != None or threshold_min == 0
+        else "",
+        threshold_max=" {} <= '{}' AND".format(species, threshold_max)
+        if threshold_max != None or threshold_min == 1
+        else "",
     )
 
 
 def get_predictions(
     prefix,
     species,
-    threshold,
+    threshold_min,
+    threshold_max,
     audio_padding=None,
     start_datetime=None,
     end_datetime=None,
@@ -129,12 +144,13 @@ def get_predictions(
     WHERE
     {start_datetime}
     {end_datetime}
-    {species} >= '{threshold}'
+    {threshold_min}
+    {threshold_max}
     {padding}
     """.format(
         prefix=prefix,
         species=species,
-        padding="AND start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
+        padding="start_time >= {audio_padding} AND end_time + {audio_padding} <= duration".format(
             audio_padding=audio_padding
         )
         if audio_padding != None
@@ -145,7 +161,12 @@ def get_predictions(
         end_datetime="record_datetime <= '{}' AND".format(end_datetime)
         if end_datetime != None
         else "",
-        threshold=threshold,
+        threshold_min=" {} >= '{}' AND".format(species, threshold_min)
+        if threshold_min != None or threshold_min == 0
+        else "",
+        threshold_max=" {} <= '{}' AND".format(species, threshold_max)
+        if threshold_max != None or threshold_min == 1
+        else "",
     )
 
 
@@ -235,18 +256,23 @@ def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
 
 
 def count_species_over_threshold_in_date_range(
-    prefix, species, threshold, start_datetime, end_datetime
+    prefix, species, threshold_min, threshold_max, start_datetime, end_datetime
 ):
     return """
     SELECT count(*) FROM {prefix}_predictions
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
 
-    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND {species} >= '{threshold}' AND start_time >= 5 AND end_time + 5 <= duration
+    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' {threshold_min} {threshold_max} AND start_time >= 5 AND end_time + 5 <= duration
     """.format(
         start_datetime=start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         end_datetime=end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         species=species,
-        threshold=threshold,
+        threshold_min="AND {} >= '{}'".format(species, threshold_min)
+        if threshold_min != None or threshold_min == 0
+        else "",
+        threshold_max="AND {} <= '{}'".format(species, threshold_max)
+        if threshold_max != None or threshold_min == 1
+        else "",
         prefix=prefix,
     )
 

@@ -20,7 +20,8 @@ class QueryRequest(BaseModel):
     species: str
     start_datetime: Optional[str] = None
     end_datetime: Optional[str] = None
-    threshold: Optional[float] = None
+    threshold_min: Optional[float] = None
+    threshold_max: Optional[float] = None
 
 
 class QueryResponse(BaseModel):
@@ -88,7 +89,8 @@ def router(app, root, database):
         query = count_species_over_threshold_in_date_range(
             prefix_name,
             request.species,
-            request.threshold,
+            request.threshold_min,
+            request.threshold_max,
             datetime.fromisoformat(request.start_datetime[:-1]).astimezone(
                 timezone.utc
             ),

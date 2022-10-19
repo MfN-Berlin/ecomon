@@ -91,7 +91,8 @@ interface QueryParameters {
    start_datetime?: string | null
    end_datetime?: string | null
    species: string
-   threshold: number
+   threshold_min: number
+   threshold_max: number
 }
 interface QueryResponse {
    predictions_count: number

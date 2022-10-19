@@ -68,8 +68,14 @@ export default function Title() {
                      },
 
                      {
-                        title: 'Threshold',
-                        field: 'metadata.threshold',
+                        title: '>= Threshold ',
+                        field: 'metadata.threshold_min',
+                        sorting: true,
+                        type: 'numeric'
+                     },
+                     {
+                        title: '<= Threshold ',
+                        field: 'metadata.threshold_max',
                         sorting: true,
                         type: 'numeric'
                      },
@@ -117,7 +123,19 @@ export default function Title() {
                         }
                      })
                   ]}
-                  data={state.jobs.filter((x) => x.type === 'create_sample')}
+                  data={state.jobs
+                     .filter((x) => x.type === 'create_sample')
+                     .map((x) => {
+                        // if random field is missing it is a random sample (backwards compatibility)
+                        x.metadata.random = !(x.metadata.random === false)
+                        if (typeof x.metadata.threshold !== 'undefined') {
+                           x.metadata.threshold_min = x.metadata.threshold
+                        }
+                        if (typeof x.metadata.threshold_max === 'undefined') {
+                           x.metadata.threshold_max = 1
+                        }
+                        return x
+                     })}
                   options={{
                      pageSize: 10,
                      paging: true,

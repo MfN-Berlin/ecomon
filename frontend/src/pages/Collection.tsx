@@ -29,6 +29,7 @@ import Checkbox from '@mui/material/Checkbox'
 import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import NumberInput from '../components/NumberInput'
+import VerticalAlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import { API_PATH } from '../consts'
 import ChipList from '../components/ChipList'
 import { addDbKeyToSpecies, deleteDbKeyFromSpecies } from '../tools/dbKeyHandling'
@@ -70,7 +71,8 @@ export default function Collection(props: CollectionProps) {
    const [selectedSpecies, setSelectedSpecies] = useState<string>()
    const [from, setFrom] = useState<Date | null>()
    const [until, setUntil] = useState<Date | null>()
-   const [threshold, setThreshold] = useState<number>(0)
+   const [thresholdMin, setThresholdMin] = useState<number>(0)
+   const [thresholdMax, setThresholdMax] = useState<number>(1)
    const [sampleSize, setSampleSize] = useState<number>(100)
    const [hasIndex, setHasIndex] = useState<boolean>(false)
    const [filterFrequency, setFilterFrequency] = useState<number>(100)
@@ -108,7 +110,8 @@ export default function Collection(props: CollectionProps) {
             species: selectedSpecies,
             start_datetime: from?.toISOString(),
             end_datetime: until?.toISOString(),
-            threshold: threshold
+            threshold_min: thresholdMin,
+            threshold_max: thresholdMax
          })
    }
    // download file from url
@@ -125,7 +128,8 @@ export default function Collection(props: CollectionProps) {
             sample_size: sampleSize,
             start_datetime: from?.toISOString(),
             end_datetime: until?.toISOString(),
-            threshold: threshold,
+            threshold_min: thresholdMin,
+            threshold_max: thresholdMax,
             random,
             high_pass_frequency: useFilter ? filterFrequency : undefined,
             zip_hours_off_set: 1 // UTC+1
@@ -373,13 +377,21 @@ export default function Collection(props: CollectionProps) {
                               label="has Index"
                            />
                         </Stack>
-                        <NumberInput
-                           numberValue={threshold}
-                           numberType={'float'}
-                           onNumberChange={setThreshold}
-                           label=" >= threshold"
-                        />
+                        <Stack direction="row" spacing={2}>
+                           <NumberInput
+                              numberValue={thresholdMin}
+                              numberType={'float'}
+                              onNumberChange={setThresholdMin}
+                              label=" >= threshold"
+                           />
 
+                           <NumberInput
+                              numberValue={thresholdMax}
+                              numberType={'float'}
+                              onNumberChange={setThresholdMax}
+                              label=" <= threshold"
+                           />
+                        </Stack>
                         <Button
                            variant="contained"
                            disabled={!selectedSpecies}
@@ -552,8 +564,14 @@ export default function Collection(props: CollectionProps) {
                         },
 
                         {
-                           title: 'Threshold',
-                           field: 'metadata.threshold',
+                           title: '>= Threshold ',
+                           field: 'metadata.threshold_min',
+                           sorting: true,
+                           type: 'numeric'
+                        },
+                        {
+                           title: '<= Threshold ',
+                           field: 'metadata.threshold_max',
                            sorting: true,
                            type: 'numeric'
                         },
@@ -616,6 +634,12 @@ export default function Collection(props: CollectionProps) {
                         .map((x) => {
                            // if random field is missing it is a random sample (backwards compatibility)
                            x.metadata.random = !(x.metadata.random === false)
+                           if (typeof x.metadata.threshold !== 'undefined') {
+                              x.metadata.threshold_min = x.metadata.threshold
+                           }
+                           if (typeof x.metadata.threshold_max === 'undefined') {
+                              x.metadata.threshold_max = 1
+                           }
                            return x
                         })}
                      options={{

@@ -118,7 +118,8 @@ def s_to_time(s):
 def create_sample(
     prefix: str = PREFIX,
     species: str = SPECIES,
-    threshold=0.95,
+    threshold_min=0.95,
+    threshold_max=1,
     sample_size=10,
     audio_padding=5,
     start_datetime=None,
@@ -139,7 +140,8 @@ def create_sample(
             prefix,
             sample_size,
             species,
-            threshold,
+            threshold_min,
+            threshold_max,
             audio_padding=audio_padding,
             start_datetime=start_datetime,
             end_datetime=end_datetime,
@@ -148,13 +150,15 @@ def create_sample(
         else get_predictions(
             prefix,
             species,
-            threshold,
+            threshold_min,
+            threshold_max,
             audio_padding=audio_padding,
             start_datetime=start_datetime,
             end_datetime=end_datetime,
         )
     )
 
+    print(query)
     db_cursor.execute(query)
     result = db_cursor.fetchall()
 
@@ -242,7 +246,12 @@ def create_sample(
         ]
 
         write_execl_file(
-            path.join(directory, "{}_{}_{}.xlsx".format(prefix, species, threshold)),
+            path.join(
+                directory,
+                "{}_{}_lq{}_hq{}.xlsx".format(
+                    prefix, species, threshold_min, threshold_max
+                ),
+            ),
             csv_list,
             header,
         )

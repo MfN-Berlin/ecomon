@@ -26,7 +26,8 @@ class RandomSampleRequest(BaseModel):
     prefix: str
     species: str
     sample_size: Optional[int] = 10
-    threshold: float
+    threshold_min: float
+    threshold_max: float
     audio_padding: Optional[int] = 5
     start_datetime: Optional[str] = None
     end_datetime: Optional[str] = None
@@ -77,11 +78,16 @@ def router(app, root, database):
         result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
         if not path.exists(result_directory):
             os.makedirs(result_directory)
-        result_filename = "{time}_{prefix}_{species}_lq_{threshold}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
+        result_filename = "{time}_{prefix}_{species}_{threshold_min}_{threshold_max}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
             time=round(time.time() * 1000),
             prefix=request.prefix,
             species=request.species,
-            threshold=request.threshold,
+            threshold_min="lq_{}_".format(request.threshold_min)
+            if request.threshold_min != None or request.threshold_min == 0
+            else "",
+            threshold_max="hq_{}_".format(request.threshold_max)
+            if request.threshold_max != None or request.threshold_max == 0
+            else "",
             from_date=start_datetime_str,
             until=end_datetime_str,
             samples=request.sample_size,
@@ -98,7 +104,8 @@ def router(app, root, database):
                     result_filepath=result_filepath,
                     BAI_TMP_DIRECTORY=BAI_TMP_DIRECTORY,
                     species=request.species,
-                    threshold=request.threshold,
+                    threshold_min=request.threshold_min,
+                    threshold_max=request.threshold_max,
                     sample_size=request.sample_size,
                     audio_padding=request.audio_padding,
                     start_datetime=start_datetime,
@@ -123,7 +130,8 @@ def router(app, root, database):
                     "filepath": result_filepath,
                     "prefix": request.prefix,
                     "species": request.species,
-                    "threshold": request.threshold,
+                    "threshold_min": request.threshold_min,
+                    "threshold_max": request.threshold_max,
                     "from_date": request.start_datetime,
                     "until": request.end_datetime,
                     "random": request.random,
