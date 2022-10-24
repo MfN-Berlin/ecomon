@@ -6,6 +6,7 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 RUN pip install pytz
+RUN pip install pyyaml
 COPY ./ /code/app
 WORKDIR /code/app
 ENV ROOT_PATH "/"
