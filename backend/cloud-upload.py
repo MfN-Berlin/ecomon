@@ -3,6 +3,7 @@ import glob
 import hashlib
 import math
 import queue
+import shutil
 import threading
 from time import sleep
 from turtle import width
@@ -45,7 +46,9 @@ def get_datetime_from_filename(filename, timezone):
     return aware
 
 
-def create_metadata_dict(filepath, device_information, timezone="UTC"):
+def create_audio_metadata_dict(
+    filepath, device_information, timezone="UTC", useable_for_research=False
+):
     filename = path.basename(filepath)
 
     file_size = round(int(path.getsize(filepath)) / 1048576 * 100) / 100
@@ -76,7 +79,7 @@ def create_metadata_dict(filepath, device_information, timezone="UTC"):
                     ],
                 },
             },
-            "usableForResearchPurposes": False,
+            "usableForResearchPurposes": useable_for_research,
             "files": [
                 {"fileName": filename, "fileSize": file_size, "md5Checksum": checksum,}
             ],
@@ -86,6 +89,60 @@ def create_metadata_dict(filepath, device_information, timezone="UTC"):
             "bitDepth": 16,
             "channels": channels,
             "mimeType": "audio/wav",
+        }
+
+        return metadata
+
+
+def create_processed_metadata_dict(
+    filepath,
+    source_filepath,
+    device_information,
+    default_threshold,
+    threshold_dict,
+    detected_species,
+    timezone="UTC",
+    useable_for_research=False,
+):
+    filename = path.basename(filepath)
+    source_filename = path.basename(source_filepath)
+
+    file_size = round(int(path.getsize(filepath)) / 1048576 * 100) / 100
+    checksum = calc_checksum(filepath)
+    record_datetime = get_datetime_from_filename(filename, timezone)
+    with wave.open(source_filepath) as fp:
+        channels = fp.getnchannels()
+        sample_rate = fp.getframerate()
+        frames = fp.getnframes()
+        duration = round(frames / sample_rate)
+
+        metadata = {
+            "deviceID": device_information["deviceId"],
+            "serialNumber": device_information["serialNumber"],
+            "timestamp": {
+                "start": record_datetime.isoformat(),
+                "stop": add_time_to_datetime(record_datetime, duration).isoformat(),
+            },
+            "location": {
+                "latitude": device_information["location"]["latitude"],
+                "longitude": device_information["location"]["longitude"],
+                "altitude": device_information["location"]["altitude"],
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        device_information["location"]["longitude"],
+                        device_information["location"]["latitude"],
+                    ],
+                },
+            },
+            "usableForResearchPurposes": useable_for_research,
+            "files": [
+                {"fileName": filename, "fileSize": file_size, "md5Checksum": checksum,}
+            ],
+            "defaultThreshold": default_threshold,
+            "sourceFiles": [source_filename],
+            "thresholds": threshold_dict,
+            "detectedSpecies": detected_species,
         }
 
         return metadata
@@ -107,6 +164,26 @@ def get_refresh_token(base_url, current_token):
         raise e
 
 
+def file_upload(filepath, metadata_filepath, tmp_folder, base_url, access_token):
+    headers = {"x-access-token": access_token}
+    files = {
+        "file1": open(metadata_filepath, "rb"),
+        "file2": open(filepath, "rb"),
+    }
+    # join urls
+
+    url = urljoin(base_url, "metadata")
+    try:
+        result = requests.post(url, files=files, headers=headers)
+        shutil.rmtree(tmp_folder)
+
+        return result
+
+    except Exception as e:
+        shutil.rmtree(tmp_folder)
+        raise e
+
+
 # upload file to cloud endpoint
 def raw_data_upload(
     filepath,
@@ -117,7 +194,7 @@ def raw_data_upload(
     tmp_directory="./tmp",
 ):
     # create metadata file
-    metadata_dict = create_metadata_dict(filepath, device_information)
+    metadata_dict = create_audio_metadata_dict(filepath, device_information)
     tmp_folder = path.join(tmp_directory, uuid4().hex)
     filename = path.basename(filepath)
     metadata_filepath = path.join(tmp_folder, "{}_metadata.json".format(filename))
@@ -129,24 +206,7 @@ def raw_data_upload(
     with open(metadata_filepath, "w+") as f:
         json.dump(metadata_dict, f)
 
-    headers = {"x-access-token": access_token}
-    files = {
-        "file1": open(filepath, "rb"),
-        "file2": open(metadata_filepath, "rb"),
-    }
-    # join urls
-
-    url = urljoin(base_url, "metadata")
-    try:
-        result = requests.post(url, files=files, headers=headers)
-        os.remove(metadata_filepath)
-        os.rmdir(tmp_folder)
-        return result
-
-    except Exception as e:
-        os.remove(metadata_filepath)
-        os.rmdir(tmp_folder)
-        raise e
+    file_upload(filepath, metadata_filepath, tmp_folder, base_url, access_token)
 
 
 def get_detected_species(
@@ -167,12 +227,7 @@ def get_detected_species(
                     "confidence": value.item(),
                 }
             )
-    return {
-        "default_threshold": default_threshold,
-        "thresholds": threshold_dict,
-        "detected_species": detected_species,
-        "fileName": parent_filename,
-    }
+    return (detected_species,)
 
 
 def pickle_to_json(
@@ -206,45 +261,65 @@ def pickle_to_json(
 
 
 def processed_data_upload(
-    filename,
+    source_filepath,
+    device_information,
     result_directory,
     base_url,
     access_token,
     model_name,
     model_version,
     threshold_dict,
+    default_threshold,
     timezone="utc",
     tmp_directory="./tmp",
 ):
-    filename_no_ext = path.splitext(filename)[0]
-    raw_filepath = path.join(result_directory, "{}.pkl".format(filename_no_ext))
-
-    with open(raw_filepath, "rb") as f:
-        raw_prediction = pickle.load(f)
-    json_dict = pickle_to_json(raw_prediction, filename, model_name, model_version)
-    detected_species = get_detected_species(
-        raw_prediction,
-        threshold_dict,
-        "{}_prediction.json".format(filename_no_ext),
-        default_threshold=0.9,
-    )
+    filename = path.basename(source_filepath)
     tmp_folder = path.join(tmp_directory, uuid4().hex)
     makedirs(tmp_folder)
+    filename_no_ext = path.splitext(filename)[0]
+    raw_filepath = path.join(result_directory, "{}.pkl".format(filename_no_ext))
     json_prediction_filepath = path.join(
         tmp_folder, "{}_prediction.json".format(filename_no_ext)
     )
-    json_species_filepath = path.join(
-        tmp_folder, "{}_species_list.json".format(filename_no_ext)
+    json_metadata_filepath = path.join(
+        tmp_folder, "{}_metadata.json".format(filename_no_ext)
     )
-    # save json_dict to json file
+
+    with open(raw_filepath, "rb") as f:
+        raw_prediction = pickle.load(f)
+    prediction_dict = pickle_to_json(
+        raw_prediction, filename, model_name, model_version
+    )
     with open(json_prediction_filepath, "w+") as f:
-        json.dump(json_dict, f)
-        pass
-    with open(json_species_filepath, "w+") as f:
-        json.dump(detected_species, f)
+        json.dump(prediction_dict, f)
         pass
 
-    pass
+    detected_species = get_detected_species(
+        raw_prediction, threshold_dict, filename, default_threshold=default_threshold
+    )
+    metadata = create_processed_metadata_dict(
+        json_prediction_filepath,
+        source_filepath,
+        device_information,
+        default_threshold,
+        threshold_dict,
+        detected_species,
+        timezone="UTC",
+        useable_for_research=False,
+    )
+    # save json_dict to json file
+    with open(json_metadata_filepath, "w+") as f:
+        json.dump(metadata, f)
+        pass
+    print(json_prediction_filepath)
+    print(json_metadata_filepath)
+    file_upload(
+        json_prediction_filepath,
+        json_metadata_filepath,
+        tmp_folder,
+        base_url,
+        access_token,
+    )
 
 
 def load_files(directory, ext="wav"):
@@ -283,17 +358,18 @@ THRESHOLD_DICT = {
 DEFAULT_THRESHOLD = 0.9
 
 # access_token:
-# 72642e7045267840388ac839ba47
+# 983a8c2ba9bf31b1b05518b08d66
 # refresh_token:
-# b505df9b0a30d55cb2c5a34acc9f
+# 334555d1f87213c102b7bae16ea6
 # expiry:
-# 2022-10-05T17:42:16+02:00
+# 2022-10-25T00:15:05+02:00
 BASE_URL = "https://ammod.gfbio.dev/api/v1/"
-ACCESS_TOKEN = "72642e7045267840388ac839ba47"
-REFRESH_TOKEN = "b505df9b0a30d55cb2c5a34acc9f"
+ACCESS_TOKEN = "983a8c2ba9bf31b1b05518b08d66"
+REFRESH_TOKEN = "334555d1f87213c102b7bae16ea6"
 
 
 def main():
+    print("main")
     load_dotenv()  # load environment variables from .env
     files_queue = queue.Queue()
     files = load_files(record_directory)
@@ -305,13 +381,15 @@ def main():
     # read all lines from text file into dict
     uploaded_files = {}
     error_files = {}
+    print(uploaded_file_path)
     if path.exists(uploaded_file_path):
+        print("read uploaded files")
         with open(uploaded_file_path, "r") as f:
             for line in f.readlines():
 
                 uploaded_files[line.strip()] = True
 
-    # open text file for adding lines
+        # open text file for adding lines
 
     with open(uploaded_file_path, "a") as uploaded_f:
         with open(error_file_path, "a") as error_f:
@@ -321,30 +399,36 @@ def main():
                 if file.strip() in uploaded_files:
                     continue
                 else:
-                    # result = raw_data_upload(
-                    #     line.strip(),
-                    #     DEVICE_INFO,
-                    #     BASE_URL,
-                    #     access_token,
-                    #     timezone=TIMEZONE,
-                    # )
+                    print("raw_data_upload: {}".format(file))
+                    result = raw_data_upload(
+                        file.strip(),
+                        DEVICE_INFO,
+                        BASE_URL,
+                        access_token,
+                        timezone=TIMEZONE,
+                    )
+                    print("processed_data_upload: {}".format(file))
+
                     processed_data_upload(
-                        path.basename(file),
+                        file,
+                        DEVICE_INFO,
                         result_directory,
                         BASE_URL,
                         access_token,
                         MODEL_INFO["modelName"],
                         MODEL_INFO["modelVersion"],
                         THRESHOLD_DICT,
+                        DEFAULT_THRESHOLD,
                         timezone=TIMEZONE,
+                        tmp_directory="./tmp",
                     )
 
-                    # refresh token
-                    refresh_token, access_token, expiry = get_refresh_token(
-                        BASE_URL, refresh_token
-                    )
+            # refresh token
+            # refresh_token, access_token, expiry = get_refresh_token(
+            #     BASE_URL, refresh_token
+            # )
 
-                    pass
+            pass
 
     # print(uploaded_files)
 
