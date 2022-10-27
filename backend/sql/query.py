@@ -255,6 +255,20 @@ def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
     )
 
 
+def get_predictions_in_date_range(prefix, species, start_datetime, end_datetime):
+    return """
+    SELECT record_datetime, start_time, {species} FROM {prefix}_predictions
+    JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
+    WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND start_time >= 5 AND end_time + 5 <= duration
+    ORDER BY record_datetime ASC
+    """.format(
+        species=",".join(species),
+        start_datetime=start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        end_datetime=end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        prefix=prefix,
+    )
+
+
 def count_species_over_threshold_in_date_range(
     prefix, species, threshold_min, threshold_max, start_datetime, end_datetime
 ):

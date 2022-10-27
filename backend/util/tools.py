@@ -174,5 +174,5 @@ def parse_boolean(value):
 
 def species_row_to_name(string):
     tmp = string[0].upper() + string[1:]
-    tmp.replace("_", " ")
+    tmp = tmp.replace("_", " ")
     return tmp
