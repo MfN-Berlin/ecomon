@@ -45,7 +45,11 @@ export default function NavPoints(props: NavProps) {
    useEffect(() => {
       fetch('http://127.0.0.1:8000/prefix/list')
          .then((res) => res.json())
-         .then((data) => setItems(data))
+         .then((data) => {
+            data.sort()
+            console.log(data)
+            setItems(data)
+         })
    }, [])
 
    return (

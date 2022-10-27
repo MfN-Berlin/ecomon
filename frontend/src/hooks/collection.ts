@@ -20,6 +20,7 @@ export function useCollectionList() {
       fetch(`${API_PATH}/prefix/list`)
          .then((res) => res.json())
          .then((data) => {
+            data.sort()
             setCollectionsList(data)
             setLoading(false)
          })
