@@ -162,6 +162,25 @@ export default function Collection(props: CollectionProps) {
             // setLoading(false)
          })
    }
+   function getPredictionsButtonClick() {
+      const url = `${API_PATH}/evaluation/predictions`
+      fetch(url, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            collection_name: id,
+            species: selectedSpecies,
+            start_datetime: from?.toISOString(),
+            end_datetime: until?.toISOString()
+         })
+      })
+         .then((res) => res.json())
+         .then((data) => {
+            // setLoading(false)
+         })
+   }
    function secondsToYearsMonthDaysHoursMinutesSeconds(input: number) {
       const years = Math.floor(input / 31536000)
       const months = Math.floor((input % 31536000) / 2592000)
@@ -404,6 +423,9 @@ export default function Collection(props: CollectionProps) {
                               numberType={'float'}
                               onNumberChange={setThresholdMin}
                               label=" >= threshold"
+                              sx={{
+                                 width: '100%'
+                              }}
                            />
 
                            <NumberInput
@@ -411,14 +433,20 @@ export default function Collection(props: CollectionProps) {
                               numberType={'float'}
                               onNumberChange={setThresholdMax}
                               label=" <= threshold"
+                              sx={{
+                                 width: '100%'
+                              }}
                            />
                         </Stack>
-                        <Stack direction="row" spacing={2}>
+                        <Stack direction="row" spacing={2} justifyContent="space-around">
                            <NumberInput
                               numberValue={binWidth}
                               numberType={'float'}
                               onNumberChange={setBinWidth}
                               label="Bin Width"
+                              sx={{
+                                 width: '100%'
+                              }}
                            />
 
                            <Button
@@ -427,7 +455,7 @@ export default function Collection(props: CollectionProps) {
                               disabled={!selectedSpecies}
                               endIcon={<AddCircleOutlineIcon />}
                               sx={{
-                                 padding: 1.5
+                                 width: '100%'
                               }}
                               onClick={() => calcBinSizesButtonClick()}
                            >
@@ -435,19 +463,34 @@ export default function Collection(props: CollectionProps) {
                               Calculate Bin Sizes
                            </Button>
                         </Stack>
-
-                        <Button
-                           variant="contained"
-                           disabled={!selectedSpecies}
-                           endIcon={<SendIcon />}
-                           sx={{
-                              padding: 1.5
-                           }}
-                           onClick={handleQueryButtonClick}
-                        >
-                           {' '}
-                           Query
-                        </Button>
+                        <Stack direction="row" spacing={2}>
+                           <Button
+                              variant="contained"
+                              disabled={!selectedSpecies}
+                              endIcon={<SendIcon />}
+                              sx={{
+                                 padding: 1.5,
+                                 width: '100%'
+                              }}
+                              onClick={getPredictionsButtonClick}
+                           >
+                              {' '}
+                              Get Predictions
+                           </Button>
+                           <Button
+                              variant="contained"
+                              disabled={!selectedSpecies}
+                              endIcon={<SendIcon />}
+                              sx={{
+                                 padding: 1.5,
+                                 width: '100%'
+                              }}
+                              onClick={handleQueryButtonClick}
+                           >
+                              {' '}
+                              Query
+                           </Button>
+                        </Stack>
                      </Stack>
                   </Paper>
                </Grid>
@@ -681,7 +724,10 @@ export default function Collection(props: CollectionProps) {
                      ]}
                      data={state.jobs
                         .filter(
-                           (x) => (x.collection === id && x.type === 'create_sample') || x.type === 'calc_bin_sizes'
+                           (x) =>
+                              (x.collection === id && x.type === 'create_sample') ||
+                              x.type === 'calc_bin_sizes' ||
+                              x.type === 'calc_predictions'
                         )
                         .map((x) => {
                            // if random field is missing it is a random sample (backwards compatibility)

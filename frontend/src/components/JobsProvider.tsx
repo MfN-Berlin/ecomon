@@ -5,7 +5,14 @@ type Job = {
    id: number
    collection: string
    status: 'running' | 'done' | 'failed' | 'pending'
-   type: 'add_index' | 'drop_index' | 'create_sample' | 'calc_bin_sizes'
+   type:
+      | 'add_index'
+      | 'drop_index'
+      | 'create_sample'
+      | 'calc_bin_sizes'
+      | 'calc_predictions'
+      | 'calc_day_histogram'
+      | 'calc_activation'
    metadata: any
    progress: number
    error: string
