@@ -367,14 +367,12 @@ def update_job_failed(job_id, error):
         escaped, job_id
     )
 
-
 def delete_job(job_id):
     return """
     DELETE FROM jobs WHERE id = {}
     """.format(
         job_id
     )
-
 
 def get_max_updated_at_from_jobs():
     return """
