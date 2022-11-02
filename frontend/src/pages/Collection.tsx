@@ -162,6 +162,7 @@ export default function Collection(props: CollectionProps) {
             // setLoading(false)
          })
    }
+
    function getPredictionsButtonClick() {
       const url = `${API_PATH}/evaluation/predictions`
       fetch(url, {
@@ -726,9 +727,10 @@ export default function Collection(props: CollectionProps) {
                      data={state.jobs
                         .filter(
                            (x) =>
-                              (x.collection === id && x.type === 'create_sample') ||
-                              x.type === 'calc_bin_sizes' ||
-                              x.type === 'calc_predictions'
+                              x.collection === id &&
+                              (x.type === 'create_sample' ||
+                                 x.type === 'calc_bin_sizes' ||
+                                 x.type === 'calc_predictions')
                         )
                         .map((x) => {
                            // if random field is missing it is a random sample (backwards compatibility)
