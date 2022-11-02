@@ -44,6 +44,7 @@ class PredictionsRequest(BaseModel):
     end_datetime: str
     species: Union[str, List[str], None] = None
     audio_padding: Optional[int] = 5
+    request_timezone: Optional[str] = "UTC"
 
 
 class JobCreatedResponse(BaseModel):
@@ -162,6 +163,7 @@ def router(app: FastAPI, root: str, database: Database):
         end_datetime = request.end_datetime
         species = request.species
         audio_padding = request.audio_padding
+        request_timezone = request.request_timezone
         result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
 
         if not path.exists(result_directory):
@@ -200,6 +202,7 @@ def router(app: FastAPI, root: str, database: Database):
                 species,
                 result_filepath,
                 job_id,
+                request_timezone=request_timezone,
             )
         )
 

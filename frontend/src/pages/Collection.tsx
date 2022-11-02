@@ -173,7 +173,8 @@ export default function Collection(props: CollectionProps) {
             collection_name: id,
             species: selectedSpecies,
             start_datetime: from?.toISOString(),
-            end_datetime: until?.toISOString()
+            end_datetime: until?.toISOString(),
+            request_timezone: 'Etc/GMT-1'
          })
       })
          .then((res) => res.json())

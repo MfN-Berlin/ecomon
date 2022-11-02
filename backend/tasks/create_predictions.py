@@ -55,7 +55,7 @@ async def create_predictions(
     species,
     result_filepath,
     job_id,
-    request_timezone="Etc/GMT-1",
+    request_timezone="UTC",
 ):
     species_list = (
         species if type(species) == list else [species] if species != None else []
