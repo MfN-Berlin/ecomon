@@ -57,6 +57,9 @@ async def create_predictions(
     job_id,
     request_timezone="UTC",
 ):
+    print("REuested timezone: ", request_timezone)
+    print("Start datetime: ", start_datetime)
+    print("End datetime: ", end_datetime)
     species_list = (
         species if type(species) == list else [species] if species != None else []
     )
@@ -70,19 +73,23 @@ async def create_predictions(
     for species_id in species_list:
         name = species_row_to_name(species_id)
         header.append(("{} confidence".format(name), "{}".format(species_id)))
-
+    print(datetime.fromisoformat(start_datetime[:-1]).replace(tzinfo=timezone.utc))
+    print(datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc))
     query = get_predictions_in_date_range(
         collection_name,
         species_list,
-        datetime.fromisoformat(start_datetime[:-1]).astimezone(timezone.utc),
-        datetime.fromisoformat(end_datetime[:-1]).astimezone(timezone.utc),
+        datetime.fromisoformat(start_datetime[:-1]).replace(tzinfo=timezone.utc),
+        datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc),
     )
     predictions = await database.fetch_all(query)
 
     for prediction in predictions:
         row = {}
+        # print(prediction[0])
         record_datetime = prediction[0].replace(tzinfo=timezone.utc)
+        # print(prediction[0])
         row["record_date"] = record_datetime.astimezone(request_timezone)
+        # print(row["record_date"])
         row["record_datetime"] = (
             record_datetime + timedelta(seconds=round(prediction[1]))
         ).astimezone(request_timezone)

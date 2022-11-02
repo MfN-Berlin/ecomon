@@ -75,8 +75,10 @@ async def create_histogram(
                 species_id,
                 threshold_min,
                 1,
-                datetime.fromisoformat(start_datetime[:-1]).astimezone(timezone.utc),
-                datetime.fromisoformat(end_datetime[:-1]).astimezone(timezone.utc),
+                datetime.fromisoformat(start_datetime[:-1]).replace(
+                    tzinfo=timezone.utc
+                ),
+                datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc),
             )
             prediction_count = (await database.fetch_one(query))[0]
             row["{}_predictions_acc".format(species_id)] = prediction_count
