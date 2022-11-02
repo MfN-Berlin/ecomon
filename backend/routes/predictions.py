@@ -78,10 +78,12 @@ def router(app, root, database):
         print(request)
         query = count_predictions_in_date_range(
             prefix_name,
-            datetime.fromisoformat(request.start_datetime[:-1]).astimezone(
-                timezone.utc
+            datetime.fromisoformat(request.start_datetime[:-1]).replace(
+                tzinfo=timezone.utc
             ),
-            datetime.fromisoformat(request.end_datetime[:-1]).astimezone(timezone.utc),
+            datetime.fromisoformat(request.end_datetime[:-1]).replace(
+                tzinfo=timezone.utc
+            ),
         )
         # print(query)
 
@@ -91,10 +93,12 @@ def router(app, root, database):
             request.species,
             request.threshold_min,
             request.threshold_max,
-            datetime.fromisoformat(request.start_datetime[:-1]).astimezone(
-                timezone.utc
+            datetime.fromisoformat(request.start_datetime[:-1]).replace(
+                tzinfo=timezone.utc
             ),
-            datetime.fromisoformat(request.end_datetime[:-1]).astimezone(timezone.utc),
+            datetime.fromisoformat(request.end_datetime[:-1]).replace(
+                tzinfo=timezone.utc
+            ),
         )
 
         # print(query)

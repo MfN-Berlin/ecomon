@@ -14,6 +14,7 @@ from os import path
 
 from tasks.create_histogram import create_histogram
 from tasks.create_predictions import create_predictions
+from tasks.create_daily_histograms import create_daily_histograms
 
 
 class GroupingEnum(str, Enum):
@@ -43,6 +44,16 @@ class PredictionsRequest(BaseModel):
     start_datetime: str
     end_datetime: str
     species: Union[str, List[str], None] = None
+    audio_padding: Optional[int] = 5
+    request_timezone: Optional[str] = "UTC"
+
+
+class DailyHistogramRequest(BaseModel):
+    collection_name: str
+    start_datetime: str
+    end_datetime: str
+    species: str
+    bin_width: Optional[float] = 0.025
     audio_padding: Optional[int] = 5
     request_timezone: Optional[str] = "UTC"
 
@@ -200,6 +211,67 @@ def router(app: FastAPI, root: str, database: Database):
                 start_datetime,
                 end_datetime,
                 species,
+                result_filepath,
+                job_id,
+                request_timezone=request_timezone,
+            )
+        )
+
+        return {"job_id": job_id}
+
+    @app.post(
+        root + "/daily-histograms",
+        response_model=JobCreatedResponse,
+        tags=[ROUTER_TAG],
+    )
+    async def get_daily_histograms(
+        request: DailyHistogramRequest,
+    ) -> JobCreatedResponse:
+        collection_name = request.collection_name
+        start_datetime = request.start_datetime
+        end_datetime = request.end_datetime
+        species = request.species
+        bin_width = request.bin_width
+        audio_padding = request.audio_padding
+        request_timezone = request.request_timezone
+        result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
+
+        if not path.exists(result_directory):
+            os.makedirs(result_directory)
+        result_filename = "{time}_daily_histograms_{collection_name}_{species}_from_{from_date}_until_{until}_padding_{padding}.xls".format(
+            time=round(time.time() * 1000),
+            collection_name=collection_name,
+            species=species if species != None else "all",
+            from_date=start_datetime,
+            until=end_datetime,
+            padding=audio_padding,
+        )
+        result_filepath = os.path.join(result_directory, result_filename,)
+
+        job_id = await database.execute(
+            add_job(
+                collection_name,
+                "calc_daily_histograms",
+                "running",
+                {
+                    "filename": result_filename,
+                    "filepath": result_filepath,
+                    "collection": collection_name,
+                    "species": species if species != None else "all",
+                    "from": start_datetime,
+                    "until": end_datetime,
+                    "padding": audio_padding,
+                },
+            )
+        )
+        asyncio.create_task(
+            create_daily_histograms(
+                database,
+                collection_name,
+                start_datetime,
+                end_datetime,
+                species,
+                bin_width,
                 result_filepath,
                 job_id,
                 request_timezone=request_timezone,

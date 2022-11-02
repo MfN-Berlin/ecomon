@@ -11,7 +11,7 @@ type Job = {
       | 'create_sample'
       | 'calc_bin_sizes'
       | 'calc_predictions'
-      | 'calc_day_histogram'
+      | 'calc_daily_histograms'
       | 'calc_activation'
    metadata: any
    progress: number

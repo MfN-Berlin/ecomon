@@ -162,7 +162,27 @@ export default function Collection(props: CollectionProps) {
             // setLoading(false)
          })
    }
-
+   function getDailyHistogramsButtonClick() {
+      const url = `${API_PATH}/evaluation/daily-histograms`
+      fetch(url, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            collection_name: id,
+            species: selectedSpecies,
+            bin_width: binWidth,
+            start_datetime: from?.toISOString(),
+            end_datetime: until?.toISOString(),
+            request_timezone: 'Etc/GMT-1'
+         })
+      })
+         .then((res) => res.json())
+         .then((data) => {
+            // setLoading(false)
+         })
+   }
    function getPredictionsButtonClick() {
       const url = `${API_PATH}/evaluation/predictions`
       fetch(url, {
@@ -487,12 +507,25 @@ export default function Collection(props: CollectionProps) {
                                  padding: 1.5,
                                  width: '100%'
                               }}
-                              onClick={handleQueryButtonClick}
+                              onClick={getDailyHistogramsButtonClick}
                            >
                               {' '}
-                              Query
+                              Get Daily Histograms
                            </Button>
                         </Stack>
+                        <Button
+                           variant="contained"
+                           disabled={!selectedSpecies}
+                           endIcon={<SendIcon />}
+                           sx={{
+                              padding: 1.5,
+                              width: '100%'
+                           }}
+                           onClick={handleQueryButtonClick}
+                        >
+                           {' '}
+                           Query
+                        </Button>
                      </Stack>
                   </Paper>
                </Grid>
@@ -730,7 +763,8 @@ export default function Collection(props: CollectionProps) {
                               x.collection === id &&
                               (x.type === 'create_sample' ||
                                  x.type === 'calc_bin_sizes' ||
-                                 x.type === 'calc_predictions')
+                                 x.type === 'calc_predictions' ||
+                                 x.type === 'calc_daily_histograms')
                         )
                         .map((x) => {
                            // if random field is missing it is a random sample (backwards compatibility)

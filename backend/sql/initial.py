@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `jobs` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `prefix` VARCHAR(64) NOT NULL,
   `status` ENUM('running', 'done', 'failed','pending') NOT NULL DEFAULT 'running',
-  `type` ENUM('add_index', 'drop_index', 'create_sample','calc_bin_sizes','calc_predictions','calc_day_histogram','calc_activation'),
+  `type` ENUM('add_index', 'drop_index', 'create_sample','calc_bin_sizes','calc_predictions','calc_daily_histograms','calc_activation'),
   `metadata` JSON,
   `progress` INT NOT NULL DEFAULT 0,
   `error` VARCHAR(256) NULL,
