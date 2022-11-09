@@ -175,7 +175,9 @@ export default function Collection(props: CollectionProps) {
             bin_width: binWidth,
             start_datetime: from?.toISOString(),
             end_datetime: until?.toISOString(),
-            request_timezone: 'Etc/GMT-1'
+            request_timezone: 'Etc/GMT-1',
+            min_threshold: thresholdMin,
+            max_threshold: thresholdMax
          })
       })
          .then((res) => res.json())
@@ -195,7 +197,9 @@ export default function Collection(props: CollectionProps) {
             species: selectedSpecies,
             start_datetime: from?.toISOString(),
             end_datetime: until?.toISOString(),
-            request_timezone: 'Etc/GMT-1'
+            request_timezone: 'Etc/GMT-1',
+            min_threshold: thresholdMin,
+            max_threshold: thresholdMax
          })
       })
          .then((res) => res.json())

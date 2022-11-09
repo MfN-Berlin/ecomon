@@ -43,9 +43,11 @@ class PredictionsRequest(BaseModel):
     collection_name: str
     start_datetime: str
     end_datetime: str
-    species: Union[str, List[str], None] = None
+    species: str
     audio_padding: Optional[int] = 5
     request_timezone: Optional[str] = "UTC"
+    min_threshold: Optional[float] = None
+    max_threshold: Optional[float] = None
 
 
 class DailyHistogramRequest(BaseModel):
@@ -56,6 +58,8 @@ class DailyHistogramRequest(BaseModel):
     bin_width: Optional[float] = 0.025
     audio_padding: Optional[int] = 5
     request_timezone: Optional[str] = "UTC"
+    min_threshold: Optional[float] = None
+    max_threshold: Optional[float] = None
 
 
 class JobCreatedResponse(BaseModel):
@@ -175,6 +179,8 @@ def router(app: FastAPI, root: str, database: Database):
         species = request.species
         audio_padding = request.audio_padding
         request_timezone = request.request_timezone
+        min_threshold = request.min_threshold
+        max_threshold = request.max_threshold
         result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
 
         if not path.exists(result_directory):
@@ -201,6 +207,9 @@ def router(app: FastAPI, root: str, database: Database):
                     "from": start_datetime,
                     "until": end_datetime,
                     "padding": audio_padding,
+                    "request_timezone": request_timezone,
+                    "min_threshold": min_threshold,
+                    "max_threshold": max_threshold,
                 },
             )
         )
@@ -214,6 +223,8 @@ def router(app: FastAPI, root: str, database: Database):
                 result_filepath,
                 job_id,
                 request_timezone=request_timezone,
+                min_threshold=min_threshold,
+                max_threshold=max_threshold,
             )
         )
 
@@ -234,6 +245,8 @@ def router(app: FastAPI, root: str, database: Database):
         bin_width = request.bin_width
         audio_padding = request.audio_padding
         request_timezone = request.request_timezone
+        min_threshold = request.min_threshold
+        max_threshold = request.max_threshold
         result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
 
         if not path.exists(result_directory):
@@ -261,6 +274,9 @@ def router(app: FastAPI, root: str, database: Database):
                     "from": start_datetime,
                     "until": end_datetime,
                     "padding": audio_padding,
+                    "request_timezone": request_timezone,
+                    "min_threshold": min_threshold,
+                    "max_threshold": max_threshold,
                 },
             )
         )
@@ -275,6 +291,8 @@ def router(app: FastAPI, root: str, database: Database):
                 result_filepath,
                 job_id,
                 request_timezone=request_timezone,
+                min_threshold=min_threshold,
+                max_threshold=max_threshold,
             )
         )
 

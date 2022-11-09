@@ -56,13 +56,13 @@ async def create_predictions(
     result_filepath,
     job_id,
     request_timezone="UTC",
+    min_threshold=None,
+    max_threshold=None,
 ):
-    print("REuested timezone: ", request_timezone)
+    print("Requested timezone: ", request_timezone)
     print("Start datetime: ", start_datetime)
     print("End datetime: ", end_datetime)
-    species_list = (
-        species if type(species) == list else [species] if species != None else []
-    )
+
     request_timezone = pytz.timezone(request_timezone)
     result_list = []
     # Create headers for excel file
@@ -70,16 +70,18 @@ async def create_predictions(
         ("Record date", "record_date"),
         ("Record datetime", "record_datetime"),
     ]
-    for species_id in species_list:
-        name = species_row_to_name(species_id)
-        header.append(("{} confidence".format(name), "{}".format(species_id)))
+
+    name = species_row_to_name(species)
+    header.append(("{} confidence".format(name), "{}".format(species)))
     print(datetime.fromisoformat(start_datetime[:-1]).replace(tzinfo=timezone.utc))
     print(datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc))
     query = get_predictions_in_date_range(
         collection_name,
-        species_list,
+        species,
         datetime.fromisoformat(start_datetime[:-1]).replace(tzinfo=timezone.utc),
         datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc),
+        min_threshold=min_threshold,
+        max_threshold=max_threshold,
     )
     predictions = await database.fetch_all(query)
 
@@ -93,9 +95,7 @@ async def create_predictions(
         row["record_datetime"] = (
             record_datetime + timedelta(seconds=round(prediction[1]))
         ).astimezone(request_timezone)
-
-        for index, species_id in enumerate(species_list, 2):
-            row["{}".format(species_id)] = prediction[index]
+        row["{}".format(species)] = prediction[2]
         result_list.append(row)
 
     await database.execute(update_job_progress(job_id, 100))

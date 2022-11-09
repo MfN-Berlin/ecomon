@@ -255,17 +255,32 @@ def count_predictions_in_date_range(prefix, start_datetime, end_datetime):
     )
 
 
-def get_predictions_in_date_range(prefix, species, start_datetime, end_datetime):
+def get_predictions_in_date_range(
+    prefix,
+    species,
+    start_datetime,
+    end_datetime,
+    min_threshold=None,
+    max_threshold=None,
+):
     return """
     SELECT record_datetime, start_time, {species} FROM {prefix}_predictions
     JOIN {prefix}_records ON {prefix}_predictions.record_id = {prefix}_records.id
     WHERE record_datetime >= '{start_datetime}' AND record_datetime <= '{end_datetime}' AND start_time >= 5 AND end_time + 5 <= duration
+    {min_threshold}
+    {max_threshold}
     ORDER BY record_datetime ASC
     """.format(
-        species=",".join(species),
+        species=species,
         start_datetime=start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         end_datetime=end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         prefix=prefix,
+        min_threshold=" AND {} >= {}".format(species, min_threshold)
+        if min_threshold != None
+        else "",
+        max_threshold=" AND {} <= {}".format(species, max_threshold)
+        if max_threshold != None
+        else "",
     )
 
 
@@ -367,12 +382,14 @@ def update_job_failed(job_id, error):
         escaped, job_id
     )
 
+
 def delete_job(job_id):
     return """
     DELETE FROM jobs WHERE id = {}
     """.format(
         job_id
     )
+
 
 def get_max_updated_at_from_jobs():
     return """
