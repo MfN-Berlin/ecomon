@@ -27,6 +27,9 @@ export default function TabNavigation() {
                indicatorColor="secondary"
                textColor="inherit"
                aria-label={'home ' + collectionList.join(' ')}
+               variant="scrollable"
+               scrollButtons
+               allowScrollButtonsMobile
             >
                <Tab aria-label="Home" value="/" to="/" component={Link} icon={<HomeIcon />} />
                {loading ? (
