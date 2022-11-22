@@ -147,3 +147,26 @@ class DbWorker:
         self.db_connection.commit()
 
     #     self.db_connection.fl
+
+
+def drop_species_indices(collection_name, species_index_list):
+    db_worker = DbWorker(collection_name)
+    for species in species_index_list:
+        print("Dropping index to {}".format(species))
+        try:
+            db_worker.drop_index(collection_name, species)
+        except Exception as e:
+            print(e)
+            db_worker.rollback()
+
+
+def create_species_indices(collection_name, species_index_list):
+    db_worker = DbWorker(collection_name)
+    for species in species_index_list:
+        print("Adding index to {}".format(species))
+        try:
+            db_worker.add_index(collection_name, species)
+            print("Finished adding index to species columns")
+        except Exception as e:
+            print(e)
+            db_worker.rollback()

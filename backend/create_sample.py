@@ -15,7 +15,7 @@ import ffmpeg
 import zipfile
 import os
 import shutil
-import xlsxwriter
+
 import json
 from util.excel import write_execl_file
 

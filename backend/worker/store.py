@@ -44,13 +44,13 @@ def store_loop_factory(
                 with open(error_files_filepath, "a+") as error_f:
                     db_worker = DbWorker(prefix)
 
-                    for species in species_index_list:
-                        print("Dropping index to {}".format(species))
-                        try:
-                            db_worker.drop_index(prefix, species)
-                        except Exception as e:
-                            print(e)
-                            db_worker.rollback()
+                    # for species in species_index_list:
+                    #     print("Dropping index to {}".format(species))
+                    #     try:
+                    #         db_worker.drop_index(prefix, species)
+                    #     except Exception as e:
+                    #         print(e)
+                    #         db_worker.rollback()
 
                     while (
                         # False
