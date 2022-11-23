@@ -1,0 +1,14 @@
+# docker-compose.yml
+version: "3"
+services:
+   birdnet-0:
+      container_name: "bai-birdnet-0"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+
+      ports:
+         - "9100:6000"
+      volumes:
+         - ${BAI_DATA_DIRECTORY}:/mnt/audio
+         - ${BAI_RESULT_DIRECTORY}:/mnt/result

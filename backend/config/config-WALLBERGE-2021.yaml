@@ -1,5 +1,11 @@
 # Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
 recordFolder:
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202107
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202108
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202109
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202110
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202111
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202112
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202106
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202105
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202104

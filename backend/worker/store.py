@@ -179,16 +179,16 @@ def store_loop_factory(
                             found_analyze_error = True
                             print("found different error")
 
-                    if not found_analyze_error:
-                        print("Start adding index to species columns")
-                        for species in species_index_list:
-                            print("Adding index to {}".format(species))
-                            try:
-                                db_worker.add_index(prefix, species)
-                                print("Finished adding index to species columns")
-                            except Exception as e:
-                                print(e)
-                                db_worker.rollback()
+                    # if not found_analyze_error:
+                    #     print("Start adding index to species columns")
+                    #     for species in species_index_list:
+                    #         print("Adding index to {}".format(species))
+                    #         try:
+                    #             db_worker.add_index(prefix, species)
+                    #             print("Finished adding index to species columns")
+                    #         except Exception as e:
+                    #             print(e)
+                    #             db_worker.rollback()
                     else:
                         print("Error file has more than 10 entries. Not adding index")
 
