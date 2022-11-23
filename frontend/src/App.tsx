@@ -18,6 +18,7 @@ import Start from './pages/Start'
 import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
 import { useUpdateJobs } from './hooks/jobs'
+import { Drawer } from '@mui/material'
 const mdTheme = createTheme()
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
       <div className="App">
          <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
          <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+         <Drawer anchor={'left'} open={true}></Drawer>
          <BrowserRouter>
             <Routes>
                <Route
