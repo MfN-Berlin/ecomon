@@ -220,3 +220,113 @@ services:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
 
+    birdnet-20:
+      container_name: "bai-birdnet-20"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7120:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-21:
+      container_name: "bai-birdnet-21"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7121:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-22:
+      container_name: "bai-birdnet-22"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7122:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-23:
+      container_name: "bai-birdnet-23"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7123:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-24:
+      container_name: "bai-birdnet-24"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7124:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-25:
+      container_name: "bai-birdnet-25"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7125:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-26:
+      container_name: "bai-birdnet-26"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7126:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-27:
+      container_name: "bai-birdnet-27"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7127:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-28:
+      container_name: "bai-birdnet-28"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7128:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+
+    birdnet-29:
+      container_name: "bai-birdnet-29"
+      image: birdnet-public-3k-v2.2:latest
+      restart: always
+      ipc: host
+      ports:
+         - "7129:6000"
+      volumes:
+         - /net/:/mnt/data
+         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+

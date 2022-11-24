@@ -37,8 +37,8 @@ def analyze_loop_factory(
                         result_path=path.join("/mnt/result", relative_result_path),
                     )
                     requests.get(request_string,)
-                else:
-                    print("File {} already exists".format(result_path))
+                # else:
+                #     print("File {} already exists".format(result_path))
                 results_queue.put([filepath, result_path, None, port])
             except Exception as e:
                 results_queue.put([filepath, None, e, port])

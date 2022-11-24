@@ -1,16 +1,16 @@
 # Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
 recordFolder:
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202207
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202208
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202209
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202210
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202211
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202212
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202206
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202205
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202204
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202203
-   # - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202202
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202207
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202208
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202209
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202210
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202211
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202212
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202206
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202205
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202204
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202203
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202202
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_202201
 fileEnding:
    - mp3 # wav
@@ -45,6 +45,7 @@ speciesIndexList:
    - phoenicurus_phoenicurus
    - fringilla_coelebs
 basePort: 7100
-analyzeThreads: 20
+analyzeThreads: 10
 transformModelOutput: True
 allThreadsUseSamePort: False
+repeats: 2

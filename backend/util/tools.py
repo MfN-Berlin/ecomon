@@ -133,6 +133,11 @@ def load_config(filepath):
             if "transformModelOutput" in config_dict
             else False
         )
+        config_dict["repeats"] = (
+            int(config_dict["repeats"])
+            if "repeats" in config_dict
+            else 10
+        )
 
     return config_dict
 

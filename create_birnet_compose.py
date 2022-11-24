@@ -8,7 +8,7 @@ header_str ="""version: "3"
 services:"""
 port = 7100
 result = "" + header_str
-for i in range(0,20):
+for i in range(0,30):
     result = result + """
     birdnet-{number}:
       container_name: "bai-birdnet-{number}"

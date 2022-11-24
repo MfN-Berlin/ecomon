@@ -149,3 +149,6 @@ string in this format "YYYY-MM-DD HH:MM:SS"
    if have problems with fastapi try version fastapi-0.74.1.
 
 ## How to run
+
+## Connect database via ssh to local machine
+`ssh -L 3306:192.168.101.41:3306 tsa@192.168.101.41`
