@@ -44,7 +44,7 @@ speciesIndexList:
    - luscinia_luscinia
    - phoenicurus_phoenicurus
    - fringilla_coelebs
-basePort: 9100
-analyzeThreads: 2
+basePort: 7100
+analyzeThreads: 20
 transformModelOutput: True
 allThreadsUseSamePort: False

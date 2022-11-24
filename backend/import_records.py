@@ -1,7 +1,5 @@
-from time import sleep
+
 import threading, queue
-import yaml
-import glob
 from dotenv import load_dotenv
 from worker.analyze import analyze_loop_factory
 from worker.store import store_loop_factory
