@@ -32,3 +32,4 @@ yarn-error.log*
 tmp
 backend/web_results
 runtime-data
+cache

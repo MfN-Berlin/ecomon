@@ -109,11 +109,29 @@ def load_config(filepath):
         config_dict["absolute_result_path"] = os.path.join(
             config_dict["data_folder"], config_dict["resultFolder"]
         )
-        config_dict["progress_cache_filepath"] = "./{}-progress.cache".format(
+        config_dict["progress_cache_filepath"] = "./cache/{}-progress.cache".format(
             config_dict["prefix"]
         )
-        config_dict["error_cache_filepath"] = "./{}-error.cache".format(
+        config_dict["error_cache_filepath"] = "./cache/{}-error.cache".format(
             config_dict["prefix"]
+        )
+        config_dict["basePort"] = (
+            int(config_dict["basePort"]) if ("basePort" in config_dict) else 9000
+        )
+        config_dict["analyzeThreads"] = (
+            int(config_dict["analyzeThreads"])
+            if "analyzeThreads" in config_dict
+            else int(os.getenv("BAI_ANALYZE_THREADS", 1))
+        )
+        config_dict["allThreadsUseSamePort"] = (
+            config_dict["allThreadsUseSamePort"]
+            if "allThreadsUseSamePort" in config_dict
+            else False
+        )
+        config_dict["transformModelOutput"] = (
+            config_dict["transformModelOutput"]
+            if "transformModelOutput" in config_dict
+            else False
         )
 
     return config_dict

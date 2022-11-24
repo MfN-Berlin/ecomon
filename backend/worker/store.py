@@ -16,15 +16,15 @@ import numpy as np
 def store_loop_factory(
     prefix,
     processed_files_filepath,
+    error_files_filepath,
     all_analyzed_event,
     results_queue,
     processed_count,
     files_count,
-    error_files_filepath,
     test_run=False,
     filename_parsing="ammod",
-    species_index_list=[],
     timezone=None,
+    index_to_name=None,
 ):
     # db_cursor = connect_to_db()
     def loop():
@@ -37,10 +37,8 @@ def store_loop_factory(
         ) as progress:
 
             with open(processed_files_filepath, "a") as processed_f:
-
                 if path.exists(error_files_filepath):
                     os.remove(error_files_filepath)
-
                 with open(error_files_filepath, "a+") as error_f:
                     db_worker = DbWorker(prefix)
 
@@ -138,6 +136,7 @@ def store_loop_factory(
                                             "ch_max",
                                             confidences,
                                             commit=False,
+                                            index_to_name=index_to_name,
                                         )
 
                                 if test_run is False:

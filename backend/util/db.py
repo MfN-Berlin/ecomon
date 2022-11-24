@@ -15,9 +15,9 @@ import sql.initial as queries
 
 def __create_species__array(index_to_name):
     items = index_to_name.items()
-    species = [""] * len(items)
+    species = []
     for key, value in items:
-        species[int(key)] = value.lower().replace(" ", "_")
+        species.append(value.lower().replace(" ", "_"))
     return species
 
 
@@ -98,6 +98,15 @@ class DbWorker:
         self.db_connection = connect_to_db()
         self.db_cursor = self.db_connection.cursor()
 
+    def __reduce_to_known_species_array(self, confidences, index_to_name):
+        keys = index_to_name.keys()
+        # only mapping to smaller array supported no reordering
+        result = []
+        for key in keys:
+
+            result.append(confidences[int(key)])
+        return result
+
     def add_file(
         self, filepath, filename, record_datetime, duration, channels, commit=True
     ):
@@ -120,7 +129,21 @@ class DbWorker:
         for i in self.db_cursor:
             return i[0]
 
-    def add_prediction(self, record_id, start, stop, channel, predictions, commit=True):
+    def add_prediction(
+        self,
+        record_id,
+        start,
+        stop,
+        channel,
+        predictions,
+        commit=True,
+        index_to_name=None,
+    ):
+        if index_to_name is not None:
+            predictions = self.__reduce_to_known_species_array(
+                predictions, index_to_name
+            )
+
         sql_query = insert_prediction(
             self.batch_prefix, record_id, start, stop, channel, predictions
         )

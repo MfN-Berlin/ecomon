@@ -18,8 +18,7 @@ import os
 
 
 load_dotenv()  # load environment variables from .env
-analyze_thread_count = int(os.getenv("BAI_ANALYZE_THREADS", 1))
-print("ANALYZE_THREADS", analyze_thread_count)
+
 # CONFIG_FILEPATH = "./backend/config/config-MBG01.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-BRITZ01.yaml"
 # CONFIG_FILEPATH = "./backend/config/config.yaml"
@@ -28,24 +27,25 @@ print("ANALYZE_THREADS", analyze_thread_count)
 # CONFIG_FILEPATH = "./backend/config/config-BRITZ01-2020.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-BRITZ01-2021.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-WALLBERGE-2022.yaml"
-CONFIG_FILEPATH = "./backend/config/config-WALLBERGE-2021.yaml"
+# CONFIG_FILEPATH = "./backend/config/config-WALLBERGE-2021.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-WALLBERGE-2020.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-WALLBERGE-2019.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-WALLBERGE-2018.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-CRIEWEN2022_01.yaml"
 # CONFIG_FILEPATH = "./backend/config/config-CRIEWEN2022_05.yaml"
+CONFIG_FILEPATH = "./backend/config/config-BIRDNET_WALLBERGE-2022.yaml"
 
 config = load_config(CONFIG_FILEPATH)
-
+analyze_thread_count = config["analyzeThreads"]
+print("ANALYZE_THREADS", analyze_thread_count)
 index_to_name = load_json(config["indexToNameFile"])
-
 init_db(config["prefix"], index_to_name)
 
 
-drop_species_indices(
-    config["prefix"], species_index_list=config["speciesIndexList"],
-)
-for i in range(1, 10, 1):
+# drop_species_indices(
+#     config["prefix"], species_index_list=config["speciesIndexList"],
+# )
+for i in range(1, 2, 1):
     files_queue = queue.Queue()
     results_queue = queue.Queue()
     all_analyzed_event = threading.Event()
@@ -62,7 +62,8 @@ for i in range(1, 10, 1):
                 files_queue,
                 results_queue,
                 all_analyzed_event,
-                9000 + i,
+                config["basePort"]
+                + (0 if config["allThreadsUseSamePort"] is True else i),
                 config["data_folder"],
                 config["resultFolder"],
             )
@@ -74,15 +75,15 @@ for i in range(1, 10, 1):
         target=store_loop_factory(
             config["prefix"],
             config["progress_cache_filepath"],
+            config["error_cache_filepath"],
             all_analyzed_event,
             results_queue,
             processed_count,
             files_count,
-            config["error_cache_filepath"],
             test_run=config["testRun"],
             filename_parsing=config["filenameParsing"],
-            species_index_list=config["speciesIndexList"],
             timezone=timezone(config["timezone"]) if config["timezone"] else None,
+            index_to_name=index_to_name if config["transformModelOutput"] else None,
         )
     )
 
@@ -102,6 +103,6 @@ for i in range(1, 10, 1):
     store_thread.join()
     print("Done")
 
-create_species_indices(
-    config["prefix"], species_index_list=config["speciesIndexList"],
-)
+# create_species_indices(
+#     config["prefix"], species_index_list=config["speciesIndexList"],
+# )
