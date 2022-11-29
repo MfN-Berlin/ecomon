@@ -5,10 +5,15 @@ import App from './App'
 
 import { render } from 'react-dom'
 import { JobsProvider } from './components/JobsProvider'
+import { store } from './store'
+import { Provider } from 'react-redux'
+
 const container = document.getElementById('root')
 render(
-   <JobsProvider>
-      <App />
-   </JobsProvider>,
+   <Provider store={store}>
+      <JobsProvider>
+         <App />
+      </JobsProvider>
+   </Provider>,
    container
 )
