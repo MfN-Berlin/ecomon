@@ -13,6 +13,7 @@ def analyze_loop_factory(
     port,
     data_path,
     relative_result_path,
+    model_output_style=None
 ):
     def loop():
         while not files_queue.empty():
@@ -31,10 +32,11 @@ def analyze_loop_factory(
             # check if result file does not exists
             try:
                 if not path.exists(result_path):
-                    request_string = "http://localhost:{port}/identify?path={filepath}&outputDir={result_path}".format(
+                    request_string = "http://localhost:{port}/identify?path={filepath}&outputDir={result_path}{model_output_style}".format(
                         port=port,
                         filepath=path.join("/mnt/data", relative_file),
                         result_path=path.join("/mnt/result", relative_result_path),
+                        model_output_style="&outputStyle={}".format(model_output_style) if model_output_style else ""
                     )
                     requests.get(request_string,)
                 # else:

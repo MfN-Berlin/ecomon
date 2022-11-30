@@ -134,9 +134,12 @@ def load_config(filepath):
             else False
         )
         config_dict["repeats"] = (
-            int(config_dict["repeats"])
-            if "repeats" in config_dict
-            else 10
+            int(config_dict["repeats"]) if "repeats" in config_dict else 10
+        )
+        config_dict["modelOutputStyle"] = (
+            config_dict["modelOutputStyle"]
+            if "modelOutputStyle" in config_dict
+            else None
         )
 
     return config_dict
