@@ -1,5 +1,11 @@
 # Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
-recordFolder: /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/MBG01/
+recordFolder: 
+  - /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/MBG01/MGB01_202201
+  - /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/MBG01/MGB01_202202
+  - /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/MBG01/MGB01_202203
+  - /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/MBG01/MGB01_202204
+  - /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/MBG01/MGB01_202205
+  - /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/MBG01/MGB01_202206
 fileEnding:
   - mp3 # wav
   - wav
