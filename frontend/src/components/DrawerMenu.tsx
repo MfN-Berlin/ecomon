@@ -86,7 +86,13 @@ export default function PersistentDrawerRight(props: DrawerProps) {
          <p></p>
          <List>
             {transformCollectionData(data || [], filterValue).map(({ station, model, year, id }, index) => (
-               <ListItemButton key={id} component={Link} to={'/collection/' + id} selected={id === routeId}>
+               <ListItemButton
+                  key={id}
+                  component={Link}
+                  to={'/collection/' + id}
+                  sx={{ m: '1px', p: '0px', pl: '8px' }}
+                  selected={id === routeId}
+               >
                   <ListItemText primary={`${station}: ${year}`} secondary={model} />
                </ListItemButton>
             ))}
