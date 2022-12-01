@@ -46,9 +46,17 @@ export default function PersistentDrawerRight(props: DrawerProps) {
    }
 
    function transformCollectionData(data: string[], filter = '') {
-      const filteredData = data.filter((name) => name.toLowerCase().includes(filter.toLowerCase()))
+      const filteredData = [...data]
       filteredData.sort()
-      const collections = filteredData.map((name) => parseCollectionName(name))
+      const collections = filteredData
+         .map((name) => parseCollectionName(name))
+         .filter(
+            (item) =>
+               item.model.toLowerCase().includes(filter.toLowerCase()) ||
+               item.station.toLowerCase().includes(filter.toLowerCase()) ||
+               item.id.toLowerCase().includes(filter.toLowerCase())
+         )
+
       return collections
    }
 
