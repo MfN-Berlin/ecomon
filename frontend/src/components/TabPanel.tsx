@@ -1,7 +1,5 @@
 import * as React from 'react'
-import Tabs from '@mui/material/Tabs'
 
-import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 
 interface TabPanelProps {

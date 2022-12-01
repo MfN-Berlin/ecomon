@@ -1,5 +1,4 @@
 import React, { createContext, useReducer } from 'react'
-import { API_PATH } from '../consts'
 
 type Job = {
    id: number

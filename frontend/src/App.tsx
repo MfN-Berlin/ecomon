@@ -6,22 +6,24 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
 import Box from '@mui/material/Box'
-import MuiAppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
-
 import { Outlet } from 'react-router-dom'
-import TabNavigation from './components/TabNavigation'
-
+import AppBar from './components/AppBar'
+import DrawerMenu from './components/DrawerMenu'
+import Main from './components/Main'
 // pages
 import Collection from './pages/Collection'
 import Start from './pages/Start'
 import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
 import { useUpdateJobs } from './hooks/jobs'
+import { useAppSelector } from './store/hooks'
+
 const mdTheme = createTheme()
 
 function App() {
    // load and update current jobs status store in JobsProvider
+   const drawerOpen = useAppSelector((state) => state.ui.drawerOpen)
    const globalState = useContext(store)
    const { dispatch } = globalState
    const { updateJobs } = useUpdateJobs()
@@ -49,6 +51,7 @@ function App() {
       <div className="App">
          <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
          <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+
          <BrowserRouter>
             <Routes>
                <Route
@@ -57,24 +60,27 @@ function App() {
                      <ThemeProvider theme={mdTheme}>
                         <Box sx={{ display: 'flex' }}>
                            <CssBaseline />
-                           <MuiAppBar position="absolute">
-                              <TabNavigation />
-                           </MuiAppBar>
+                           <AppBar />
+                           <DrawerMenu drawerWidth={250} />
+                           <Main open={drawerOpen} drawerWidth={250}>
+                              <Box
+                                 component="main"
+                                 sx={{
+                                    backgroundColor: (theme) =>
+                                       theme.palette.mode === 'light'
+                                          ? theme.palette.grey[100]
+                                          : theme.palette.grey[900],
+                                    flexGrow: 1,
+                                    height: '100vh',
+                                    overflow: 'auto',
+                                    padding: '0px'
+                                 }}
+                              >
+                                 <Toolbar />
 
-                           <Box
-                              component="main"
-                              sx={{
-                                 backgroundColor: (theme) =>
-                                    theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
-                                 flexGrow: 1,
-                                 height: '100vh',
-                                 overflow: 'auto'
-                              }}
-                           >
-                              <Toolbar />
-
-                              <Outlet />
-                           </Box>
+                                 <Outlet />
+                              </Box>
+                           </Main>
                         </Box>
                      </ThemeProvider>
                   }
