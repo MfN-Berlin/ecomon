@@ -6,11 +6,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
 import Box from '@mui/material/Box'
-import MuiAppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
-
 import { Outlet } from 'react-router-dom'
-import TabNavigation from './components/TabNavigation'
 import AppBar from './components/AppBar'
 import DrawerMenu from './components/DrawerMenu'
 import Main from './components/Main'
@@ -21,7 +18,6 @@ import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
 import { useUpdateJobs } from './hooks/jobs'
 import { useAppSelector } from './store/hooks'
-import { padding } from '@material-ui/system'
 
 const mdTheme = createTheme()
 

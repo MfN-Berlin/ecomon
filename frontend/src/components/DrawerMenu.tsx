@@ -1,57 +1,39 @@
 import * as React from 'react'
 import { styled, useTheme } from '@mui/material/styles'
-
+import { Link, useParams } from 'react-router-dom'
 import Drawer, { DrawerProps as MuiDrawerProps } from '@mui/material/Drawer'
 import List from '@mui/material/List'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
-import InboxIcon from '@mui/icons-material/MoveToInbox'
-import MailIcon from '@mui/icons-material/Mail'
-
+import InputBase from '@mui/material/InputBase'
+import SearchIcon from '@mui/icons-material/Search'
 import { useAppSelector, useAppDispatch } from '../store/hooks'
 import { setDrawerOpenState } from '../store/slices/ui'
 import { useGetCollectionsQuery } from '../services/api'
-
-const drawerWidth = 240
-
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
-   open?: boolean
-}>(({ theme, open }) => ({
-   flexGrow: 1,
-   padding: theme.spacing(3),
-   transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-   }),
-   marginRight: -drawerWidth,
-   ...(open && {
-      transition: theme.transitions.create('margin', {
-         easing: theme.transitions.easing.easeOut,
-         duration: theme.transitions.duration.enteringScreen
-      }),
-      marginRight: 0
-   })
-}))
+import { parseCollectionName } from '../tools/stringHandling'
 
 const DrawerHeader = styled('div')(({ theme }) => ({
+   position: 'fixed',
    display: 'flex',
    alignItems: 'center',
    padding: theme.spacing(0, 1),
    // necessary for content to be below app bar
    ...theme.mixins.toolbar,
-   justifyContent: 'flex-start'
+   justifyContent: 'flex-start',
+   zIndex: 10,
+   backgroundColor: theme.palette.background.default
 }))
 
 interface DrawerProps extends MuiDrawerProps {
    drawerWidth?: number
 }
 export default function PersistentDrawerRight(props: DrawerProps) {
+   const { id: routeId } = useParams<{ id: string }>()
+   const [filterValue, setFilterValue] = React.useState<string>('')
    const theme = useTheme()
    const open = useAppSelector((state) => state.ui.drawerOpen)
    const { data, error, isLoading } = useGetCollectionsQuery('sdfsdfsd')
@@ -61,6 +43,13 @@ export default function PersistentDrawerRight(props: DrawerProps) {
    const handleDrawerClose = () => {
       console.log('close')
       dispatch(setDrawerOpenState(false))
+   }
+
+   function transformCollectionData(data: string[], filter = '') {
+      const filteredData = data.filter((name) => name.toLowerCase().includes(filter.toLowerCase()))
+      filteredData.sort()
+      const collections = filteredData.map((name) => parseCollectionName(name))
+      return collections
    }
 
    return (
@@ -80,27 +69,26 @@ export default function PersistentDrawerRight(props: DrawerProps) {
             <IconButton onClick={handleDrawerClose}>
                {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
             </IconButton>
+            <InputBase
+               sx={{ ml: 1, flex: 1, width: 130 }}
+               placeholder="Search"
+               inputProps={{ 'aria-label': 'search' }}
+               onChange={(e) => setFilterValue(e.target.value)}
+            />
+            <IconButton type="button" sx={{ p: '0px' }} aria-label="search">
+               <SearchIcon />
+            </IconButton>
          </DrawerHeader>
+
          <Divider />
+
+         <p></p>
+         <p></p>
          <List>
-            {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-               <ListItem key={text} disablePadding>
-                  <ListItemButton>
-                     <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                     <ListItemText primary={text} />
-                  </ListItemButton>
-               </ListItem>
-            ))}
-         </List>
-         <Divider />
-         <List>
-            {data.map((text, index) => (
-               <ListItem key={text} disablePadding>
-                  <ListItemButton>
-                     <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                     <ListItemText primary={text} />
-                  </ListItemButton>
-               </ListItem>
+            {transformCollectionData(data || [], filterValue).map(({ station, model, year, id }, index) => (
+               <ListItemButton key={id} component={Link} to={'/collection/' + id} selected={id === routeId}>
+                  <ListItemText primary={`${station}: ${year}`} secondary={model} />
+               </ListItemButton>
             ))}
          </List>
       </Drawer>

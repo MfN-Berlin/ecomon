@@ -8,7 +8,7 @@ import MenuIcon from '@mui/icons-material/Menu'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { toggleDrawer } from '../store/slices/ui'
 import { useParams } from 'react-router-dom'
-
+import { parseCollectionName } from '../tools/stringHandling'
 interface AppBarProps extends MuiAppBarProps {
    open?: boolean
    drawerWidth?: number
@@ -17,6 +17,7 @@ interface AppBarProps extends MuiAppBarProps {
 const StyledAppBar = styled(MuiAppBar, {
    shouldForwardProp: (prop) => prop !== 'open'
 })<AppBarProps>(({ theme, open, drawerWidth }) => ({
+   justifyContent: 'start',
    transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen
@@ -33,13 +34,14 @@ const StyledAppBar = styled(MuiAppBar, {
 
 const Title = () => {
    const { id } = useParams<{ id: string }>()
-   if (id)
+   if (id) {
+      const collection = parseCollectionName(id)
       return (
          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {`${id}`}
+            {`${collection.model}: ${collection.station} - ${collection.year}`}
          </Typography>
       )
-   else {
+   } else {
       return (
          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Home
