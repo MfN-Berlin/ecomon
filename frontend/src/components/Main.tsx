@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { styled, useTheme } from '@mui/material/styles'
+import { styled } from '@mui/material/styles'
 
 export default styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
    open?: boolean
