@@ -20,6 +20,8 @@ for i in range(0,30):
       volumes:
          - {data}:/mnt/data
          - {result}:/mnt/result
+      environment:
+        - OVERLAP=1   
 """.format(number=i,port=port+i,
 data=os.getenv("BAI_DATA_DIRECTORY"),
 result=os.getenv("BAI_RESULT_DIRECTORY"))

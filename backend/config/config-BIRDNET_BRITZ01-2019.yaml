@@ -1,4 +1,5 @@
 # Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
+
 recordFolder: /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/2019/
 fileEnding:
    - mp3 # wav
@@ -7,12 +8,12 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdid-europe254-2103/AMMOD/BRITZ01/2019
-# Index to name File of your used model
-indexToNameFile: ./birdid-europe-254_index_to_name.json
+resultFolder: birdnet-public-3k-v2.2/AMMOD/BRITZ01/2019
+# Index to name File of your used model228613
+indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BRITZ01_2019"
+prefix: "BIRDNET_BRITZ01_2019"
 testRun: False
 timezone: CET
 speciesIndexList:
@@ -32,9 +33,8 @@ speciesIndexList:
    - luscinia_luscinia
    - phoenicurus_phoenicurus
    - fringilla_coelebs
-basePort: 9000
-analyzeThreads: 6
-transformModelOutput: False
+basePort: 7100
+analyzeThreads: 30
+transformModelOutput: True
 allThreadsUseSamePort: False
-repeats: 10
-modelOutputStyle: resultDict
+repeats: 2

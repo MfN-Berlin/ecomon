@@ -10,6 +10,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-1:
       container_name: "bai-birdnet-1"
@@ -21,6 +23,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-2:
       container_name: "bai-birdnet-2"
@@ -32,6 +36,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-3:
       container_name: "bai-birdnet-3"
@@ -43,6 +49,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-4:
       container_name: "bai-birdnet-4"
@@ -54,6 +62,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-5:
       container_name: "bai-birdnet-5"
@@ -65,6 +75,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-6:
       container_name: "bai-birdnet-6"
@@ -76,6 +88,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-7:
       container_name: "bai-birdnet-7"
@@ -87,6 +101,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-8:
       container_name: "bai-birdnet-8"
@@ -98,6 +114,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-9:
       container_name: "bai-birdnet-9"
@@ -109,6 +127,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-10:
       container_name: "bai-birdnet-10"
@@ -120,6 +140,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-11:
       container_name: "bai-birdnet-11"
@@ -131,6 +153,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-12:
       container_name: "bai-birdnet-12"
@@ -142,6 +166,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-13:
       container_name: "bai-birdnet-13"
@@ -153,6 +179,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-14:
       container_name: "bai-birdnet-14"
@@ -164,6 +192,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-15:
       container_name: "bai-birdnet-15"
@@ -175,6 +205,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-16:
       container_name: "bai-birdnet-16"
@@ -186,6 +218,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-17:
       container_name: "bai-birdnet-17"
@@ -197,6 +231,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-18:
       container_name: "bai-birdnet-18"
@@ -208,6 +244,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-19:
       container_name: "bai-birdnet-19"
@@ -219,6 +257,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-20:
       container_name: "bai-birdnet-20"
@@ -230,6 +270,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-21:
       container_name: "bai-birdnet-21"
@@ -241,6 +283,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-22:
       container_name: "bai-birdnet-22"
@@ -252,6 +296,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-23:
       container_name: "bai-birdnet-23"
@@ -263,6 +309,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-24:
       container_name: "bai-birdnet-24"
@@ -274,6 +322,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-25:
       container_name: "bai-birdnet-25"
@@ -285,6 +335,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-26:
       container_name: "bai-birdnet-26"
@@ -296,6 +348,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-27:
       container_name: "bai-birdnet-27"
@@ -307,6 +361,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-28:
       container_name: "bai-birdnet-28"
@@ -318,6 +374,8 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 
     birdnet-29:
       container_name: "bai-birdnet-29"
@@ -329,4 +387,6 @@ services:
       volumes:
          - /net/:/mnt/data
          - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+      environment:
+        - OVERLAP=1   
 

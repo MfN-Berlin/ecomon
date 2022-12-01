@@ -1,0 +1,51 @@
+# Folder Path to be relative to BAI_DATA_DIRECTORY environment variable
+recordFolder:
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201907
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201908
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201909
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201910
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201911
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201912
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201906
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201905
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201904
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201903
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201902
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201901
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdnet-public-3k-v2.2/AMMOD/WALLBERGE/2019
+# Index to name File of your used model
+indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDNET_WALLBERGE_2019"
+testRun: False
+timezone: CET
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - dendrocopos_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - turdus_merula
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 7120
+analyzeThreads: 10
+transformModelOutput: True
+allThreadsUseSamePort: False
+repeats: 2
