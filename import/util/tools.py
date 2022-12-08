@@ -141,10 +141,8 @@ def load_config(filepath):
             if "modelOutputStyle" in config_dict
             else None
         )
-        config_dict["onlyAnalze"] = (
-            config_dict["modelOutputStyle"]
-            if "modelOutputStyle" in config_dict
-            else False
+        config_dict["onlyAnalyze"] = (
+            config_dict["onlyAnalyze"] if "onlyAnalyze" in config_dict else False
         )
 
     return config_dict

@@ -1,13 +1,13 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202105
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202106
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202107
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202108
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202109
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202110
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202111
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202112
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202105
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202106
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202107
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202108
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202109
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202110
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202111
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202112
 fileEnding:
    - mp3 # wav
    - wav
@@ -40,3 +40,9 @@ speciesIndexList:
    - luscinia_luscinia
    - phoenicurus_phoenicurus
    - fringilla_coelebs
+basePort: 9000
+analyzeThreads: 6
+transformModelOutput: False
+allThreadsUseSamePort: False
+repeats: 10
+modelOutputStyle: resultDict
