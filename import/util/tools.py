@@ -141,6 +141,11 @@ def load_config(filepath):
             if "modelOutputStyle" in config_dict
             else None
         )
+        config_dict["onlyAnalze"] = (
+            config_dict["modelOutputStyle"]
+            if "modelOutputStyle" in config_dict
+            else False
+        )
 
     return config_dict
 
@@ -183,7 +188,12 @@ def load_files_list(config, files_queue):
         if processed_dict.get(filepath + "\n", False):
             # if file is already processed do not add
             continue
-        files_queue.put(filepath)
+        # check if is files_queue is alist and append filepath
+        # if not, add filepath to files_queue
+        if isinstance(files_queue, list):
+            files_queue.append(filepath)
+        else:
+            files_queue.put(filepath)
     return len(lines), files_count
 
 

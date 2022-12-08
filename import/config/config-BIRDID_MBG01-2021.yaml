@@ -1,0 +1,42 @@
+# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+recordFolder:
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202105
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202106
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202107
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202108
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202109
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202110
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202111
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202112
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdid-europe254-2103/AMMOD/MBG01/2021
+# Index to name File of your used model
+indexToNameFile: ./birdid-europe-254_index_to_name.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDID_MGB01_2021"
+testRun: False
+timezone: CET
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - dendrocopos_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - turdus_merula
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs

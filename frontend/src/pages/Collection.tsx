@@ -77,9 +77,6 @@ export default function Collection(props: CollectionProps) {
    const [hasIndex, setHasIndex] = useState<boolean>(false)
    const [filterFrequency, setFilterFrequency] = useState<number>(100)
    const [useFilter, setFilterUse] = useState<boolean>(false)
-   const [useFixTimezone, setFixTimezone] = useState<boolean>(true)
-   const [timeZone, setTimeZone] = useState<number>(1)
-
    const globalState = useContext(store)
    const { state } = globalState
    const { updateJobs } = useUpdateJobs()
