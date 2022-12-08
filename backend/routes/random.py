@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from routes.predictions import do_add_index_job
 from sql.query import add_job, update_job_status, get_job_by_id
 
-from create_sample import create_sample
+from tasks.create_sample import create_sample
 
 
 class Record(BaseModel):
@@ -46,9 +46,9 @@ def router(app, root, database):
     async def get_random_sample(request: RandomSampleRequest):
         print(request)
         # synchronous function in thread for asyncio compatibility
-        BAI_TMP_DIRECTORY = os.getenv("BAI_TMP_DIRECTORY")
-        if not path.exists(BAI_TMP_DIRECTORY):
-            os.makedirs(BAI_TMP_DIRECTORY)
+        MDAS_TMP_DIRECTORY = os.getenv("MDAS_TMP_DIRECTORY")
+        if not path.exists(MDAS_TMP_DIRECTORY):
+            os.makedirs(MDAS_TMP_DIRECTORY)
         # parse start string to datetime object
 
         if request.start_datetime:
@@ -75,7 +75,7 @@ def router(app, root, database):
         ).strftime("%Y%m%d_%H%M%S")
         print(end_datetime_str)
 
-        result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
+        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
         if not path.exists(result_directory):
             os.makedirs(result_directory)
         result_filename = "{time}_{prefix}_{species}_{threshold_min}_{threshold_max}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
@@ -102,7 +102,7 @@ def router(app, root, database):
                 create_sample(
                     prefix=request.prefix,
                     result_filepath=result_filepath,
-                    BAI_TMP_DIRECTORY=BAI_TMP_DIRECTORY,
+                    MDAS_TMP_DIRECTORY=MDAS_TMP_DIRECTORY,
                     species=request.species,
                     threshold_min=request.threshold_min,
                     threshold_max=request.threshold_max,
@@ -151,6 +151,6 @@ def router(app, root, database):
 
     @app.get("/random_sample/file/{filename}")
     async def get_random_sample(filename: str) -> FileResponse:
-        result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
+        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
         result_filepath = os.path.join(result_directory, filename)
         return FileResponse(result_filepath, media_type="application/zip")

@@ -1,6 +1,4 @@
 
-
-
 def insert_record(prefix, filepath, filename, record_datetime, duration, channels):
     return """INSERT INTO {}_records
 VALUES (null, '{}', '{}', '{}', {}, {});""".format(

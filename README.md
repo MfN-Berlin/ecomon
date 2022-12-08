@@ -2,25 +2,41 @@
 
 Use script to analyze big collections auf recordings
 
-## Packages needed:
+# Setup
 
-```bash
-pip3 install tqdm
-pip3 install pyyaml
-pip3 install python-dotenv
-# if you have problems with mariadb try to install first
-# sudo apt-get install libmariadbclient-dev
-pip3 install mariadb
-
-```
-
-## HOW TO USE
+## Setup Web Service with docker-compose
 
 1. clone repository
-2. copy .env-default to .env
-3. change enviroment variables in .env as you like
-4. start database with `docker-compose up -d`
-5. run main.py
+2. copy .env-default to .env ans set following variables
+   ```bash
+   MDAS_MARIADB_PORT=3306                 # port of database
+   MDAS_MARIADB_DATABASE=DATABASE_NAME    # database name of the service, It will be created in the docker container
+   MDAS_MARIADB_USER=DB_USER              # database user
+   MDAS_MARIADB_PASSWORD=dev_password     # password of database user
+   MDAS_MARIADB_ROOT_PASSWORD=root_password # root password of the database
+   MDAS_DATA_DIRECTORY=/net/              # root directory of monitoring recordings
+   MDAS_TMP_DIRECTORY=./runtime-data/backend/tmp # directory for temporary files used for packaging result zip files
+   MDAS_SAMPLE_FILE_DIRECTORY=./runtime-data/backend/files # files created from the service
+   ```
+3. change environment variables in .env
+4. start service with `docker-compose up -d`
+
+## How to start dev environment
+
+1. copy .env to backend folder
+2. create development python environment
+3. install requirements
+
+```bash
+pip install --no-cache-dir --upgrade -r /code/requirements.txt
+pip install pytz
+pip install pyyaml
+```
+
+3. start development database with
+   `docker-compose -f docker-compose.dev.yaml up -d`
+4. change to your python environment and start dev server
+   `./run.dev.sh'
 
 # MARIABDB - MYSQLWORCKBENCH
 
@@ -32,11 +48,6 @@ useSSL=0
 ```
 
 ## Setup
-
-1. Load image from tar file
-2.
-
-# How to use Docker Container
 
 ## Load docker image
 
@@ -70,13 +81,6 @@ resultDict['classIds']
 resultDict['classNamesScientific']
 resultDict['startTimes']
 resultDict['probs'] # Prediction Matrix: nChannels x nSegments x nClasses
-
-# AMMOD Data Portal
-
--  production https://data.ammod.de
--  staging https://ammod.gfbio.dev/
--  docu https://gitlab.gwdg.de/gfbio/ammod/-/wikis/AMMOD%20Data%20portal%20documentation
--  examples https://gitlab.gwdg.de/gfbio/ammod-examples-schemas
 
 ## AMMOD Stations
 
@@ -151,4 +155,5 @@ string in this format "YYYY-MM-DD HH:MM:SS"
 ## How to run
 
 ## Connect database via ssh to local machine
+
 `ssh -L 3306:192.168.101.41:3306 tsa@192.168.101.41`

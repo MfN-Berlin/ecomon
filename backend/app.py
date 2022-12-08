@@ -17,12 +17,12 @@ load_dotenv()
 
 path_prefix = os.getenv("ROOT_PATH")
 # initiliaze database connection
-user = os.getenv("BAI_MARIADB_USER")
+user = os.getenv("MDAS_MARIADB_USER")
 
-password = os.getenv("BAI_MARIADB_PASSWORD")
-host = os.getenv("BAI_MARIADB_HOST")
-port = int(os.getenv("BAI_MARIADB_PORT"))
-database = os.getenv("BAI_MARIADB_DATABASE")
+password = os.getenv("MDAS_MARIADB_PASSWORD")
+host = os.getenv("MDAS_MARIADB_HOST")
+port = int(os.getenv("MDAS_MARIADB_PORT"))
+database = os.getenv("MDAS_MARIADB_DATABASE")
 database_connection_string = "mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4".format(
     user=user, password=password, host=host, port=port, dbname=database
 )

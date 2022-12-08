@@ -16,7 +16,7 @@ import { useUpdateJobs } from '../hooks/jobs'
 
 export default function Title() {
    const globalState = useContext(store)
-   const { state, dispatch } = globalState
+   const { state } = globalState
    const [value, setValue] = React.useState(0)
    const { updateJobs } = useUpdateJobs()
    const handleChange = (event: React.SyntheticEvent, newValue: number) => {

@@ -124,7 +124,7 @@ def router(app: FastAPI, root: str, database: Database):
         species = request.species
         bin_width = request.bin_width
         audio_padding = request.audio_padding
-        result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
+        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
 
         if not path.exists(result_directory):
             os.makedirs(result_directory)
@@ -181,7 +181,7 @@ def router(app: FastAPI, root: str, database: Database):
         request_timezone = request.request_timezone
         min_threshold = request.min_threshold
         max_threshold = request.max_threshold
-        result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
+        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
 
         if not path.exists(result_directory):
             os.makedirs(result_directory)
@@ -247,7 +247,7 @@ def router(app: FastAPI, root: str, database: Database):
         request_timezone = request.request_timezone
         min_threshold = request.min_threshold
         max_threshold = request.max_threshold
-        result_directory = os.getenv("BAI_SAMPLE_FILE_DIRECTORY")
+        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
 
         if not path.exists(result_directory):
             os.makedirs(result_directory)
