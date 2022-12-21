@@ -3,14 +3,6 @@ import random
 from pymysql.converters import escape_string
 
 
-def get_record_id_by_filepath(prefix, filepath):
-    return """
-    SELECT id from {}_records where filepath = '{}'
-    """.format(
-        prefix, filepath
-    )
-
-
 def get_prediction_random_sample(
     prefix,
     sample_size,
