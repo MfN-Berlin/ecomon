@@ -82,7 +82,16 @@ def store_loop_factory(
                                     processed_f.flush()
                                     progress.update(1)
                                     continue
+                            #print input_filepath
+                            #print("Storing {}".format(input_filepath))        
+                            # check if file exists
+                            if not path.exists(input_filepath):
+                                raise Exception(
+                                    "File {} does not exist".format(input_filepath  
+                                ))
+
                             metadata = ffmpeg.probe(input_filepath)["streams"][0]
+                            #print(metadata)
                             channels = metadata["channels"]
                             duration = metadata["duration"]
                             parse_result = parse_filename_for_location_date_time_function_dict[

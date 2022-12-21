@@ -16,6 +16,9 @@ import os
 
 
 def analyze(config_filepath, create_index=False):
+    # print method paramaters
+    print("config_filepath", config_filepath)
+    print("create_index", create_index)
     
     if not os.path.exists("./cache"):
         os.makedirs("./cache")
