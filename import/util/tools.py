@@ -16,14 +16,6 @@ FileNameInformation = NamedTuple(
 )
 
 
-def calc_checksum(filename, hash_factory=hashlib.md5, chunk_num_blocks=128):
-    h = hash_factory()
-    with open(filename, "rb") as f:
-        for chunk in iter(lambda: f.read(chunk_num_blocks * h.block_size), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
 def parse_datetime(date_string):
     try:
         return datetime.strptime(date_string, "%y%m%d_%H%M%S")
@@ -83,13 +75,6 @@ parse_filename_for_location_date_time_function_dict = {
     "ammod": parse_filename_ammod,
     "inpediv": parse_filename_inpediv,
 }
-
-
-# timedelta is in seconds
-def add_time_to_datetime(dt, delta):
-    seconds = int(math.floor(delta))
-    milliseconds = int(round((delta - seconds) * 1000))
-    return dt + timedelta(seconds=seconds, milliseconds=milliseconds)
 
 
 def load_config(filepath):
@@ -194,19 +179,3 @@ def load_files_list(config, files_queue):
             files_queue.put(filepath)
     return len(lines), files_count
 
-
-def parse_boolean(value):
-    value = value.lower()
-
-    if value in ["true", "yes", "y", "1", "t"]:
-        return True
-    elif value in ["false", "no", "n", "0", "f"]:
-        return False
-
-    return False
-
-
-def species_row_to_name(string):
-    tmp = string[0].upper() + string[1:]
-    tmp = tmp.replace("_", " ")
-    return tmp
