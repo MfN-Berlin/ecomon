@@ -1,7 +1,9 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 
 recordFolder: 
-  - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201807
+  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201903
+  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201904
+  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201905
   #- /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/2019/
 fileEnding:
    - mp3 # wav

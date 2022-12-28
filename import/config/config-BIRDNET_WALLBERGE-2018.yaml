@@ -9,9 +9,9 @@ recordFolder:
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201806
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201805
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201804
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201803
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201802
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201801
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201801
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201802
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201803
 fileEnding:
    - mp3 # wav
    - wav
