@@ -1,0 +1,43 @@
+# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+recordFolder:
+   - /path/to/folder1
+   - /path/to/folder2
+   - /path/to/folder3
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: folder/to/save/results
+# Index to name File of your used model
+indexToNameFile: ./path/to/index_to_name_file.json
+# prefix of database tables of your analyze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "CLASSIFICATOR-NAME_LOCATION_RECORD-YEAR"
+testRun: False
+timezone: CET
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - dendrocopos_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - turdus_merula
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 7100
+analyzeThreads: 30
+transformModelOutput: True
+allThreadsUseSamePort: False
+repeats: 2
+modelOutputStyle: Null
