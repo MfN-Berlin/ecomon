@@ -1,5 +1,8 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201801
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201802
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201803
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201807
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201808
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE/WALLBERGE_201809

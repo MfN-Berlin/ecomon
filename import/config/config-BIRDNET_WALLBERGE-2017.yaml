@@ -1,0 +1,51 @@
+# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+recordFolder:
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201707
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201708
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201709
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201710
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201711
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201712
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201706
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201705
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201704
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201703
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201702
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201701
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdnet-public-3k-v2.2/AMMOD/WALLBERGE/2017
+# Index to name File of your used model
+indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDNET_WALLBERGE_2017"
+testRun: False
+timezone: CET
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - dendrocopos_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - turdus_merula
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 7100
+analyzeThreads: 30
+transformModelOutput: True
+allThreadsUseSamePort: False
+repeats: 2
