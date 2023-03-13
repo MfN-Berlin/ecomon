@@ -11,10 +11,11 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import InputBase from '@mui/material/InputBase'
 import SearchIcon from '@mui/icons-material/Search'
+
 import { useAppSelector, useAppDispatch } from '../store/hooks'
 import { setDrawerOpenState } from '../store/slices/ui'
 import { useGetCollectionsQuery } from '../services/api'
-import { parseCollectionName } from '../tools/stringHandling'
+import { parseCollectionName, groupByModel } from '../tools/stringHandling'
 
 const DrawerHeader = styled('div')(({ theme }) => ({
    position: 'fixed',
@@ -46,18 +47,12 @@ export default function PersistentDrawerRight(props: DrawerProps) {
    }
 
    function transformCollectionData(data: string[], filter = '') {
-      const filteredData = [...data]
-      filteredData.sort()
-      const collections = filteredData
-         .map((name) => parseCollectionName(name))
-         .filter(
-            (item) =>
-               item.model.toLowerCase().includes(filter.toLowerCase()) ||
-               item.station.toLowerCase().includes(filter.toLowerCase()) ||
-               item.id.toLowerCase().includes(filter.toLowerCase())
-         )
+      const filteredData = [...data].filter((item) => item.toLowerCase().includes(filter.toLowerCase()))
 
-      return collections
+      filteredData.sort()
+      const collections = filteredData.map((name) => parseCollectionName(name))
+
+      return groupByModel(collections)
    }
 
    return (
@@ -93,17 +88,34 @@ export default function PersistentDrawerRight(props: DrawerProps) {
          <p></p>
          <p></p>
          <List>
-            {transformCollectionData(data || [], filterValue).map(({ station, model, year, id }, index) => (
-               <ListItemButton
-                  key={id}
-                  component={Link}
-                  to={'/collection/' + id}
-                  sx={{ m: '1px', p: '0px', pl: '8px' }}
-                  selected={id === routeId}
-               >
-                  <ListItemText primary={`${station}: ${year}`} secondary={model} />
-               </ListItemButton>
-            ))}
+            {transformCollectionData(data || [], filterValue).flatMap(({ modelName, collections }, index) => {
+               const isOddGroup = index % 2 !== 0
+               return [
+                  <React.Fragment>
+                     <Divider
+                        sx={{
+                           position: 'sticky',
+                           top: 60,
+                           backgroundColor: isOddGroup ? '#bababa' : '#f0f0f0',
+                           zIndex: 99
+                        }}
+                     >
+                        <ListItemText primary={modelName} />
+                     </Divider>
+                  </React.Fragment>,
+                  ...collections.map(({ id, station, year, model }) => (
+                     <ListItemButton
+                        key={`item-${id}`}
+                        component={Link}
+                        to={`/collection/${id}`}
+                        sx={{ m: '1px', p: '0px', pl: '24px', backgroundColor: isOddGroup ? '#bababa' : '#f0f0f0' }}
+                        selected={id === routeId}
+                     >
+                        <ListItemText primary={`${station}: ${year}`} />
+                     </ListItemButton>
+                  ))
+               ]
+            })}
          </List>
       </Drawer>
    )
