@@ -72,7 +72,7 @@ export default function Collection(props: CollectionProps) {
    const [until, setUntil] = useState<Date | null>()
    const [thresholdMin, setThresholdMin] = useState<number>(0)
    const [thresholdMax, setThresholdMax] = useState<number>(1)
-   const [binWidth, setBinWidth] = useState<number>(0.025)
+   const [binWidth, setBinWidth] = useState<number>(0.02)
    const [sampleSize, setSampleSize] = useState<number>(100)
    const [hasIndex, setHasIndex] = useState<boolean>(false)
    const [filterFrequency, setFilterFrequency] = useState<number>(100)
@@ -114,6 +114,7 @@ export default function Collection(props: CollectionProps) {
    // download file from url
    function createSampleButtonClick(random: boolean) {
       const url = `${API_PATH}/sample`
+      console.log('usefilteR:', useFilter)
       fetch(url, {
          method: 'POST',
          headers: {
@@ -599,7 +600,7 @@ export default function Collection(props: CollectionProps) {
                                     <FormControlLabel
                                        control={
                                           <Checkbox
-                                             value={useFilter}
+                                             checked={useFilter}
                                              onChange={() => {
                                                 setFilterUse(!useFilter)
                                              }}
