@@ -1,10 +1,8 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
-
-recordFolder: 
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201903
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201904
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201905
-  #- /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/2019/
+recordFolder:
+   - /path/to/folder1
+   - /path/to/folder2
+   - /path/to/folder3
 fileEnding:
    - mp3 # wav
    - wav
@@ -12,12 +10,12 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdnet-public-3k-v2.2/AMMOD/BRITZ01/2019
-# Index to name File of your used model228613
-indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
-# prefix of databales of your anlaze run and progress cached file
+resultFolder: folder/to/save/results
+# Index to name File of your used model
+indexToNameFile: ./path/to/index_to_name_file.json
+# prefix of database tables of your analyze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDNET_BRITZ01_2019"
+prefix: "CLASSIFICATOR-NAME_LOCATION_RECORD-YEAR"
 testRun: False
 timezone: CET
 speciesIndexList:
@@ -42,3 +40,4 @@ analyzeThreads: 30
 transformModelOutput: True
 allThreadsUseSamePort: False
 repeats: 2
+modelOutputStyle: Null
