@@ -1,3 +1,5 @@
+import json
+import os
 from sql.query import (
     count_entries_in_sql_table,
     get_datetime_of_first_record_in_sql_table,
@@ -6,7 +8,8 @@ from sql.query import (
     get_index_names_of_sql_table_ending_with,
 )
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
+
 
 NON_SPECIES_COLUMN = ["id", "record_id", "start_time", "end_time", "channel"]
 
@@ -28,13 +31,42 @@ class Species(BaseModel):
     has_index: bool
 
 
+class Duration(BaseModel):
+    duration: int
+    record_count: int
+
+
+class Prediction(BaseModel):
+    prediction_count: int
+    record_count: int
+
+
+class DailySummary(BaseModel):
+    date: str
+    count: int
+    duration: float
+
+
+class Report(BaseModel):
+    first_record_datetime: str
+    last_record_datetime: str
+    records_count: int
+    corrupted_record_count_query: int
+    summed_records_duration: float
+    predictions_count: int
+    record_duration_histogram_query: List[Duration]
+    record_prediction_count_histogram_query: List[Prediction]
+    monthly_summary_query: int
+    daily_summary_query: List[DailySummary]
+
+
 def router(app, root, database):
-    @app.get(root + "/list")
+    @app.get(root + "/list", response_model=List[str])
     async def read_prefix():
         result = await database.fetch_all(get_all_prediction_table_names())
         return [remove_substring_from_end(i[0], "_predictions") for i in result]
 
-    @app.get(root + "/{prefix_name}")
+    @app.get(root + "/{prefix_name}", response_model=Collection)
     async def get_prefix_informations(prefix_name: str) -> Collection:
 
         result = await database.fetch_all(
@@ -81,7 +113,7 @@ def router(app, root, database):
             indicated_species_columns=indicated_species_columns,
         )
 
-    @app.get(root + "/{prefix_name}/species")
+    @app.get(root + "/{prefix_name}/species", response_model=List[Species])
     async def get_prefix_species(prefix_name: str) -> List[Species]:
         result = await database.fetch_all(
             get_column_names_of_sql_table_query("{}_predictions".format(prefix_name))
@@ -107,4 +139,17 @@ def router(app, root, database):
             )
 
         return species
+
+    @app.get(root + "/{collection_name}/report", response_model=Report)
+    async def get_collection_report(collection_name: str) -> Report:
+        # read env variable for report path
+
+        filename = f"{collection_name}_report.json"
+        reports_directory = os.getenv("MDAS_REPORTS_DIRECTORY")
+        if reports_directory == None:
+            raise Exception("MDAS_REPORTS_DIRECTORY not set")
+        file_path = os.path.join(reports_directory, filename)
+        with open(file_path) as f:
+            data = json.load(f)
+        return data
 
