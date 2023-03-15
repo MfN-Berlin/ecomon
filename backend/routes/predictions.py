@@ -1,4 +1,5 @@
 from sqlite3 import DatabaseError
+from routes.route_types import Message
 from sql.query import (
     add_job,
     count_predictions,
@@ -29,6 +30,10 @@ class QueryResponse(BaseModel):
     species_count: int
 
 
+class JobId(BaseModel):
+    job_id: int = None
+
+
 async def do_add_index_job(database, job_id, prefix_name, column_name):
     try:
 
@@ -46,14 +51,16 @@ async def do_add_index_job(database, job_id, prefix_name, column_name):
 
 
 def router(app, root, database):
-    @app.get(root + "/{prefix_name}/predictions/count")
+    @app.get(root + "/{prefix_name}/predictions/count", response_model=int)
     async def get_prefix_predictions_count(prefix_name: str) -> int:
         query = count_predictions(prefix_name)
         # print(query)
         return (await database.fetch_one(query))[0]
 
     # route to add index to prediction table
-    @app.put(root + "/{prefix_name}/predictions/{column_name}/index")
+    @app.put(
+        root + "/{prefix_name}/predictions/{column_name}/index", response_model=JobId
+    )
     async def add_index_to_prefix(prefix_name: str, column_name: str):
         # TODO: query parameter sanity check
         job_id = await database.execute(
@@ -63,7 +70,9 @@ def router(app, root, database):
         return {"job_id": job_id}
 
     # route to drop index from prediction table
-    @app.delete(root + "/{prefix_name}/predictions/{column_name}/index")
+    @app.delete(
+        root + "/{prefix_name}/predictions/{column_name}/index", response_model=Message
+    )
     async def drop_index_from_prefix(prefix_name: str, column_name: str):
         await database.execute(
             drop_index_for_sql_table("{}_predictions".format(prefix_name), column_name)
@@ -71,7 +80,7 @@ def router(app, root, database):
         return {"message": "index dropped"}
 
     # route to query prediction table
-    @app.post(root + "/{prefix_name}/predictions")
+    @app.post(root + "/{prefix_name}/predictions", response_model=QueryResponse)
     async def query_prediction_table(
         prefix_name: str, request: QueryRequest
     ) -> QueryResponse:

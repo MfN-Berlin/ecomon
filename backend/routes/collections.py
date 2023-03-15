@@ -1,5 +1,7 @@
 import json
 import os
+from fastapi import HTTPException
+from routes.route_types import Collection, Report, Species
 from sql.query import (
     count_entries_in_sql_table,
     get_datetime_of_first_record_in_sql_table,
@@ -7,8 +9,8 @@ from sql.query import (
     get_all_prediction_table_names,
     get_index_names_of_sql_table_ending_with,
 )
-from pydantic import BaseModel
-from typing import List, Optional, Dict
+
+from typing import List
 
 
 NON_SPECIES_COLUMN = ["id", "record_id", "start_time", "end_time", "channel"]
@@ -16,48 +18,6 @@ NON_SPECIES_COLUMN = ["id", "record_id", "start_time", "end_time", "channel"]
 
 def remove_substring_from_end(string: str, substring: str):
     return string[: -len(substring)]
-
-
-class Collection(BaseModel):
-    name: str
-    species_list: List[str]
-    records_count: int
-    predictions_count: int
-    indicated_species_columns: List[str]
-
-
-class Species(BaseModel):
-    name: str
-    has_index: bool
-
-
-class Duration(BaseModel):
-    duration: int
-    record_count: int
-
-
-class Prediction(BaseModel):
-    prediction_count: int
-    record_count: int
-
-
-class DailySummary(BaseModel):
-    date: str
-    count: int
-    duration: float
-
-
-class Report(BaseModel):
-    first_record_datetime: str
-    last_record_datetime: str
-    records_count: int
-    corrupted_record_count_query: int
-    summed_records_duration: float
-    predictions_count: int
-    record_duration_histogram_query: List[Duration]
-    record_prediction_count_histogram_query: List[Prediction]
-    monthly_summary_query: int
-    daily_summary_query: List[DailySummary]
 
 
 def router(app, root, database):
@@ -149,7 +109,12 @@ def router(app, root, database):
         if reports_directory == None:
             raise Exception("MDAS_REPORTS_DIRECTORY not set")
         file_path = os.path.join(reports_directory, filename)
-        with open(file_path) as f:
-            data = json.load(f)
-        return data
+        try:
+            with open(file_path) as f:
+                data = json.load(f)
+            return data
+        except FileNotFoundError:
+            raise HTTPException(
+                status_code=404, detail=f"File {filename}.json not found"
+            )
 

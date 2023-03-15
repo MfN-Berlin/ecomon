@@ -1,7 +1,16 @@
 import asyncio
 import os
 import time
-
+from routes.route_types import (
+    BinSizeRequest,
+    Collection,
+    DailyHistogramRequest,
+    EventResponse,
+    JobCreatedResponse,
+    PredictionsRequest,
+    Report,
+    Species,
+)
 from sql.query import get_predictions_with_file_id
 from enum import Enum
 from pydantic import BaseModel
@@ -23,47 +32,6 @@ class GroupingEnum(str, Enum):
 
 
 ROUTER_TAG = "evaluation"
-
-
-class EventResponse(BaseModel):
-    predictions_count: int
-    species_count: int
-
-
-class BinSizeRequest(BaseModel):
-    collection_name: str
-    start_datetime: str
-    end_datetime: str
-    species: Optional[str] = None
-    bin_width: Optional[float] = 0.02
-    audio_padding: Optional[int] = 5
-
-
-class PredictionsRequest(BaseModel):
-    collection_name: str
-    start_datetime: str
-    end_datetime: str
-    species: str
-    audio_padding: Optional[int] = 5
-    request_timezone: Optional[str] = "UTC"
-    min_threshold: Optional[float] = None
-    max_threshold: Optional[float] = None
-
-
-class DailyHistogramRequest(BaseModel):
-    collection_name: str
-    start_datetime: str
-    end_datetime: str
-    species: str
-    bin_width: Optional[float] = 0.02
-    audio_padding: Optional[int] = 5
-    request_timezone: Optional[str] = "UTC"
-    min_threshold: Optional[float] = None
-    max_threshold: Optional[float] = None
-
-
-class JobCreatedResponse(BaseModel):
-    job_id: int
 
 
 def router(app: FastAPI, root: str, database: Database):

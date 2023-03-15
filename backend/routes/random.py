@@ -7,7 +7,7 @@ import os
 from os import path
 from concurrent.futures import ThreadPoolExecutor
 from fastapi.responses import FileResponse
-from routes.predictions import do_add_index_job
+from routes.predictions import JobId, do_add_index_job
 from sql.query import add_job, update_job_status, get_job_by_id
 
 from tasks.create_sample import create_sample
@@ -42,9 +42,9 @@ sample_executor = ThreadPoolExecutor(10)
 def router(app, root, database):
 
     # route to get random sample from prediction table
-    @app.post("/sample")
+    @app.post("/sample", response_model=JobId)
     async def get_random_sample(request: RandomSampleRequest):
-        print(request)
+
         # synchronous function in thread for asyncio compatibility
         MDAS_TMP_DIRECTORY = os.getenv("MDAS_TMP_DIRECTORY")
         if not path.exists(MDAS_TMP_DIRECTORY):
