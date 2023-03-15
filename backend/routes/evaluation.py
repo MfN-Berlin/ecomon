@@ -35,7 +35,7 @@ class BinSizeRequest(BaseModel):
     start_datetime: str
     end_datetime: str
     species: Optional[str] = None
-    bin_width: Optional[float] = 0.025
+    bin_width: Optional[float] = 0.02
     audio_padding: Optional[int] = 5
 
 
@@ -55,7 +55,7 @@ class DailyHistogramRequest(BaseModel):
     start_datetime: str
     end_datetime: str
     species: str
-    bin_width: Optional[float] = 0.025
+    bin_width: Optional[float] = 0.02
     audio_padding: Optional[int] = 5
     request_timezone: Optional[str] = "UTC"
     min_threshold: Optional[float] = None

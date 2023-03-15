@@ -1,5 +1,17 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
-recordFolder: /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/2019/
+recordFolder:
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202001
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202002
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202003
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202004
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202005
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202006
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202007
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202008
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202009
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202010
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202011
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202012
 fileEnding:
    - mp3 # wav
    - wav
@@ -7,12 +19,12 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdid-europe254-2103/AMMOD/BRITZ01/2019
+resultFolder: birdid-europe254-2103/AMMOD/BRITZ01/2020
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BRITZ01_2019"
+prefix: "BIRDID_BRITZ01_2020"
 testRun: False
 timezone: CET
 speciesIndexList:

@@ -23,7 +23,7 @@ def __create_species__array(index_to_name):
 
 def connect_to_db():
     try:
-        print( "Connecting to MariaDB Platform...")
+        print("Connecting to MariaDB Platform...")
         print("MDAS_MARIADB_USER: {}".format(os.getenv("MDAS_MARIADB_USER")))
         print("MDAS_MARIADB_PASSWORD: {}".format(os.getenv("MDAS_MARIADB_PASSWORD")))
         print("MDAS_MARIADB_HOST: {}".format(os.getenv("MDAS_MARIADB_HOST")))
@@ -124,6 +124,7 @@ class DbWorker:
             utc_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             duration,
             channels,
+            0,
         )
 
         self.db_cursor.execute(sql_query)

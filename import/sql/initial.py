@@ -23,6 +23,7 @@ def create_record_table(prefix):
   `record_datetime` DATETIME NULL,
   `duration` DECIMAL(11, 6) NOT NULL,
   `channels` TINYINT NOT NULL,
+    `corrupted` TINYINT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX record_datetime_index(`record_datetime` ASC),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC),
@@ -54,5 +55,4 @@ CREATE TABLE `{p}_predictions` (
     """.format(
         p=prefix, r=rows
     )
-
 

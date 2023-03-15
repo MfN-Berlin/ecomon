@@ -1,8 +1,9 @@
-
-def insert_record(prefix, filepath, filename, record_datetime, duration, channels):
+def insert_record(
+    prefix, filepath, filename, record_datetime, duration, channels, corrupted
+):
     return """INSERT INTO {}_records
-VALUES (null, '{}', '{}', '{}', {}, {});""".format(
-        prefix, filepath, filename, record_datetime, duration, channels
+VALUES (null, '{}', '{}', '{}', {}, {}, {});""".format(
+        prefix, filepath, filename, record_datetime, duration, channels, corrupted
     )
 
 
