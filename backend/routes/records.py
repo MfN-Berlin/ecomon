@@ -19,7 +19,11 @@ class Record(BaseModel):
 
 
 def router(app, root, database):
-    @app.get(root + "/{prefix_name}/records/first", response_model=Record)
+    @app.get(
+        root + "/{prefix_name}/records/first",
+        response_model=Record,
+        operation_id="getFirstRecordOfCollection",
+    )
     async def get_first_record_of_prefix(prefix_name: str) -> Record:
         result = await database.fetch_one(
             get_datetime_of_first_record_in_sql_table("{}_records".format(prefix_name))
@@ -35,7 +39,11 @@ def router(app, root, database):
             channels=result[5],
         )
 
-    @app.get(root + "/{prefix_name}/records/last", response_model=Record)
+    @app.get(
+        root + "/{prefix_name}/records/last",
+        response_model=Record,
+        operation_id="getLastRecordOfCollection",
+    )
     async def get_last_record_of_prefix(prefix_name: str) -> Record:
         result = await database.fetch_one(
             get_datetime_of_last_record_in_sql_table("{}_records".format(prefix_name))
@@ -51,7 +59,11 @@ def router(app, root, database):
             channels=result[5],
         )
 
-    @app.get(root + "/{prefix_name}/records/count", response_model=int)
+    @app.get(
+        root + "/{prefix_name}/records/count",
+        response_model=int,
+        operation_id="getCountOfCollection",
+    )
     async def get_prefix_records_count(prefix_name: str) -> int:
         return (
             await database.fetch_one(
@@ -59,7 +71,11 @@ def router(app, root, database):
             )
         )[0]
 
-    @app.get(root + "/{prefix_name}/records/duration", response_model=float)
+    @app.get(
+        root + "/{prefix_name}/records/duration",
+        response_model=float,
+        operation_id="getDurationOfCollection",
+    )
     async def get_prefix_records_duration(prefix_name: str) -> float:
         return (
             await (

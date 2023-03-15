@@ -1,7 +1,21 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { DefaultApi, Configuration } from '../generated/api';
 import { API_PATH } from '../consts'
 
+
+const isProduction = process.env.NODE_ENV === 'production';
+const apiBaseUrl = isProduction
+   ? process.env.REACT_APP_API_BASE_URL_PROD
+   : process.env.REACT_APP_API_BASE_URL_DEV;
+
+const apiConfig = new Configuration({
+   basePath: apiBaseUrl,
+});
+
+const apiClient = new DefaultApi(apiConfig);
+
 type Collections = [string]
+
 
 // Define a service using a base URL and expected endpoints
 export const backendApi = createApi({

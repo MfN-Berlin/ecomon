@@ -14,7 +14,7 @@ from typing import List, Optional, Union
 
 
 def router(app, root, database):
-    @app.delete(root + "/{id}", response_model=Message)
+    @app.delete(root + "/{id}", response_model=Message, operation_id="deleteJob")
     async def delete_job(id: int):
         # get job and check in metadata for filepath
         job = await database.fetch_one(get_job_by_id(id))
@@ -36,12 +36,14 @@ def router(app, root, database):
             await database.execute(delete_job_query(id))
             return {"message": "job deleted"}
 
-    @app.get(root + "/last_update", response_model=LastUpdate)
+    @app.get(
+        root + "/last_update", response_model=LastUpdate, operation_id="getLastUpdate"
+    )
     async def get_last_update():
         job = await database.fetch_one(get_max_updated_at_from_jobs())
         return {"last_update": job[0]}
 
-    @app.get(root, response_model=List[ResultJob])
+    @app.get(root, response_model=List[ResultJob], operation_id="getAllJobs")
     async def get_all_jobs(
         prefix: Union[str, None] = None,
         type: Union[str, None] = None,

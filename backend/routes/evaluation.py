@@ -39,6 +39,7 @@ def router(app: FastAPI, root: str, database: Database):
         root + "/{collection_name}/events",
         response_model=EventResponse,
         tags=[ROUTER_TAG],
+        operation_id="getItems",
     )
     async def get_events(
         collection_name: str,
@@ -83,7 +84,10 @@ def router(app: FastAPI, root: str, database: Database):
         return result_map
 
     @app.post(
-        root + "/bin-sizes", response_model=JobCreatedResponse, tags=[ROUTER_TAG],
+        root + "/bin-sizes",
+        response_model=JobCreatedResponse,
+        tags=[ROUTER_TAG],
+        operation_id="getBinSizes",
     )
     async def get_bin_sizes(request: BinSizeRequest,) -> JobCreatedResponse:
         collection_name = request.collection_name
@@ -138,7 +142,10 @@ def router(app: FastAPI, root: str, database: Database):
         return {"job_id": job_id}
 
     @app.post(
-        root + "/predictions", response_model=JobCreatedResponse, tags=[ROUTER_TAG],
+        root + "/predictions",
+        response_model=JobCreatedResponse,
+        tags=[ROUTER_TAG],
+        operation_id="getPredictions",
     )
     async def get_predictions(request: PredictionsRequest,) -> JobCreatedResponse:
         collection_name = request.collection_name
@@ -202,6 +209,7 @@ def router(app: FastAPI, root: str, database: Database):
         root + "/daily-histograms",
         response_model=JobCreatedResponse,
         tags=[ROUTER_TAG],
+        operation_id="getDailyHistograms",
     )
     async def get_daily_histograms(
         request: DailyHistogramRequest,

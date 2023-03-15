@@ -42,7 +42,7 @@ sample_executor = ThreadPoolExecutor(10)
 def router(app, root, database):
 
     # route to get random sample from prediction table
-    @app.post("/sample", response_model=JobId)
+    @app.post("/sample", response_model=JobId, operation_id="getRandomSample")
     async def get_random_sample(request: RandomSampleRequest):
 
         # synchronous function in thread for asyncio compatibility
@@ -149,7 +149,7 @@ def router(app, root, database):
         #     result_filepath, media_type="application/zip", filename=result_filename
         # )
 
-    @app.get("/random_sample/file/{filename}")
+    @app.get("/random_sample/file/{filename}", operation_id="getRandomSampleFile")
     async def get_random_sample(filename: str) -> FileResponse:
         result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
         result_filepath = os.path.join(result_directory, filename)

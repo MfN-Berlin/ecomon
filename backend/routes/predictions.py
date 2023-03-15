@@ -51,7 +51,11 @@ async def do_add_index_job(database, job_id, prefix_name, column_name):
 
 
 def router(app, root, database):
-    @app.get(root + "/{prefix_name}/predictions/count", response_model=int)
+    @app.get(
+        root + "/{prefix_name}/predictions/count",
+        response_model=int,
+        operation_id="getCollectionPredictionsCount",
+    )
     async def get_prefix_predictions_count(prefix_name: str) -> int:
         query = count_predictions(prefix_name)
         # print(query)
@@ -59,7 +63,9 @@ def router(app, root, database):
 
     # route to add index to prediction table
     @app.put(
-        root + "/{prefix_name}/predictions/{column_name}/index", response_model=JobId
+        root + "/{prefix_name}/predictions/{column_name}/index",
+        response_model=JobId,
+        operation_id="addIndexToCollection",
     )
     async def add_index_to_prefix(prefix_name: str, column_name: str):
         # TODO: query parameter sanity check
@@ -71,7 +77,9 @@ def router(app, root, database):
 
     # route to drop index from prediction table
     @app.delete(
-        root + "/{prefix_name}/predictions/{column_name}/index", response_model=Message
+        root + "/{prefix_name}/predictions/{column_name}/index",
+        response_model=Message,
+        operation_id="dropIndexFromCollection",
     )
     async def drop_index_from_prefix(prefix_name: str, column_name: str):
         await database.execute(
@@ -80,7 +88,11 @@ def router(app, root, database):
         return {"message": "index dropped"}
 
     # route to query prediction table
-    @app.post(root + "/{prefix_name}/predictions", response_model=QueryResponse)
+    @app.post(
+        root + "/{prefix_name}/predictions",
+        response_model=QueryResponse,
+        operation_id="queryCollectionMetadata",
+    )
     async def query_prediction_table(
         prefix_name: str, request: QueryRequest
     ) -> QueryResponse:

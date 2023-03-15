@@ -21,13 +21,19 @@ def remove_substring_from_end(string: str, substring: str):
 
 
 def router(app, root, database):
-    @app.get(root + "/list", response_model=List[str])
+    @app.get(
+        root + "/list", response_model=List[str], operation_id="getCollectionNames"
+    )
     async def read_prefix():
         result = await database.fetch_all(get_all_prediction_table_names())
         return [remove_substring_from_end(i[0], "_predictions") for i in result]
 
-    @app.get(root + "/{prefix_name}", response_model=Collection)
-    async def get_prefix_informations(prefix_name: str) -> Collection:
+    @app.get(
+        root + "/{prefix_name}",
+        response_model=Collection,
+        operation_id="getCollectionInformation",
+    )
+    async def get_prefix_information(prefix_name: str) -> Collection:
 
         result = await database.fetch_all(
             get_column_names_of_sql_table_query("{}_predictions".format(prefix_name))
@@ -73,7 +79,11 @@ def router(app, root, database):
             indicated_species_columns=indicated_species_columns,
         )
 
-    @app.get(root + "/{prefix_name}/species", response_model=List[Species])
+    @app.get(
+        root + "/{prefix_name}/species",
+        response_model=List[Species],
+        operation_id="getCollectionSpecies",
+    )
     async def get_prefix_species(prefix_name: str) -> List[Species]:
         result = await database.fetch_all(
             get_column_names_of_sql_table_query("{}_predictions".format(prefix_name))
@@ -100,7 +110,11 @@ def router(app, root, database):
 
         return species
 
-    @app.get(root + "/{collection_name}/report", response_model=Report)
+    @app.get(
+        root + "/{collection_name}/report",
+        response_model=Report,
+        operation_id="getCollectionReport",
+    )
     async def get_collection_report(collection_name: str) -> Report:
         # read env variable for report path
 
