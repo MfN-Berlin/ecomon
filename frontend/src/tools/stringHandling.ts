@@ -28,6 +28,9 @@ export function parseCollectionName(name: string): Collection {
       }
    }
 }
+export function firstLetterUpperAndReplaceSpace(str: string) {
+   return (str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()).replace(/_/g, ' ');
+}
 
 
 export function groupByModel(collections: Collection[]): ModelCollection[] {

@@ -1,6 +1,6 @@
 import React, { createContext, useReducer } from 'react'
 
-type Job = {
+export type Job = {
    id: number
    collection: string
    status: 'running' | 'done' | 'failed' | 'pending'

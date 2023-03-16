@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_PATH } from '../consts'
-interface Record {
+export interface Record {
    id: number
    filepath: string
    filename: string

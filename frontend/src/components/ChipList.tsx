@@ -193,7 +193,7 @@ export default function ChipList(props: ChipListProps) {
                         variant="outlined"
                      />
                   ))}
-               ,
+
                {props.items.map((item) => (
                   <Chip
                      label={item.label}

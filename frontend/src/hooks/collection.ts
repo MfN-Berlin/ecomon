@@ -88,14 +88,14 @@ export function useCollectionSpeciesList(collectionName: string | undefined) {
    return { collectionSpeciesList, loading, update }
 }
 
-interface QueryParameters {
+export interface QueryParameters {
    start_datetime?: string | null
    end_datetime?: string | null
    species: string
    threshold_min: number
    threshold_max: number
 }
-interface QueryResponse {
+export interface QueryResponse {
    predictions_count: number
    species_count: number
 }
@@ -108,7 +108,7 @@ export function useCollectionPredictionQuery(collectionName: string | undefined)
 
    function updateQuery(queryParameters: QueryParameters) {
 
-
+      console.log("updateQuery", queryParameters)
 
       if (loading) {
          abortController.abort()

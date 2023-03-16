@@ -37,7 +37,7 @@ export default function PersistentDrawerRight(props: DrawerProps) {
    const [filterValue, setFilterValue] = React.useState<string>('')
    const theme = useTheme()
    const open = useAppSelector((state) => state.ui.drawerOpen)
-   const { data, error, isLoading } = useGetCollectionsQuery('sdfsdfsd')
+   const { data, error, isLoading } = useGetCollectionsQuery()
    const dispatch = useAppDispatch()
    // const [open, setOpen] = React.useState(true)
 
