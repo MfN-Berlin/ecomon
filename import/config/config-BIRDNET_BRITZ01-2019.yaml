@@ -1,10 +1,14 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 
-recordFolder: 
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201903
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201904
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201905
-  #- /net/mfnstore-lin/export/tsa_transfer/AudioData/AMMOD/BRITZ01/2019/
+recordFolder:
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201903
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201904
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201905
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201908
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201909
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201910
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201911
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_201912
 fileEnding:
    - mp3 # wav
    - wav
