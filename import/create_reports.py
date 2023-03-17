@@ -17,12 +17,12 @@ class CustomJSONEncoder(JSONEncoder):
         return super(CustomJSONEncoder, self).default(obj)
 
 
-def create_json_report(report_data, report_path):
+def create_json_file(report_data, report_path):
     with open(report_path, "w") as f:
         json.dump(report_data, f, indent=2, cls=CustomJSONEncoder)
 
 
-def create_report(
+def report(
     cursor, table_name, predictions_table, queries, report_path, output_format="text"
 ):
     report_data = {}
@@ -34,7 +34,7 @@ def create_report(
             with open(report_path, "w") as f:
                 f.write(f"No files in collection\n")
         elif output_format == "json":
-            create_json_report({"message": "No files in collection"}, report_path)
+            create_json_file({"message": "No files in collection"}, report_path)
         print(f"No files in collection {table_name}")
         return
 
@@ -87,11 +87,11 @@ def create_report(
                 f.write(f"{key}: {value}\n")
                 f.write("\n")
     elif output_format == "json":
-        create_json_report(report_data, report_path)
+        create_json_file(report_data, report_path)
 
 
 # create a connection to the MySQL database
-def main(args):
+def create_report(prefix=None, output_format="json"):
     load_dotenv()
     root_dir = getenv("MDAS_DATA_DIRECTORY")
 
@@ -106,8 +106,8 @@ def main(args):
     cursor = cnx.cursor()
 
     REPORTS_DIR = "./reports"
-    if args.collection_prefix:
-        prefixes = [args.collection_prefix]
+    if prefix is not None:
+        prefixes = [prefix]
     else:
         cursor.execute("SHOW TABLES LIKE '%\\_records'")
         tables = cursor.fetchall()
@@ -116,7 +116,7 @@ def main(args):
     for prefix in prefixes:
         table_name = f"{prefix}_records"
         predictions_table = f"{prefix}_predictions"
-        output_format = args.output_format
+
         report_extension = "json" if output_format == "json" else "txt"
         report_name = f"{prefix}_report.{report_extension}"
         report_path = os.path.join(REPORTS_DIR, report_name)
@@ -175,7 +175,7 @@ def main(args):
 
         print(f"Creating {output_format} report for {table_name} at {report_path}...")
 
-        create_report(
+        report(
             cursor,
             table_name,
             predictions_table,
@@ -188,7 +188,10 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate report for a collection")
     parser.add_argument(
-        "collection_prefix", nargs="?", help="Collection/prefix name (optional)",
+        "collection_prefix",
+        nargs="?",
+        help="Collection/prefix name (optional)",
+        default=None,
     )
     parser.add_argument(
         "output_format",
@@ -199,4 +202,5 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(args)
+    create_report(prefix=args.collection_prefix, output_format=args.output_format)
+

@@ -4,7 +4,12 @@ import os
 
 def main(configs):
     for config in configs:
-        os.system("python3 import/import_records.py " + config + " --create_index")
+        os.system(
+            "python3 import/import_records.py "
+            + config
+            + " --create_index"
+            + " --create_report"
+        )
 
 
 if __name__ == "__main__":

@@ -5,6 +5,8 @@ from worker.analyze import analyze_loop_factory
 from worker.store import store_loop_factory
 from util.db import init_db
 from pytz import timezone
+from create_reports import create_report
+
 from util.tools import (
     load_config,
     load_files_list,
@@ -15,11 +17,11 @@ from util.db import drop_species_indices, create_species_indices
 import os
 
 
-def analyze(config_filepath, create_index=False):
+def analyze(config_filepath, create_index=False, create_report_flag=False):
     # print method paramaters
     print("config_filepath", config_filepath)
     print("create_index", create_index)
-    
+
     if not os.path.exists("./cache"):
         os.makedirs("./cache")
 
@@ -30,7 +32,7 @@ def analyze(config_filepath, create_index=False):
     analyze_thread_count = config["analyzeThreads"]
     print("ANALYZE_THREADS", analyze_thread_count)
     index_to_name = load_json(config["indexToNameFile"])
-    if(config["onlyAnalyze"] is False):
+    if config["onlyAnalyze"] is False:
         init_db(config["prefix"], index_to_name)
     if create_index and config["onlyAnalyze"] is False:
         drop_species_indices(
@@ -102,6 +104,8 @@ def analyze(config_filepath, create_index=False):
         create_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
+    if create_report_flag is True:
+        create_report(prefix=config["prefix"], output_format="json")
 
 
 # parse parameter when called as script
@@ -119,10 +123,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "--create_index", help="create index", action="store_true", default=False,
     )
+    parser.add_argument(
+        "--create_report", help="create json report", action="store_true", default=False
+    )
 
     args = parser.parse_args()
     if args.config_filepath:
-        analyze(args.config_filepath, create_index=args.create_index)
+        analyze(
+            args.config_filepath,
+            create_index=args.create_index,
+            create_report_flag=args.create_report,
+        )
     else:
         print("No config file specified")
         exit(1)
