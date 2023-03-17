@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react'
 import { Record } from '../../hooks/records'
+import { Report } from '../../generated/api/index'
 interface CollectionStats {
    predictionCount: number
    recordCount: number
@@ -21,6 +22,7 @@ interface CollectionStats {
    setDurationLoading: (durationLoading: boolean) => void
    setFirstRecordLoading: (firstRecordLoading: boolean) => void
    setLastRecordLoading: (lastRecordLoading: boolean) => void
+   setReport: (report: Report) => void
 }
 
 const CollectionStatsContext = createContext<CollectionStats | undefined>(undefined)
@@ -36,6 +38,11 @@ export const CollectionStatsProvider: React.FC = ({ children }) => {
    const [durationLoading, setDurationLoading] = useState<boolean>(false)
    const [firstRecordLoading, setFirstRecordLoading] = useState<boolean>(false)
    const [lastRecordLoading, setLastRecordLoading] = useState<boolean>(false)
+   function setReport(report: Report) {
+      setPredictionCount(report.predictions_count)
+      setRecordCount(report.records_count)
+      setRecordDuration(report.summed_records_duration)
+   }
    return (
       <CollectionStatsContext.Provider
          value={{
@@ -58,7 +65,8 @@ export const CollectionStatsProvider: React.FC = ({ children }) => {
             setRecordLoading,
             setDurationLoading,
             setFirstRecordLoading,
-            setLastRecordLoading
+            setLastRecordLoading,
+            setReport
          }}
       >
          {children}

@@ -22,9 +22,10 @@ export const backendApi = createApi({
             return apiClient.getCollectionNames()
          },
       }),
-      getCollectionReport: builder.query<Report, string>({
+      getCollectionReport: builder.query<Report, string | undefined>({
          queryFn: (collectionName) => {
-            return apiClient.getCollectionReport(collectionName)
+            // Hack to undefined to empty string
+            return apiClient.getCollectionReport(collectionName || "")
          },
       }),
    })

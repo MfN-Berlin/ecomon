@@ -100,11 +100,11 @@ class ResultJob(BaseModel):
     collection: str
     type: str
     status: str
-    metadata: datetime.datetime
+    metadata: Optional[dict] = None
     progress: str
-    error: str
-    created_at: str
-    updated_at: str
+    error: Optional[str] = None
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
 
 class Message(BaseModel):

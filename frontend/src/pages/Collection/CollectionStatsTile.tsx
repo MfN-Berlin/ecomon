@@ -14,6 +14,8 @@ import { useRecordCount, useRecordDuration, useFirstRecord, useLastRecord } from
 import { secondsToYearsMonthDaysHoursMinutesSeconds } from '../../tools/timeHandling'
 import { useCollectionStats } from './CollectionStatsContext'
 
+import { useGetCollectionReportQuery } from '../../services/api'
+
 dayjs.extend(utc)
 dayjs.extend(timezone)
 // Set to Central European Winter time, weird notation offset is inverse
@@ -23,36 +25,31 @@ interface CollectionStatsProps {
    collectionId: string | undefined
 }
 export default function CollectionStats({ collectionId: id }: CollectionStatsProps) {
-   const { predictionCount, loading: predictionLoading } = usePredictionCount(id)
-   const { recordCount, loading: recordLoading } = useRecordCount(id)
-   const { recordDuration, loading: durationLoading } = useRecordDuration(id)
+   const { data: report, refetch, isFetching } = useGetCollectionReportQuery(id)
+
+   const { predictionCount } = usePredictionCount(id)
+   const { recordCount } = useRecordCount(id)
+   const { recordDuration } = useRecordDuration(id)
    const { firstRecord, loading: firstRecordLoading } = useFirstRecord(id)
    const { lastRecord, loading: lastRecordLoading } = useLastRecord(id)
    const collectionStats = useCollectionStats()
+
    useEffect(() => {
-      collectionStats.setPredictionCount(predictionCount)
-   }, [predictionCount])
+      if (id) {
+         refetch()
+      }
+   }, [id, refetch])
    useEffect(() => {
-      collectionStats.setRecordCount(recordCount)
-   }, [recordCount])
-   useEffect(() => {
-      collectionStats.setRecordDuration(recordDuration)
-   }, [recordDuration])
+      console.log('report:', report)
+   }, [report])
+
    useEffect(() => {
       collectionStats.setFirstRecord(firstRecord)
    }, [firstRecord])
    useEffect(() => {
       collectionStats.setLastRecord(lastRecord)
    }, [lastRecord])
-   useEffect(() => {
-      collectionStats.setPredictionLoading(predictionLoading)
-   }, [predictionLoading])
-   useEffect(() => {
-      collectionStats.setRecordLoading(recordLoading)
-   }, [recordLoading])
-   useEffect(() => {
-      collectionStats.setDurationLoading(durationLoading)
-   }, [durationLoading])
+
    useEffect(() => {
       collectionStats.setFirstRecordLoading(firstRecordLoading)
    }, [firstRecordLoading])
@@ -105,7 +102,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                   id="recordCount"
                   label="Recording Count"
                   variant="standard"
-                  value={recordLoading ? 'Loading...' : recordCount}
+                  value={isFetching ? 'Loading...' : recordCount}
                   InputProps={{
                      readOnly: true
                   }}
@@ -114,7 +111,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                   id="recordDuration"
                   label="Summed Duration of Recordings"
                   variant="standard"
-                  value={durationLoading ? 'loading...' : secondsToYearsMonthDaysHoursMinutesSeconds(recordDuration)}
+                  value={isFetching ? 'loading...' : secondsToYearsMonthDaysHoursMinutesSeconds(recordDuration)}
                   InputProps={{
                      readOnly: true
                   }}
@@ -123,7 +120,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                   id="predictionCount"
                   label="Prediction Count"
                   variant="standard"
-                  value={predictionLoading ? 'loading...' : predictionCount}
+                  value={isFetching ? 'loading...' : predictionCount}
                   InputProps={{
                      readOnly: true
                   }}
