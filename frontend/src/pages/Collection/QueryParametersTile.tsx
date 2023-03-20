@@ -10,8 +10,8 @@ import SendIcon from '@mui/icons-material/Send'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
-import { useQueryParameters } from './QueryParameterContext'
-import { useCollectionStats } from './CollectionStatsContext'
+import { useQueryParameters } from './Context/QueryParameterContext'
+import { useCollectionStats } from './Context/CollectionStatsContext'
 
 import Select from 'react-select'
 
@@ -24,7 +24,7 @@ import { API_PATH } from '../../consts'
 import { firstLetterUpperAndReplaceSpace } from '../../tools/stringHandling'
 import { useCollectionSpeciesList, useCollectionPredictionQuery } from '../../hooks/collection'
 import { useEffect } from 'react'
-import { useQueryResult } from './QueryResultContext'
+import { useQueryResult } from './Context/QueryResultContext'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -34,8 +34,10 @@ dayjs.tz.setDefault('Etc/GMT-1')
 interface CollectionStatsProps {
    collectionId: string | undefined
 }
+
 export default function QueryParameters({ collectionId: id }: CollectionStatsProps) {
-   const { collectionSpeciesList, loading: speciesLoading, update: updateSpeciesList } = useCollectionSpeciesList(id)
+   const { collectionSpeciesList, loading: speciesLoading } = useCollectionSpeciesList(id)
+   const { firstRecordDatetime, lastRecordDatetime, loading } = useCollectionStats()
    const { setLoading: setQueryLoading, setResult: setQueryResult } = useQueryResult()
    const {
       predictionQueryResponse,
@@ -44,7 +46,7 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
       abortQuery,
       clearResponse
    } = useCollectionPredictionQuery(id)
-   const { firstRecord, lastRecord, firstRecordLoading, lastRecordLoading } = useCollectionStats()
+
    const {
       from,
       setFrom,
@@ -63,11 +65,10 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
    } = useQueryParameters()
 
    useEffect(() => {
-      setFrom(firstRecord ? firstRecord.record_datetime : null)
-   }, [firstRecord])
-   useEffect(() => {
-      setUntil(lastRecord ? lastRecord.record_datetime : null)
-   }, [lastRecord])
+      setFrom(firstRecordDatetime)
+      setUntil(lastRecordDatetime)
+   }, [loading])
+
    useEffect(() => {
       setQueryResult(predictionQueryResponse)
    }, [predictionQueryResponse])
@@ -75,19 +76,12 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
       setQueryLoading(queryLoading)
    }, [queryLoading])
 
-   useEffect(() => {
-      setFrom(firstRecord ? firstRecord.record_datetime : null)
-   }, [firstRecord])
-   useEffect(() => {
-      setUntil(lastRecord ? lastRecord.record_datetime : null)
-   }, [lastRecord])
-
    // effect clear prediction query response on change
    useEffect(() => {
       abortQuery()
       clearResponse()
       // eslint-disable-next-line
-   }, [selectedSpecies, from, until])
+   }, [selectedSpecies])
 
    // Event handlers
    function handleQueryButtonClick() {
@@ -168,25 +162,14 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
          })
    }
    return (
-      <Grid xs={12} md={4}>
-         <Paper
-            sx={{
-               padding: 1
-            }}
-         >
-            <Stack direction="column" spacing={2}>
-               <Typography
-                  variant="h6"
-                  component="h6"
-                  align="left"
-                  sx={{
-                     marginTop: 1,
-                     marginLeft: 2,
-                     paddingBottom: 2
-                  }}
-               >
-                  Query Parameters
-               </Typography>
+      <Grid xs={12} container spacing={2}>
+         <Grid xs={12} md={12}>
+            <Typography variant="subtitle2" component="div" align="left">
+               Query Parameters
+            </Typography>
+         </Grid>
+         <Grid xs={4}>
+            <Stack direction="column" spacing={1}>
                <DateTimePicker
                   renderInput={(props: TextFieldProps) => (
                      <TextField
@@ -201,11 +184,11 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
                   value={dayjs(from)}
                   inputFormat="YYYY/MM/DD HH:mm"
                   // @ts-ignore
-                  minDateTime={dayjs(firstRecord?.record_datetime)}
+                  minDateTime={dayjs(firstRecordDatetime)}
                   // @ts-ignore
-                  maxDateTime={dayjs(lastRecord?.record_datetime)}
+                  maxDateTime={dayjs(lastRecordDatetime)}
                   ampm={false}
-                  loading={firstRecordLoading || lastRecordLoading}
+                  loading={loading}
                   onChange={(value: Date | null) => {
                      if (value) {
                         setFrom(value)
@@ -226,21 +209,32 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
                   value={until}
                   inputFormat="YYYY/MM/DD HH:mm"
                   // @ts-ignore
-                  minDateTime={dayjs(firstRecord?.record_datetime)}
+                  minDateTime={dayjs(firstRecordDatetime)}
                   // @ts-ignore
-                  maxDateTime={dayjs(lastRecord?.record_datetime)}
+                  maxDateTime={dayjs(lastRecordDatetime)}
                   ampm={false}
-                  loading={firstRecordLoading || lastRecordLoading}
+                  loading={loading}
                   onChange={(value: Date | null) => {
                      if (value) {
                         setUntil(value)
                      }
                   }}
                />
-               <Stack direction="row" spacing={0} justifyContent="space-evenly" alignItems="stretch">
-                  <div style={{ minWidth: '250px' }}>
+            </Stack>
+         </Grid>
+
+         <Grid xs={4}>
+            <Stack direction="column" spacing={1} sx={{ height: '100%' }}>
+               <Stack direction="row" spacing={0} justifyContent="space-evenly" alignItems="stretch" sx={{ flex: '1' }}>
+                  <div style={{ flexGrow: 1, paddingRight: 10 }}>
                      <Select
                         isClearable
+                        styles={{
+                           control: (baseStyles, state) => ({
+                              ...baseStyles,
+                              height: 56
+                           })
+                        }}
                         isLoading={speciesLoading}
                         onChange={(newValue) => {
                            if (newValue) setSelectedSpecies(newValue.value)
@@ -266,95 +260,95 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
                      label="has Index"
                   />
                </Stack>
-               <Stack direction="row" spacing={2}>
-                  <NumberInput
-                     numberValue={thresholdMin}
-                     numberType={'float'}
-                     onNumberChange={setThresholdMin}
-                     label=" >= threshold"
-                     sx={{
-                        width: '100%'
-                     }}
-                  />
-
-                  <NumberInput
-                     numberValue={thresholdMax}
-                     numberType={'float'}
-                     onNumberChange={setThresholdMax}
-                     label=" <= threshold"
-                     sx={{
-                        width: '100%'
-                     }}
-                  />
-               </Stack>
-               <Stack direction="row" spacing={2} justifyContent="space-around">
-                  <NumberInput
-                     numberValue={binWidth}
-                     numberType={'float'}
-                     onNumberChange={setBinWidth}
-                     label="Bin Width"
-                     sx={{
-                        width: '100%'
-                     }}
-                  />
-
-                  <Button
-                     color="primary"
-                     variant="contained"
-                     disabled={!selectedSpecies}
-                     endIcon={<AddCircleOutlineIcon />}
-                     sx={{
-                        width: '100%'
-                     }}
-                     onClick={() => calcBinSizesButtonClick()}
-                  >
-                     {' '}
-                     Calculate Bin Sizes
-                  </Button>
-               </Stack>
-               <Stack direction="row" spacing={2}>
-                  <Button
-                     variant="contained"
-                     disabled={!selectedSpecies}
-                     endIcon={<SendIcon />}
-                     sx={{
-                        padding: 1.5,
-                        width: '100%'
-                     }}
-                     onClick={getPredictionsButtonClick}
-                  >
-                     {' '}
-                     Get Predictions
-                  </Button>
-                  <Button
-                     variant="contained"
-                     disabled={!selectedSpecies}
-                     endIcon={<SendIcon />}
-                     sx={{
-                        padding: 1.5,
-                        width: '100%'
-                     }}
-                     onClick={getDailyHistogramsButtonClick}
-                  >
-                     {' '}
-                     Get Daily Histograms
-                  </Button>
-               </Stack>
-               <Button
-                  variant="contained"
-                  disabled={!selectedSpecies}
-                  endIcon={<SendIcon />}
+               <NumberInput
+                  numberValue={binWidth}
+                  numberType={'float'}
+                  onNumberChange={setBinWidth}
+                  label="Bin Width"
+                  sx={{ flex: '0 0 auto' }}
+               />
+            </Stack>
+         </Grid>
+         <Grid xs={4}>
+            <Stack direction="column" spacing={1}>
+               <NumberInput
+                  numberValue={thresholdMin}
+                  numberType={'float'}
+                  onNumberChange={setThresholdMin}
+                  label=" >= threshold"
                   sx={{
-                     padding: 1.5,
                      width: '100%'
                   }}
-                  onClick={handleQueryButtonClick}
-               >
-                  {' '}
-                  Query
-               </Button>
+               />
+
+               <NumberInput
+                  numberValue={thresholdMax}
+                  numberType={'float'}
+                  onNumberChange={setThresholdMax}
+                  label=" <= threshold"
+                  sx={{
+                     width: '100%'
+                  }}
+               />
             </Stack>
-         </Paper>
+         </Grid>
+         <Grid xs={3}>
+            <Button
+               color="primary"
+               variant="contained"
+               disabled={!selectedSpecies}
+               endIcon={<AddCircleOutlineIcon />}
+               sx={{
+                  width: '100%'
+               }}
+               onClick={() => calcBinSizesButtonClick()}
+            >
+               {' '}
+               Calculate Bin Sizes
+            </Button>
+         </Grid>
+         <Grid xs={3}>
+            <Button
+               variant="contained"
+               disabled={!selectedSpecies}
+               endIcon={<SendIcon />}
+               sx={{
+                  width: '100%'
+               }}
+               onClick={getPredictionsButtonClick}
+            >
+               {' '}
+               Get Predictions
+            </Button>
+         </Grid>
+         <Grid xs={3}>
+            <Button
+               variant="contained"
+               disabled={!selectedSpecies}
+               endIcon={<SendIcon />}
+               sx={{
+                  width: '100%'
+               }}
+               onClick={getDailyHistogramsButtonClick}
+            >
+               {' '}
+               Get Daily Histograms
+            </Button>
+         </Grid>
+         <Grid xs={3}>
+            <Button
+               variant="contained"
+               disabled={!selectedSpecies}
+               endIcon={<SendIcon />}
+               sx={{
+                  width: '100%'
+               }}
+               onClick={handleQueryButtonClick}
+            >
+               {' '}
+               Query
+            </Button>
+         </Grid>
       </Grid>
    )
 }

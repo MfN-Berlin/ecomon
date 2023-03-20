@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from util.files import check_audio_file
 from json import JSONEncoder
 import decimal
+from pytz import timezone, utc
 
 
 class CustomJSONEncoder(JSONEncoder):
@@ -41,8 +42,13 @@ def report(
     first_datetime = result[0]
     cursor.execute(queries[1][1])
     last_datetime = cursor.fetchone()[0]
-    report_data["first_record_datetime"] = str(first_datetime)
-    report_data["last_record_datetime"] = str(last_datetime)
+    # convert first_datetime to UTC datetime string
+    first_datetime_utc = first_datetime.replace(tzinfo=timezone("UTC")).astimezone(utc)
+    report_data["first_record_datetime"] = first_datetime_utc.isoformat()
+
+    # convert last_datetime to UTC datetime string
+    last_datetime_utc = last_datetime.replace(tzinfo=timezone("UTC")).astimezone(utc)
+    report_data["last_record_datetime"] = last_datetime_utc.isoformat()
 
     for query_name, query_template in queries[2:]:
         query = query_template.format(
@@ -76,6 +82,11 @@ def report(
                     "count": row[3],
                     "duration": row[4],
                 }
+                for row in result
+            ]
+        elif query_name.endswith("monthly_summary_query"):
+            report_data[formatted_key] = [
+                {"date": f"{row[0]}/{row[1]}", "count": row[2], "duration": row[3],}
                 for row in result
             ]
         else:
@@ -124,11 +135,11 @@ def create_report(prefix=None, output_format="json"):
         queries = [
             (
                 "first_record_query",
-                f"SELECT record_datetime FROM {table_name} ORDER BY id LIMIT 1;",
+                f"SELECT record_datetime FROM {table_name} ORDER BY record_datetime LIMIT 1;",
             ),
             (
                 "last_record_query",
-                f"SELECT record_datetime FROM {table_name} ORDER BY id DESC LIMIT 1;",
+                f"SELECT record_datetime FROM {table_name} ORDER BY record_datetime DESC LIMIT 1;",
             ),
             ("records_count", f"SELECT COUNT(*) FROM {table_name};"),
             (

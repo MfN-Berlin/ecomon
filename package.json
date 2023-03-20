@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@faker-js/faker": "^7.6.0",
+    "activate": "^0.0.1",
+    "base": "^3.0.0"
+  }
+}

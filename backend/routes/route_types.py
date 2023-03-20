@@ -26,7 +26,7 @@ class Prediction(BaseModel):
     record_count: int
 
 
-class DailySummary(BaseModel):
+class Summary(BaseModel):
     date: str
     count: int
     duration: float
@@ -41,8 +41,8 @@ class Report(BaseModel):
     predictions_count: int
     record_duration_histogram_query: List[Duration]
     record_prediction_count_histogram_query: List[Prediction]
-    monthly_summary_query: int
-    daily_summary_query: List[DailySummary]
+    monthly_summary_query: List[Summary]
+    daily_summary_query: List[Summary]
 
 
 class EventResponse(BaseModel):

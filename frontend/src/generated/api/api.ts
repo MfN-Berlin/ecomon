@@ -167,31 +167,6 @@ export interface DailyHistogramRequest {
 /**
  * 
  * @export
- * @interface DailySummary
- */
-export interface DailySummary {
-    /**
-     * 
-     * @type {string}
-     * @memberof DailySummary
-     */
-    'date': string;
-    /**
-     * 
-     * @type {number}
-     * @memberof DailySummary
-     */
-    'count': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DailySummary
-     */
-    'duration': number;
-}
-/**
- * 
- * @export
  * @interface Duration
  */
 export interface Duration {
@@ -594,16 +569,16 @@ export interface Report {
     'record_prediction_count_histogram_query': Array<Prediction>;
     /**
      * 
-     * @type {number}
+     * @type {Array<Summary>}
      * @memberof Report
      */
-    'monthly_summary_query': number;
+    'monthly_summary_query': Array<Summary>;
     /**
      * 
-     * @type {Array<DailySummary>}
+     * @type {Array<Summary>}
      * @memberof Report
      */
-    'daily_summary_query': Array<DailySummary>;
+    'daily_summary_query': Array<Summary>;
 }
 /**
  * 
@@ -637,10 +612,10 @@ export interface ResultJob {
     'status': string;
     /**
      * 
-     * @type {string}
+     * @type {object}
      * @memberof ResultJob
      */
-    'metadata': string;
+    'metadata'?: object;
     /**
      * 
      * @type {string}
@@ -652,7 +627,7 @@ export interface ResultJob {
      * @type {string}
      * @memberof ResultJob
      */
-    'error': string;
+    'error'?: string;
     /**
      * 
      * @type {string}
@@ -684,6 +659,31 @@ export interface Species {
      * @memberof Species
      */
     'has_index': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface Summary
+ */
+export interface Summary {
+    /**
+     * 
+     * @type {string}
+     * @memberof Summary
+     */
+    'date': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof Summary
+     */
+    'count': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Summary
+     */
+    'duration': number;
 }
 /**
  * 

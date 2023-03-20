@@ -9,12 +9,13 @@ import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
-import { usePredictionCount } from '../../hooks/predictions'
-import { useRecordCount, useRecordDuration, useFirstRecord, useLastRecord } from '../../hooks/records'
 import { secondsToYearsMonthDaysHoursMinutesSeconds } from '../../tools/timeHandling'
-import { useCollectionStats } from './CollectionStatsContext'
+import { useCollectionStats } from './Context/CollectionStatsContext'
 
 import { useGetCollectionReportQuery } from '../../services/api'
+import DBIndexChipList from './DBIndexChipList'
+import Histogram from '../../components/Histogram'
+import CollectionStatsHistograms from './CollectionStatsHistograms'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -27,12 +28,16 @@ interface CollectionStatsProps {
 export default function CollectionStats({ collectionId: id }: CollectionStatsProps) {
    const { data: report, refetch, isFetching } = useGetCollectionReportQuery(id)
 
-   const { predictionCount } = usePredictionCount(id)
-   const { recordCount } = useRecordCount(id)
-   const { recordDuration } = useRecordDuration(id)
-   const { firstRecord, loading: firstRecordLoading } = useFirstRecord(id)
-   const { lastRecord, loading: lastRecordLoading } = useLastRecord(id)
-   const collectionStats = useCollectionStats()
+   const {
+      setReport,
+      setLoading,
+      lastRecordDatetime,
+      firstRecordDatetime,
+      recordCount,
+      recordDuration,
+      predictionCount,
+      loading
+   } = useCollectionStats()
 
    useEffect(() => {
       if (id) {
@@ -41,92 +46,85 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
    }, [id, refetch])
    useEffect(() => {
       console.log('report:', report)
+      setReport(report)
    }, [report])
-
    useEffect(() => {
-      collectionStats.setFirstRecord(firstRecord)
-   }, [firstRecord])
-   useEffect(() => {
-      collectionStats.setLastRecord(lastRecord)
-   }, [lastRecord])
-
-   useEffect(() => {
-      collectionStats.setFirstRecordLoading(firstRecordLoading)
-   }, [firstRecordLoading])
-   useEffect(() => {
-      collectionStats.setLastRecordLoading(lastRecordLoading)
-   }, [lastRecordLoading])
+      console.log('isFetching:', isFetching)
+      setLoading(isFetching)
+   }, [isFetching])
 
    return (
-      <Grid xs={12} md={4}>
-         <Paper
-            sx={{
-               padding: 1
-            }}
-         >
-            <Stack direction="column" spacing={2}>
-               <Typography
-                  variant="h6"
-                  component="h6"
-                  align="left"
-                  sx={{
-                     marginTop: 1,
-                     marginLeft: 2,
-                     paddingBottom: 2
-                  }}
-               >
-                  Stats
+      <Grid container spacing={0}>
+         <Grid container xs={12} md={6} spacing={2}>
+            <Grid xs={12}>
+               <Typography variant="subtitle2" component="div" align="left" sx={{ paddingBottom: 2 }}>
+                  Collection Stats:
                </Typography>
-               <DateTimePicker
-                  renderInput={(props: TextFieldProps) => <TextField {...props} />}
-                  label="First Recording starts at"
-                  inputFormat="YYYY/MM/DD HH:mm:ss"
-                  value={dayjs(firstRecord?.record_datetime)}
-                  readOnly={true}
-                  ampm={false}
-                  loading={firstRecordLoading}
-                  onChange={(value: Date | null) => {}}
-               />
-               <DateTimePicker
-                  renderInput={(props: TextFieldProps) => <TextField {...props} />}
-                  label="Last Recording starts at"
-                  inputFormat="YYYY/MM/DD HH:mm:ss"
-                  value={dayjs(lastRecord?.record_datetime.toISOString())}
-                  readOnly={true}
-                  ampm={false}
-                  loading={lastRecordLoading}
-                  onChange={(value: Date | null) => {}}
-               />
+            </Grid>
+            <Grid xs={6}>
+               <Stack direction="column" spacing={1}>
+                  <DateTimePicker
+                     renderInput={(props: TextFieldProps) => <TextField {...props} />}
+                     label="First Recording starts at"
+                     inputFormat="YYYY/MM/DD HH:mm:ss"
+                     value={dayjs(firstRecordDatetime)}
+                     readOnly={true}
+                     ampm={false}
+                     loading={loading}
+                     onChange={(value: Date | null) => {}}
+                  />
+                  <DateTimePicker
+                     renderInput={(props: TextFieldProps) => <TextField {...props} />}
+                     label="Last Recording starts at"
+                     inputFormat="YYYY/MM/DD HH:mm:ss"
+                     value={dayjs(lastRecordDatetime)}
+                     readOnly={true}
+                     ampm={false}
+                     loading={loading}
+                     onChange={(value: Date | null) => {}}
+                  />
+               </Stack>
+            </Grid>
 
-               <TextField
-                  id="recordCount"
-                  label="Recording Count"
-                  variant="standard"
-                  value={isFetching ? 'Loading...' : recordCount}
-                  InputProps={{
-                     readOnly: true
-                  }}
-               />
+            <Grid xs={6}>
+               <Stack direction="column" spacing={1}>
+                  <TextField
+                     id="recordCount"
+                     label="Recording Count"
+                     value={isFetching ? 'Loading...' : recordCount}
+                     InputProps={{
+                        readOnly: true
+                     }}
+                  />
+                  <TextField
+                     id="predictionCount"
+                     label="Prediction Count"
+                     value={isFetching ? 'loading...' : predictionCount}
+                     InputProps={{
+                        readOnly: true
+                     }}
+                  />
+               </Stack>
+            </Grid>
+
+            <Grid xs={4}>
                <TextField
                   id="recordDuration"
                   label="Summed Duration of Recordings"
-                  variant="standard"
                   value={isFetching ? 'loading...' : secondsToYearsMonthDaysHoursMinutesSeconds(recordDuration)}
                   InputProps={{
                      readOnly: true
                   }}
                />
-               <TextField
-                  id="predictionCount"
-                  label="Prediction Count"
-                  variant="standard"
-                  value={isFetching ? 'loading...' : predictionCount}
-                  InputProps={{
-                     readOnly: true
-                  }}
-               />
-            </Stack>
-         </Paper>
+            </Grid>
+
+            <Grid xs={12} md={12}>
+               <DBIndexChipList />
+            </Grid>
+         </Grid>
+         <Grid container xs={12} md={6} spacing={0}>
+            {report && <CollectionStatsHistograms report={report} />}
+         </Grid>
       </Grid>
    )
 }

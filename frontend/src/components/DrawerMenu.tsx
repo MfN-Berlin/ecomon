@@ -37,7 +37,7 @@ export default function PersistentDrawerRight(props: DrawerProps) {
    const [filterValue, setFilterValue] = React.useState<string>('')
    const theme = useTheme()
    const open = useAppSelector((state) => state.ui.drawerOpen)
-   const { data, error, isLoading } = useGetCollectionsQuery()
+   const { data } = useGetCollectionsQuery()
    const dispatch = useAppDispatch()
    // const [open, setOpen] = React.useState(true)
 
@@ -91,7 +91,7 @@ export default function PersistentDrawerRight(props: DrawerProps) {
             {transformCollectionData(data || [], filterValue).flatMap(({ modelName, collections }, index) => {
                const isOddGroup = index % 2 !== 0
                return [
-                  <React.Fragment>
+                  <React.Fragment key={`group-${modelName}`}>
                      <Divider
                         sx={{
                            position: 'sticky',

@@ -13,37 +13,28 @@ import Divider from '@mui/material/Divider'
 import CircularProgress from '@mui/material/CircularProgress'
 
 import { API_PATH } from '../../consts'
-import { useQueryResult } from './QueryResultContext'
-import { useCollectionStats } from './CollectionStatsContext'
-import { useQueryParameters } from './QueryParameterContext'
+import { useQueryResult } from './Context/QueryResultContext'
+import { useCollectionStats } from './Context/CollectionStatsContext'
+import { useQueryParameters } from './Context/QueryParameterContext'
 
 interface CollectionStatsProps {
    collectionId: string | undefined
 }
 export default function QueryParameters({ collectionId: id }: CollectionStatsProps) {
    const { result: predictionQueryResponse, loading: queryLoading } = useQueryResult()
-   const { firstRecord, lastRecord, firstRecordLoading, lastRecordLoading, durationLoading } = useCollectionStats()
+   const { loading } = useCollectionStats()
    const {
       from,
-      setFrom,
       until,
-      setUntil,
       thresholdMax,
-      setThresholdMax,
       thresholdMin,
-      setThresholdMin,
-      binWidth,
-      setBinWidth,
       sampleSize,
       setSampleSize,
-      hasIndex,
-      setHasIndex,
       filterFrequency,
       setFilterFrequency,
       useFilter,
       setFilterUse,
-      selectedSpecies,
-      setSelectedSpecies
+      selectedSpecies
    } = useQueryParameters()
 
    function createSampleButtonClick(random: boolean) {
@@ -74,72 +65,61 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
    }
 
    return (
-      <Grid xs={12} md={4}>
-         <Paper
-            sx={{
-               padding: 1
-            }}
-         >
-            <Stack direction="column" spacing={2}>
-               <Typography
-                  variant="h6"
-                  component="h6"
-                  align="left"
-                  sx={{
-                     marginTop: 1,
-                     marginLeft: 2,
-                     paddingBottom: 2
-                  }}
-               >
+      <Paper
+         sx={{
+            padding: 1,
+            elevation: 0,
+            width: '100%'
+         }}
+      >
+         <Grid xs={12} container spacing={2}>
+            <Grid xs={12}>
+               <Typography variant="subtitle2" component="div" align="left" sx={{}}>
                   Query Results
                </Typography>
-               {predictionQueryResponse && !queryLoading ? (
-                  <React.Fragment>
-                     <TextField
-                        id="predictionsCount"
-                        label="Predictions count"
-                        variant="standard"
-                        value={queryLoading ? 'Loading...' : predictionQueryResponse?.predictions_count}
-                        InputProps={{
-                           readOnly: true
-                        }}
-                     />
-                     <TextField
-                        id="speciesCount"
-                        label="Predictions over Threshold"
-                        variant="standard"
-                        value={durationLoading ? 'loading...' : predictionQueryResponse?.species_count}
-                        InputProps={{
-                           readOnly: true
-                        }}
-                     />
-                     <Divider light />
-                     <Stack
-                        direction={{ md: 'column', lg: 'row' }}
-                        spacing={2}
-                        justifyContent="space-evenly"
-                        alignItems="stretch"
-                     >
-                        <Typography
-                           variant="h6"
-                           component="h6"
-                           align="left"
-                           sx={{
-                              marginTop: 1,
-                              marginLeft: 2,
-                              paddingBottom: 0.5
+            </Grid>
+
+            {predictionQueryResponse && !queryLoading ? (
+               <React.Fragment>
+                  <Grid xs={3}>
+                     <Stack direction="column" spacing={1}>
+                        <TextField
+                           id="predictionsCount"
+                           label="Predictions count"
+                           variant="standard"
+                           value={queryLoading ? 'Loading...' : predictionQueryResponse?.predictions_count}
+                           InputProps={{
+                              readOnly: true
                            }}
+                        />
+                        <TextField
+                           id="speciesCount"
+                           label="Predictions over Threshold"
+                           variant="standard"
+                           value={loading ? 'loading...' : predictionQueryResponse?.species_count}
+                           InputProps={{
+                              readOnly: true
+                           }}
+                        />
+                     </Stack>
+                  </Grid>
+                  <Grid xs={3}>
+                     <Stack direction="column" spacing={1}>
+                        <Stack
+                           direction="row"
+                           spacing={0}
+                           justifyContent="space-evenly"
+                           alignItems="stretch"
+                           sx={{ flex: '1' }}
                         >
-                           Create Random Sample
-                        </Typography>
-                        <Stack direction="row" spacing={2}>
-                           <NumberInput
-                              label="Highpass frequency"
-                              style={{ width: 130 }}
-                              numberValue={filterFrequency}
-                              numberType={'int'}
-                              onNumberChange={setFilterFrequency}
-                           />
+                           <div style={{ flexGrow: 1, paddingRight: 10 }}>
+                              <NumberInput
+                                 label="Highpass frequency"
+                                 numberValue={filterFrequency}
+                                 numberType={'int'}
+                                 onNumberChange={setFilterFrequency}
+                              />
+                           </div>
                            <FormControlLabel
                               control={
                                  <Checkbox
@@ -152,19 +132,17 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
                               label="high pass"
                            />
                         </Stack>
+
+                        <NumberInput
+                           label="Sample Size"
+                           numberType={'int'}
+                           numberValue={sampleSize}
+                           onNumberChange={setSampleSize}
+                        ></NumberInput>
                      </Stack>
-                     <NumberInput
-                        label="Sample Size"
-                        numberType={'int'}
-                        numberValue={sampleSize}
-                        onNumberChange={setSampleSize}
-                     ></NumberInput>
-                     <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={2}
-                        justifyContent="space-evenly"
-                        alignItems="center"
-                     >
+                  </Grid>
+                  <Grid xs={6}>
+                     <Stack direction="column" spacing={1}>
                         <Button
                            color="secondary"
                            variant="contained"
@@ -192,16 +170,16 @@ export default function QueryParameters({ collectionId: id }: CollectionStatsPro
                            Create Full Sample
                         </Button>
                      </Stack>
-                  </React.Fragment>
-               ) : queryLoading ? (
-                  <Grid>
-                     <CircularProgress />
                   </Grid>
-               ) : (
-                  ''
-               )}
-            </Stack>
-         </Paper>
-      </Grid>
+               </React.Fragment>
+            ) : queryLoading ? (
+               <Grid>
+                  <CircularProgress />
+               </Grid>
+            ) : (
+               ''
+            )}
+         </Grid>
+      </Paper>
    )
 }

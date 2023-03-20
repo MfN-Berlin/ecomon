@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react'
-import { DEFAULT_VALUES } from '../../consts'
+import { DEFAULT_VALUES } from '../../../consts'
 interface QueryParameters {
    from: Date | null
    until: Date | null

@@ -1,6 +1,6 @@
 // QueryResultContext.tsx
 import React, { createContext, useContext, useState } from 'react'
-import { QueryResponse } from '../../hooks/collection'
+import { QueryResponse } from '../../../hooks/collection'
 interface QueryResult {
    result: QueryResponse | undefined
    loading: boolean
