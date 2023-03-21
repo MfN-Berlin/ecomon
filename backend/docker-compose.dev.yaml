@@ -22,7 +22,7 @@ services:
          - ${MDAS_SAMPLE_FILE_DIRECTORY}:/files
          - ${MDAS_TMP_DIRECTORY}:/tmp
          - ${MDAS_DATA_DIRECTORY}:${MDAS_DATA_DIRECTORY}
-
+         - ${MDAS_REPORT_DIRECTORY}:/report
    frontend:
       image: mdas-frontend
       build: ./frontend
