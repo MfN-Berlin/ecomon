@@ -1,7 +1,9 @@
 import argparse
+from datetime import datetime
 import os
 import json
 import mariadb
+import pandas as pd
 from tqdm import tqdm
 from os import getenv, path
 from dotenv import load_dotenv
@@ -21,6 +23,17 @@ class CustomJSONEncoder(JSONEncoder):
 def create_json_file(report_data, report_path):
     with open(report_path, "w") as f:
         json.dump(report_data, f, indent=2, cls=CustomJSONEncoder)
+
+
+def createYearMonthDayList(year):
+    yearMonthDayList = []
+    for month in range(1, 13):
+        for day in range(1, 32):
+            try:
+                yearMonthDayList.append(datetime(year, month, day).strftime("%Y/%m/%d"))
+            except ValueError:
+                pass
+    return yearMonthDayList
 
 
 def report(
@@ -75,20 +88,70 @@ def report(
                 ]
             else:
                 report_data[formatted_key] = [{str(row[0]): row[1]} for row in result]
+        # elif query_name.endswith("daily_summary_query"):
+        #     report_data[formatted_key] = [
+        #         {
+        #             "date": f"{row[0]}/{row[1]}/{row[2]}",
+        #             "count": row[3],
+        #             "duration": row[4],
+        #         }
+        #         for row in result
+        #     ]
         elif query_name.endswith("daily_summary_query"):
-            report_data[formatted_key] = [
-                {
-                    "date": f"{row[0]}/{row[1]}/{row[2]}",
+            daily_summary = {}
+            for row in result:
+                date_str = f"{row[0]}/{row[1]}/{row[2]}"
+                daily_summary[date_str] = {
                     "count": row[3],
                     "duration": row[4],
+                    "prediction_count": row[5],
                 }
-                for row in result
-            ]
-        elif query_name.endswith("monthly_summary_query"):
+
+            year = last_datetime.year
+
+            for date_str in createYearMonthDayList(year):
+
+                if date_str not in daily_summary:
+                    daily_summary[date_str] = {
+                        "count": 0,
+                        "duration": 0,
+                        "prediction_count": 0,
+                    }
+
             report_data[formatted_key] = [
-                {"date": f"{row[0]}/{row[1]}", "count": row[2], "duration": row[3],}
-                for row in result
+                {
+                    "date": date_str,
+                    "count": daily_summary[date_str]["count"],
+                    "duration": daily_summary[date_str]["duration"],
+                    "prediction_count": daily_summary[date_str]["prediction_count"],
+                }
+                for date_str in sorted(daily_summary.keys())
             ]
+        # elif query_name.endswith("monthly_summary_query"):
+        #     report_data[formatted_key] = [
+        #         {"date": f"{row[0]}/{row[1]}", "count": row[2], "duration": row[3],}
+        #         for row in result
+        #     ]
+        elif query_name.endswith("monthly_summary_query"):
+            result_dict = {
+                (row[0], row[1]): {"count": row[2], "duration": row[3]}
+                for row in result
+            }
+            report_data[formatted_key] = []
+
+            year = last_datetime.year
+
+            for month in range(1, 12):
+                key = (year, month)
+                if key in result_dict:
+                    report_data[formatted_key].append(
+                        {"date": f"{year}/{month:02d}", **result_dict[key]}
+                    )
+                else:
+                    report_data[formatted_key].append(
+                        {"date": f"{year}/{month:02d}", "count": 0, "duration": 0}
+                    )
+
         else:
             report_data[formatted_key] = result[0][0]
 
@@ -176,7 +239,7 @@ def create_report(prefix=None, output_format="json"):
             (
                 "daily_summary_query",
                 """
-                SELECT YEAR({records_table}.record_datetime) AS year, MONTH({records_table}.record_datetime), DAY({records_table}.record_datetime) AS day, COUNT(DISTINCT {records_table}.id) AS record_count, SUM({records_table}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
+                SELECT YEAR({records_table}.record_datetime) AS year,  LPAD(MONTH({records_table}.record_datetime), 2, '0') AS month, LPAD(DAY({records_table}.record_datetime), 2, '0') AS day, COUNT(DISTINCT {records_table}.id) AS record_count, SUM({records_table}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
                 FROM {records_table}
                 LEFT JOIN {predictions_table} ON {records_table}.id = {predictions_table}.record_id
                 GROUP BY YEAR({records_table}.record_datetime), MONTH({records_table}.record_datetime), DAY({records_table}.record_datetime);
