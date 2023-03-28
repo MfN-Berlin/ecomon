@@ -1,17 +1,15 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201703
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201704
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201705
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201706
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201707
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201708
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201709
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201710
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201711
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201712
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201706
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201705
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201704
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201703
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201702
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WALLBERGE_S01/WALLBERGE_201701
 fileEnding:
    - mp3 # wav
    - wav
