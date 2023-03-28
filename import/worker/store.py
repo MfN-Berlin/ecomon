@@ -201,8 +201,6 @@ def store_loop_factory(
                                     port, filename
                                 )
                             )
-                            error_message = e.args[0]
-
                             error_f.write("{}, {}".format(input_filepath, e) + "\n")
                             error_f.flush()
                             if only_analyze is False:
