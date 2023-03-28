@@ -38,7 +38,7 @@ def analyze(config_filepath, create_index=False, create_report_flag=False):
         drop_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
-    for i in range(1, config["repeats"], 1):
+    for i in range(1, 2):  # config["repeats"], 2):
         files_queue = queue.Queue()
         results_queue = queue.Queue()
         all_analyzed_event = threading.Event()

@@ -37,13 +37,12 @@ def store_loop_factory(
             unit="files",
             smoothing=0.1,
         ) as progress:
-            if(only_analyze is False):
-                db_worker = DbWorker(prefix)    
+            if only_analyze is False:
+                db_worker = DbWorker(prefix)
             with open(processed_files_filepath, "a") as processed_f:
                 if path.exists(error_files_filepath):
                     os.remove(error_files_filepath)
                 with open(error_files_filepath, "a+") as error_f:
-                    
 
                     # for species in species_index_list:
                     #     print("Dropping index to {}".format(species))
@@ -52,7 +51,7 @@ def store_loop_factory(
                     #     except Exception as e:
                     #         print(e)
                     #         db_worker.rollback()
-                   
+
                     while (
                         # False
                         not results_queue.empty()
@@ -68,32 +67,25 @@ def store_loop_factory(
                             error,
                             port,
                         ) = results_queue.get()
-                        
-                        
+
                         filename = path.basename(input_filepath)
                         if error is not None:
                             raise error
                         # read audio file information
                         try:
-                            if(only_analyze):           
+                            if only_analyze:
                                 # open procdessed file path
                                 with open(prediction_result_filepath, "rb") as f:
                                     processed_f.write(input_filepath + "\n")
                                     processed_f.flush()
                                     progress.update(1)
                                     continue
-                            #print input_filepath
-                            #print("Storing {}".format(input_filepath))        
+
                             # check if file exists
                             if not path.exists(input_filepath):
                                 raise Exception(
-                                    "File {} does not exist".format(input_filepath  
-                                ))
-
-                            metadata = ffmpeg.probe(input_filepath)["streams"][0]
-                            #print(metadata)
-                            channels = metadata["channels"]
-                            duration = metadata["duration"]
+                                    "File {} does not exist".format(input_filepath)
+                                )
                             parse_result = parse_filename_for_location_date_time_function_dict[
                                 filename_parsing
                             ](
@@ -105,6 +97,27 @@ def store_loop_factory(
                                 if timezone is None
                                 else timezone.localize(parse_result.record_datetime)
                             )
+                            try:
+                                metadata = ffmpeg.probe(input_filepath)["streams"][0]
+                                channels = metadata["channels"]
+                                duration = metadata["duration"]
+                            except Exception as e:
+
+                                if test_run is False:
+                                    record_id = db_worker.add_file(
+                                        input_filepath,
+                                        filename,
+                                        record_datetime,
+                                        0,
+                                        0,
+                                        commit=True,
+                                        corrupted=True,
+                                    )
+                                # write filepath to processed to file
+                                processed_f.write(input_filepath + "\n")
+                                processed_f.flush()
+                                continue
+
                             with open(prediction_result_filepath, "rb") as f:
                                 resultDict = pickle.load(f)
                                 segment_duration = resultDict["segmentDuration"]
@@ -122,6 +135,7 @@ def store_loop_factory(
                                         channels,
                                         commit=False,
                                     )
+
                                 # add predictions
 
                                 # for channel_num, segments_confidences in zip(
@@ -177,15 +191,21 @@ def store_loop_factory(
                                 processed_f.flush()
 
                         except Exception as e:
+                            # if you want to ignore duplicate entries uncomment the following line
+                            # if "Duplicate entry" in str(e):
+                            #     processed_f.write(input_filepath + "\n")
+                            #     processed_f.flush()
+                            #     continue
                             print(
                                 "Store Worker: {} error: Error during analysis on {} width Error:".format(
                                     port, filename
                                 )
                             )
-                            # print(e)
+                            error_message = e.args[0]
+
                             error_f.write("{}, {}".format(input_filepath, e) + "\n")
                             error_f.flush()
-                            if(only_analyze is False):
+                            if only_analyze is False:
                                 db_worker.rollback()
                         progress.update(1)
                     # now add index to species columns
@@ -209,7 +229,7 @@ def store_loop_factory(
                     #         except Exception as e:
                     #             print(e)
                     #             db_worker.rollback()
-                    else:
-                        print("Error file has more than 10 entries. Not adding index")
+                    # else:
+                    #     print("Error file has more than 10 entries. Not adding index")
 
     return loop

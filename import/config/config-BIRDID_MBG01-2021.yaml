@@ -18,7 +18,7 @@ fileEnding:
 resultFolder: birdid-europe254-2103/AMMOD/MBG01/2021
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
-# prefix of databales of your anlaze run and progress cached file
+# prefix of databales of your anlaze run and progress cached file/net/z/Projekte/AMMOD/AudioData/MGB01/
 filenameParsing: "ammod" # | "inpediv"
 prefix: "BIRDID_MGB01_2021"
 testRun: False
@@ -26,18 +26,23 @@ timezone: CET
 speciesIndexList:
    - grus_grus
    - ardea_cinerea
-   - dendrocopos_medius
+   - strix_aluco
+   - dendrocoptes_medius
    - dendrocopos_major
    - lophophanes_cristatus
+   - phylloscopus_sibilatrix
    - phylloscopus_trochilus
    - phylloscopus_collybita
    - locustella_luscinioides
    - sylvia_atricapilla
    - regulus_ignicapilla
+   - troglodytes_troglodytes
    - turdus_merula
+   - turdus_philomelos
    - turdus_viscivorus
    - erithacus_rubecula
    - luscinia_luscinia
+   - phoenicurus_ochruros
    - phoenicurus_phoenicurus
    - fringilla_coelebs
 basePort: 9000

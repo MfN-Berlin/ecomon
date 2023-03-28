@@ -113,7 +113,14 @@ class DbWorker:
         return result
 
     def add_file(
-        self, filepath, filename, record_datetime, duration, channels, commit=True
+        self,
+        filepath,
+        filename,
+        record_datetime,
+        duration,
+        channels,
+        commit=True,
+        corrupted=False,
     ):
         utc_datetime = record_datetime.astimezone(utc)
 
@@ -124,7 +131,7 @@ class DbWorker:
             utc_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             duration,
             channels,
-            0,
+            1 if corrupted else 0,
         )
 
         self.db_cursor.execute(sql_query)

@@ -1,16 +1,17 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202201
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202202
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202203
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202204
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202205
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202206
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202207
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202208
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202209
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202210
-   - /net/z/Projekte/AMMOD/AudioData/MGB01/MBG01/MGB01_202211
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202201
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202202
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202203
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202204
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202205
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202206
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202207
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202208
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202209
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202210
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202211
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202212
 fileEnding:
    - mp3 # wav
    - wav
@@ -29,18 +30,23 @@ timezone: CET
 speciesIndexList:
    - grus_grus
    - ardea_cinerea
-   - dendrocopos_medius
+   - strix_aluco
+   - dendrocoptes_medius
    - dendrocopos_major
    - lophophanes_cristatus
+   - phylloscopus_sibilatrix
    - phylloscopus_trochilus
    - phylloscopus_collybita
    - locustella_luscinioides
    - sylvia_atricapilla
    - regulus_ignicapilla
+   - troglodytes_troglodytes
    - turdus_merula
+   - turdus_philomelos
    - turdus_viscivorus
    - erithacus_rubecula
    - luscinia_luscinia
+   - phoenicurus_ochruros
    - phoenicurus_phoenicurus
    - fringilla_coelebs
 basePort: 9000
