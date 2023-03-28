@@ -39,6 +39,16 @@ export default function CollectionStatsHistograms({ report }: Props) {
             break
          case 1:
             setData(
+               report.monthly_summary_query.map((bin) => {
+                  return {
+                     range: bin.date,
+                     count: bin.duration
+                  }
+               })
+            )
+            break
+         case 2:
+            setData(
                report.daily_summary_query.map((bin) => {
                   return {
                      range: bin.date,
@@ -47,7 +57,17 @@ export default function CollectionStatsHistograms({ report }: Props) {
                })
             )
             break
-         case 2:
+         case 3:
+            setData(
+               report.daily_summary_query.map((bin) => {
+                  return {
+                     range: bin.date,
+                     count: bin.duration
+                  }
+               })
+            )
+            break
+         case 4:
             setData(
                report.record_duration_histogram_query.map((bin) => {
                   return {
@@ -57,7 +77,7 @@ export default function CollectionStatsHistograms({ report }: Props) {
                })
             )
             break
-         case 3:
+         case 5:
             setData(
                report.record_prediction_count_histogram_query.map((bin) => {
                   return {
@@ -82,7 +102,16 @@ export default function CollectionStatsHistograms({ report }: Props) {
          type: 'bar'
       },
       {
+         title: 'Monthly Duration',
+         type: 'bar'
+      },
+
+      {
          title: 'Daily Records',
+         type: 'bar'
+      },
+      {
+         title: 'Daily Duration',
          type: 'bar'
       },
       {
