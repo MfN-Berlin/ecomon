@@ -1,18 +1,13 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
-
 recordFolder: 
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202101 
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202102
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202103
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202104
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202105
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202106
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202107
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202108
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202109
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202110
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202111
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202112
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202105
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202106
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202107
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202108
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202109
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202110
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202111
+   - /net/z/Projekte/AMMOD/AudioData/MGB01/MGB01_202112
 fileEnding:
    - mp3 # wav
    - wav
@@ -20,12 +15,12 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdnet-public-3k-v2.2/AMMOD/BRITZ01/2021
-# Index to name File of your used model
+resultFolder: birdnet-public-3k-v2.2/AMMOD/MGB01/2021
+# Index to name File of your used model228613
 indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDNET_BRITZ01_2021"
+prefix: "BIRDNET_MGB01_2021"
 testRun: False
 timezone: CET
 speciesIndexList:
