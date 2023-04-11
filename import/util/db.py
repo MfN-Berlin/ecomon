@@ -24,10 +24,6 @@ def __create_species__array(index_to_name):
 def connect_to_db():
     try:
         print("Connecting to MariaDB Platform...")
-        print("MDAS_MARIADB_USER: {}".format(os.getenv("MDAS_MARIADB_USER")))
-        print("MDAS_MARIADB_PASSWORD: {}".format(os.getenv("MDAS_MARIADB_PASSWORD")))
-        print("MDAS_MARIADB_HOST: {}".format(os.getenv("MDAS_MARIADB_HOST")))
-        print("MDAS_MARIADB_PORT: {}".format(os.getenv("MDAS_MARIADB_PORT")))
         connection = mariadb.connect(
             user=os.getenv("MDAS_MARIADB_USER"),
             password=os.getenv("MDAS_MARIADB_PASSWORD"),
@@ -182,17 +178,19 @@ class DbWorker:
         )
         self.db_connection.commit()
 
+    def close(self):
+        self.db_connection.close()
     #     self.db_connection.fl
 
 
 def drop_species_indices(collection_name, species_index_list):
     db_worker = DbWorker(collection_name)
     for species in species_index_list:
-        print("Dropping index to {}".format(species))
+        # print("Dropping index to {}".format(species))
         try:
             db_worker.drop_index(collection_name, species)
         except Exception as e:
-            print(e)
+            # print(e)
             db_worker.rollback()
 
 

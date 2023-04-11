@@ -206,7 +206,7 @@ def create_report(prefix=None, output_format="json"):
             ),
             ("records_count", f"SELECT COUNT(*) FROM {table_name};"),
             (
-                "corrupted_record_count_query",
+                "corrupted_record_count",
                 f"SELECT COUNT(*) FROM {table_name} WHERE corrupted > 0;",
             ),
             ("summed_records_duration", f"SELECT SUM(duration) FROM {table_name};",),

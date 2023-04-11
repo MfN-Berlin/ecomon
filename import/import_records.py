@@ -17,7 +17,9 @@ from util.db import drop_species_indices, create_species_indices
 import os
 
 
-def analyze(config_filepath, create_index=False, create_report_flag=False):
+def analyze(
+    config_filepath, create_index=False, create_report_flag=False, only_drop_index=False
+):
     # print method paramaters
     print("config_filepath", config_filepath)
     print("create_index", create_index)
@@ -34,7 +36,7 @@ def analyze(config_filepath, create_index=False, create_report_flag=False):
     index_to_name = load_json(config["indexToNameFile"])
     if config["onlyAnalyze"] is False:
         init_db(config["prefix"], index_to_name)
-    if create_index and config["onlyAnalyze"] is False:
+    if (create_index and config["onlyAnalyze"] is False) or only_drop_index:
         drop_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
@@ -100,10 +102,13 @@ def analyze(config_filepath, create_index=False, create_report_flag=False):
         store_thread.join()
         print("Done")
 
-    if create_index and config["onlyAnalyze"] is False:
+    if (create_index and config["onlyAnalyze"] is False) and only_drop_index is False:
+        print("Create index" if create_index else "Drop index")
+        return
         create_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
+
     if create_report_flag is True:
         create_report(prefix=config["prefix"], output_format="json")
 
@@ -124,6 +129,9 @@ if __name__ == "__main__":
         "--create_index", help="create index", action="store_true", default=False,
     )
     parser.add_argument(
+        "--only_drop_index", help="drop all index", action="store_true", default=False,
+    )
+    parser.add_argument(
         "--create_report", help="create json report", action="store_true", default=False
     )
 
@@ -133,6 +141,7 @@ if __name__ == "__main__":
             args.config_filepath,
             create_index=args.create_index,
             create_report_flag=args.create_report,
+            only_drop_index=args.only_drop_index,
         )
     else:
         print("No config file specified")

@@ -229,5 +229,6 @@ def store_loop_factory(
                     #             db_worker.rollback()
                     # else:
                     #     print("Error file has more than 10 entries. Not adding index")
+            db_worker.close()
 
     return loop
