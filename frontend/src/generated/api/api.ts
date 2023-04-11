@@ -542,7 +542,7 @@ export interface Report {
      * @type {number}
      * @memberof Report
      */
-    'corrupted_record_count_query': number;
+    'corrupted_record_count': number;
     /**
      * 
      * @type {number}

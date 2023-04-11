@@ -33,6 +33,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
       setLoading,
       lastRecordDatetime,
       firstRecordDatetime,
+      corruptedRecordCount,
       recordCount,
       recordDuration,
       predictionCount,
@@ -54,7 +55,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
    }, [isFetching])
 
    return (
-      <Grid container spacing={0}>
+      <Grid container spacing={0} alignItems="flex-start">
          <Grid container xs={12} md={6} spacing={2}>
             <Grid xs={12}>
                <Typography variant="subtitle2" component="div" align="left" sx={{ paddingBottom: 2 }}>
@@ -107,7 +108,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                </Stack>
             </Grid>
 
-            <Grid xs={4}>
+            <Grid xs={6}>
                <TextField
                   id="recordDuration"
                   label="Summed Duration of Recordings"
@@ -115,6 +116,18 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                   InputProps={{
                      readOnly: true
                   }}
+                  fullWidth
+               />
+            </Grid>
+            <Grid xs={6}>
+               <TextField
+                  id="recordDuration"
+                  label="Corrupted File count"
+                  value={isFetching ? 'loading...' : corruptedRecordCount}
+                  InputProps={{
+                     readOnly: true
+                  }}
+                  fullWidth
                />
             </Grid>
 
@@ -122,7 +135,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                <DBIndexChipList />
             </Grid>
          </Grid>
-         <Grid container xs={12} md={6} spacing={0}>
+         <Grid container xs={12} md={6} spacing={0} style={{ height: '100%' }}>
             {report && <CollectionStatsHistograms report={report} />}
          </Grid>
       </Grid>

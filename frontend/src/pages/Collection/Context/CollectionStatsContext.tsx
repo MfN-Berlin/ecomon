@@ -4,6 +4,7 @@ interface CollectionStats {
    predictionCount: number
    recordCount: number
    recordDuration: number
+   corruptedRecordCount: number
    firstRecordDatetime: Date | null
    lastRecordDatetime: Date | null
    loading: boolean
@@ -19,13 +20,14 @@ export const CollectionStatsProvider: React.FC = ({ children }) => {
    const [recordDuration, setRecordDuration] = useState<number>(0)
    const [firstRecordDatetime, setFirstRecordDate] = useState<Date | null>(null)
    const [lastRecordDatetime, setLastRecordDate] = useState<Date | null>(null)
-
+   const [corruptedRecordCount, setCorruptedRecordCount] = useState<number>(0)
    const [loading, setLoading] = useState<boolean>(false)
    function setReport(report: Report | undefined) {
       if (report === undefined) {
          setPredictionCount(0)
          setRecordCount(0)
          setRecordDuration(0)
+         setCorruptedRecordCount(0)
          setFirstRecordDate(null)
          setLastRecordDate(null)
          return
@@ -35,6 +37,7 @@ export const CollectionStatsProvider: React.FC = ({ children }) => {
       setRecordDuration(report.summed_records_duration)
       setFirstRecordDate(new Date(report.first_record_datetime))
       setLastRecordDate(new Date(report.last_record_datetime))
+      setCorruptedRecordCount(report.corrupted_record_count)
    }
    return (
       <CollectionStatsContext.Provider
@@ -44,6 +47,7 @@ export const CollectionStatsProvider: React.FC = ({ children }) => {
             recordDuration,
             firstRecordDatetime,
             lastRecordDatetime,
+            corruptedRecordCount,
             loading,
             setReport,
             setLoading

@@ -36,7 +36,7 @@ class Report(BaseModel):
     first_record_datetime: str
     last_record_datetime: str
     records_count: int
-    corrupted_record_count_query: int
+    corrupted_record_count: int
     summed_records_duration: float
     predictions_count: int
     record_duration_histogram_query: List[Duration]
