@@ -30,18 +30,23 @@ timezone: CET
 speciesIndexList:
    - grus_grus
    - ardea_cinerea
-   - dendrocopos_medius
+   - strix_aluco
+   - dendrocoptes_medius
    - dendrocopos_major
    - lophophanes_cristatus
+   - phylloscopus_sibilatrix
    - phylloscopus_trochilus
    - phylloscopus_collybita
    - locustella_luscinioides
    - sylvia_atricapilla
    - regulus_ignicapilla
+   - troglodytes_troglodytes
    - turdus_merula
+   - turdus_philomelos
    - turdus_viscivorus
    - erithacus_rubecula
    - luscinia_luscinia
+   - phoenicurus_ochruros
    - phoenicurus_phoenicurus
    - fringilla_coelebs
 basePort: 7100

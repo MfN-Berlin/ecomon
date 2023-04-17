@@ -20,3 +20,15 @@ def drop_index_for_sql_table(table_name, column_name):
     """.format(
         table_name, column_name
     )
+def get_corrupted_files(prefix):
+    return """
+    SELECT filepath from {}_records where corrupted = 1
+    """.format(
+        prefix)
+
+def get_record_id(prefix, filepath):
+    return """
+    SELECT id from {}_records where filepath = '{}'
+    """.format(
+        prefix, filepath
+    )

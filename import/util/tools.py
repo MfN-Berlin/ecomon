@@ -9,6 +9,7 @@ from os import path
 import yaml
 import wave
 import json
+from util.db import DbWorker
 
 FileNameInformation = NamedTuple(
     "FileNameInformation_name_date_time",
@@ -138,44 +139,57 @@ def load_json(filepath):
         return json.load(read_file)
 
 
-def load_files_list(config, files_queue):
+def load_files_list(config, files_queue, retry_corrupted_files=False, prefix=None):
     lines = []
-
     files_count = 0
-    try:
-        with open(config["progress_cache_filepath"], "r") as processed_f:
-            lines = processed_f.readlines()
-    except FileNotFoundError as e:
-        # no cached process file exist -> it is a new run
-        pass
+    if(retry_corrupted_files):
+        print("Retry corrupted files with prefix: {}".format(prefix))
+        db_worker = DbWorker(prefix)
+       
+        files = db_worker.get_corrupted_files()
+        print("Found {} corrupted files".format(len(files)))
 
-    processed_dict = {}
-    for filepath in lines:
-        processed_dict[filepath] = True
+        for row in files:
+            files_queue.put(row[0])
+            files_count += 1
+        # exit program
+  
+        return 0, files_count
+    else:
+        try:
+            with open(config["progress_cache_filepath"], "r") as processed_f:
+                lines = processed_f.readlines()
+        except FileNotFoundError as e:
+            # no cached process file exist -> it is a new run
+            pass
 
-    # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
-    files = []
-    absolute_paths = config["absolute_records_path"]
-    # if absolute_paths is not a list, make it one
-    if not isinstance(absolute_paths, list):
-        absolute_paths = [absolute_paths]
+        processed_dict = {}
+        for filepath in lines:
+            processed_dict[filepath] = True
 
-    for absolute_path in absolute_paths:
-        for ext in config["fileEnding"]:
-            files.extend(
-                glob.iglob(absolute_path + "**/*.{}".format(ext), recursive=True,)
-            )
+        # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
+        files = []
+        absolute_paths = config["absolute_records_path"]
+        # if absolute_paths is not a list, make it one
+        if not isinstance(absolute_paths, list):
+            absolute_paths = [absolute_paths]
 
-    for filepath in files:
-        files_count += 1
-        if processed_dict.get(filepath + "\n", False):
-            # if file is already processed do not add
-            continue
-        # check if is files_queue is alist and append filepath
-        # if not, add filepath to files_queue
-        if isinstance(files_queue, list):
-            files_queue.append(filepath)
-        else:
-            files_queue.put(filepath)
+        for absolute_path in absolute_paths:
+            for ext in config["fileEnding"]:
+                files.extend(
+                    glob.iglob(absolute_path + "**/*.{}".format(ext), recursive=True,)
+                )
+
+        for filepath in files:
+            files_count += 1
+            if processed_dict.get(filepath + "\n", False):
+                # if file is already processed do not add
+                continue
+            # check if is files_queue is alist and append filepath
+            # if not, add filepath to files_queue
+            if isinstance(files_queue, list):
+                files_queue.append(filepath)
+            else:
+                files_queue.put(filepath)
     return len(lines), files_count
 

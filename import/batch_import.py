@@ -13,7 +13,7 @@ def main(configs, config_folder):
         os.system(
             "python3 import/import_records.py "
             + config
-            + " --create_index"
+            # + " --create_index"
             + " --create_report"
         )
 
