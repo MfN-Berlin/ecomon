@@ -26,6 +26,8 @@ def store_loop_factory(
     timezone=None,
     index_to_name=None,
     only_analyze=False,
+    retry_corrupted_files=False,
+
 ):
     # db_cursor = connect_to_db()
     def loop():
@@ -104,15 +106,24 @@ def store_loop_factory(
                             except Exception as e:
 
                                 if test_run is False:
-                                    record_id = db_worker.add_file(
-                                        input_filepath,
-                                        filename,
-                                        record_datetime,
-                                        0,
-                                        0,
-                                        commit=True,
-                                        corrupted=True,
-                                    )
+                                    if(retry_corrupted_files):
+                                        record_id = db_worker.update_record(
+                                            input_filepath,
+                                            0,
+                                            0,
+                                            corrupted=True,
+                                            commit=True,
+                                        )
+                                    else:
+                                        record_id = db_worker.add_file(
+                                            input_filepath,
+                                            filename,
+                                            record_datetime,
+                                            0,
+                                            0,
+                                            commit=True,
+                                            corrupted=True,
+                                        )
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")
                                 processed_f.flush()
@@ -127,14 +138,24 @@ def store_loop_factory(
                                 # sanity checks if analyze worked correctly
                                 record_id = 0
                                 if test_run is False:
-                                    record_id = db_worker.add_file(
-                                        input_filepath,
-                                        filename,
-                                        record_datetime,
-                                        duration,
-                                        channels,
-                                        commit=False,
-                                    )
+                                    if(retry_corrupted_files):
+                                        record_id = db_worker.update_record(
+                                            input_filepath,
+                                            duration,
+                                            channels,
+                                            corrupted=False,
+                                            commit=False,
+                                        )
+                                       
+                                    else: 
+                                        record_id = db_worker.add_file(
+                                            input_filepath,
+                                            filename,
+                                            record_datetime,
+                                            duration,
+                                            channels,
+                                            commit=False,
+                                        )
 
                                 # add predictions
 

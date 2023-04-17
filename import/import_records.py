@@ -18,7 +18,10 @@ import os
 
 
 def analyze(
-    config_filepath, create_index=False, create_report_flag=False, only_drop_index=False
+    config_filepath,
+    create_index=False,
+    create_report_flag=False,
+    retry_corrupted_files=False,
 ):
     # print method paramaters
     print("config_filepath", config_filepath)
@@ -46,7 +49,12 @@ def analyze(
         all_analyzed_event = threading.Event()
 
         # load_file_list
-        processed_count, files_count = load_files_list(config, files_queue)
+        processed_count, files_count = load_files_list(
+            config,
+            files_queue,
+            retry_corrupted_files=retry_corrupted_files,
+            prefix=config["prefix"],
+        )
 
         print(
             "Files found {} already processed {}".format(files_count, processed_count)
@@ -83,6 +91,7 @@ def analyze(
                 timezone=timezone(config["timezone"]) if config["timezone"] else None,
                 index_to_name=index_to_name if config["transformModelOutput"] else None,
                 only_analyze=config["onlyAnalyze"],
+                retry_corrupted_files=retry_corrupted_files,
             )
         )
 
@@ -134,6 +143,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--create_report", help="create json report", action="store_true", default=False
     )
+    parser.add_argument(
+        "--retry", help="retry corrupted files", action="store_true", default=False
+    )
 
     args = parser.parse_args()
     if args.config_filepath:
@@ -141,7 +153,7 @@ if __name__ == "__main__":
             args.config_filepath,
             create_index=args.create_index,
             create_report_flag=args.create_report,
-            only_drop_index=args.only_drop_index,
+            retry_corrupted_files=args.retry,
         )
     else:
         print("No config file specified")

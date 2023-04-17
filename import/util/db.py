@@ -8,7 +8,10 @@ from sql.query import (
     create_index_for_sql_table,
     drop_index_for_sql_table,
     get_record_id_by_filepath,
+    get_corrupted_files,
+    get_record_id,
 )
+from sql.update import update_corrupted_file, update_record
 
 import sql.initial as queries
 
@@ -178,9 +181,24 @@ class DbWorker:
         )
         self.db_connection.commit()
 
-    def close(self):
-        self.db_connection.close()
+    def get_corrupted_files(self):
+        self.db_cursor.execute(get_corrupted_files(self.batch_prefix))
+        return self.db_cursor.fetchall()
+
     #     self.db_connection.fl
+    def update_corrupted_file(self, filepath):
+        self.db_cursor.execute(update_corrupted_file(self.batch_prefix, filepath))
+        self.db_connection.commit()
+
+    def update_record(self, filepath, duration, channels, commit=True, corrupted=False):
+        self.db_cursor.execute(get_record_id(self.batch_prefix, filepath))
+        id = self.db_cursor.fetchall()
+        self.db_cursor.execute(
+            update_record(self.batch_prefix, filepath, duration, channels, corrupted)
+        )
+        if commit:
+            self.db_connection.commit()
+        return id[0][0]
 
 
 def drop_species_indices(collection_name, species_index_list):
