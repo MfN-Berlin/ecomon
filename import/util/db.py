@@ -200,6 +200,9 @@ class DbWorker:
             self.db_connection.commit()
         return id[0][0]
 
+    def close(self):
+        self.db_connection.close()
+
 
 def drop_species_indices(collection_name, species_index_list):
     db_worker = DbWorker(collection_name)

@@ -22,6 +22,7 @@ def analyze(
     create_index=False,
     create_report_flag=False,
     retry_corrupted_files=False,
+    only_drop_index=False,
 ):
     # print method paramaters
     print("config_filepath", config_filepath)
@@ -154,6 +155,7 @@ if __name__ == "__main__":
             create_index=args.create_index,
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
+            only_drop_index=args.only_drop_index,
         )
     else:
         print("No config file specified")
