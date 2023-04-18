@@ -202,9 +202,7 @@ def store_loop_factory(
                                 if test_run is False:
                                     # mesaure time between last prediction and end of file
                                     start = time.time()
-
                                     db_worker.commit()
-
                                     end = time.time()
                                     # print(
                                     #     "The time of writing in database of above program is :",
