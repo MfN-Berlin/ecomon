@@ -48,5 +48,5 @@ def analyze_loop_factory(
             # results_queue.put([filepath, None, None])
         # print("############ all analyzed ############")
         all_analyzed_event.set()
-
+       
     return loop

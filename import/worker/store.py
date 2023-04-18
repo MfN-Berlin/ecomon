@@ -60,12 +60,13 @@ def store_loop_factory(
                         not results_queue.empty()
                         or not all_analyzed_event.is_set()
                     ):
+                        
                         if results_queue.empty():
                             sleep(1)
-                            progress.set_postfix(store_idling="Yes")
+                            progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),True))
                             continue
                         else:
-                            progress.set_postfix(store_idling="No")
+                            progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),False))
                         (
                             input_filepath,
                             prediction_result_filepath,
@@ -201,11 +202,12 @@ def store_loop_factory(
                                 if test_run is False:
                                     # mesaure time between last prediction and end of file
                                     start = time.time()
+
                                     db_worker.commit()
 
                                     end = time.time()
                                     # print(
-                                    #     "The time of execution of above program is :",
+                                    #     "The time of writing in database of above program is :",
                                     #     end - start,
                                     # )
                                 else:
