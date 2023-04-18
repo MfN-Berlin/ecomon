@@ -17,10 +17,8 @@ from util.db import drop_species_indices, create_species_indices
 import os
 
 
-def analyze(config_filepath, create_index=False, create_report_flag=False, retry_corrupted_files=False):
+def analyze(config_filepath, create_index=False,drop_index=False, create_report_flag=False, retry_corrupted_files=False):
     # print method paramaters
-    print("config_filepath", config_filepath)
-    print("create_index", create_index)
 
     if not os.path.exists("./cache"):
         os.makedirs("./cache")
@@ -34,7 +32,7 @@ def analyze(config_filepath, create_index=False, create_report_flag=False, retry
     index_to_name = load_json(config["indexToNameFile"])
     if config["onlyAnalyze"] is False:
         init_db(config["prefix"], index_to_name)
-    if create_index and config["onlyAnalyze"] is False:
+    if create_index and config["onlyAnalyze"] is False or drop_index: 
         drop_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
@@ -124,6 +122,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--create_index", help="create index", action="store_true", default=False,
     )
+
+    parser.add_argument(
+        "--drop_index", help="drop index", action="store_true", default=False,
+    )
     parser.add_argument(
         "--create_report", help="create json report", action="store_true", default=False
     )
@@ -136,6 +138,7 @@ if __name__ == "__main__":
         analyze(
             args.config_filepath,
             create_index=args.create_index,
+            drop_index=args.drop_index,
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
         )

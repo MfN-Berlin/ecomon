@@ -38,6 +38,7 @@ def store_loop_factory(
             desc="Analyzed",
             unit="files",
             smoothing=0.1,
+
         ) as progress:
             if only_analyze is False:
                 db_worker = DbWorker(prefix)
@@ -61,8 +62,10 @@ def store_loop_factory(
                     ):
                         if results_queue.empty():
                             sleep(1)
+                            progress.set_postfix(store_idling="Yes")
                             continue
-
+                        else:
+                            progress.set_postfix(store_idling="No")
                         (
                             input_filepath,
                             prediction_result_filepath,
@@ -127,6 +130,7 @@ def store_loop_factory(
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")
                                 processed_f.flush()
+                                progress.update(1)
                                 continue
 
                             with open(prediction_result_filepath, "rb") as f:
