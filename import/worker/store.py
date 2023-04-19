@@ -38,6 +38,7 @@ def store_loop_factory(
             desc="Analyzed",
             unit="files",
             smoothing=0.1,
+
         ) as progress:
             if only_analyze is False:
                 db_worker = DbWorker(prefix)
@@ -59,10 +60,13 @@ def store_loop_factory(
                         not results_queue.empty()
                         or not all_analyzed_event.is_set()
                     ):
+                        
                         if results_queue.empty():
+                            progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),True))
                             sleep(1)
                             continue
-
+                        else:
+                            progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),False))
                         (
                             input_filepath,
                             prediction_result_filepath,
@@ -127,6 +131,7 @@ def store_loop_factory(
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")
                                 processed_f.flush()
+                                progress.update(1)
                                 continue
 
                             with open(prediction_result_filepath, "rb") as f:
@@ -198,10 +203,9 @@ def store_loop_factory(
                                     # mesaure time between last prediction and end of file
                                     start = time.time()
                                     db_worker.commit()
-
                                     end = time.time()
                                     # print(
-                                    #     "The time of execution of above program is :",
+                                    #     "The time of writing in database of above program is :",
                                     #     end - start,
                                     # )
                                 else:
@@ -217,11 +221,11 @@ def store_loop_factory(
                             #     processed_f.write(input_filepath + "\n")
                             #     processed_f.flush()
                             #     continue
-                            print(
-                                "Store Worker: {} error: Error during analysis on {} width Error:".format(
-                                    port, filename
-                                )
-                            )
+                            # print(
+                            #     "Store Worker: {} error: Error during analysis on {} width Error:".format(
+                            #         port, filename
+                            #     )
+                            # )
                             error_f.write("{}, {}".format(input_filepath, e) + "\n")
                             error_f.flush()
                             if only_analyze is False:

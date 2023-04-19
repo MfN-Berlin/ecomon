@@ -10,6 +10,7 @@ from sql.query import (
     get_record_id_by_filepath,
     get_corrupted_files,
     get_record_id,
+    get_all_filepaths,
 )
 from sql.update import update_corrupted_file, update_record
 
@@ -199,6 +200,11 @@ class DbWorker:
         if commit:
             self.db_connection.commit()
         return id[0][0]
+
+    def get_all_filepaths(self):
+        sql_query = get_all_filepaths(self.batch_prefix)
+        self.db_cursor.execute(sql_query)
+        return [row[0] for row in self.db_cursor.fetchall()]
 
     def close(self):
         self.db_connection.close()

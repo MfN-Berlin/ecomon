@@ -3,7 +3,7 @@ import argparse
 from dotenv import load_dotenv
 from worker.analyze import analyze_loop_factory
 from worker.store import store_loop_factory
-from util.db import init_db
+from util.db import init_db, DbWorker
 from pytz import timezone
 from create_reports import create_report
 
@@ -20,13 +20,11 @@ import os
 def analyze(
     config_filepath,
     create_index=False,
+    drop_index=False,
     create_report_flag=False,
     retry_corrupted_files=False,
-    only_drop_index=False,
 ):
     # print method paramaters
-    print("config_filepath", config_filepath)
-    print("create_index", create_index)
 
     if not os.path.exists("./cache"):
         os.makedirs("./cache")
@@ -40,7 +38,7 @@ def analyze(
     index_to_name = load_json(config["indexToNameFile"])
     if config["onlyAnalyze"] is False:
         init_db(config["prefix"], index_to_name)
-    if (create_index and config["onlyAnalyze"] is False) or only_drop_index:
+    if create_index and config["onlyAnalyze"] is False or drop_index:
         drop_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
@@ -50,9 +48,13 @@ def analyze(
         all_analyzed_event = threading.Event()
 
         # load_file_list
+        worker = DbWorker(config["prefix"])
+        processed_files = worker.get_all_filepaths()
+
         processed_count, files_count = load_files_list(
             config,
             files_queue,
+            processed_files,
             retry_corrupted_files=retry_corrupted_files,
             prefix=config["prefix"],
         )
@@ -138,6 +140,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--create_index", help="create index", action="store_true", default=False,
     )
+
+    parser.add_argument(
+        "--drop_index", help="drop index", action="store_true", default=False,
+    )
     parser.add_argument(
         "--only_drop_index", help="drop all index", action="store_true", default=False,
     )
@@ -153,6 +159,7 @@ if __name__ == "__main__":
         analyze(
             args.config_filepath,
             create_index=args.create_index,
+            drop_index=args.drop_index,
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
             only_drop_index=args.only_drop_index,
