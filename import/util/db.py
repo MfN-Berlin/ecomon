@@ -9,7 +9,8 @@ from sql.query import (
     drop_index_for_sql_table,
     get_record_id_by_filepath,
     get_corrupted_files,
-    get_record_id
+    get_record_id,
+    get_all_filepaths,
 )
 from sql.update import update_corrupted_file, update_record
 
@@ -27,10 +28,6 @@ def __create_species__array(index_to_name):
 def connect_to_db():
     try:
         print("Connecting to MariaDB Platform...")
-        print("MDAS_MARIADB_USER: {}".format(os.getenv("MDAS_MARIADB_USER")))
-        print("MDAS_MARIADB_PASSWORD: {}".format(os.getenv("MDAS_MARIADB_PASSWORD")))
-        print("MDAS_MARIADB_HOST: {}".format(os.getenv("MDAS_MARIADB_HOST")))
-        print("MDAS_MARIADB_PORT: {}".format(os.getenv("MDAS_MARIADB_PORT")))
         connection = mariadb.connect(
             user=os.getenv("MDAS_MARIADB_USER"),
             password=os.getenv("MDAS_MARIADB_PASSWORD"),
@@ -203,6 +200,10 @@ class DbWorker:
         if(commit):
             self.db_connection.commit()
         return id[0][0]
+    def get_all_filepaths(self):
+        sql_query = get_all_filepaths(self.batch_prefix)
+        self.db_cursor.execute(sql_query)
+        return [row[0] for row in self.db_cursor.fetchall()]
 
 
 

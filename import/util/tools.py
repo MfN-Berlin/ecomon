@@ -139,7 +139,7 @@ def load_json(filepath):
         return json.load(read_file)
 
 
-def load_files_list(config, files_queue, retry_corrupted_files=False, prefix=None):
+def load_files_list(config, files_queue,list_of_files_in_db, retry_corrupted_files=False, prefix=None, ):
     lines = []
     files_count = 0
     if(retry_corrupted_files):
@@ -156,15 +156,10 @@ def load_files_list(config, files_queue, retry_corrupted_files=False, prefix=Non
   
         return 0, files_count
     else:
-        try:
-            with open(config["progress_cache_filepath"], "r") as processed_f:
-                lines = processed_f.readlines()
-        except FileNotFoundError as e:
-            # no cached process file exist -> it is a new run
-            pass
 
         processed_dict = {}
-        for filepath in lines:
+        
+        for filepath in list_of_files_in_db:
             processed_dict[filepath] = True
 
         # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
@@ -179,10 +174,10 @@ def load_files_list(config, files_queue, retry_corrupted_files=False, prefix=Non
                 files.extend(
                     glob.iglob(absolute_path + "**/*.{}".format(ext), recursive=True,)
                 )
-
+        print("Found raw files {}".format(len(files)))
         for filepath in files:
             files_count += 1
-            if processed_dict.get(filepath + "\n", False):
+            if processed_dict.get(filepath, False):
                 # if file is already processed do not add
                 continue
             # check if is files_queue is alist and append filepath
@@ -191,5 +186,5 @@ def load_files_list(config, files_queue, retry_corrupted_files=False, prefix=Non
                 files_queue.append(filepath)
             else:
                 files_queue.put(filepath)
-    return len(lines), files_count
+    return len(list_of_files_in_db), files_count
 

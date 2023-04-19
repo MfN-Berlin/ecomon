@@ -1,7 +1,6 @@
 from time import sleep
 import dotenv
 import requests
-import requests
 from os import path, getenv
 import time
 
@@ -39,7 +38,7 @@ def analyze_loop_factory(
                         if model_output_style
                         else "",
                     )
-                    requests.get(request_string,)
+                    requests.get(request_string)               
                 # else:
                 #     print("File {} already exists".format(result_path))
                 results_queue.put([filepath, result_path, None, port])

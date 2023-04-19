@@ -3,7 +3,7 @@ import os
 import glob
 
 
-def main(configs, config_folder):
+def main(configs, config_folder, drop_index=False, create_index=False):
     # add YAML configs from folder to configs list
     if config_folder:
         for file_path in glob.glob(os.path.join(config_folder, "*.yaml")):
@@ -13,8 +13,9 @@ def main(configs, config_folder):
         os.system(
             "python3 import/import_records.py "
             + config
-            # + " --create_index"
-            + " --create_report"
+            + " --drop_index" if drop_index else ""
+            + " --create_index" if create_index else ""
+         
         )
 
 
@@ -31,7 +32,13 @@ if __name__ == "__main__":
         type=str,
         default=None,
     )
+    parser.add_argument(
+        "--drop_index", help="drop index", action="store_true", default=False,
+    )
+    parser.add_argument(
+        "--create_index", help="create index", action="store_true", default=False,
+    )
     args = parser.parse_args()
     configs = args.configs or []
     config_folder = args.config_folder
-    main(configs, config_folder)
+    main(configs, config_folder, create_index=args.create_index, drop_index=args.drop_index)

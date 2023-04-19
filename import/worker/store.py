@@ -62,8 +62,8 @@ def store_loop_factory(
                     ):
                         
                         if results_queue.empty():
-                            sleep(1)
                             progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),True))
+                            sleep(1)
                             continue
                         else:
                             progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),False))
@@ -221,11 +221,11 @@ def store_loop_factory(
                             #     processed_f.write(input_filepath + "\n")
                             #     processed_f.flush()
                             #     continue
-                            print(
-                                "Store Worker: {} error: Error during analysis on {} width Error:".format(
-                                    port, filename
-                                )
-                            )
+                            # print(
+                            #     "Store Worker: {} error: Error during analysis on {} width Error:".format(
+                            #         port, filename
+                            #     )
+                            # )
                             error_f.write("{}, {}".format(input_filepath, e) + "\n")
                             error_f.flush()
                             if only_analyze is False:

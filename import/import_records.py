@@ -3,7 +3,7 @@ import argparse
 from dotenv import load_dotenv
 from worker.analyze import analyze_loop_factory
 from worker.store import store_loop_factory
-from util.db import init_db
+from util.db import init_db, DbWorker
 from pytz import timezone
 from create_reports import create_report
 
@@ -42,7 +42,11 @@ def analyze(config_filepath, create_index=False,drop_index=False, create_report_
         all_analyzed_event = threading.Event()
 
         # load_file_list
-        processed_count, files_count = load_files_list(config, files_queue, retry_corrupted_files=retry_corrupted_files, prefix=config["prefix"])
+        worker = DbWorker(config["prefix"])
+        processed_files = worker.get_all_filepaths()
+        
+        
+        processed_count, files_count = load_files_list(config, files_queue,processed_files, retry_corrupted_files=retry_corrupted_files, prefix=config["prefix"])
 
         print(
             "Files found {} already processed {}".format(files_count, processed_count)

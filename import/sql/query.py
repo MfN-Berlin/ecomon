@@ -32,3 +32,10 @@ def get_record_id(prefix, filepath):
     """.format(
         prefix, filepath
     )
+
+def get_all_filepaths(prefix):
+    return """
+    SELECT filepath from {}_records
+    """.format(prefix)
+
+
