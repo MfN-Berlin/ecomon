@@ -8,12 +8,20 @@ fileEnding:
    - WAV
    - flac
    - FLAC
+<<<<<<< HEAD:import/config/birdnet/config-CRIEWEN04_2022.yaml
+resultFolder: birdnet-public-3k-v2.2/AMMOD/CRIEWEN04/2022/
+=======
 resultFolder: birdid-europe254-2103/AMMOD/CRIEWEN04/2022
+>>>>>>> fix-01:import/config/birdid/config-CRIEWEN04_2022.yaml
 # Index to name File of your used model
 indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
+<<<<<<< HEAD:import/config/birdnet/config-CRIEWEN04_2022.yaml
+prefix: "BIRDNET_CRIEWEN04_2022"
+=======
 prefix: "BIRDID_CRIEWEN01_2022"
+>>>>>>> fix-01:import/config/birdid/config-CRIEWEN04_2022.yaml
 testRun: False
 timezone: CET
 speciesIndexList:

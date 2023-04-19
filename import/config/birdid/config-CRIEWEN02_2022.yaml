@@ -1,6 +1,6 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/CRIEWEN_2022/CRIEWEN04
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/CRIEWEN_2022/CRIEWEN02
 fileEnding:
    - mp3 # wav
    - wav
@@ -8,12 +8,12 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdid-europe254-2103/AMMOD/CRIEWEN04/2022
+resultFolder: birdnet-public-3k-v2.2/AMMOD/CRIEWEN02/2022/
 # Index to name File of your used model
 indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDID_CRIEWEN01_2022"
+prefix: "BIRDNET_CRIEWEN02_2022"
 testRun: False
 timezone: CET
 speciesIndexList:
