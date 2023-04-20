@@ -3,7 +3,7 @@ import os
 import glob
 
 
-def main(configs, config_folder, drop_index=False, create_index=False):
+def main(configs, config_folder, retry=False, drop_index=False, create_index=False):
     # add YAML configs from folder to configs list
     if config_folder:
         for file_path in glob.glob(os.path.join(config_folder, "*.yaml")):
@@ -11,11 +11,13 @@ def main(configs, config_folder, drop_index=False, create_index=False):
         print("Found configs: ", configs)
     for config in configs:  #
         cmd_str = (
-            "python3 import/import_records.py "
-            + config
-            + " --drop_index" if drop_index else ""
-            + " --create_index" if create_index else ""
-
+            "python3 import/import_records.py " + config + " --drop_index"
+            if drop_index
+            else "" + " --retry"
+            if retry
+            else "" + " --create_index"
+            if create_index
+            else ""
         )
         print(cmd_str)
         os.system(cmd_str)
@@ -37,10 +39,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "--drop_index", help="drop index", action="store_true", default=False,
     )
+
     parser.add_argument(
         "--create_index", help="create index", action="store_true", default=False,
+    )
+    parser.add_argument(
+        "--retry", help="retry ", action="store_true", default=False,
     )
     args = parser.parse_args()
     configs = args.configs or []
     config_folder = args.config_folder
-    main(configs, config_folder, create_index=args.create_index, drop_index=args.drop_index)
+    main(
+        configs,
+        config_folder,
+        retry=args.retry,
+        create_index=args.create_index,
+        drop_index=args.drop_index,
+    )

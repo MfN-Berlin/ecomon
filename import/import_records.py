@@ -145,9 +145,6 @@ if __name__ == "__main__":
         "--drop_index", help="drop index", action="store_true", default=False,
     )
     parser.add_argument(
-        "--only_drop_index", help="drop all index", action="store_true", default=False,
-    )
-    parser.add_argument(
         "--create_report", help="create json report", action="store_true", default=False
     )
     parser.add_argument(
@@ -162,7 +159,6 @@ if __name__ == "__main__":
             drop_index=args.drop_index,
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
-            only_drop_index=args.only_drop_index,
         )
     else:
         print("No config file specified")

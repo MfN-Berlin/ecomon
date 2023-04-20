@@ -27,7 +27,6 @@ def store_loop_factory(
     index_to_name=None,
     only_analyze=False,
     retry_corrupted_files=False,
-
 ):
     # db_cursor = connect_to_db()
     def loop():
@@ -38,7 +37,6 @@ def store_loop_factory(
             desc="Analyzed",
             unit="files",
             smoothing=0.1,
-
         ) as progress:
             if only_analyze is False:
                 db_worker = DbWorker(prefix)
@@ -60,13 +58,21 @@ def store_loop_factory(
                         not results_queue.empty()
                         or not all_analyzed_event.is_set()
                     ):
-                        
+
                         if results_queue.empty():
-                            progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),True))
+                            progress.set_postfix(
+                                idle="{}|{}".format(
+                                    "*" if all_analyzed_event.is_set() else "_", "*"
+                                )
+                            )
                             sleep(1)
                             continue
                         else:
-                            progress.set_postfix(idle="{}/{}".format(all_analyzed_event.is_set(),False))
+                            progress.set_postfix(
+                                idle="{}|{}".format(
+                                    "*" if all_analyzed_event.is_set() else "_", "_"
+                                )
+                            )
                         (
                             input_filepath,
                             prediction_result_filepath,
@@ -110,7 +116,7 @@ def store_loop_factory(
                             except Exception as e:
 
                                 if test_run is False:
-                                    if(retry_corrupted_files):
+                                    if retry_corrupted_files:
                                         record_id = db_worker.update_record(
                                             input_filepath,
                                             0,
@@ -143,7 +149,7 @@ def store_loop_factory(
                                 # sanity checks if analyze worked correctly
                                 record_id = 0
                                 if test_run is False:
-                                    if(retry_corrupted_files):
+                                    if retry_corrupted_files:
                                         record_id = db_worker.update_record(
                                             input_filepath,
                                             duration,
@@ -151,8 +157,8 @@ def store_loop_factory(
                                             corrupted=False,
                                             commit=False,
                                         )
-                                       
-                                    else: 
+
+                                    else:
                                         record_id = db_worker.add_file(
                                             input_filepath,
                                             filename,
