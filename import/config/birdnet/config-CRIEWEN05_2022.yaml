@@ -8,7 +8,7 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdid-europe254-2103/AMMOD/CRIEWEN05/2022
+resultFolder: birdnet-public-3k-v2.2/AMMOD/CRIEWEN05/2022
 # Index to name File of your used model
 indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
 # prefix of databales of your anlaze run and progress cached file
