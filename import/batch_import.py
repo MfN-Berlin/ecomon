@@ -3,7 +3,14 @@ import os
 import glob
 
 
-def main(configs, config_folder, retry=False, drop_index=False, create_index=False):
+def main(
+    configs,
+    config_folder,
+    retry=False,
+    create_report=False,
+    drop_index=False,
+    create_index=False,
+):
     # add YAML configs from folder to configs list
     if config_folder:
         for file_path in glob.glob(os.path.join(config_folder, "*.yaml")):
@@ -17,6 +24,8 @@ def main(configs, config_folder, retry=False, drop_index=False, create_index=Fal
             if retry
             else "" + " --create_index"
             if create_index
+            else "" + " --create_report"
+            if (create_report)
             else ""
         )
         print(cmd_str)
@@ -46,6 +55,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--retry", help="retry ", action="store_true", default=False,
     )
+    parser.add_argument(
+        "--create_report", help="create json report", action="store_true", default=False
+    )
     args = parser.parse_args()
     configs = args.configs or []
     config_folder = args.config_folder
@@ -55,4 +67,5 @@ if __name__ == "__main__":
         retry=args.retry,
         create_index=args.create_index,
         drop_index=args.drop_index,
+        create_report=args.create_report,
     )
