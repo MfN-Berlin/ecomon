@@ -51,22 +51,19 @@ try:
     print(f"Found {len(tables)} tables")
     # Loop through tables and columns to add indexes
     for table in tables:
-        print(f"Adding indices to table {table}")
+        print(f"Dropping indices of table {table}")
         for column in columns:
             # Check if column already has an index
             cur.execute(f"SHOW INDEX FROM `{table}` WHERE Column_name = '{column}'")
             index = cur.fetchone()
-            if not index:
-                print(f"Adding indices to column {column}")
+            if index:
                 # Add index to column with a specified index name
                 index_name = f"{column}_index"
-                cur.execute(
-                    f"ALTER TABLE `{table}` ADD INDEX `{index_name}` (`{column}`)"
-                )
+                cur.execute(f"ALTER TABLE `{table}` DROP INDEX `{index_name}`")
                 conn.commit()
-                print(f"Added index to column {column} in table {table}")
+                print(f"Drop index {index_name} in table {table}")
             else:
-                print(f"Column {column} in table {table} already has an index")
+                print(f"Column {column} in table {table} has no index")
 
     # Close database connection
     conn.close()
