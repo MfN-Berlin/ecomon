@@ -55,12 +55,20 @@ def report(
     first_datetime = result[0]
     cursor.execute(queries[1][1])
     last_datetime = cursor.fetchone()[0]
-    # convert first_datetime to UTC datetime string
-    first_datetime_utc = first_datetime.replace(tzinfo=timezone("UTC")).astimezone(utc)
+
+    # Convert the datetime objects to the "Etc/GMT-1" timezone
+    desired_tz = timezone("Etc/GMT-1")
+    first_datetime_tz = first_datetime.replace(tzinfo=utc).astimezone(desired_tz)
+    last_datetime_tz = last_datetime.replace(tzinfo=utc).astimezone(desired_tz)
+
+    # Convert first_datetime to UTC datetime string
+    first_datetime_utc = first_datetime_tz.replace(tzinfo=timezone("UTC")).astimezone(
+        utc
+    )
     report_data["first_record_datetime"] = first_datetime_utc.isoformat()
 
-    # convert last_datetime to UTC datetime string
-    last_datetime_utc = last_datetime.replace(tzinfo=timezone("UTC")).astimezone(utc)
+    # Convert last_datetime to UTC datetime string
+    last_datetime_utc = last_datetime_tz.replace(tzinfo=timezone("UTC")).astimezone(utc)
     report_data["last_record_datetime"] = last_datetime_utc.isoformat()
 
     for query_name, query_template in queries[2:]:
@@ -229,21 +237,21 @@ def create_report(prefix=None, output_format="json"):
             ),
             (
                 "monthly_summary_query",
-                """
-                SELECT YEAR({records_table}.record_datetime) AS year, MONTH({records_table}.record_datetime) AS month, COUNT(DISTINCT {records_table}.id) AS record_count, SUM({records_table}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
-                FROM {records_table}
-                LEFT JOIN {predictions_table} ON {records_table}.id = {predictions_table}.record_id
-                GROUP BY YEAR({records_table}.record_datetime), MONTH({records_table}.record_datetime);
-            """,
+                f"""
+        SELECT YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')) AS year, MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')) AS month, COUNT(DISTINCT {table_name}.id) AS record_count, SUM({table_name}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
+        FROM {table_name}
+        LEFT JOIN {predictions_table} ON {table_name}.id = {predictions_table}.record_id
+        GROUP BY YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '+01:00')), MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00'));
+        """,
             ),
             (
                 "daily_summary_query",
-                """
-                SELECT YEAR({records_table}.record_datetime) AS year,  LPAD(MONTH({records_table}.record_datetime), 2, '0') AS month, LPAD(DAY({records_table}.record_datetime), 2, '0') AS day, COUNT(DISTINCT {records_table}.id) AS record_count, SUM({records_table}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
-                FROM {records_table}
-                LEFT JOIN {predictions_table} ON {records_table}.id = {predictions_table}.record_id
-                GROUP BY YEAR({records_table}.record_datetime), MONTH({records_table}.record_datetime), DAY({records_table}.record_datetime);
-            """,
+                f"""
+        SELECT YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')) AS year, LPAD(MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')), 2, '0') AS month, LPAD(DAY(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')), 2, '0') AS day, COUNT(DISTINCT {table_name}.id) AS record_count, SUM({table_name}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
+        FROM {table_name}
+        LEFT JOIN {predictions_table} ON {table_name}.id = {predictions_table}.record_id
+        GROUP BY YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '+01:00')), MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')), DAY(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00'));
+        """,
             ),
         ]
 
