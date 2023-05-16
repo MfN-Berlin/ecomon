@@ -6,6 +6,7 @@ from worker.store import store_loop_factory
 from util.db import init_db, DbWorker
 from pytz import timezone
 from create_reports import create_report
+from time import sleep
 
 from util.tools import (
     load_config,
@@ -33,7 +34,7 @@ def analyze(
     print('Loading config from "{}"'.format(config_filepath))
     print("Create index: {}".format(create_index))
     config = load_config(config_filepath)
-    analyze_thread_count = config["analyzeThreads"]
+    analyze_thread_count = int(config["analyzeThreads"])
     print("ANALYZE_THREADS", analyze_thread_count)
     index_to_name = load_json(config["indexToNameFile"])
     if config["onlyAnalyze"] is False:
@@ -103,12 +104,14 @@ def analyze(
         for thread in analyze_threads:
             thread.start()
 
+
         print("Start store_thread")
         store_thread.start()
 
         # Joined the threads
         for thread in analyze_threads:
             thread.join()
+            sleep(1)
 
         print("Join store_thread")
         store_thread.join()

@@ -1,15 +1,15 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202303
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202304
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202305
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202306
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202307
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202308
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202309
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202310
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202311
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202312
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202303
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202304
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202305
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202306
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202307
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202308
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202309
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202310
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202311
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO12C1A/AKWAMO12C1A_202312
 fileEnding:
    - mp3 # wav
    - wav
@@ -46,10 +46,10 @@ speciesIndexList:
    - luscinia_luscinia
    - phoenicurus_ochruros
    - phoenicurus_phoenicurus
-   - fringilla_coelebs
+   - fringilla_coelebss
 basePort: 9000
-analyzeThreads: 6
+analyzeThreads: 30
 transformModelOutput: False
 allThreadsUseSamePort: False
-repeats: 10
+repeats: 2
 modelOutputStyle: resultDict

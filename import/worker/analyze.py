@@ -15,6 +15,7 @@ def analyze_loop_factory(
     model_output_style=None,
 ):
     def loop():
+        # print(f"Start Thread on requests on Port${port}")
         while not files_queue.empty():
 
             filepath = files_queue.get()
@@ -30,7 +31,7 @@ def analyze_loop_factory(
             # check if result file does not exists
             try:
                 if not path.exists(result_path):
-                    request_string = "http://localhost:{port}/identify?path={filepath}&outputDir={result_path}{model_output_style}".format(
+                    request_string = "http://localhost:{port}/identify?path={filepath}&batchSize=8&nCpuWorkers=4&outputDir={result_path}{model_output_style}".format(
                         port=port,
                         filepath=path.join("/mnt/data", relative_file),
                         result_path=path.join("/mnt/result", relative_result_path),
@@ -38,11 +39,13 @@ def analyze_loop_factory(
                         if model_output_style
                         else "",
                     )
+                    # print(request_string)
                     requests.get(request_string)               
                 # else:
-                #     print("File {} already exists".format(result_path))
+                    # print("File {} already exists".format(result_path))
                 results_queue.put([filepath, result_path, None, port])
             except Exception as e:
+                #print(e)
                 results_queue.put([filepath, None, e, port])
             # results_queue.put([filepath, None, None])
         # print("############ all analyzed ############")
