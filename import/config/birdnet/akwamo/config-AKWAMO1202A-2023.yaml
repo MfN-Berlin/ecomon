@@ -47,9 +47,9 @@ speciesIndexList:
    - phoenicurus_ochruros
    - phoenicurus_phoenicurus
    - fringilla_coelebs
-basePort: 9000
-analyzeThreads: 6
-transformModelOutput: False
+basePort: 7100
+analyzeThreads: 30
+transformModelOutput: True
 allThreadsUseSamePort: False
-repeats: 10
-modelOutputStyle: resultDict
+repeats: 2
+
