@@ -27,10 +27,12 @@ def store_loop_factory(
     index_to_name=None,
     only_analyze=False,
     retry_corrupted_files=False,
+    debug=False,
 ):
     # db_cursor = connect_to_db()
     def loop():
-        print("Starting store loop")
+        if(debug):
+            print("Starting store loop")
         with tqdm(
             total=files_count,
             initial=processed_count,
@@ -44,15 +46,6 @@ def store_loop_factory(
                 if path.exists(error_files_filepath):
                     os.remove(error_files_filepath)
                 with open(error_files_filepath, "a+") as error_f:
-
-                    # for species in species_index_list:
-                    #     print("Dropping index to {}".format(species))
-                    #     try:
-                    #         db_worker.drop_index(prefix, species)
-                    #     except Exception as e:
-                    #         print(e)
-                    #         db_worker.rollback()
-
                     while (
                         # False
                         not results_queue.empty()
@@ -79,9 +72,12 @@ def store_loop_factory(
                             error,
                             port,
                         ) = results_queue.get()
-
+                        if(debug):
+                            print(f'Store: Begin to store file:{input_filepath}')
                         filename = path.basename(input_filepath)
                         if error is not None:
+                            if(debug):
+                                print(f'Store: Found analyze error of file:{input_filepath}: {str(error)}')
                             raise error
                         # read audio file information
                         try:
@@ -95,6 +91,8 @@ def store_loop_factory(
 
                             # check if file exists
                             if not path.exists(input_filepath):
+                                if(debug):
+                                    print(f'Store: file does not exist {input_filepath}')
                                 raise Exception(
                                     "File {} does not exist".format(input_filepath)
                                 )
@@ -114,6 +112,8 @@ def store_loop_factory(
                                 channels = metadata["channels"]
                                 duration = metadata["duration"]
                             except Exception as e:
+                                if(debug):
+                                    print(f'Store filename meta error: ${str(e)}')
 
                                 if test_run is False:
                                     if retry_corrupted_files:
@@ -168,24 +168,6 @@ def store_loop_factory(
                                             commit=False,
                                         )
 
-                                # add predictions
-
-                                # for channel_num, segments_confidences in zip(
-                                #     range(channels), channels_segments_confidences
-                                # ):
-                                #     for start_p, confidences in zip(
-                                #         start_times, segments_confidences
-                                #     ):
-                                #         if test_run is False:
-                                #             db_worker.add_prediction(
-                                #                 record_id,
-                                #                 start_p,
-                                #                 start_p + segment_duration,
-                                #                 "ch_{}".format(channel_num),
-                                #                 confidences,
-                                #                 commit=False,
-                                #             )
-
                                 max_segements_confidences = np.max(
                                     channels_segments_confidences, axis=0
                                 )
@@ -210,13 +192,11 @@ def store_loop_factory(
                                     start = time.time()
                                     db_worker.commit()
                                     end = time.time()
-                                    # print(
-                                    #     "The time of writing in database of above program is :",
-                                    #     end - start,
-                                    # )
+                                  
                                 else:
                                     db_worker.rollback()
-                                # print("store {}".format(filepath[1]))
+                                if(debug):
+                                    print("store {}".format(filepath[1]))
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")
                                 processed_f.flush()
@@ -227,11 +207,12 @@ def store_loop_factory(
                             #     processed_f.write(input_filepath + "\n")
                             #     processed_f.flush()
                             #     continue
-                            # print(
-                            #     "Store Worker: {} error: Error during analysis on {} width Error:".format(
-                            #         port, filename
-                            #     )
-                            # )
+                            if(debug):
+                                print(
+                                    "Store Worker: {} error: Error during analysis on {} width Error:".format(
+                                        port, filename
+                                    )
+                                )
                             error_f.write("{}, {}".format(input_filepath, e) + "\n")
                             error_f.flush()
                             if only_analyze is False:
@@ -248,18 +229,7 @@ def store_loop_factory(
                             found_analyze_error = True
                             print("found different error")
 
-                    # if not found_analyze_error:
-                    #     print("Start adding index to species columns")
-                    #     for species in species_index_list:
-                    #         print("Adding index to {}".format(species))
-                    #         try:
-                    #             db_worker.add_index(prefix, species)
-                    #             print("Finished adding index to species columns")
-                    #         except Exception as e:
-                    #             print(e)
-                    #             db_worker.rollback()
-                    # else:
-                    #     print("Error file has more than 10 entries. Not adding index")
+                   
             db_worker.close()
 
     return loop

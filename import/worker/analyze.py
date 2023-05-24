@@ -4,7 +4,6 @@ import requests
 from os import path, getenv
 import time
 
-
 def analyze_loop_factory(
     files_queue,
     results_queue,
@@ -13,13 +12,17 @@ def analyze_loop_factory(
     data_path,
     relative_result_path,
     model_output_style=None,
+    debug=False,
 ):
     def loop():
         # print(f"Start Thread on requests on Port${port}")
+        if(debug):
+               print(f'analyze: file_queue is empty {files_queue.empty()}')
         while not files_queue.empty():
 
             filepath = files_queue.get()
-            # print("analyze {}".format(filepath))
+            if(debug):
+                print("analyze: file {}".format(filepath))
             # put raw filepath and analyze result filepath
             # "http://localhost:4001/identify?path=/mnt/file.wav&outputDir=/mnt/Results&outputStyle=resultDict"
             relative_file = path.relpath(filepath, start=data_path)
@@ -45,7 +48,8 @@ def analyze_loop_factory(
                     # print("File {} already exists".format(result_path))
                 results_queue.put([filepath, result_path, None, port])
             except Exception as e:
-                #print(e)
+                if(debug):
+                    print(f'Analyze Thread error during request: {str(e)}')
                 results_queue.put([filepath, None, e, port])
             # results_queue.put([filepath, None, None])
         # print("############ all analyzed ############")
