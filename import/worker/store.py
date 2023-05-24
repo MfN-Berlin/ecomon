@@ -8,6 +8,7 @@ import pickle
 import ffmpeg
 import time
 import numpy as np
+import pytz
 
 
 # calc max pairwise of n dimensional list
@@ -29,6 +30,23 @@ def store_loop_factory(
     retry_corrupted_files=False,
     debug=False,
 ):
+    if(debug):
+        # print all intial parameters   
+        print(f'Store: prefix: {prefix}')
+        print(f'Store: processed_files_filepath: {processed_files_filepath}')
+        print(f'Store: error_files_filepath: {error_files_filepath}')
+        print(f'Store: all_analyzed_event: {all_analyzed_event}')
+        print(f'Store: results_queue: {results_queue}')
+        print(f'Store: processed_count: {processed_count}')
+        print(f'Store: files_count: {files_count}')
+        print(f'Store: test_run: {test_run}')
+        print(f'Store: filename_parsing: {filename_parsing}')
+        print(f'Store: timezone: {timezone}')
+        print(f'Store: index_to_name: {index_to_name}')
+        print(f'Store: only_analyze: {only_analyze}')
+        print(f'Store: retry_corrupted_files: {retry_corrupted_files}')
+        print(f'Store: debug: {debug}')
+
     # db_cursor = connect_to_db()
     def loop():
         if(debug):
@@ -54,17 +72,13 @@ def store_loop_factory(
 
                         if results_queue.empty():
                             progress.set_postfix(
-                                idle="{}|{}".format(
-                                    "*" if all_analyzed_event.is_set() else "_", "*"
-                                )
+                                idle=f'{"*" if all_analyzed_event.is_set() else "_"}|*'
                             )
                             sleep(1)
                             continue
                         else:
                             progress.set_postfix(
-                                idle="{}|{}".format(
-                                    "*" if all_analyzed_event.is_set() else "_", "_"
-                                )
+                                idle=f'{"*" if all_analyzed_event.is_set() else "_"}|_'
                             )
                         (
                             input_filepath,
@@ -94,7 +108,7 @@ def store_loop_factory(
                                 if(debug):
                                     print(f'Store: file does not exist {input_filepath}')
                                 raise Exception(
-                                    "File {} does not exist".format(input_filepath)
+                                    f"File {input_filepath} does not exist"
                                 )
                             parse_result = parse_filename_for_location_date_time_function_dict[
                                 filename_parsing
@@ -107,13 +121,14 @@ def store_loop_factory(
                                 if timezone is None
                                 else timezone.localize(parse_result.record_datetime)
                             )
+
                             try:
                                 metadata = ffmpeg.probe(input_filepath)["streams"][0]
                                 channels = metadata["channels"]
                                 duration = metadata["duration"]
                             except Exception as e:
                                 if(debug):
-                                    print(f'Store filename meta error: ${str(e)}')
+                                    print(f'Store: filename meta error: ${str(e)}')
 
                                 if test_run is False:
                                     if retry_corrupted_files:
@@ -196,7 +211,7 @@ def store_loop_factory(
                                 else:
                                     db_worker.rollback()
                                 if(debug):
-                                    print("store {}".format(filepath[1]))
+                                    print(f"Store: input_filepath: {input_filepath}")
                                 # write filepath to processed to file
                                 processed_f.write(input_filepath + "\n")
                                 processed_f.flush()
@@ -209,27 +224,17 @@ def store_loop_factory(
                             #     continue
                             if(debug):
                                 print(
-                                    "Store Worker: {} error: Error during analysis on {} width Error:".format(
-                                        port, filename
-                                    )
+                                    f'Store: on Port {port} error: Error during analysis on {filename} width Error: {str(e)}'
                                 )
-                            error_f.write("{}, {}".format(input_filepath, e) + "\n")
+                            error_f.write(f"{input_filepath}, {str(e)}" + "\n")
                             error_f.flush()
                             if only_analyze is False:
                                 db_worker.rollback()
                         progress.update(1)
                     # now add index to species columns
                     # check if error file has entries
-                    error_f.seek(0)
-                    error_file_lines = error_f.readlines()
-                    # check if one line of  error_file_lines   inlcudes ffprobe error
-                    found_analyze_error = False
-                    for line in error_file_lines:
-                        if "ffprobe error" not in line:
-                            found_analyze_error = True
-                            print("found different error")
 
-                   
+  
             db_worker.close()
 
     return loop

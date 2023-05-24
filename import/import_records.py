@@ -25,6 +25,7 @@ def analyze(
     create_report_flag=False,
     retry_corrupted_files=False,
     debug=False,
+    max_files=None,
 ):
     # print method paramaters
 
@@ -32,8 +33,8 @@ def analyze(
         os.makedirs("./cache")
 
     load_dotenv()  # load environment variables from .env
-    print('Loading config from "{}"'.format(config_filepath))
-    print("Create index: {}".format(create_index))
+    print(f'Loading config from "{config_filepath}"')
+    print(f"Create index: {create_index}")
     config = load_config(config_filepath)
     analyze_thread_count = int(config["analyzeThreads"])
     print("ANALYZE_THREADS", analyze_thread_count)
@@ -60,10 +61,14 @@ def analyze(
             retry_corrupted_files=retry_corrupted_files,
             prefix=config["prefix"],
         )
+        if max_files is not None:
+            print(f"Reduce files queue to {max_files} entries")   
+            # Reduce the size of the queue to 10 entries
+            while files_queue.qsize() > max_files:
+                files_queue.get()
 
         print(
-            "Files found {} already processed {}".format(files_count, processed_count)
-        )
+            f"Files found {files_count} already processed {processed_count}")
         # Created the Threads
 
         analyze_threads = [
@@ -78,6 +83,8 @@ def analyze(
                     config["resultFolder"],
                     model_output_style=config["modelOutputStyle"],
                     debug=debug,
+                    nCpuWorkers=config["nCpuWorkers"],
+                    batchSize=config["batchSize"],
                 )
             )
             for i in range(analyze_thread_count)
@@ -158,8 +165,11 @@ if __name__ == "__main__":
     )
     
     parser.add_argument(
-        "--debug", help="retry corrupted files", action="store_true", default=False
+        "--debug", help="debug messages are printed", action="store_true", default=False
     )
+
+    parser.add_argument("--max_files", help="set to max files to be analyzed", type=int, action="store", default=None)
+
 
     args = parser.parse_args()
     if args.config_filepath:
@@ -170,6 +180,7 @@ if __name__ == "__main__":
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
             debug=args.debug,
+            max_files=args.max_files
         )
     else:
         print("No config file specified")
