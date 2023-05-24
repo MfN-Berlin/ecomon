@@ -1,15 +1,15 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202303
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202304
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202305
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202306
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202307
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202308
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202309
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202310
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202311
-   -/net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202312
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202303
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202304
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202305
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202306
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202307
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202308
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202309
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202310
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202311
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202312
 fileEnding:
    - mp3 # wav
    - wav
