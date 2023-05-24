@@ -53,3 +53,5 @@ transformModelOutput: False
 allThreadsUseSamePort: False
 repeats: 2
 modelOutputStyle: resultDict
+batchSize: 2
+nCpuWorkers: 1
