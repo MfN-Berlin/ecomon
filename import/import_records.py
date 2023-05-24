@@ -24,6 +24,7 @@ def analyze(
     drop_index=False,
     create_report_flag=False,
     retry_corrupted_files=False,
+    debug=False,
 ):
     # print method paramaters
 
@@ -76,6 +77,7 @@ def analyze(
                     config["data_folder"],
                     config["resultFolder"],
                     model_output_style=config["modelOutputStyle"],
+                    debug=debug,
                 )
             )
             for i in range(analyze_thread_count)
@@ -96,6 +98,7 @@ def analyze(
                 index_to_name=index_to_name if config["transformModelOutput"] else None,
                 only_analyze=config["onlyAnalyze"],
                 retry_corrupted_files=retry_corrupted_files,
+                debug=debug
             )
         )
 
@@ -117,9 +120,9 @@ def analyze(
         store_thread.join()
         print("Done")
 
-    if (create_index and config["onlyAnalyze"] is False) and only_drop_index is False:
-        print("Create index" if create_index else "Drop index")
-        return
+    if (create_index and config["onlyAnalyze"] is False):
+        if(debug):
+            print("Create index" if create_index else "Drop index")
         create_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
@@ -153,6 +156,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--retry", help="retry corrupted files", action="store_true", default=False
     )
+    
+    parser.add_argument(
+        "--debug", help="retry corrupted files", action="store_true", default=False
+    )
 
     args = parser.parse_args()
     if args.config_filepath:
@@ -162,6 +169,7 @@ if __name__ == "__main__":
             drop_index=args.drop_index,
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
+            debug=args.debug,
         )
     else:
         print("No config file specified")
