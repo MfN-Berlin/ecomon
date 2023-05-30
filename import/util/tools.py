@@ -165,6 +165,7 @@ def load_files_list(config, files_queue,list_of_files_in_db, retry_corrupted_fil
         # print(config["absolute_records_path"] + "**/*.{}".format(config["fileEnding"][0]))
         files = []
         absolute_paths = config["absolute_records_path"]
+  
         # if absolute_paths is not a list, make it one
         if not isinstance(absolute_paths, list):
             absolute_paths = [absolute_paths]

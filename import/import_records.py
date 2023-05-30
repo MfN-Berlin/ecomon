@@ -6,6 +6,7 @@ from worker.store import store_loop_factory
 from util.db import init_db, DbWorker
 from pytz import timezone
 from create_reports import create_report
+from time import sleep
 
 from util.tools import (
     load_config,
@@ -23,6 +24,8 @@ def analyze(
     drop_index=False,
     create_report_flag=False,
     retry_corrupted_files=False,
+    debug=False,
+    max_files=None,
 ):
     # print method paramaters
 
@@ -30,10 +33,10 @@ def analyze(
         os.makedirs("./cache")
 
     load_dotenv()  # load environment variables from .env
-    print('Loading config from "{}"'.format(config_filepath))
-    print("Create index: {}".format(create_index))
+    print(f'Loading config from "{config_filepath}"')
+    print(f"Create index: {create_index}")
     config = load_config(config_filepath)
-    analyze_thread_count = config["analyzeThreads"]
+    analyze_thread_count = int(config["analyzeThreads"])
     print("ANALYZE_THREADS", analyze_thread_count)
     index_to_name = load_json(config["indexToNameFile"])
     if config["onlyAnalyze"] is False:
@@ -58,10 +61,14 @@ def analyze(
             retry_corrupted_files=retry_corrupted_files,
             prefix=config["prefix"],
         )
+        if max_files is not None:
+            print(f"Reduce files queue to {max_files} entries")   
+            # Reduce the size of the queue to 10 entries
+            while files_queue.qsize() > max_files:
+                files_queue.get()
 
         print(
-            "Files found {} already processed {}".format(files_count, processed_count)
-        )
+            f"Files found {files_count} already processed {processed_count}")
         # Created the Threads
 
         analyze_threads = [
@@ -75,6 +82,9 @@ def analyze(
                     config["data_folder"],
                     config["resultFolder"],
                     model_output_style=config["modelOutputStyle"],
+                    debug=debug,
+                    nCpuWorkers=config["nCpuWorkers"],
+                    batchSize=config["batchSize"],
                 )
             )
             for i in range(analyze_thread_count)
@@ -95,6 +105,7 @@ def analyze(
                 index_to_name=index_to_name if config["transformModelOutput"] else None,
                 only_analyze=config["onlyAnalyze"],
                 retry_corrupted_files=retry_corrupted_files,
+                debug=debug
             )
         )
 
@@ -103,20 +114,22 @@ def analyze(
         for thread in analyze_threads:
             thread.start()
 
+
         print("Start store_thread")
         store_thread.start()
 
         # Joined the threads
         for thread in analyze_threads:
             thread.join()
+            sleep(1)
 
         print("Join store_thread")
         store_thread.join()
         print("Done")
 
-    if (create_index and config["onlyAnalyze"] is False) and only_drop_index is False:
-        print("Create index" if create_index else "Drop index")
-        return
+    if (create_index and config["onlyAnalyze"] is False):
+        if(debug):
+            print("Create index" if create_index else "Drop index")
         create_species_indices(
             config["prefix"], species_index_list=config["speciesIndexList"],
         )
@@ -150,6 +163,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--retry", help="retry corrupted files", action="store_true", default=False
     )
+    
+    parser.add_argument(
+        "--debug", help="debug messages are printed", action="store_true", default=False
+    )
+
+    parser.add_argument("--max_files", help="set to max files to be analyzed", type=int, action="store", default=None)
+
 
     args = parser.parse_args()
     if args.config_filepath:
@@ -159,6 +179,8 @@ if __name__ == "__main__":
             drop_index=args.drop_index,
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
+            debug=args.debug,
+            max_files=args.max_files
         )
     else:
         print("No config file specified")

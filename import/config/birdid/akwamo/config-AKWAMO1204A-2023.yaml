@@ -17,7 +17,7 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO1204A/2023
+resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO1202A/2023
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
@@ -48,8 +48,10 @@ speciesIndexList:
    - phoenicurus_phoenicurus
    - fringilla_coelebs
 basePort: 9000
-analyzeThreads: 6
+analyzeThreads: 30
 transformModelOutput: False
 allThreadsUseSamePort: False
-repeats: 10
+repeats: 2
 modelOutputStyle: resultDict
+batchSize: 2
+nCpuWorkers: 1
