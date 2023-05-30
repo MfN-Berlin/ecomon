@@ -79,7 +79,9 @@ try:
         print(f"Found {len(record_tables)} tables with '_records suffix")
 
         for i, table_name in enumerate(record_tables, start=1):
-            print(f"Processing table {i}/{len(record_tables)}: {table_name}")
-            correct_table_timestamps(table_name)
+            if "AKWAMO" in table_name:
+
+                print(f"Processing table {i}/{len(record_tables)}: {table_name}")
+                correct_table_timestamps(table_name)
 finally:
     connection.close()

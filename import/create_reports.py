@@ -173,7 +173,7 @@ def report(
 
 
 # create a connection to the MySQL database
-def create_report(prefix=None, output_format="json"):
+def create_report(prefix=None, output_format="json", prefix_includes=None):
     load_dotenv()
     root_dir = getenv("MDAS_DATA_DIRECTORY")
 
@@ -194,6 +194,8 @@ def create_report(prefix=None, output_format="json"):
         cursor.execute("SHOW TABLES LIKE '%\\_records'")
         tables = cursor.fetchall()
         prefixes = [table[0][: -len("_records")] for table in tables]
+    if prefix_includes is not None:
+        prefixes = [prefix for prefix in prefixes if prefix_includes in prefix]
 
     for prefix in prefixes:
         table_name = f"{prefix}_records"
@@ -270,19 +272,32 @@ def create_report(prefix=None, output_format="json"):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate report for a collection")
     parser.add_argument(
-        "collection_prefix",
+        "--collection_prefix",
         nargs="?",
         help="Collection/prefix name (optional)",
         default=None,
+        required=False,
     )
     parser.add_argument(
-        "output_format",
+        "--prefix_includes",
+        nargs="?",
+        help="Collection/prefix includes this string (optional)",
+        default=None,
+        required=False,
+    )
+    parser.add_argument(
+        "--output_format",
         nargs="?",
         default="json",
         choices=["text", "json"],
-        help="Output format: 'text' for text format or 'json' for JSON format (default: 'text')",
+        required=False,
+        help="Output format: 'text' for text format or 'json' for JSON format (default: 'json')",
     )
 
     args = parser.parse_args()
-    create_report(prefix=args.collection_prefix, output_format=args.output_format)
+    create_report(
+        prefix=args.collection_prefix,
+        output_format=args.output_format,
+        prefix_includes=args.prefix_includes,
+    )
 
