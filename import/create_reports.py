@@ -276,7 +276,6 @@ if __name__ == "__main__":
         nargs="?",
         help="Collection/prefix name (optional)",
         default=None,
-        required=False,
     )
     parser.add_argument(
         "--prefix_includes",
