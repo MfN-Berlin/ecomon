@@ -81,10 +81,10 @@ def analyze(
                     + (0 if config["allThreadsUseSamePort"] is True else i),
                     config["data_folder"],
                     config["resultFolder"],
-                    model_output_style=config["modelOutputStyle"],
+                    model_output_style=config.get("modelOutputStyle"),
                     debug=debug,
-                    nCpuWorkers=config["nCpuWorkers"],
-                    batchSize=config["batchSize"],
+                    nCpuWorkers=config.get("nCpuWorkers"),
+                    batchSize=config.get("batchSize"),
                 )
             )
             for i in range(analyze_thread_count)
