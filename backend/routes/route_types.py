@@ -3,6 +3,29 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 
 
+class QueryRequest(BaseModel):
+    species: str
+    start_datetime: Optional[str] = None
+    end_datetime: Optional[str] = None
+    threshold_min: Optional[float] = None
+    threshold_max: Optional[float] = None
+
+
+class QueryResponse(BaseModel):
+    predictions_count: int
+    species_count: int
+
+
+class JobId(BaseModel):
+    job_id: int = None
+
+
+class PredictionMax(BaseModel):
+    value: float
+    record_id: int
+    record_datetime: datetime.datetime
+
+
 class Collection(BaseModel):
     name: str
     species_list: List[str]

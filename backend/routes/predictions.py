@@ -11,27 +11,12 @@ from sql.query import (
     update_job_failed,
     update_job_status,
 )
-from pydantic import BaseModel
+
 from datetime import datetime, timezone
-from typing import Optional
 from asyncio import ensure_future
-
-
-class QueryRequest(BaseModel):
-    species: str
-    start_datetime: Optional[str] = None
-    end_datetime: Optional[str] = None
-    threshold_min: Optional[float] = None
-    threshold_max: Optional[float] = None
-
-
-class QueryResponse(BaseModel):
-    predictions_count: int
-    species_count: int
-
-
-class JobId(BaseModel):
-    job_id: int = None
+from routes.route_types import QueryResponse, JobId, PredictionMax, QueryRequest
+from typing import List, Tuple
+from databases import Database
 
 
 async def do_add_index_job(database, job_id, prefix_name, column_name):
@@ -50,7 +35,7 @@ async def do_add_index_job(database, job_id, prefix_name, column_name):
     return
 
 
-def router(app, root, database):
+def router(app, root, database: Database):
     @app.get(
         root + "/{prefix_name}/predictions/count",
         response_model=int,
@@ -129,5 +114,22 @@ def router(app, root, database):
             predictions_count=predictions_count, species_count=species_count
         )
 
-    # rou
+    # route getteing prediction max
+    @app.get(
+        root + "/{prefix_name}/predictions/max/{species}",
+        response_model=List[Tuple[int, datetime, float]],
+        operation_id="getCollectionPredictionsSpeciesMax",
+    )
+    async def get_prefix_predictions_count(prefix_name: str, species: str) -> int:
+        query = f"Select record_id, record_datetime, {species} as value from {prefix_name}_predictions_max order by record_datetime asc"
+        # print(query)
+        try:
+            result = await database.fetch_all(query)
+            print("Request done for {}".format(species))
+            return [
+                (row["record_id"], row["record_datetime"], row["value"])
+                for row in result
+            ]
 
+        except DatabaseError:
+            return []
