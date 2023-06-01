@@ -117,19 +117,23 @@ def router(app, root, database: Database):
     # route getteing prediction max
     @app.get(
         root + "/{prefix_name}/predictions/max/{species}",
-        response_model=List[Tuple[int, datetime, float]],
+        response_model=List[PredictionMax],
         operation_id="getCollectionPredictionsSpeciesMax",
     )
-    async def get_prefix_predictions_count(prefix_name: str, species: str) -> int:
+    async def get_collection_predictions_species_max(
+        prefix_name: str, species: str
+    ) -> List[PredictionMax]:
         query = f"Select record_id, record_datetime, {species} as value from {prefix_name}_predictions_max order by record_datetime asc"
-        # print(query)
         try:
             result = await database.fetch_all(query)
             print("Request done for {}".format(species))
             return [
-                (row["record_id"], row["record_datetime"], row["value"])
+                PredictionMax(
+                    record_id=row["record_id"],
+                    record_datetime=row["record_datetime"],
+                    value=row["value"],
+                )
                 for row in result
             ]
-
         except DatabaseError:
             return []

@@ -19,6 +19,10 @@ export const uiSlice = createSlice({
    reducers: {
       toggleDrawer: (state) => {
          state.drawerOpen = !state.drawerOpen
+         setTimeout(() => {
+            // dispatch resize event so plotly is resizing
+            window.dispatchEvent(new Event('resize'))
+         }, 350)
       },
 
       // Use the PayloadAction type to declare the contents of `action.payload`

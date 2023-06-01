@@ -289,6 +289,31 @@ export interface Prediction {
 /**
  * 
  * @export
+ * @interface PredictionMax
+ */
+export interface PredictionMax {
+    /**
+     * 
+     * @type {number}
+     * @memberof PredictionMax
+     */
+    'value': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PredictionMax
+     */
+    'record_id': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof PredictionMax
+     */
+    'record_datetime': string;
+}
+/**
+ * 
+ * @export
  * @interface PredictionsRequest
  */
 export interface PredictionsRequest {
@@ -972,6 +997,44 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary Get Collection Predictions Species Max
+         * @param {string} prefixName 
+         * @param {string} species 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getCollectionPredictionsSpeciesMax: async (prefixName: string, species: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'prefixName' is not null or undefined
+            assertParamExists('getCollectionPredictionsSpeciesMax', 'prefixName', prefixName)
+            // verify required parameter 'species' is not null or undefined
+            assertParamExists('getCollectionPredictionsSpeciesMax', 'species', species)
+            const localVarPath = `/prefix/{prefix_name}/predictions/max/{species}`
+                .replace(`{${"prefix_name"}}`, encodeURIComponent(String(prefixName)))
+                .replace(`{${"species"}}`, encodeURIComponent(String(species)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get Collection Report
          * @param {string} collectionName 
          * @param {*} [options] Override http request option.
@@ -1436,6 +1499,18 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Get Collection Predictions Species Max
+         * @param {string} prefixName 
+         * @param {string} species 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getCollectionPredictionsSpeciesMax(prefixName: string, species: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PredictionMax>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getCollectionPredictionsSpeciesMax(prefixName, species, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @summary Get Collection Report
          * @param {string} collectionName 
          * @param {*} [options] Override http request option.
@@ -1636,6 +1711,17 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         getCollectionPredictionsCount(prefixName: string, options?: any): AxiosPromise<number> {
             return localVarFp.getCollectionPredictionsCount(prefixName, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get Collection Predictions Species Max
+         * @param {string} prefixName 
+         * @param {string} species 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getCollectionPredictionsSpeciesMax(prefixName: string, species: string, options?: any): AxiosPromise<Array<PredictionMax>> {
+            return localVarFp.getCollectionPredictionsSpeciesMax(prefixName, species, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1841,6 +1927,19 @@ export class DefaultApi extends BaseAPI {
      */
     public getCollectionPredictionsCount(prefixName: string, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getCollectionPredictionsCount(prefixName, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get Collection Predictions Species Max
+     * @param {string} prefixName 
+     * @param {string} species 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getCollectionPredictionsSpeciesMax(prefixName: string, species: string, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getCollectionPredictionsSpeciesMax(prefixName, species, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

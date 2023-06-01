@@ -21,9 +21,9 @@ class JobId(BaseModel):
 
 
 class PredictionMax(BaseModel):
-    value: float
     record_id: int
     record_datetime: datetime.datetime
+    value: float
 
 
 class Collection(BaseModel):

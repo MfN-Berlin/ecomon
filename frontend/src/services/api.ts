@@ -1,7 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { DefaultApi, Configuration, Report } from '../generated/api';
+import { DefaultApi, Configuration, Report, PredictionMax, Species } from '../generated/api';
 import { API_PATH } from '../consts'
-
 
 const apiConfig = new Configuration({
    basePath: API_PATH,
@@ -28,9 +27,34 @@ export const backendApi = createApi({
             return apiClient.getCollectionReport(collectionName || "")
          },
       }),
+      getCollectionSpeciesEvents: builder.query<PredictionMax[], { collectionName: string, species: string }>({
+         queryFn: ({ collectionName, species }) => {
+            // Hack to undefined to empty string
+            return apiClient.getCollectionPredictionsSpeciesMax(collectionName, species)
+         }
+      }),
+      getCollectionSpeciesList: builder.query<Species[], { collectionName: string }>({
+         queryFn: ({ collectionName }) => {
+            // Hack to undefined to empty string
+
+            return apiClient.getCollectionSpecies(collectionName)
+         },
+      }),
+      getCollectionList: builder.query<Array<string>, void>({
+         queryFn: () => {
+            return apiClient.getCollectionNames()
+         }
+
+      })
    })
 })
-
 // Export hooks for usage in functional components, which are
 // auto-generated based on the defined endpoints
-export const { useGetCollectionsQuery, useGetCollectionReportQuery } = backendApi
+
+export const {
+   useGetCollectionsQuery,
+   useGetCollectionReportQuery,
+   useGetCollectionSpeciesEventsQuery,
+   useGetCollectionSpeciesListQuery,
+   useGetCollectionListQuery
+} = backendApi
