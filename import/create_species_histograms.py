@@ -54,10 +54,10 @@ def create_predictions_species_histogram_query(dataset_name, bin_size):
     return sql_query
 
 
-def get_all_species_names_of_prediction_tables(db_connection, dataset_name_name):
+def get_all_species_names_of_prediction_tables(db_connection, dataset_name):
     with db_connection.cursor() as db_cursor:
         non_species_columns = ["id", "record_id", "start_time", "end_time", "channel"]
-        sql_query = f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{dataset_name_name}_predictions'"
+        sql_query = f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{dataset_name}_predictions'"
         db_cursor.execute(sql_query)
         column_names = [column[0] for column in db_cursor.fetchall()]
         species_names = [
@@ -65,7 +65,8 @@ def get_all_species_names_of_prediction_tables(db_connection, dataset_name_name)
             for column_name in column_names
             if column_name not in non_species_columns
         ]
-        debug(f"In {dataset_name_name} found species {len(species_names)}")
+        info(f"In {dataset_name} found species {len(species_names)}")
+
     return species_names
 
 
@@ -94,7 +95,7 @@ def get_predictions_species_histogram_query(dataset_name, species_name, bin_size
     sql_query = sql_query[:-2]
 
     # Add the FROM clause to the SQL query
-    sql_query += " FROM `BIRDID_AKWAMO1202A_2023_predictions` predictions;"
+    sql_query += f" FROM `{dataset_name}_predictions`;"
     # print(sql_query)
     # Print the SQL query
 
@@ -103,13 +104,13 @@ def get_predictions_species_histogram_query(dataset_name, species_name, bin_size
 
 def fill_species_histogram_table(db_connection, dataset_name, bin_size):
     num_bins = round(1 / bin_size)
-    species_names = get_all_species_names_of_prediction_tables(
+    species_names_list = get_all_species_names_of_prediction_tables(
         db_connection, dataset_name
     )
 
     with db_connection.cursor() as cursor:
         for species_name in tqdm(
-            species_names, desc=f"Filling species histogram for {dataset_name}"
+            species_names_list, desc=f"Filling species histogram for {dataset_name}"
         ):
             cursor.execute(
                 get_predictions_species_histogram_query(

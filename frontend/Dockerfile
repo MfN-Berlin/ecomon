@@ -8,6 +8,7 @@ RUN npm ci
 COPY public/ public
 COPY src/ src
 COPY tsconfig.json/ tsconfig.json
+COPY config-overrides.js/ config-overrides.js
 ENV NODE_ENV production
 RUN npm run build
 

@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react'
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import { createTheme, ThemeProvider } from '@mui/material/styles'
+import {  ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
 import Box from '@mui/material/Box'
@@ -18,13 +18,16 @@ import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
 import { useUpdateJobs } from './hooks/jobs'
 import { useAppSelector } from './store/hooks'
+import theme from './theme';
+import { EvaluationApi } from './generated/api'
+import Evaluation from './pages/Evaluation'
 
-const mdTheme = createTheme()
 
 function App() {
    // load and update current jobs status store in JobsProvider
    const drawerOpen = useAppSelector((state) => state.ui.drawerOpen)
    const globalState = useContext(store)
+
    const { dispatch } = globalState
    const { updateJobs } = useUpdateJobs()
    let lastUpdate = null as Date | null
@@ -57,7 +60,7 @@ function App() {
                <Route
                   path="/"
                   element={
-                     <ThemeProvider theme={mdTheme}>
+                     <ThemeProvider theme={theme}>
                         <Box sx={{ display: 'flex' }}>
                            <CssBaseline />
                            <AppBar />
@@ -84,10 +87,12 @@ function App() {
                >
                   <Route index element={<Start />} />
                   <Route path="collection/:id" element={<Collection />} />
+                  <Route path="evaluation" element={<Evaluation />} />
                </Route>
             </Routes>
          </BrowserRouter>
       </div>
+
    )
 }
 

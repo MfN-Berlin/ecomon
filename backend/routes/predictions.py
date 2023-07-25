@@ -152,6 +152,7 @@ def router(app, root, database: Database):
     @app.get(
         root + "/{collection_name}/predictions/histogram/{species}",
         response_model=List[int],
+        operation_id="getCollectionPredictionsSpeciesHistogram",
     )
     async def get_species_histogram(collection_name: str, species: str):
         query = f"""
