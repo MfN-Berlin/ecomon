@@ -9,7 +9,6 @@ import NumberInput from '../../components/NumberInput'
 import Checkbox from '@mui/material/Checkbox'
 import Button from '@mui/material/Button'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import Divider from '@mui/material/Divider'
 import CircularProgress from '@mui/material/CircularProgress'
 
 import { API_PATH } from '../../consts'

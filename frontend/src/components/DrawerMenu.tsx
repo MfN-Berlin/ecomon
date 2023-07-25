@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { styled, useTheme } from '@mui/material/styles'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import Drawer, { DrawerProps as MuiDrawerProps } from '@mui/material/Drawer'
 import List from '@mui/material/List'
 import Divider from '@mui/material/Divider'
@@ -16,9 +16,12 @@ import { useAppSelector, useAppDispatch } from '../store/hooks'
 import { setDrawerOpenState } from '../store/slices/ui'
 import { useGetCollectionsQuery } from '../services/api'
 import { parseCollectionName, groupByModel } from '../tools/stringHandling'
-
+import ListItem from '@mui/material/ListItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 const DrawerHeader = styled('div')(({ theme }) => ({
-   position: 'fixed',
+
    display: 'flex',
    alignItems: 'center',
    padding: theme.spacing(0, 1),
@@ -39,6 +42,7 @@ export default function PersistentDrawerRight(props: DrawerProps) {
    const open = useAppSelector((state) => state.ui.drawerOpen)
    const { data } = useGetCollectionsQuery()
    const dispatch = useAppDispatch()
+   const location = useLocation()
    // const [open, setOpen] = React.useState(true)
 
    const handleDrawerClose = () => {
@@ -54,20 +58,45 @@ export default function PersistentDrawerRight(props: DrawerProps) {
 
       return groupByModel(collections)
    }
+   const drawerLinks = [ {
+      name: 'Home',
+      link: '/',
+      icon: <HomeOutlinedIcon />
+   },
+   {
+      name: 'Evaluation',
+      link: '/evaluation',
+      icon: <AssessmentOutlinedIcon />
+   },
+   ]
 
    return (
-      <Drawer
+      <Drawer color="primary"
          sx={{
+            zIndex: 0,
             width: props.drawerWidth || 250,
             flexShrink: 0,
             '& .MuiDrawer-paper': {
-               width: props.drawerWidth || 250
+               width: props.drawerWidth || 250, boxSizing: 'border-box'
             }
          }}
          variant="persistent"
          anchor="left"
          open={open}
       >
+         <p></p>
+         <p></p>
+         <List>
+            {drawerLinks.map((item, index) => (
+               <ListItemButton key={item.name}  component={Link} to={item.link} selected={item.link === location.pathname}  >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.name} />
+               </ListItemButton>
+
+
+            ))}
+          </List>
+          <Divider />
          <DrawerHeader>
             <IconButton onClick={handleDrawerClose}>
                {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
@@ -83,10 +112,7 @@ export default function PersistentDrawerRight(props: DrawerProps) {
             </IconButton>
          </DrawerHeader>
 
-         <Divider />
 
-         <p></p>
-         <p></p>
          <List>
             {transformCollectionData(data || [], filterValue).flatMap(({ modelName, collections }, index) => {
                const isOddGroup = index % 2 !== 0

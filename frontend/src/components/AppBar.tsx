@@ -5,10 +5,11 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { toggleDrawer } from '../store/slices/ui'
-import { useParams } from 'react-router-dom'
-import { parseCollectionName } from '../tools/stringHandling'
+import { useLocation, useParams } from 'react-router-dom'
+import { firstLetterUpperAndReplaceSpace, parseCollectionName } from '../tools/stringHandling'
 interface AppBarProps extends MuiAppBarProps {
    open?: boolean
    drawerWidth?: number
@@ -33,6 +34,7 @@ const StyledAppBar = styled(MuiAppBar, {
 }))
 
 const Title = () => {
+   const location = useLocation()
    const { id } = useParams<{ id: string }>()
    if (id) {
       const collection = parseCollectionName(id)
@@ -44,7 +46,7 @@ const Title = () => {
    } else {
       return (
          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Home
+            {firstLetterUpperAndReplaceSpace(location.pathname.split('/')[1])|| 'Home'}
          </Typography>
       )
    }
@@ -58,10 +60,12 @@ export default function AppBar() {
    }
 
    return (
-      <StyledAppBar position="fixed" drawerWidth={250} open={open}>
+      <StyledAppBar position="fixed" open={open}>
          <Toolbar>
-            <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }} onClick={handleMenu}>
-               <MenuIcon />
+            <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2,
+               zIndex: (theme) => theme.zIndex.drawer + 1 }} onClick={handleMenu}>
+              { (open ? <ChevronLeftIcon /> :  <MenuIcon />)}
+
             </IconButton>
             <Title />
          </Toolbar>

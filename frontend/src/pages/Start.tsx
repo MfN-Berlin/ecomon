@@ -1,20 +1,16 @@
 import * as React from 'react'
 import { useContext, useEffect } from 'react'
 import Grid from '@mui/material/Unstable_Grid2'
-
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Box from '@mui/material/Box'
 import { nanoid } from 'nanoid'
-import { Key } from '@mui/icons-material'
 import IconButton from '@mui/material/IconButton'
 import AddCircleOutline from '@mui/icons-material/AddCircleOutline'
-
 import { API_PATH } from '../consts'
-
 import MaterialTable from '@material-table/core'
 import SampleJobStatus from '../components/SampleJobsStatus'
-import SpeciesEventsPanel from '../components/SpeciesEventsPanel'
+import GraphPanel from '../components/GraphPanel/index'
 import { store } from '../components/JobsProvider'
 import TabPanel from '../components/TabPanel'
 import { useUpdateJobs } from '../hooks/jobs'
@@ -34,6 +30,7 @@ export default function Title() {
    }
    function removePanel(panel: string) {
       setPanels(panels.filter((p) => p !== panel))
+      removeState(panel)
    }
    function a11yProps(index: number) {
       return {
@@ -244,8 +241,8 @@ export default function Title() {
          <TabPanel value={value} index={2}>
             <Grid container spacing={2}>
                {panels.map((key, index) => (
-                  <Grid xs={12} sm={6} md={6} key={key}>
-                     <SpeciesEventsPanel localStorageId={key} onRemove={() => removePanel(key)} />
+                  <Grid xs={12} sm={12} md={12} lg={6} key={key}>
+                     <GraphPanel localStorageId={key} onRemove={() => removePanel(key)} />
                   </Grid>
                ))}
                <IconButton onClick={addPanel}>

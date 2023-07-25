@@ -1,18 +1,18 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 
 recordFolder:
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202001 
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202002
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202003
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202004
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202005
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202006
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202007
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202008
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202009
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202010
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202011
-  - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202012
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202001
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202002
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202003
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202004
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202005
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202006
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202007
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202008
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202009
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202010
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202011
+   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202012
 fileEnding:
    - mp3 # wav
    - wav

@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react'
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import { createTheme, ThemeProvider } from '@mui/material/styles'
+import {  ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
 import Box from '@mui/material/Box'
@@ -18,34 +18,37 @@ import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
 import { useUpdateJobs } from './hooks/jobs'
 import { useAppSelector } from './store/hooks'
+import theme from './theme';
+import { EvaluationApi } from './generated/api'
+import Evaluation from './pages/Evaluation'
 
-const mdTheme = createTheme()
 
 function App() {
    // load and update current jobs status store in JobsProvider
    const drawerOpen = useAppSelector((state) => state.ui.drawerOpen)
    const globalState = useContext(store)
+
    const { dispatch } = globalState
    const { updateJobs } = useUpdateJobs()
    let lastUpdate = null as Date | null
-   useEffect(() => {
-      setInterval(() => {
-         fetch(`${API_PATH}/jobs/last_update`)
-            .then((res) => res.json())
-            .then((result) => {
-               const tmp = new Date(result.last_update)
-               // check if tmp is newer than lastUpdate
+   // useEffect(() => {
+   //    setInterval(() => {
+   //       fetch(`${API_PATH}/jobs/last_update`)
+   //          .then((res) => res.json())
+   //          .then((result) => {
+   //             const tmp = new Date(result.last_update)
+   //             // check if tmp is newer than lastUpdate
 
-               if (!lastUpdate || tmp > lastUpdate) {
-                  lastUpdate = tmp
-                  updateJobs()
-               }
-            })
-            .catch((err) => {
-               dispatch({ type: 'set_error', error: err })
-            })
-      }, 5000)
-   }, [])
+   //             if (!lastUpdate || tmp > lastUpdate) {
+   //                lastUpdate = tmp
+   //                updateJobs()
+   //             }
+   //          })
+   //          .catch((err) => {
+   //             dispatch({ type: 'set_error', error: err })
+   //          })
+   //    }, 5000)
+   // }, [])
 
    return (
       <div className="App">
@@ -57,7 +60,7 @@ function App() {
                <Route
                   path="/"
                   element={
-                     <ThemeProvider theme={mdTheme}>
+                     <ThemeProvider theme={theme}>
                         <Box sx={{ display: 'flex' }}>
                            <CssBaseline />
                            <AppBar />
@@ -84,10 +87,12 @@ function App() {
                >
                   <Route index element={<Start />} />
                   <Route path="collection/:id" element={<Collection />} />
+                  <Route path="evaluation" element={<Evaluation />} />
                </Route>
             </Routes>
          </BrowserRouter>
       </div>
+
    )
 }
 
