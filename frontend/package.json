@@ -10,6 +10,7 @@
       "@mui/icons-material": "^5.8.4",
       "@mui/lab": "^5.0.0-alpha.100",
       "@mui/material": "^5.10.0",
+      "@mui/styles": "^5.14.0",
       "@openapitools/openapi-generator-cli": "^2.5.2",
       "@reduxjs/toolkit": "^1.9.0",
       "@types/node": "^16.11.47",
@@ -24,7 +25,9 @@
       "chartjs-plugin-zoom": "^2.0.0",
       "dayjs": "^1.11.5",
       "dayjs-plugin-utc": "^0.1.2",
+      "install": "^0.13.0",
       "l": "^0.6.0",
+      "multiselect-react-dropdown": "^2.0.25",
       "nanoid": "^4.0.2",
       "plotly.js": "^2.23.2",
       "react": "^17.0.0",
@@ -37,11 +40,11 @@
       "typescript": "^4.7.4"
    },
    "scripts": {
-      "start": "GENERATE_SOURCEMAP=false react-scripts start",
-      "dev:server": "GENERATE_SOURCEMAP=false REACT_APP_API_PATH=http://192.168.101.41/api/v1 react-scripts start",
-      "build": "react-scripts build",
-      "test": "react-scripts test",
-      "eject": "react-scripts eject",
+      "start": "GENERATE_SOURCEMAP=false react-app-rewired start",
+      "dev:server": "GENERATE_SOURCEMAP=false REACT_APP_API_PATH=http://192.168.101.41/api/v1 react-app-rewired start",
+      "build": "react-app-rewired build",
+      "test": "react-app-rewired test",
+      "eject": "react-app-rewired eject",
       "format": "prettier --write src/**/*.ts{,x}",
       "lint": "tsc --noEmit && eslint src/**/*.ts{,x}",
       "generate:api": "openapi-generator-cli generate -i http://localhost:8888/openapi.json -g typescript-axios -o ./src/generated/api"
@@ -67,6 +70,7 @@
    "devDependencies": {
       "@types/plotly.js": "^2.12.18",
       "@types/react-plotly.js": "^2.6.0",
+      "customize-cra": "^1.0.0",
       "eslint": "^8.22.0",
       "eslint-config-airbnb": "^19.0.4",
       "eslint-config-prettier": "^8.5.0",
@@ -79,6 +83,7 @@
       "i": "^0.3.7",
       "npm": "^8.16.0",
       "prettier": "^2.7.1",
+      "react-app-rewired": "^2.2.1",
       "react-router-dom": "^6.3.0"
    },
    "husky": {

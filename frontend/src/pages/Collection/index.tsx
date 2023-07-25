@@ -4,24 +4,21 @@ import { useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
-import Box from '@mui/material/Box'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import MaterialTable from '@material-table/core'
 import Grid from '@mui/material/Unstable_Grid2'
-
 import { API_PATH } from '../../consts'
 import { store } from '../../components/JobsProvider'
 import SampleJobStatus from '../../components/SampleJobsStatus'
 import { useUpdateJobs } from '../../hooks/jobs'
-
 import CollectionStats from './CollectionStatsTile'
 import { QueryParametersProvider } from './Context/QueryParameterContext'
 import QueryParameters from './QueryParametersTile'
 import { CollectionStatsProvider } from './Context/CollectionStatsContext'
 import QueryResultsTile from './QueryResultsTile'
 import { QueryResultProvider } from './Context/QueryResultContext'
-import Paper from '@mui/material/Paper'
+
 
 dayjs.extend(utc)
 dayjs.extend(timezone)

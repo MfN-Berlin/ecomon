@@ -14,14 +14,18 @@ from sql.query import (
 
 from datetime import datetime, timezone
 from asyncio import ensure_future
-from routes.route_types import QueryResponse, JobId, PredictionMax, QueryRequest
+from routes.route_types import (
+    QueryResponse,
+    JobId,
+    PredictionMax,
+    QueryRequest,
+)
 from typing import List, Tuple
 from databases import Database
 
 
 async def do_add_index_job(database, job_id, prefix_name, column_name):
     try:
-
         await database.execute(
             create_index_for_sql_table(
                 "{}_predictions".format(prefix_name), column_name
@@ -55,7 +59,12 @@ def router(app, root, database: Database):
     async def add_index_to_prefix(prefix_name: str, column_name: str):
         # TODO: query parameter sanity check
         job_id = await database.execute(
-            add_job(prefix_name, "add_index", "pending", {"column_name": column_name},)
+            add_job(
+                prefix_name,
+                "add_index",
+                "pending",
+                {"column_name": column_name},
+            )
         )
         ensure_future(do_add_index_job(database, job_id, prefix_name, column_name))
         return {"job_id": job_id}
@@ -137,3 +146,25 @@ def router(app, root, database: Database):
             ]
         except DatabaseError:
             return []
+
+    # Define the response model
+
+    @app.get(
+        root + "/{collection_name}/predictions/histogram/{species}",
+        response_model=List[int],
+        operation_id="getCollectionPredictionsSpeciesHistogram",
+    )
+    async def get_species_histogram(collection_name: str, species: str):
+        query = f"""
+            SELECT * FROM {collection_name}_species_histogram
+            WHERE species = :species
+
+        """
+        result = await database.fetch_one(query=query, values={"species": species})
+
+        if result is None:
+            return []
+        else:
+            bins = list(result[2:])
+
+        return bins
