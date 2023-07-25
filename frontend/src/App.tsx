@@ -31,24 +31,24 @@ function App() {
    const { dispatch } = globalState
    const { updateJobs } = useUpdateJobs()
    let lastUpdate = null as Date | null
-   // useEffect(() => {
-   //    setInterval(() => {
-   //       fetch(`${API_PATH}/jobs/last_update`)
-   //          .then((res) => res.json())
-   //          .then((result) => {
-   //             const tmp = new Date(result.last_update)
-   //             // check if tmp is newer than lastUpdate
+   useEffect(() => {
+      setInterval(() => {
+         fetch(`${API_PATH}/jobs/last_update`)
+            .then((res) => res.json())
+            .then((result) => {
+               const tmp = new Date(result.last_update)
+               // check if tmp is newer than lastUpdate
 
-   //             if (!lastUpdate || tmp > lastUpdate) {
-   //                lastUpdate = tmp
-   //                updateJobs()
-   //             }
-   //          })
-   //          .catch((err) => {
-   //             dispatch({ type: 'set_error', error: err })
-   //          })
-   //    }, 5000)
-   // }, [])
+               if (!lastUpdate || tmp > lastUpdate) {
+                  lastUpdate = tmp
+                  updateJobs()
+               }
+            })
+            .catch((err) => {
+               dispatch({ type: 'set_error', error: err })
+            })
+      }, 5000)
+   }, [])
 
    return (
       <div className="App">
