@@ -1,41 +1,59 @@
 from dotenv import load_dotenv
 from util.db import DbWorker
+import argparse
+import os
+import glob
+import yaml
 
 
-ANALYZE_THREADS = 7
-load_dotenv()  # load environment variables from .env
-PREFIX = "BRITZ01_2022"
-species_index_list = [
-"grus_grus",
-"ardea_cinerea",
-"strix_aluco",
-"dendrocoptes_medius",
-"dendrocopos_major",
-"lophophanes_cristatus",
-"phylloscopus_sibilatrix",
-"phylloscopus_trochilus",
-"phylloscopus_collybita",
-"locustella_luscinioides",
-"sylvia_atricapilla",
-"regulus_ignicapilla",
-"troglodytes_troglodytes",
-"turdus_merula",
-"turdus_philomelos",
-"turdus_viscivorus",
-"erithacus_rubecula",
-"luscinia_luscinia",
-"phoenicurus_ochruros",
-"phoenicurus_phoenicurus",
-"fringilla_coelebs",
-]
+def main(paths):
+    # Process YAML configs from folders or files
+    load_dotenv()
+    for path in paths:
+        yaml_files = []
+        if os.path.isdir(path):
+            # Collect all YAML files in the directory
+            for file_path in glob.glob(os.path.join(path, "*.yaml")):
+                yaml_files.append(file_path)
+        elif os.path.isfile(path) and path.endswith(".yaml"):
+            yaml_files.append(path)
+        else:
+            print(f"'{path}' is not a recognized directory or YAML file. Skipping...")
+            continue
+
+        print(f"Creating index for configs: {yaml_files}")
+
+        for yaml_file in yaml_files:
+            # read config yaml file
+
+            with open(yaml_file, "r") as stream:
+                try:
+                    config = yaml.safe_load(stream)
+                except yaml.YAMLError as exc:
+                    print(exc)
+            collection = config.get("prefix")
+            print(f"Add indices to {collection}_predictions")
+            db_worker = DbWorker(config.get("collection"))
+            for species in config.get("speciesIndexList"):
+                print(f"Adding index to {species}")
+                try:
+                    db_worker.add_index(collection, species)
+
+                except Exception as e:
+                    print(e)
+                    db_worker.rollback()
 
 
-db_worker = DbWorker(PREFIX)
-for species in species_index_list:
-    print("Adding index to {}".format(species))
-    try:
-        db_worker.add_index(PREFIX, species)
-        print("Finished adding index to species columns")
-    except Exception as e:
-        print(e)
-        db_worker.rollback()
+if __name__ == "__main__":
+    # Parse command line arguments and run main
+    # Parse a list of folders and/or files
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "paths",
+        help="list of folders and/or YAML config files",
+        type=str,
+        nargs="*",
+    )
+
+    args = parser.parse_args()
+    main(args.paths)
