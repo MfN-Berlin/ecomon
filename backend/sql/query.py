@@ -1,6 +1,38 @@
 import json
 import random
 from pymysql.converters import escape_string
+from routes.route_types import JobStatus, JobTypes
+
+
+def get_prediction_max_sample(
+    prefix,
+    species,
+    sample_size=10,
+    audio_padding=0,
+):
+    enlarged_sample_size = sample_size * 3
+    return f"""
+SELECT
+    r.filepath,
+    r.record_datetime,
+    r.filename,
+    p.start_time,
+    p.end_time,
+    r.duration,
+    p.channel,
+    p.{species}
+FROM (
+    SELECT * FROM {prefix}_predictions
+    WHERE
+        start_time >= {audio_padding}
+        ORDER BY {species} DESC
+        LIMIT {enlarged_sample_size}
+    ) AS p
+JOIN {prefix}_records AS r ON p.record_id = r.id
+WHERE
+    p.end_time + {audio_padding} <= r.duration
+LIMIT {sample_size};
+    """
 
 
 def get_prediction_random_sample(
@@ -332,16 +364,18 @@ def get_job_by_id(job_id):
     )
 
 
-def add_job(prefix: str, type: str, status: str, metadata: dict):
+def add_job(prefix: str, type: JobTypes, status: JobStatus, metadata: dict):
     metadata_str = escape_string(json.dumps(metadata))
-    return """
-    INSERT INTO jobs (prefix, type, status,metadata) VALUES ('{}', '{}', '{}', '{}')
-    """.format(
-        prefix, type, status, metadata_str
-    )
+    print(f"prefix: {prefix}")
+    print(f"type: {type}")
+    print(f"status: {status}")
+    print(f"metadata: {metadata_str}")
+    query = f"INSERT INTO jobs (prefix, type, status,metadata) VALUES ('{prefix}', '{type}', '{status}', '{metadata_str}')"
+    print(f"query: {query}")
+    return query
 
 
-def update_job_metadata(job_id, metadata):
+def update_job_metadata(job_id: int, metadata: dict):
     metadata_str = escape_string(json.dumps(metadata))
     return """
     UPDATE jobs SET metadata = '{}' WHERE id = {}
@@ -350,7 +384,7 @@ def update_job_metadata(job_id, metadata):
     )
 
 
-def update_job_status(job_id, status):
+def update_job_status(job_id: int, status: JobStatus):
     return """
     UPDATE jobs SET status = '{}' WHERE id = {}
     """.format(
@@ -358,7 +392,7 @@ def update_job_status(job_id, status):
     )
 
 
-def update_job_progress(job_id, progress):
+def update_job_progress(job_id: int, progress: int):
     return """
     UPDATE jobs SET progress = '{}' WHERE id = {}
     """.format(
@@ -366,7 +400,7 @@ def update_job_progress(job_id, progress):
     )
 
 
-def update_job_failed(job_id, error):
+def update_job_failed(job_id: int, error):
     escaped = escape_string(error)
     return """
     UPDATE jobs SET status = 'failed', error = '{}' WHERE id = {}
@@ -375,7 +409,7 @@ def update_job_failed(job_id, error):
     )
 
 
-def delete_job(job_id):
+def delete_job(job_id: int):
     return """
     DELETE FROM jobs WHERE id = {}
     """.format(
@@ -387,4 +421,3 @@ def get_max_updated_at_from_jobs():
     return """
     SELECT max(updated_at) FROM jobs
     """
-

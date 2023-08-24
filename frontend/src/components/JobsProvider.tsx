@@ -8,10 +8,12 @@ export type Job = {
       | 'add_index'
       | 'drop_index'
       | 'create_sample'
+      | 'create_voucher'
       | 'calc_bin_sizes'
       | 'calc_predictions'
       | 'calc_daily_histograms'
       | 'calc_activation'
+
    metadata: any
    progress: number
    error: string

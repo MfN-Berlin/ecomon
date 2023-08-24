@@ -3,7 +3,6 @@ import * as React from 'react'
 import Grid from '@mui/material/Unstable_Grid2'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 import TextField, { TextFieldProps } from '@mui/material/TextField'
-import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
@@ -14,8 +13,8 @@ import { useCollectionStats } from './Context/CollectionStatsContext'
 
 import { useGetCollectionReportQuery } from '../../services/api'
 import DBIndexChipList from './DBIndexChipList'
-import Histogram from '../../components/Histogram'
 import CollectionStatsHistograms from './CollectionStatsHistograms'
+import CreateVoucherDialog from './CreateVoucherDialog'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -57,10 +56,13 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
    return (
       <Grid container spacing={0} alignItems="flex-start">
          <Grid container xs={12} md={6} spacing={2}>
-            <Grid xs={12}>
+            <Grid xs={6}>
                <Typography variant="subtitle2" component="div" align="left" sx={{ paddingBottom: 2 }}>
                   Collection Stats:
                </Typography>
+            </Grid>
+            <Grid xs={6}>
+               <CreateVoucherDialog collectionId={id} />
             </Grid>
             <Grid xs={6}>
                <Stack direction="column" spacing={1}>

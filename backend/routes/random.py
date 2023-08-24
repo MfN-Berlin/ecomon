@@ -36,15 +36,13 @@ class RandomSampleRequest(BaseModel):
     zip_hours_off_set: Optional[int] = 0  # add timezone delta to  export zip filename
 
 
-sample_executor = ThreadPoolExecutor(10)
+random_sample_executor = ThreadPoolExecutor(10)
 
 
 def router(app, root, database):
-
     # route to get random sample from prediction table
     @app.post("/sample", response_model=JobId, operation_id="getRandomSample")
     async def get_random_sample(request: RandomSampleRequest):
-
         # synchronous function in thread for asyncio compatibility
         MDAS_TMP_DIRECTORY = os.getenv("MDAS_TMP_DIRECTORY")
         if not path.exists(MDAS_TMP_DIRECTORY):
@@ -93,7 +91,10 @@ def router(app, root, database):
             samples=request.sample_size,
             padding=request.audio_padding,
         )
-        result_filepath = os.path.join(result_directory, result_filename,)
+        result_filepath = os.path.join(
+            result_directory,
+            result_filename,
+        )
 
         async def task(database, job_id):
             loop = asyncio.get_event_loop()
@@ -117,7 +118,7 @@ def router(app, root, database):
 
             await database.execute(update_job_status(job_id, "running"))
 
-            await loop.run_in_executor(sample_executor, func)
+            await loop.run_in_executor(random_sample_executor, func)
             await database.execute(update_job_status(job_id, "done"))
 
         job_id = await database.execute(
