@@ -1,6 +1,6 @@
 import datetime
 from pydantic import BaseModel
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Literal
 
 
 class QueryRequest(BaseModel):
@@ -93,6 +93,14 @@ class PredictionsRequest(BaseModel):
     max_threshold: Optional[float] = None
 
 
+class VoucherRequest(BaseModel):
+    collection_name: str
+    species_list: List[str]
+    sample_size: int
+    audio_padding: Optional[int] = 5
+    high_pass_frequency: Optional[int] = 0
+
+
 class DailyHistogramRequest(BaseModel):
     collection_name: str
     start_datetime: str
@@ -110,19 +118,30 @@ class JobCreatedResponse(BaseModel):
 
 
 # define class of job
+JobStatus = Literal["running", "done", "failed", "pending"]
+JobTypes = Literal[
+    "calc_bin_sizes",
+    "calc_predictions",
+    "calc_daily_histograms",
+    "create_voucher",
+    "add_index",
+    "create_sample",
+]
+
+
 class Job(BaseModel):
     id: int
     collection: str
-    job_type: str
-    job_status: str
+    job_type: JobTypes
+    job_status: JobStatus
     metadata: str
 
 
 class ResultJob(BaseModel):
     id: int
     collection: str
-    type: str
-    status: str
+    type: JobTypes
+    status: JobStatus
     metadata: Optional[dict] = None
     progress: str
     error: Optional[str] = None

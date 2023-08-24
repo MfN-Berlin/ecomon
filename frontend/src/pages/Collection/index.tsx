@@ -19,7 +19,6 @@ import { CollectionStatsProvider } from './Context/CollectionStatsContext'
 import QueryResultsTile from './QueryResultsTile'
 import { QueryResultProvider } from './Context/QueryResultContext'
 
-
 dayjs.extend(utc)
 dayjs.extend(timezone)
 // Set to Central European Winter time, weird notation offset is inverse
@@ -42,6 +41,7 @@ export default function Collection(props: CollectionProps) {
                <LocalizationProvider dateAdapter={AdapterDayjs} dateLibInstance={dayjs.tz}>
                   <Grid container spacing={2}>
                      <CollectionStats collectionId={id} />
+
                      <QueryParameters collectionId={id} />
                      <QueryResultsTile collectionId={id} />
 
@@ -147,6 +147,7 @@ export default function Collection(props: CollectionProps) {
                                  (x) =>
                                     x.collection === id &&
                                     (x.type === 'create_sample' ||
+                                       x.type === 'create_voucher' ||
                                        x.type === 'calc_bin_sizes' ||
                                        x.type === 'calc_predictions' ||
                                        x.type === 'calc_daily_histograms')

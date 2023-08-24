@@ -11,11 +11,16 @@ from sql.query import (
     update_job_metadata,
 )
 from uuid import uuid4
-import ffmpeg
-import zipfile
+
 import os
 import shutil
-
+from util.tools import (
+    s_to_time,
+    pad_int_with_zeros,
+    first_letter_to_upper_case,
+    zip_folder_and_delete,
+)
+from util.audio import extract_part_from_audio_file_by_start_and_end_time
 import json
 from util.excel import write_execl_file
 
@@ -31,50 +36,6 @@ def write_csv_file_from_list(filepath, list_of_lists, sep=",", header=None):
             f.write(sep.join(header) + "\n")
         for i in list_of_lists:
             f.write(sep.join(to_list_of_strings(i)) + "\n")
-
-
-def first_letter_to_upper_case(string):
-    return string[0].upper() + string[1:]
-
-
-def extract_part_from_audio_file_by_start_and_end_time(
-    filepath, output_filepath, start_time, end_time, padding=0, high_pass_frequency=0,
-):
-    stime = start_time - padding if start_time - padding > 0 else 0
-    etime = end_time + padding
-    print("Run extract on ", filepath)
-    input = ffmpeg.input(filepath, ss=stime, to=etime, v="error",)
-    audio = (
-        input.audio.filter("highpass", f=high_pass_frequency)
-        if high_pass_frequency > 0
-        else input
-    )
-    ffmpeg.output(audio, output_filepath).run()
-
-
-def zip_folder(folder_path, output_filepath):
-    zip_file = zipfile.ZipFile(output_filepath, "w")
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            zip_file.write(os.path.join(root, file), file)
-    zip_file.close()
-    shutil.rmtree(folder_path)
-
-
-def pad_int_with_zeros(num, digits):
-    return str(num).zfill(digits)
-
-
-# transform milliseconds to hh:mm:ss format
-def s_to_time(s):
-    cent_seconds = round(((s + 0.2) % 1) * 100)
-    seconds = s
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    result = "%02d%02d%02d%02d" % (hours, minutes, seconds, cent_seconds)
-
-    return result
 
 
 def create_sample(
@@ -218,7 +179,7 @@ def create_sample(
         )
         print("result_filepath", result_filepath)
         if result_filepath is not None:
-            zip_folder(directory, result_filepath)
+            zip_folder_and_delete(directory, result_filepath)
             if job_id is not None:
                 db_cursor.execute(update_job_progress(job_id, 100))
                 db_cursor.connection.commit()
@@ -227,7 +188,7 @@ def create_sample(
             zip_filename = "{}_{}_{}_{}.zip".format(
                 directoryName, prefix, species, threshold
             )
-            zip_folder(directory, zip_filename)
+            zip_folder_and_delete(directory, zip_filename)
 
             if job_id is not None:
                 db_cursor.execute(update_job_progress(job_id, 100))
@@ -269,4 +230,3 @@ if __name__ == "__main__":
         result_filepath=args.result_filepath,
         MDAS_TMP_DIRECTORY=args.MDAS_TMP_DIRECTORY,
     )
-

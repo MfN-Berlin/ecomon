@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { DefaultApi, Configuration, Report, PredictionMax, Species } from '../generated/api'
+import { DefaultApi, Configuration, Report, PredictionMax, Species, EvaluationApi, ResultJob } from '../generated/api'
 import { API_PATH } from '../consts'
 
 
@@ -8,7 +8,7 @@ const apiConfig = new Configuration({
 })
 
 export const apiClient = new DefaultApi(apiConfig)
-
+export const evaluationClient = new EvaluationApi(apiConfig)
 // Define a service using a base URL and expected endpoints
 export const backendApi = createApi({
    reducerPath: 'api',

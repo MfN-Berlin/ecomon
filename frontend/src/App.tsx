@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react'
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import {  ThemeProvider } from '@mui/material/styles'
+import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
 import Box from '@mui/material/Box'
@@ -18,10 +18,9 @@ import { store } from './components/JobsProvider'
 import { API_PATH } from './consts'
 import { useUpdateJobs } from './hooks/jobs'
 import { useAppSelector } from './store/hooks'
-import theme from './theme';
+import theme from './theme'
 import { EvaluationApi } from './generated/api'
 import Evaluation from './pages/Evaluation'
-
 
 function App() {
    // load and update current jobs status store in JobsProvider
@@ -38,9 +37,10 @@ function App() {
             .then((result) => {
                const tmp = new Date(result.last_update)
                // check if tmp is newer than lastUpdate
-
+               console.log('lastUpdate:' + result.last_update, tmp)
                if (!lastUpdate || tmp > lastUpdate) {
                   lastUpdate = tmp
+                  console.log('update Job:')
                   updateJobs()
                }
             })
@@ -92,7 +92,6 @@ function App() {
             </Routes>
          </BrowserRouter>
       </div>
-
    )
 }
 

@@ -10,7 +10,9 @@ from routes.route_types import (
     PredictionsRequest,
     Report,
     Species,
+    VoucherRequest,
 )
+from concurrent.futures import ThreadPoolExecutor
 from sql.query import get_predictions_with_file_id
 from enum import Enum
 from pydantic import BaseModel
@@ -18,12 +20,15 @@ from typing import List, Optional, Union
 from databases import Database
 from fastapi import FastAPI
 from math import ceil
-from sql.query import add_job
+from sql.query import add_job, update_job_status
 from os import path
 
 from tasks.create_histogram import create_histogram
 from tasks.create_predictions import create_predictions
 from tasks.create_daily_histograms import create_daily_histograms
+from tasks.create_voucher import create_voucher
+
+voucher_executor = ThreadPoolExecutor(6)
 
 
 class GroupingEnum(str, Enum):
@@ -89,7 +94,9 @@ def router(app: FastAPI, root: str, database: Database):
         tags=[ROUTER_TAG],
         operation_id="getBinSizes",
     )
-    async def get_bin_sizes(request: BinSizeRequest,) -> JobCreatedResponse:
+    async def get_bin_sizes(
+        request: BinSizeRequest,
+    ) -> JobCreatedResponse:
         collection_name = request.collection_name
         start_datetime = request.start_datetime
         end_datetime = request.end_datetime
@@ -108,7 +115,10 @@ def router(app: FastAPI, root: str, database: Database):
             until=end_datetime,
             padding=audio_padding,
         )
-        result_filepath = os.path.join(result_directory, result_filename,)
+        result_filepath = os.path.join(
+            result_directory,
+            result_filename,
+        )
         job_id = await database.execute(
             add_job(
                 collection_name,
@@ -147,7 +157,9 @@ def router(app: FastAPI, root: str, database: Database):
         tags=[ROUTER_TAG],
         operation_id="getPredictions",
     )
-    async def get_predictions(request: PredictionsRequest,) -> JobCreatedResponse:
+    async def get_predictions(
+        request: PredictionsRequest,
+    ) -> JobCreatedResponse:
         collection_name = request.collection_name
         start_datetime = request.start_datetime
         end_datetime = request.end_datetime
@@ -168,7 +180,10 @@ def router(app: FastAPI, root: str, database: Database):
             until=end_datetime,
             padding=audio_padding,
         )
-        result_filepath = os.path.join(result_directory, result_filename,)
+        result_filepath = os.path.join(
+            result_directory,
+            result_filename,
+        )
         job_id = await database.execute(
             add_job(
                 collection_name,
@@ -235,7 +250,10 @@ def router(app: FastAPI, root: str, database: Database):
             until=end_datetime,
             padding=audio_padding,
         )
-        result_filepath = os.path.join(result_directory, result_filename,)
+        result_filepath = os.path.join(
+            result_directory,
+            result_filename,
+        )
 
         job_id = await database.execute(
             add_job(
@@ -274,3 +292,60 @@ def router(app: FastAPI, root: str, database: Database):
 
         return {"job_id": job_id}
 
+    @app.post(
+        root + "/collection-vouchers",
+        response_model=JobCreatedResponse,
+        tags=[ROUTER_TAG],
+        operation_id="getSpeciesVouchers",
+    )
+    async def get_collection_vouchers(
+        request: VoucherRequest,
+    ) -> JobCreatedResponse:
+        tmp_directory = os.getenv("MDAS_TMP_DIRECTORY")
+        if not path.exists(tmp_directory):
+            os.makedirs(tmp_directory)
+
+        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
+        if not path.exists(result_directory):
+            os.makedirs(result_directory)
+
+        async def task(database, job_id):
+            loop = asyncio.get_event_loop()
+
+            def func():
+                create_voucher(
+                    request.collection_name,
+                    request.species_list,
+                    sample_size=request.sample_size,
+                    audio_padding=request.audio_padding,
+                    job_id=job_id,
+                    high_pass_frequency=request.high_pass_frequency,
+                    tmp_directory=tmp_directory,
+                    results_directory=result_directory,
+                )
+
+            await loop.run_in_executor(voucher_executor, func)
+
+        job_id = await database.execute(
+            add_job(
+                request.collection_name,
+                "create_voucher",
+                "pending",
+                {
+                    "filename": "",
+                    "filepath": "",
+                    "prefix": request.collection_name,
+                    "species_list": request.species_list,
+                    "samples": request.sample_size,
+                    "padding": request.audio_padding,
+                    "high_pass_frequency": request.high_pass_frequency,
+                },
+            )
+        )
+        asyncio.ensure_future(task(database, job_id))
+        return {"job_id": job_id}
+        # return file stream
+
+        # return FileResponse(
+        #     result_filepath, media_type="application/zip", filename=result_filename
+        # )

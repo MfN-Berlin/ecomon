@@ -30,12 +30,13 @@ def write_execl_file(filepath, rows, header):
                     )
                     continue
                 if header_val[0] == "SpeciesCode":
-                    worksheet.write(
-                        row_index + 1,
-                        col_index,
-                        olaf_id_dict[row[header_val[1]].lower().replace(" ", "_")],
-                    )
+                    species = row[header_val[1]].lower().replace(" ", "_")
+                    if species in olaf_id_dict:
+                        worksheet.write(
+                            row_index + 1,
+                            col_index,
+                            olaf_id_dict[species],
+                        )
                     continue
                 worksheet.write(row_index + 1, col_index, row[header_val[1]])
     workbook.close()
-
