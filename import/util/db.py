@@ -35,6 +35,8 @@ def connect_to_db():
             port=int(os.getenv("MDAS_MARIADB_PORT")),
             database=os.getenv("MDAS_MARIADB_DATABASE"),
         )
+        print("Connected.")
+
     except mariadb.Error as e:
         print(f"Error connecting to MariaDB Platform: {e}")
         sys.exit(1)
@@ -108,7 +110,6 @@ class DbWorker:
         # only mapping to smaller array supported no reordering
         result = []
         for key in keys:
-
             result.append(confidences[int(key)])
         return result
 

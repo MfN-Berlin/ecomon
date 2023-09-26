@@ -43,7 +43,8 @@ def analyze(
         init_db(config["prefix"], index_to_name)
     if create_index and config["onlyAnalyze"] is False or drop_index:
         drop_species_indices(
-            config["prefix"], species_index_list=config["speciesIndexList"],
+            config["prefix"],
+            species_index_list=config["speciesIndexList"],
         )
     for i in range(1, config["repeats"], 2):
         files_queue = queue.Queue()
@@ -51,9 +52,10 @@ def analyze(
         all_analyzed_event = threading.Event()
 
         # load_file_list
+        print("Load processed file list")
         worker = DbWorker(config["prefix"])
         processed_files = worker.get_all_filepaths()
-
+        print("Load file list")
         processed_count, files_count = load_files_list(
             config,
             files_queue,
@@ -62,13 +64,12 @@ def analyze(
             prefix=config["prefix"],
         )
         if max_files is not None:
-            print(f"Reduce files queue to {max_files} entries")   
+            print(f"Reduce files queue to {max_files} entries")
             # Reduce the size of the queue to 10 entries
             while files_queue.qsize() > max_files:
                 files_queue.get()
 
-        print(
-            f"Files found {files_count} already processed {processed_count}")
+        print(f"Files found {files_count} already processed {processed_count}")
         # Created the Threads
 
         analyze_threads = [
@@ -105,7 +106,7 @@ def analyze(
                 index_to_name=index_to_name if config["transformModelOutput"] else None,
                 only_analyze=config["onlyAnalyze"],
                 retry_corrupted_files=retry_corrupted_files,
-                debug=debug
+                debug=debug,
             )
         )
 
@@ -113,7 +114,6 @@ def analyze(
         print("Start analyze_thread")
         for thread in analyze_threads:
             thread.start()
-
 
         print("Start store_thread")
         store_thread.start()
@@ -127,11 +127,12 @@ def analyze(
         store_thread.join()
         print("Done")
 
-    if (create_index and config["onlyAnalyze"] is False):
-        if(debug):
+    if create_index and config["onlyAnalyze"] is False:
+        if debug:
             print("Create index" if create_index else "Drop index")
         create_species_indices(
-            config["prefix"], species_index_list=config["speciesIndexList"],
+            config["prefix"],
+            species_index_list=config["speciesIndexList"],
         )
 
     if create_report_flag is True:
@@ -151,11 +152,17 @@ if __name__ == "__main__":
     )
     # parse argument for creating index default is False
     parser.add_argument(
-        "--create_index", help="create index", action="store_true", default=False,
+        "--create_index",
+        help="create index",
+        action="store_true",
+        default=False,
     )
 
     parser.add_argument(
-        "--drop_index", help="drop index", action="store_true", default=False,
+        "--drop_index",
+        help="drop index",
+        action="store_true",
+        default=False,
     )
     parser.add_argument(
         "--create_report", help="create json report", action="store_true", default=False
@@ -163,13 +170,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "--retry", help="retry corrupted files", action="store_true", default=False
     )
-    
+
     parser.add_argument(
         "--debug", help="debug messages are printed", action="store_true", default=False
     )
 
-    parser.add_argument("--max_files", help="set to max files to be analyzed", type=int, action="store", default=None)
-
+    parser.add_argument(
+        "--max_files",
+        help="set to max files to be analyzed",
+        type=int,
+        action="store",
+        default=None,
+    )
 
     args = parser.parse_args()
     if args.config_filepath:
@@ -180,9 +192,8 @@ if __name__ == "__main__":
             create_report_flag=args.create_report,
             retry_corrupted_files=args.retry,
             debug=args.debug,
-            max_files=args.max_files
+            max_files=args.max_files,
         )
     else:
         print("No config file specified")
         exit(1)
-

@@ -1,15 +1,15 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202303
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202304
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202305
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202306
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202307
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202308
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202309
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202310
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202311
-   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1203A/AKWAMO1203A_202312
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202303
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202304
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202305
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202306
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202307
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202308
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202309
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202310
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202311
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202312
 fileEnding:
    - mp3 # wav
    - wav
@@ -17,12 +17,12 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO1203A/2023
+resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO03C1A/2023
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDID_AKWAMO1203A_2023"
+prefix: "BIRDID_AKWAMO1205A_2023"
 testRun: False
 timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
 speciesIndexList:

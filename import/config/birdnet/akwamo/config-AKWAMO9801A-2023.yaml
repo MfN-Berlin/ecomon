@@ -1,0 +1,57 @@
+# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+recordFolder:
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202303
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202304
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202305
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202306
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202307
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202308
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202309
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202310
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202311
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO9801A/AKWAMO9801A_202312
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdnet-public-3k-v2.2/AKWAMO/AKWAMO9801A/2023
+# Index to name File of your used model
+indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDNET_AKWAMO1205A_2023"
+testRun: False
+timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - strix_aluco
+   - dendrocoptes_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_sibilatrix
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - troglodytes_troglodytes
+   - turdus_merula
+   - turdus_philomelos
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_ochruros
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 9000
+analyzeThreads: 9
+transformModelOutput: False
+allThreadsUseSamePort: False
+repeats: 2
+modelOutputStyle: resultDict
+batchSize: 2
+nCpuWorkers: 1

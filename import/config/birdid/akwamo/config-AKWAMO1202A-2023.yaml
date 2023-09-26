@@ -48,7 +48,7 @@ speciesIndexList:
    - phoenicurus_phoenicurus
    - fringilla_coelebs
 basePort: 9000
-analyzeThreads: 30
+analyzeThreads: 9
 transformModelOutput: False
 allThreadsUseSamePort: False
 repeats: 2
