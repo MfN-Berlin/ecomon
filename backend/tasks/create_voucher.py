@@ -90,8 +90,8 @@ def create_voucher(
             for row_index, row in enumerate(result):
                 filepath = row[0]
                 filename = path.basename(filepath)
-                start = float(row[3]) - audio_padding
-                end = float(row[4]) + audio_padding
+                start = float(row[3])
+                end = float(row[4])
                 record_datetime = row[1]
                 duration = row[5]
                 channel = row[6]
@@ -106,6 +106,8 @@ def create_voucher(
                 # check if file not exists
 
                 if not path.exists(path.join(directory, out_filename)):
+                    print(f"duration: {end-start+audio_padding*2}")
+                    print(f"start: {start}, end: {end}, padding: {audio_padding}")
                     extract_part_from_audio_file_by_start_and_end_time(
                         filepath,
                         out_filepath,
