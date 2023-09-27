@@ -22,7 +22,7 @@ resultFolder: birdnet-public-3k-v2.2/AKWAMO/AKWAMO0606A/2023
 indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDNET_AKWAMO1205A_2023"
+prefix: "BIRDNET_AKWAMO0606A_2023"
 testRun: False
 timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
 speciesIndexList:
