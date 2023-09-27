@@ -10,19 +10,19 @@ recordFolder:
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1207A/AKWAMO1207A_202310
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1207A/AKWAMO1207A_202311
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO1207A/AKWAMO1207A_202312
-fileEnding7
+fileEnding:
    - mp3 # wav
    - wav
    - MP3
    - WAV
    - flac
    - FLAC
-resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO1205A/2023
+resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO1207A/2023
 # Index to name File of your used model
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDID_AKWAMO1205A_2023"
+prefix: "BIRDID_AKWAMO1207A_2023"
 testRun: False
 timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
 speciesIndexList:

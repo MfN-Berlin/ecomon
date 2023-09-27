@@ -22,7 +22,7 @@ resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO9801A/2023
 indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDID_AKWAMO1205A_2023"
+prefix: "BIRDID_AKWAMO9801A_2023"
 testRun: False
 timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
 speciesIndexList:
