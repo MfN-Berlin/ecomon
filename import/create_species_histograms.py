@@ -23,7 +23,7 @@ DB_PASS = getenv("MDAS_MARIADB_PASSWORD")
 DB_NAME = getenv("MDAS_MARIADB_DATABASE")
 DB_PORT = int(getenv("MDAS_MARIADB_PORT"))
 
-BIN_SIZE = 0.005
+BIN_SIZE = 0.01
 
 
 def drop_table(db_connection, tablename):

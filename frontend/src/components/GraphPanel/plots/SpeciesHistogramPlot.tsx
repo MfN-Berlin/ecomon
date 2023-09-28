@@ -4,7 +4,7 @@ import Select from 'react-select'
 import Multiselect from 'multiselect-react-dropdown'
 import CircularProgress from '@mui/material/CircularProgress'
 
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import IconButton from '@material-ui/core/IconButton'
 import { apiClient } from '@/services/api'
 import { loadState, savePartialState } from '@/tools/localStorage'
@@ -23,13 +23,13 @@ interface SpeciesHistogramPlotProps {
 type HistogramData = {
    [species: string]: number[]
 }
-
-const BIN_SIZES = Array(20)
+const BIN_SIZE = 0.01
+const BIN_SIZES = Array(10)
    .join()
    .split(',')
-   .map((_, i) => ({ label: ((i + 1) * 0.005).toFixed(3), value: (i + 1) * 0.005 }))
+   .map((_, i) => ({ label: ((i + 1) * BIN_SIZE).toFixed(3), value: (i + 1) * BIN_SIZE }))
 console.log(BIN_SIZES)
-const SMALLEST_BIN_SIZE = { label: '0.005', value: 0.005 }
+const SMALLEST_BIN_SIZE = { label: 'BIN_SIZE', value: BIN_SIZE }
 const useStyles = makeStyles((theme: Theme) => ({
    customTextField: {
       '& .MuiInputLabel-root': {
@@ -74,17 +74,17 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
    }, [])
 
    const handleDownloadCsv = () => {
-      const header = ['Species', ...xLabels];
-      const result = Object.entries(dataMap).map(([key, values]) => [key, ...values]);
+      const header = ['Species', ...xLabels]
+      const result = Object.entries(dataMap).map(([key, values]) => [key, ...values])
 
-      const csvContent = 'data:text/csv;charset=utf-8,' + [header, ...result].join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', 'data.csv');
-      document.body.appendChild(link);
-      link.click();
-   };
+      const csvContent = 'data:text/csv;charset=utf-8,' + [header, ...result].join('\n')
+      const encodedUri = encodeURI(csvContent)
+      const link = document.createElement('a')
+      link.setAttribute('href', encodedUri)
+      link.setAttribute('download', 'data.csv')
+      document.body.appendChild(link)
+      link.click()
+   }
 
    useEffect(() => {
       const fetchSpeciesData = async () => {
@@ -125,7 +125,6 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
          savePartialState(localStorageId, { selectedSpecies })
       }
       setAdditionalToolBarChilds(
-
          <Multiselect
             isObject={true}
             selectedValues={selectedSpecies}
@@ -151,33 +150,33 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
 
    useEffect(() => {
       setMainToolBarChilds(
-         <><div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-            <InputLabel htmlFor="binSizeSelect" shrink style={{ marginBottom: '-5px', color: 'white' }}>
-               Bin Size
-            </InputLabel>
-            <Select
-               aria-label="Bin Size"
-               inputId="binSizeSelect"
-               id="binSizeSelect"
-               value={binSize}
-               options={BIN_SIZES}
-               onChange={(item: any) => {
-                  if (item) {
-                     setBinSize(item)
-                  } else {
-                     setBinSize(SMALLEST_BIN_SIZE)
-                  }
-               }}
-               styles={denseSelectStyles}
-
-            /></div>
+         <>
+            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+               <InputLabel htmlFor="binSizeSelect" shrink style={{ marginBottom: '-5px', color: 'white' }}>
+                  Bin Size
+               </InputLabel>
+               <Select
+                  aria-label="Bin Size"
+                  inputId="binSizeSelect"
+                  id="binSizeSelect"
+                  value={binSize}
+                  options={BIN_SIZES}
+                  onChange={(item: any) => {
+                     if (item) {
+                        setBinSize(item)
+                     } else {
+                        setBinSize(SMALLEST_BIN_SIZE)
+                     }
+                  }}
+                  styles={denseSelectStyles}
+               />
+            </div>
             <TextField
                type="number"
                InputProps={{
-                  inputProps: { min: 0, max: 1, step: 0.005 },
+                  inputProps: { min: 0, max: 1, step: BIN_SIZE },
                   style: { backgroundColor: 'white' }
                }}
-
                value="0.00"
                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const newValue = parseFloat(e.target.value)
@@ -209,13 +208,13 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
    }, [binSize, rawDataMap, lowerBorder])
 
    function aggregateBins(data: number[], newBinSize: number) {
-      const binRatio = newBinSize / 0.005 // The number of original bins that will be combined into a single bin
+      const binRatio = newBinSize / BIN_SIZE // The number of original bins that will be combined into a single bin
       const result: number[] = []
 
       for (let i = 0; i < data.length; i += binRatio) {
          // Sum the counts for the bins that will be combined
          const binSum = data.slice(i, i + binRatio).reduce((sum, count) => sum + count, 0)
-         if (i * 0.005 < lowerBorder) {
+         if (i * BIN_SIZE < lowerBorder) {
             continue
          }
          result.push(binSum)
@@ -267,7 +266,6 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
                },
                autosize: true // Enable automatic resizing
             }}
-
             useResizeHandler={true}
             style={{
                position: 'absolute', // This will make the plot fill the parent div
