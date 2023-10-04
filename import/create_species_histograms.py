@@ -5,9 +5,12 @@ import re
 import pytz
 from dotenv import load_dotenv
 from os import getenv
+from tqdm.contrib.concurrent import process_map
 from tqdm import tqdm
+
 import logging
 from logging import debug, info, warn
+from multiprocessing import Pool
 
 # Configure logging
 logging.basicConfig(
@@ -108,7 +111,16 @@ def fill_species_histogram_table(db_connection, dataset_name, bin_size):
         db_connection, dataset_name
     )
 
+    drop_table(db_connection, f"{dataset_name}_species_histogram")
+
     with db_connection.cursor() as cursor:
+        info(f"Start creating species histogram table for dataset {dataset_name}...")
+
+        cursor.execute(
+            create_predictions_species_histogram_query(dataset_name, BIN_SIZE)
+        )
+        debug(f"Create Index on record_date for table {dataset_name}...")
+
         for species_name in tqdm(
             species_names_list, desc=f"Filling species histogram for {dataset_name}"
         ):
@@ -139,7 +151,16 @@ def fill_species_histogram_table(db_connection, dataset_name, bin_size):
     debug(f"Species histogram table filled for dataset {dataset_name}")
 
 
-def main(partial_name=None):
+def worker_function(args):
+    dataset_name, bin_size = args
+    db_connection = mariadb.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, port=DB_PORT
+    )
+    fill_species_histogram_table(db_connection, dataset_name, bin_size)
+    db_connection.close()
+
+
+def main(partial_name=None, cores=1):
     connection = mariadb.connect(
         host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, port=DB_PORT
     )
@@ -162,21 +183,11 @@ def main(partial_name=None):
         tmp_string = "\n".join(dataset_names)
         info(f"Create Species Histogram for:\n{tmp_string}")
 
-        for dataset_name in dataset_names:
-            drop_table(connection, f"{dataset_name}_species_histogram")
-            info(
-                f"Start creating species histogram table for dataset {dataset_name}..."
-            )
-            drop_table(connection, f"{dataset_name}_species_histogram")
-            db_cursor.execute(
-                create_predictions_species_histogram_query(dataset_name, BIN_SIZE)
-            )
-            debug(f"Create Index on record_date for table {dataset_name}...")
-
-            # Fill the species histogram table
-            fill_species_histogram_table(connection, dataset_name, BIN_SIZE)
-
-            connection.commit()
+    process_map(
+        worker_function,
+        [(dataset_name, BIN_SIZE) for dataset_name in dataset_names],
+        max_workers=cores,
+    )
 
     connection.close()
 
@@ -194,12 +205,16 @@ if __name__ == "__main__":
         action="store_true",  # Use action="store_true" for boolean flags
         help="Enable debug mode",
     )
+    parser.add_argument(
+        "--cores",
+        type=int,
+        default=1,
+        help="Number of CPU cores to use for the import. Default is 1.",
+    )
 
     args = parser.parse_args()
     if args.debug:
         info("Debug mode endabled!")
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)  # Set the level to DEBUG
-    main(
-        partial_name=args.partial_name,
-    )
+    main(partial_name=args.partial_name, cores=args.cores)
