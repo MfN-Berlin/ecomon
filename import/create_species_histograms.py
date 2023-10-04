@@ -121,9 +121,7 @@ def fill_species_histogram_table(db_connection, dataset_name, bin_size):
         )
         debug(f"Create Index on record_date for table {dataset_name}...")
 
-        for species_name in tqdm(
-            species_names_list, desc=f"Filling species histogram for {dataset_name}"
-        ):
+        for species_name in species_names_list:
             cursor.execute(
                 get_predictions_species_histogram_query(
                     dataset_name, species_name, bin_size
