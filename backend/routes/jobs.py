@@ -88,10 +88,10 @@ def router(app, root, database):
             # check if it is type create_sample
             if job[3] == "create_sample":
                 # delete file
-                result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
+                result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
                 metadata = json.loads(job[4])
                 # print(metadata)
-                result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
+                result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
                 result_filepath = os.path.join(result_directory, metadata["filename"])
                 # print(result_filepath)
                 if os.path.exists(result_filepath):

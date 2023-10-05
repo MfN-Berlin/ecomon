@@ -15,12 +15,12 @@ services:
          MDAS_MARIADB_USER: ${MDAS_MARIADB_USER}
          MDAS_MARIADB_PASSWORD: ${MDAS_MARIADB_PASSWORD}
          MDAS_TMP_DIRECTORY: /tmp
-         MDAS_SAMPLE_FILE_DIRECTORY: /files
+         MDAS_SAMPLE_FILES_DIRECTORY: /files
          MDAS_PROXY_PATH_PREFIX: /api/v1
          ROOT_PATH: /api/v1
          MDAS_REPORTS_DIRECTORY: /reports
       volumes:
-         - ${MDAS_SAMPLE_FILE_DIRECTORY}:/files
+         - ${MDAS_SAMPLE_FILES_DIRECTORY}:/files
          - ${MDAS_TMP_DIRECTORY}:/tmp
          - ${MDAS_DATA_DIRECTORY}:${MDAS_DATA_DIRECTORY}
          - ${MDAS_REPORTS_DIRECTORY}:/reports

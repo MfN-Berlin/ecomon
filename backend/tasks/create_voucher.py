@@ -74,6 +74,7 @@ def create_voucher(
                 species,
                 sample_size,
             )
+            print(query)
             db_cursor.execute(query)
             result = db_cursor.fetchall()
             entries_length = len(result)
@@ -106,8 +107,6 @@ def create_voucher(
                 # check if file not exists
 
                 if not path.exists(path.join(directory, out_filename)):
-                    print(f"duration: {end-start+audio_padding*2}")
-                    print(f"start: {start}, end: {end}, padding: {audio_padding}")
                     extract_part_from_audio_file_by_start_and_end_time(
                         filepath,
                         out_filepath,

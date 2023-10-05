@@ -73,7 +73,7 @@ def router(app, root, database):
         ).strftime("%Y%m%d_%H%M%S")
         print(end_datetime_str)
 
-        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
+        result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
         if not path.exists(result_directory):
             os.makedirs(result_directory)
         result_filename = "{time}_{prefix}_{species}_{threshold_min}_{threshold_max}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
@@ -152,6 +152,6 @@ def router(app, root, database):
 
     @app.get("/random_sample/file/{filename}", operation_id="getRandomSampleFile")
     async def get_random_sample(filename: str) -> FileResponse:
-        result_directory = os.getenv("MDAS_SAMPLE_FILE_DIRECTORY")
+        result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
         result_filepath = os.path.join(result_directory, filename)
         return FileResponse(result_filepath, media_type="application/zip")

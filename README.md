@@ -16,7 +16,7 @@ Use script to analyze big collections auf recordings
    MDAS_MARIADB_ROOT_PASSWORD=root_password # root password of the database
    MDAS_DATA_DIRECTORY=/net/              # root directory of monitoring recordings
    MDAS_TMP_DIRECTORY=./runtime-data/backend/tmp # directory for temporary files used for packaging result zip files
-   MDAS_SAMPLE_FILE_DIRECTORY=./runtime-data/backend/files # files created from the service
+   MDAS_SAMPLE_FILES_DIRECTORY=./runtime-data/backend/files # files created from the service
    ```
 3. change environment variables in .env
 4. start service with `docker-compose up -d`
