@@ -4,6 +4,34 @@ from pymysql.converters import escape_string
 from routes.route_types import JobStatus, JobTypes
 
 
+def get_prediction_file_distinct_max_sample(prefix, species, sample_size=10):
+    return f"""
+    SELECT
+    r.filepath,
+    r.record_datetime,
+    r.filename,
+    p.start_time,
+    p.end_time,
+    r.duration,
+    p.channel,
+    p.max_confidence as {species}
+FROM
+    (SELECT
+        record_id,
+        start_time,
+        end_time,
+        channel,
+        {species} AS max_confidence,
+        ROW_NUMBER() OVER(PARTITION BY record_id ORDER BY {species} DESC) AS rn
+    FROM {prefix}_predictions
+    ) AS p
+JOIN {prefix}_records AS r ON p.record_id = r.id
+WHERE p.rn = 1
+ORDER BY p.max_confidence DESC
+LIMIT {sample_size};
+    """
+
+
 def get_prediction_max_sample(
     prefix,
     species,

@@ -124,6 +124,7 @@ def create_sample(
                     path.join(directory, out_filename),
                     row[2],
                     row[3],
+                    row[4],
                     padding=audio_padding,
                     high_pass_frequency=high_pass_frequency,
                 )

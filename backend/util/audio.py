@@ -6,11 +6,12 @@ def extract_part_from_audio_file_by_start_and_end_time(
     output_filepath,
     start_time,
     end_time,
+    duration,
     padding=0,
     high_pass_frequency=0,
 ):
     stime = start_time - padding if start_time - padding > 0 else 0
-    etime = end_time + padding
+    etime = end_time + padding if end_time + padding > duration else duration
     # print("Run extract on ", filepath)
     input = ffmpeg.input(
         filepath,

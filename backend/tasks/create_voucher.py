@@ -13,6 +13,7 @@ from sql.query import (
     update_job_metadata,
     update_job_status,
     get_prediction_max_sample,
+    get_prediction_file_distinct_max_sample,
 )
 
 from uuid import uuid4
@@ -68,11 +69,10 @@ def create_voucher(
         inter_species_progress = 100 / len(species_list)
 
         for species_index, species in enumerate(species_list):
-            query = get_prediction_max_sample(
+            query = get_prediction_file_distinct_max_sample(
                 collection,
                 species,
                 sample_size,
-                audio_padding=audio_padding,
             )
             db_cursor.execute(query)
             result = db_cursor.fetchall()
@@ -113,6 +113,7 @@ def create_voucher(
                         out_filepath,
                         start,
                         end,
+                        duration,
                         padding=audio_padding,
                         high_pass_frequency=high_pass_frequency,
                     )
