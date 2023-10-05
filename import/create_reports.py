@@ -11,6 +11,9 @@ from util.files import check_audio_file
 from json import JSONEncoder
 import decimal
 from pytz import timezone, utc
+from multiprocessing import Pool
+
+load_dotenv()
 
 
 class CustomJSONEncoder(JSONEncoder):
@@ -84,7 +87,6 @@ def report(
             formatted_key = query_name
 
         if query_name.endswith("_histogram_query"):
-
             if query_name == "record_duration_histogram_query":
                 report_data[formatted_key] = [
                     {"duration": row[0], "record_count": row[1]} for row in result
@@ -118,7 +120,6 @@ def report(
             year = last_datetime.year
 
             for date_str in createYearMonthDayList(year):
-
                 if date_str not in daily_summary:
                     daily_summary[date_str] = {
                         "count": 0,
@@ -174,7 +175,6 @@ def report(
 
 # create a connection to the MySQL database
 def create_report(prefix=None, output_format="json", prefix_includes=None):
-    load_dotenv()
     root_dir = getenv("MDAS_DATA_DIRECTORY")
 
     cnx = mariadb.connect(
@@ -219,7 +219,10 @@ def create_report(prefix=None, output_format="json", prefix_includes=None):
                 "corrupted_record_count",
                 f"SELECT COUNT(*) FROM {table_name} WHERE corrupted > 0;",
             ),
-            ("summed_records_duration", f"SELECT SUM(duration) FROM {table_name};",),
+            (
+                "summed_records_duration",
+                f"SELECT SUM(duration) FROM {table_name};",
+            ),
             ("predictions_count", f"SELECT COUNT(*) FROM {predictions_table};"),
             (
                 "record_duration_histogram_query",
@@ -269,6 +272,14 @@ def create_report(prefix=None, output_format="json", prefix_includes=None):
         )
 
 
+def process_prefix(prefix):
+    create_report(
+        prefix=prefix,
+        output_format=args.output_format,
+        prefix_includes=args.prefix_includes,
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate report for a collection")
     parser.add_argument(
@@ -292,11 +303,38 @@ if __name__ == "__main__":
         required=False,
         help="Output format: 'text' for text format or 'json' for JSON format (default: 'json')",
     )
-
-    args = parser.parse_args()
-    create_report(
-        prefix=args.collection_prefix,
-        output_format=args.output_format,
-        prefix_includes=args.prefix_includes,
+    parser.add_argument(
+        "--cores",
+        type=int,
+        default=1,
+        help="Number of CPU cores to use for the processing. Default is 1.",
     )
 
+    args = parser.parse_args()
+    # If only one core is specified, run in a single process
+    if args.cores == 1:
+        process_prefix(args.collection_prefix)
+    else:
+        # Fetch all prefixes if not specified
+        if args.collection_prefix is None:
+            cnx = mariadb.connect(
+                user=getenv("MDAS_MARIADB_USER"),
+                password=getenv("MDAS_MARIADB_PASSWORD"),
+                database=getenv("MDAS_MARIADB_DATABASE"),
+                host=getenv("MDAS_MARIADB_HOST"),
+                port=int(getenv("MDAS_MARIADB_PORT")),
+            )
+            cursor = cnx.cursor()
+            cursor.execute("SHOW TABLES LIKE '%\\_records'")
+            tables = cursor.fetchall()
+            prefixes = [table[0][: -len("_records")] for table in tables]
+            if args.prefix_includes:
+                prefixes = [
+                    prefix for prefix in prefixes if args.prefix_includes in prefix
+                ]
+        else:
+            prefixes = [args.collection_prefix]
+
+        # Use Pool to parallelize
+        with Pool(args.cores) as pool:
+            pool.map(process_prefix, prefixes)
