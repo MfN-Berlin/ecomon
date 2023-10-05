@@ -1,17 +1,17 @@
 # Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
 recordFolder:
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202301
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202302
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202303
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202304
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202305
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202306
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202307
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202308
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202309
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202310
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202311
-   - /net/z/Projekte/AMMOD/AudioData/BRITZ01/BRITZ01_202312
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202301
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202302
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202303
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202304
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202305
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202306
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202307
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202308
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202309
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202310
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202311
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/BRITZ01/BRITZ01_202312
 fileEnding:
    - mp3 # wav
    - wav
