@@ -154,4 +154,5 @@ class Message(BaseModel):
 
 
 class LastUpdate(BaseModel):
-    last_update: datetime.datetime
+
+    last_update: Optional[datetime.datetime] = None

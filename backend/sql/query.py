@@ -2,6 +2,7 @@ import json
 import random
 from pymysql.converters import escape_string
 from routes.route_types import JobStatus, JobTypes
+from os import getenv
 
 
 def get_prediction_file_distinct_max_sample(prefix, species, sample_size=10):
@@ -359,8 +360,8 @@ def count_species_over_threshold_in_date_range(
 
 
 def get_all_prediction_table_names():
-    return """
-    SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = 'bai' and TABLE_NAME like '%_predictions'
+    return f"""
+    SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = '{getenv('MDAS_MARIADB_DATABASE')}' and TABLE_NAME like '%_predictions'
     """
 
 

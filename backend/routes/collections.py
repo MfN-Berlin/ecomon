@@ -49,7 +49,7 @@ def router(app, root, database):
         # count records entries
         records_count = (
             await database.fetch_one(
-                count_entries_in_sql_table("{}_records".format(prefix_name))
+                count_entries_in_sql_table(f"{prefix_name}_records")
             )
         )[0]
 
