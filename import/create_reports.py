@@ -187,7 +187,7 @@ def create_report(prefix=None, output_format="json", prefix_includes=None):
 
     cursor = cnx.cursor()
 
-    REPORTS_DIR = "./reports"
+    REPORTS_DIR = getenv("MDAS_REPORTS_DIRECTORY", "./reports")
     if prefix is not None:
         prefixes = [prefix]
     else:

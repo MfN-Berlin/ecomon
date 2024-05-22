@@ -28,6 +28,12 @@ def __create_species__array(index_to_name):
 def connect_to_db():
     try:
         print("Connecting to MariaDB Platform...")
+        print("User: ", os.getenv("MDAS_MARIADB_USER"))
+        print("Password: ", os.getenv("MDAS_MARIADB_PASSWORD"))
+        print("Host: ", os.getenv("MDAS_MARIADB_HOST"))
+        print("Port: ", os.getenv("MDAS_MARIADB_PORT"))
+        print("Database: ", os.getenv("MDAS_MARIADB_DATABASE"))
+        
         connection = mariadb.connect(
             user=os.getenv("MDAS_MARIADB_USER"),
             password=os.getenv("MDAS_MARIADB_PASSWORD"),
@@ -54,6 +60,8 @@ def init_db(batch_prefix, index_to_name):
     predictions_count = 0
 
     species = __create_species__array(index_to_name)
+
+ 
 
     try:
         records_count = db_cursor.execute(

@@ -23,6 +23,7 @@ DB_USER = getenv("MDAS_MARIADB_USER")
 DB_PASS = getenv("MDAS_MARIADB_PASSWORD")
 DB_NAME = getenv("MDAS_MARIADB_DATABASE")
 DB_PORT = int(getenv("MDAS_MARIADB_PORT"))
+DATABASE_NAME = getenv("MDAS_MARIADB_DATABASE")
 
 
 def drop_table(db_connection, tablename):
@@ -56,18 +57,16 @@ CREATE TABLE `{p}_predictions_max` (
 
 def create_predictions_max_table_query(dataset_name, species):
     rows = ",".join([f"MAX(p.{s}) AS {s}\n" for s in species])
-    query_string = """
-CREATE TABLE `{ds}_predictions_max` AS
+    query_string = f"""
+CREATE TABLE `{dataset_name}_predictions_max` AS
 SELECT p.record_id,
        r.record_datetime,
        {rows}
-FROM bai.{ds}_predictions as p
-JOIN {ds}_records AS r ON p.record_id = r.id
+FROM {DATABASE_NAME}.{dataset_name}_predictions as p
+JOIN {dataset_name}_records AS r ON p.record_id = r.id
 GROUP BY p.record_id
 ORDER BY r.record_datetime ASC
-    """.format(
-        ds=dataset_name, rows=rows
-    )
+    """
     # debug(query_string)
     return query_string
 

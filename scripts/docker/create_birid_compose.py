@@ -1,5 +1,6 @@
 import argparse
 import os
+from os import getenv
 
 def generate_docker_compose(num_containers, output_filename):
     base_config = {
@@ -11,7 +12,7 @@ def generate_docker_compose(num_containers, output_filename):
         service_name = f"birdid-{i}"
         base_config["services"][service_name] = {
             "cpuset": str(i + 1),
-            "container_name": f"bai-{service_name}",
+            "container_name": f"{getenv('MDAS_MARIADB_DATABASE')}-{service_name}",
             "image": "birdid-europe254-2103-flask-v04",
             "restart": "always",
             "ipc": "host",
