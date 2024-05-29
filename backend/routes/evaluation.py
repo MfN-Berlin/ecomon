@@ -1,49 +1,39 @@
 import asyncio
 import os
 import time
+from fastapi import APIRouter
+from logging import getLogger
+from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
+from typing import Optional
+from math import ceil
+from os import path
+
+from sql.query import add_job, update_job_status
+from sql.query import get_predictions_with_file_id
 from schemas.route_types import (
     BinSizeRequest,
-    Collection,
     DailyHistogramRequest,
     EventResponse,
     JobCreatedResponse,
     PredictionsRequest,
-    Report,
-    Species,
     VoucherRequest,
 )
-from concurrent.futures import ThreadPoolExecutor
-from sql.query import get_predictions_with_file_id
-from enum import Enum
-from pydantic import BaseModel
-from typing import List, Optional, Union
-from databases import Database
-from fastapi import FastAPI
-from math import ceil
-from sql.query import add_job, update_job_status
-from os import path
-
 from tasks.create_histogram import create_histogram
 from tasks.create_predictions import create_predictions
 from tasks.create_daily_histograms import create_daily_histograms
 from tasks.create_voucher import create_voucher
-from fastapi import APIRouter
 from db import database
+logger = getLogger(__name__)
 router = APIRouter()
 
-
-
 voucher_executor = ThreadPoolExecutor(6)
-
 
 class GroupingEnum(str, Enum):
     pear = "pear"
     banana = "banana"
 
-
 ROUTER_TAG = "evaluation"
-
-
 
 @router.get(
     "/{collection_name}/events",
@@ -348,7 +338,7 @@ async def get_collection_vouchers(
             },
         )
     )
-    print("job_id", job_id)
+    logger.debug("job_id", job_id)
     asyncio.ensure_future(task(database, job_id))
     return {"job_id": job_id}
     # return file stream

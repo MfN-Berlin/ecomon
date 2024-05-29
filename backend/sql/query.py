@@ -3,7 +3,8 @@ import random
 from pymysql.converters import escape_string
 from schemas.route_types import JobStatus, JobTypes
 from os import getenv
-
+from logging import getLogger
+logger = getLogger(__name__)
 
 def get_prediction_file_distinct_max_sample(prefix, species, sample_size=10):
     return f"""
@@ -395,12 +396,12 @@ def get_job_by_id(job_id):
 
 def add_job(prefix: str, type: JobTypes, status: JobStatus, metadata: dict):
     metadata_str = escape_string(json.dumps(metadata))
-    print(f"prefix: {prefix}")
-    print(f"type: {type}")
-    print(f"status: {status}")
-    print(f"metadata: {metadata_str}")
+    logger.debug(f"prefix: {prefix}")
+    logger.debug(f"type: {type}")
+    logger.debug(f"status: {status}")
+    logger.debug(f"metadata: {metadata_str}")
     query = f"INSERT INTO jobs (prefix, type, status,metadata) VALUES ('{prefix}', '{type}', '{status}', '{metadata_str}')"
-    print(f"query: {query}")
+    logger.debug(f"query: {query}")
     return query
 
 

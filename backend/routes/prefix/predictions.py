@@ -1,5 +1,12 @@
 from sqlite3 import DatabaseError
 from schemas.route_types import Message
+from typing import List, Tuple
+from fastapi import APIRouter
+from logging import getLogger
+from os import getenv
+from datetime import datetime, timezone
+from asyncio import ensure_future
+
 from sql.query import (
     add_job,
     count_predictions,
@@ -11,17 +18,14 @@ from sql.query import (
     update_job_failed,
     update_job_status,
 )
-
-from datetime import datetime, timezone
-from asyncio import ensure_future
 from schemas.route_types import (
     QueryResponse,
     JobId,
     PredictionMax,
     QueryRequest,
 )
-from typing import List, Tuple
-from fastapi import APIRouter
+logger = getLogger(__name__)
+root_path = getenv("ROOT_PATH")
 from db import database
 router = APIRouter()
 
@@ -47,7 +51,7 @@ async def do_add_index_job(database, job_id, prefix_name, column_name):
 )
 async def get_prefix_predictions_count(prefix_name: str) -> int:
     query = count_predictions(prefix_name)
-    # print(query)
+    # logger.debug(query)
     return (await database.fetch_one(query))[0]
 
 # route to add index to prediction table
@@ -90,7 +94,7 @@ async def drop_index_from_prefix(prefix_name: str, column_name: str):
 async def query_prediction_table(
     prefix_name: str, request: QueryRequest
 ) -> QueryResponse:
-    print(request)
+    logger.debug(request)
     query = count_predictions_in_date_range(
         prefix_name,
         datetime.fromisoformat(request.start_datetime[:-1]).replace(
@@ -100,7 +104,7 @@ async def query_prediction_table(
             tzinfo=timezone.utc
         ),
     )
-    # print(query)
+    # logger.debug(query)
 
     predictions_count = (await database.fetch_one(query))[0]
     query = count_species_over_threshold_in_date_range(
@@ -116,9 +120,9 @@ async def query_prediction_table(
         ),
     )
 
-    # print(query)
+    # logger.debug(query)
     species_count = (await database.fetch_one(query))[0]
-    # print(species_count)
+    # logger.debug(species_count)
     return QueryResponse(
         predictions_count=predictions_count, species_count=species_count
     )
@@ -135,7 +139,7 @@ async def get_collection_predictions_species_max(
     query = f"Select record_id, record_datetime, {species} as value from {prefix_name}_predictions_max order by record_datetime asc"
     try:
         result = await database.fetch_all(query)
-        print("Request done for {}".format(species))
+        logger.debug("Request done for {}".format(species))
         return [
             PredictionMax(
                 record_id=row["record_id"],
