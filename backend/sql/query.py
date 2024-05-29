@@ -1,7 +1,7 @@
 import json
 import random
 from pymysql.converters import escape_string
-from routes.route_types import JobStatus, JobTypes
+from schemas.route_types import JobStatus, JobTypes
 from os import getenv
 
 
