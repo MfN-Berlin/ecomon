@@ -143,7 +143,7 @@ class ResultJob(BaseModel):
     type: JobTypes
     status: JobStatus
     metadata: Optional[dict] = None
-    progress: str
+    progress: int
     error: Optional[str] = None
     created_at: datetime.datetime
     updated_at: datetime.datetime
