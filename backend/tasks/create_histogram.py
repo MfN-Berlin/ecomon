@@ -5,7 +5,8 @@ from sql.query import update_job_status, update_job_progress
 from datetime import datetime, timezone
 
 from util.tools import species_row_to_name
-
+from logging  import getLogger
+logger = getLogger(__name__)
 
 def float_range(start, stop, step):
     while start < stop:
@@ -43,9 +44,9 @@ async def create_histogram(
 ):
     species_list = [species] if species != None else []
     steps = list(float_range(0, 1, bin_width))
-    print(steps)
+    logger.debug(steps)
     steps.reverse()
-    print(steps)
+    logger.debug(steps)
     total_steps = len(steps) * len(species_list)
     counter = 0
     result_list = []
@@ -64,7 +65,7 @@ async def create_histogram(
         )
     # Create rows for excel file
     for idx, threshold_min in enumerate(steps):
-        # print("Get prediction count for ", threshold_min)
+        # logger.debug("Get prediction count for ", threshold_min)
         row = {
             "threshold_min": threshold_min,
             "threshold_max": threshold_min + bin_width,

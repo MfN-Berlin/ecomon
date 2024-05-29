@@ -4,9 +4,9 @@ from sql.query import (
     get_datetime_of_first_record_in_sql_table,
     get_datetime_of_last_record_in_sql_table,
 )
-from fastapi import HTTPException,APIRouter
 from pydantic import BaseModel
 from datetime import datetime, timezone
+from fastapi import APIRouter
 from db import database
 router = APIRouter()
 

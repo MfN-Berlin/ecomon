@@ -53,7 +53,7 @@ def analyze_loop_factory(
                 if not path.exists(result_path):
                     container_filepath=path.join("/mnt/data", relative_file)
                     container_resultpath=path.join("/mnt/result", relative_result_path) 
-                    request_string = f'http://localhost:{port}/identify?path={container_filepath}&outputDir={container_resultpath}'
+                    request_string = f'http://localhost:{port}/identify?path={container_filepath}&outputDir={container_resultpath}&mono=True'
                     if(debug):
                         print(f'Analyze: container_filepath {container_filepath}')
                         print(f'Analyze: result_path {result_path}')

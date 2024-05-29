@@ -1,7 +1,8 @@
 import os
 import re
 import argparse
-
+from logging  import getLogger
+logger = getLogger(__name__)
 # regular expression for matching the old filename pattern
 # old_filename_pattern = re.compile(r"^([A-Za-z0-9]+)_(\d{6})_(\d{6})\.wav$")
 old_filename_pattern = re.compile(r"^([A-Za-z0-9]+)_(\d{6})_(\d{6})\.pkl$")
@@ -41,9 +42,9 @@ for dirpath, dirnames, filenames in os.walk(args.dir_path):
             new_filename = f"{old_prefix}_20{old_date_str}{FILE_ENDING}"
             new_file_path = os.path.join(dirpath, new_filename)
 
-            # print the rename command if in test mode
+            # logger.debug the rename command if in test mode
             if not args.rename:
-                print(f"{filename} -> {new_filename}")
+                logger.debug(f"{filename} -> {new_filename}")
             # otherwise, rename the file
             else:
                 os.rename(file_path, new_file_path)

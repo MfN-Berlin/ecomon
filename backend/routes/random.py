@@ -13,6 +13,8 @@ from sql.query import add_job, update_job_status, get_job_by_id
 from tasks.create_sample import create_sample
 from fastapi import APIRouter
 from db import database
+from logging  import getLogger
+logger = getLogger(__name__)
 router = APIRouter()
 
 class Record(BaseModel):
@@ -59,13 +61,13 @@ async def get_random_sample(request: RandomSampleRequest):
     else:
         start_datetime = None
     # parse end string to datetime object
-    print(request.end_datetime)
+    logger.debug(request.end_datetime)
     if request.end_datetime:
         end_datetime = datetime.fromisoformat(request.end_datetime[:-1] + "+00:00")
     else:
         end_datetime = None
-    print(end_datetime)
-    # print datetime to format YYYYMMSS_HHMMSS
+    logger.debug(end_datetime)
+    # logger.debug datetime to format YYYYMMSS_HHMMSS
 
     start_datetime_str = (
         start_datetime + timedelta(hours=request.zip_hours_off_set)
@@ -73,7 +75,7 @@ async def get_random_sample(request: RandomSampleRequest):
     end_datetime_str = (
         end_datetime + timedelta(hours=request.zip_hours_off_set)
     ).strftime("%Y%m%d_%H%M%S")
-    print(end_datetime_str)
+    logger.debug(end_datetime_str)
 
     result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
     if not path.exists(result_directory):
