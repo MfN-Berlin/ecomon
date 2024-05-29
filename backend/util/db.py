@@ -5,7 +5,8 @@ from sql.query import (
     create_index_for_sql_table,
     drop_index_for_sql_table,
 )
-
+from logging  import getLogger
+logger = getLogger(__name__)
 
 def connect_to_db():
     try:
@@ -17,7 +18,7 @@ def connect_to_db():
             database=os.getenv("MDAS_MARIADB_DATABASE"),
         )
     except mariadb.Error as e:
-        print(f"Error connecting to MariaDB Platform: {e}")
+        logger.error(f"Error connecting to MariaDB Platform: {e}")
         sys.exit(1)
 
     # Get Cursor

@@ -1,8 +1,12 @@
 # app/main.py
-import os
+
+
+from logging import getLogger
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from os import getenv
+
 from db import database, connect_to_db, disconnect_from_db
 from sql.initial import create_jobs_table
 
@@ -14,7 +18,8 @@ from routes.jobs import router as jobs_router
 from routes.random import router as random_router
 from routes.evaluation import router as evaluation_router
 
-root_path = os.getenv("ROOT_PATH")
+logger = getLogger(__name__)
+root_path = getenv("ROOT_PATH")
 
 app = FastAPI(root_path=root_path)
 
@@ -28,6 +33,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
+    from logger import get_log_config
+    get_log_config(getenv("LOG_LEVEL","debug"))
     await connect_to_db()
     # check if table jobs exists and create if not
     await database.execute(create_jobs_table())

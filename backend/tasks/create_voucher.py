@@ -1,8 +1,12 @@
 from typing import List, Optional
-from datetime import datetime
-import argparse
 from os import path
 from dotenv import load_dotenv
+from uuid import uuid4
+import os
+import shutil
+import json
+from util.excel import write_execl_file
+
 from util.db import connect_to_db
 from util.tools import s_to_time, first_letter_to_upper_case, zip_folder_and_delete
 from util.audio import extract_part_from_audio_file_by_start_and_end_time
@@ -15,15 +19,8 @@ from sql.query import (
     get_prediction_max_sample,
     get_prediction_file_distinct_max_sample,
 )
-
-from uuid import uuid4
-import ffmpeg
-import zipfile
-import os
-import shutil
-
-import json
-from util.excel import write_execl_file
+from logging import getLogger
+logger = getLogger(__name__)
 
 
 def create_voucher(
@@ -37,7 +34,7 @@ def create_voucher(
     tmp_directory: Optional[str] = path.join(os.getcwd(), "tmp"),
     results_directory: Optional[str] = path.join(os.getcwd(), "web_results"),
 ) -> None:
-    # print("High pass frequency: ", high_pass_frequency)
+    # logger.debug("High pass frequency: ", high_pass_frequency)
     load_dotenv()
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()
@@ -74,7 +71,7 @@ def create_voucher(
                 species,
                 sample_size,
             )
-            print(query)
+            logger.debug(query)
             db_cursor.execute(query)
             result = db_cursor.fetchall()
             entries_length = len(result)
@@ -116,7 +113,7 @@ def create_voucher(
                         padding=audio_padding,
                         high_pass_frequency=high_pass_frequency,
                     )
-                # print("out_filepath", out_filepath)
+                # logger.debug("out_filepath", out_filepath)
 
                 tmp = {
                     "species": first_letter_to_upper_case(species).replace("_", " "),
