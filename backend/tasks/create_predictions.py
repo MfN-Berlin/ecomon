@@ -6,7 +6,8 @@ from sql.query import update_job_status, update_job_progress
 from datetime import datetime, timedelta, timezone
 
 from util.tools import species_row_to_name
-
+from logging  import getLogger
+logger = getLogger(__name__)
 
 def float_range(start, stop, step):
     while start < stop:
@@ -59,9 +60,9 @@ async def create_predictions(
     min_threshold=None,
     max_threshold=None,
 ):
-    print("Requested timezone: ", request_timezone)
-    print("Start datetime: ", start_datetime)
-    print("End datetime: ", end_datetime)
+    logger.debug("Requested timezone: ", request_timezone)
+    logger.debug("Start datetime: ", start_datetime)
+    logger.debug("End datetime: ", end_datetime)
 
     request_timezone = pytz.timezone(request_timezone)
     result_list = []
@@ -73,8 +74,8 @@ async def create_predictions(
 
     name = species_row_to_name(species)
     header.append(("{} confidence".format(name), "{}".format(species)))
-    print(datetime.fromisoformat(start_datetime[:-1]).replace(tzinfo=timezone.utc))
-    print(datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc))
+    logger.debug(datetime.fromisoformat(start_datetime[:-1]).replace(tzinfo=timezone.utc))
+    logger.debug(datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc))
     query = get_predictions_in_date_range(
         collection_name,
         species,
@@ -87,11 +88,11 @@ async def create_predictions(
 
     for prediction in predictions:
         row = {}
-        # print(prediction[0])
+        # logger.debug(prediction[0])
         record_datetime = prediction[0].replace(tzinfo=timezone.utc)
-        # print(prediction[0])
+        # logger.debug(prediction[0])
         row["record_date"] = record_datetime.astimezone(request_timezone)
-        # print(row["record_date"])
+        # logger.debug(row["record_date"])
         row["record_datetime"] = (
             record_datetime + timedelta(seconds=round(prediction[1]))
         ).astimezone(request_timezone)

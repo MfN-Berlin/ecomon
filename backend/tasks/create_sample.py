@@ -23,7 +23,8 @@ from util.tools import (
 from util.audio import extract_part_from_audio_file_by_start_and_end_time
 import json
 from util.excel import write_execl_file
-
+from logging  import getLogger
+logger = getLogger(__name__)
 PREFIX = "BRITZ01"
 SPECIES = "fringilla_coelebs"
 
@@ -53,7 +54,7 @@ def create_sample(
     random=True,
     high_pass_frequency=0,
 ):
-    print("High pass frequency: ", high_pass_frequency)
+    logger.debug("High pass frequency: ", high_pass_frequency)
     load_dotenv()
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()
@@ -148,7 +149,7 @@ def create_sample(
             }
             csv_list.append(tmp)
             if progress < round(index / length * 100):
-                # print("{}%".format(round(index / length * 100)))
+                # logger.debug("{}%".format(round(index / length * 100)))
                 progress = round(index / length * 100)
                 if job_id is not None:
                     db_cursor.execute(update_job_progress(job_id, progress))
@@ -178,7 +179,7 @@ def create_sample(
             csv_list,
             header,
         )
-        print("result_filepath", result_filepath)
+        logger.debug("result_filepath", result_filepath)
         if result_filepath is not None:
             zip_folder_and_delete(directory, result_filepath)
             if job_id is not None:

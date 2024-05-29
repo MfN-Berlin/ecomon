@@ -6,7 +6,8 @@ from sql.query import update_job_status, update_job_progress
 from datetime import datetime, timedelta, timezone
 
 from util.tools import species_row_to_name
-
+from logging  import getLogger
+logger = getLogger(__name__)
 
 def float_range(start, stop, step):
     while start < stop:
@@ -120,7 +121,7 @@ async def create_daily_histograms(
         for index, bin_count in enumerate(bins):
             row["bin_{}".format(index)] = bin_count
         rows.append(row)
-    print(rows)
+    logger.debug(rows)
     await database.execute(update_job_progress(job_id, 80))
     write_execl_file(result_filepath, rows, header)
     await database.execute(update_job_progress(job_id, 100))

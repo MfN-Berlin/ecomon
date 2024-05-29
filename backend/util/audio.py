@@ -1,5 +1,6 @@
 import ffmpeg
-
+from logging import getLogger
+logger = getLogger(__name__)
 
 def extract_part_from_audio_file_by_start_and_end_time(
     filepath,
@@ -12,6 +13,8 @@ def extract_part_from_audio_file_by_start_and_end_time(
 ):
     stime = start_time - padding if (start_time - padding) > 0 else 0
     etime = end_time + padding if (end_time + padding) < duration else duration
+    logger.debug(f"Extracting Audio {stime} to {etime} from {filepath} to {output_filepath}")
+    
 
     input = ffmpeg.input(
         filepath,

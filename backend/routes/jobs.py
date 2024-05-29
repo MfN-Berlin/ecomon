@@ -13,6 +13,8 @@ from sql.query import (
 )
 from fastapi import HTTPException,APIRouter
 from typing import List, Optional, Union
+from logging import getLogger
+logger = getLogger(__name__)
 from db import database
 router = APIRouter()
 
@@ -93,10 +95,10 @@ async def delete_job(id: int):
             # delete file
             result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
             metadata = json.loads(job[4])
-            # print(metadata)
+            # logger.debug(metadata)
             result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
             result_filepath = os.path.join(result_directory, metadata["filename"])
-            # print(result_filepath)
+            # logger.debug(result_filepath)
             if os.path.exists(result_filepath):
                 os.remove(result_filepath)
 
