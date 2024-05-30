@@ -7,11 +7,11 @@ import os
 load_dotenv()
 
 # Read database credentials from environment variables
-DB_HOST = os.getenv("MDAS_MARIADB_HOST")
-DB_PORT = int(os.getenv("MDAS_MARIADB_PORT"))
-DB_NAME = os.getenv("MDAS_MARIADB_DATABASE")
-DB_USER = os.getenv("MDAS_MARIADB_USER")
-DB_PASSWORD = os.getenv("MDAS_MARIADB_PASSWORD")
+DB_HOST = os.getenv("MARIADB_HOST")
+DB_PORT = int(os.getenv("MARIADB_PORT"))
+DB_NAME = os.getenv("MARIADB_DATABASE")
+DB_USER = os.getenv("MARIADB_USER")
+DB_PASSWORD = os.getenv("MARIADB_PASSWORD")
 
 columns = [
     "grus_grus",

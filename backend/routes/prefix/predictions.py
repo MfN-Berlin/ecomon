@@ -70,6 +70,8 @@ async def add_index_to_prefix(prefix_name: str, column_name: str):
             {"column_name": column_name},
         )
     )
+    logger.debug(f"Job {job_id} added to queue")
+    
     ensure_future(do_add_index_job(database, job_id, prefix_name, column_name))
     return {"job_id": job_id}
 
@@ -80,8 +82,10 @@ async def add_index_to_prefix(prefix_name: str, column_name: str):
     operation_id="dropIndexFromCollection",
 )
 async def drop_index_from_prefix(prefix_name: str, column_name: str):
+    sql = drop_index_for_sql_table(f"{prefix_name}_predictions", column_name)
+    logger.debug(sql)
     await database.execute(
-        drop_index_for_sql_table("{}_predictions".format(prefix_name), column_name)
+       sql
     )
     return {"message": "index dropped"}
 
@@ -136,7 +140,7 @@ async def query_prediction_table(
 async def get_collection_predictions_species_max(
     prefix_name: str, species: str
 ) -> List[PredictionMax]:
-    query = f"Select record_id, record_datetime, {species} as value from {prefix_name}_predictions_max order by record_datetime asc"
+    query = f"Select record_id, record_datetime, {species} as value from {prefix_name.lower()}_predictions_max order by record_datetime asc"
     try:
         result = await database.fetch_all(query)
         logger.debug("Request done for {}".format(species))
@@ -160,7 +164,7 @@ async def get_collection_predictions_species_max(
 )
 async def get_species_histogram(collection_name: str, species: str):
     query = f"""
-        SELECT * FROM {collection_name}_species_histogram
+        SELECT * FROM {collection_name.lower()}_species_histogram
         WHERE species = :species
 
     """

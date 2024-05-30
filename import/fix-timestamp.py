@@ -9,11 +9,11 @@ from tqdm import tqdm
 load_dotenv()  # load environment variables from .env
 
 # Replace these variables with your own database credentials
-DB_HOST = getenv("MDAS_MARIADB_HOST")
-DB_USER = getenv("MDAS_MARIADB_USER")
-DB_PASS = getenv("MDAS_MARIADB_PASSWORD")
-DB_NAME = getenv("MDAS_MARIADB_DATABASE")
-DB_PORT = int(getenv("MDAS_MARIADB_PORT"))
+DB_HOST = getenv("MARIADB_HOST")
+DB_USER = getenv("MARIADB_USER")
+DB_PASS = getenv("MARIADB_PASSWORD")
+DB_NAME = getenv("MARIADB_DATABASE")
+DB_PORT = int(getenv("MARIADB_PORT"))
 
 
 def parse_filename(filename):

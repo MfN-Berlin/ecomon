@@ -1,5 +1,5 @@
 from telnetlib import NOP
-import mariadb
+import psycopg2
 import sys
 import os
 from pytz import utc
@@ -26,28 +26,28 @@ def __create_species__array(index_to_name):
 
 
 def connect_to_db():
+    
     try:
-        print("Connecting to MariaDB Platform...")
-        print("User: ", os.getenv("MDAS_MARIADB_USER"))
-        print("Password: ", os.getenv("MDAS_MARIADB_PASSWORD"))
-        print("Host: ", os.getenv("MDAS_MARIADB_HOST"))
-        print("Port: ", os.getenv("MDAS_MARIADB_PORT"))
-        print("Database: ", os.getenv("MDAS_MARIADB_DATABASE"))
+        print("Connecting to PostgreSQL Database...")
+        print("User: ", os.getenv("POSTGRES_USER"))
+        print("Password: ", os.getenv("POSTGRES_PASSWORD"))
+        print("Host: ", os.getenv("POSTGRES_HOST"))
+        print("Port: ", os.getenv("POSTGRES_PORT"))
+        print("Database: ", os.getenv("POSTGRES_DATABASE"))
         
-        connection = mariadb.connect(
-            user=os.getenv("MDAS_MARIADB_USER"),
-            password=os.getenv("MDAS_MARIADB_PASSWORD"),
-            host=os.getenv("MDAS_MARIADB_HOST"),
-            port=int(os.getenv("MDAS_MARIADB_PORT")),
-            database=os.getenv("MDAS_MARIADB_DATABASE"),
+        connection = psycopg2.connect(
+            user=os.getenv("POSTGRES_USER"),
+            password=os.getenv("POSTGRES_PASSWORD"),
+            host=os.getenv("POSTGRES_HOST"),
+            port=int(os.getenv("POSTGRES_PORT")),
+            database=os.getenv("POSTGRES_DATABASE"),
         )
         print("Connected.")
 
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB Platform: {e}")
+    except psycopg2.Error as e:
+        print(f"Error connecting to PostgreSQL Database: {e}")
         sys.exit(1)
 
-    # Get Cursor
     return connection
 
 
@@ -61,49 +61,48 @@ def init_db(batch_prefix, index_to_name):
 
     species = __create_species__array(index_to_name)
 
- 
-
     try:
-        records_count = db_cursor.execute(
-            queries.check_record_table_exists(batch_prefix)
-        )
-        records_exists = True
+        db_cursor.execute(queries.check_record_table_exists(batch_prefix))
+        records_count = db_cursor.fetchone()[0]
+        records_exists = records_count > 0
         print(
             "{}_records Table already exists with entries {}".format(
                 batch_prefix, records_count
             )
         )
-    except mariadb.Error:
-        NOP
+    except psycopg2.Error:
+        db_connection.rollback()
+   
+
     try:
-        predictions_count = db_cursor.execute(
-            queries.check_record_predictions_exists(batch_prefix)
-        )
-        predictions_exists = True
+        db_cursor.execute(queries.check_record_predictions_exists(batch_prefix))
+        predictions_count = db_cursor.fetchone()[0]
+        predictions_exists = predictions_count > 0
         print(
-            "{}_records Table already exists with entries {}".format(
+            "{}_predictions Table already exists with entries {}".format(
                 batch_prefix, predictions_count
             )
         )
-    except mariadb.Error:
-        pass
+    except psycopg2.Error:
+        db_connection.rollback()
+ 
+    try:    
+        if not records_exists:
+            print("Create {}_records table".format(batch_prefix))
+            query_str = queries.create_record_table(batch_prefix)
+            print(f"Query: {query_str}")
+            db_cursor.execute(query_str)
+            db_connection.commit()
+        if not predictions_exists:
+            print("Create {}_predictions table".format(batch_prefix))
+            query_str = queries.create_predictions_table(batch_prefix, species)
+            print(f"Query: {query_str}")
+            db_cursor.execute(query_str)
+            db_connection.commit()
+    except psycopg2.Error as e:
+        print(f"Error creating records table: {e}")
+        db_connection.rollback()
 
-    if records_exists or predictions_exists:
-        line = ""
-        # while line != "y":
-        #     line = input("Tables already exists do you want to resume analysis? (y/n):")
-        #     if line == "n":
-        #         sys.exit(1)
-
-    if not records_exists:
-        print("Create {}_records table".format(batch_prefix))
-        db_cursor.execute(queries.create_record_table(batch_prefix))
-        db_connection.commit()
-    if not predictions_exists:
-        print("Create {}_predictions table".format(batch_prefix))
-        query_str = queries.create_predictions_table(batch_prefix, species)
-        db_cursor.execute(query_str)
-        db_connection.commit()
     db_connection.close()
 
 
@@ -113,9 +112,15 @@ class DbWorker:
         self.db_connection = connect_to_db()
         self.db_cursor = self.db_connection.cursor()
 
+    def __create_species__array(self,index_to_name):
+        items = index_to_name.items()
+        species = []
+        for key, value in items:
+            species.append(value.lower().replace(" ", "_"))
+        return species
+
     def __reduce_to_known_species_array(self, confidences, index_to_name):
         keys = index_to_name.keys()
-        # only mapping to smaller array supported no reordering
         result = []
         for key in keys:
             result.append(confidences[int(key)])
@@ -165,9 +170,9 @@ class DbWorker:
             predictions = self.__reduce_to_known_species_array(
                 predictions, index_to_name
             )
-
+        species = self.__create_species__array(index_to_name)
         sql_query = insert_prediction(
-            self.batch_prefix, record_id, start, stop, channel, predictions
+            self.batch_prefix, record_id, start, stop, channel, predictions, species
         )
         self.db_cursor.execute(sql_query)
         if commit:
@@ -195,7 +200,6 @@ class DbWorker:
         self.db_cursor.execute(get_corrupted_files(self.batch_prefix))
         return self.db_cursor.fetchall()
 
-    #     self.db_connection.fl
     def update_corrupted_file(self, filepath):
         self.db_cursor.execute(update_corrupted_file(self.batch_prefix, filepath))
         self.db_connection.commit()
@@ -222,11 +226,9 @@ class DbWorker:
 def drop_species_indices(collection_name, species_index_list):
     db_worker = DbWorker(collection_name)
     for species in species_index_list:
-        # print("Dropping index to {}".format(species))
         try:
             db_worker.drop_index(collection_name, species)
         except Exception as e:
-            # print(e)
             db_worker.rollback()
 
 

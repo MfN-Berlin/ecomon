@@ -13,6 +13,8 @@ from sql.query import (
 from typing import List
 from fastapi import APIRouter
 from db import database
+from logging import getLogger
+logger = getLogger(__name__)
 router = APIRouter()
 
 NON_SPECIES_COLUMN = ["id", "record_id", "start_time", "end_time", "channel"]
@@ -20,7 +22,8 @@ NON_SPECIES_COLUMN = ["id", "record_id", "start_time", "end_time", "channel"]
 
 def remove_substring_from_end(string: str, substring: str):
     return string[: -len(substring)]
-
+def remove_prefix_from_string(string: str, prefix: str):
+    return string[len(prefix) :]
 
 
 @router.get(
@@ -38,7 +41,7 @@ async def read_prefix():
 async def get_prefix_information(prefix_name: str) -> Collection:
 
     result = await database.fetch_all(
-        get_column_names_of_sql_table_query("{}_predictions".format(prefix_name))
+        get_column_names_of_sql_table_query("{}_predictions".format(prefix_name.lower()))
     )
 
     species = []
@@ -51,14 +54,14 @@ async def get_prefix_information(prefix_name: str) -> Collection:
     # count records entries
     records_count = (
         await database.fetch_one(
-            count_entries_in_sql_table(f"{prefix_name}_records")
+            count_entries_in_sql_table(f"{prefix_name.lower()}_records")
         )
     )[0]
 
     # count predictions entries
     predictions_count = (
         await database.fetch_one(
-            count_entries_in_sql_table("{}_predictions".format(prefix_name))
+            count_entries_in_sql_table("{}_predictions".format(prefix_name.lower()))
         )
     )[0]
 
@@ -68,9 +71,10 @@ async def get_prefix_information(prefix_name: str) -> Collection:
             "{}_predictions".format(prefix_name), "_index"
         )
     )
+    logger.debug(indicated_species_index)
 
     indicated_species_columns = [
-        remove_substring_from_end(i[0], "_index") for i in indicated_species_index
+        remove_prefix_from_string(remove_substring_from_end(i[0], "_index"),f"predictions_{prefix_name.lower()}_") for i in indicated_species_index
     ]
 
     return Collection(
@@ -88,7 +92,7 @@ async def get_prefix_information(prefix_name: str) -> Collection:
 )
 async def get_prefix_species(prefix_name: str) -> List[Species]:
     result = await database.fetch_all(
-        get_column_names_of_sql_table_query("{}_predictions".format(prefix_name))
+        get_column_names_of_sql_table_query("{}_predictions".format(prefix_name.lower()))
     )
 
     indicated_species_index = await database.fetch_all(
@@ -98,8 +102,9 @@ async def get_prefix_species(prefix_name: str) -> List[Species]:
     )
 
     indicated_species_columns = [
-        remove_substring_from_end(i[0], "_index") for i in indicated_species_index
+        remove_prefix_from_string(remove_substring_from_end(i[0], "_index"),f"predictions_{prefix_name.lower()}_") for i in indicated_species_index
     ]
+    logger.debug(indicated_species_columns)
 
     species = []
     for i in result:
@@ -120,17 +125,18 @@ async def get_prefix_species(prefix_name: str) -> List[Species]:
 async def get_collection_report(collection_name: str) -> Report:
     # read env variable for report path
 
-    filename = f"{collection_name}_report.json"
-    reports_directory = os.getenv("MDAS_REPORTS_DIRECTORY")
+    filename = f"{collection_name.upper()}_report.json"
+    reports_directory = os.getenv("REPORTS_DIRECTORY")
     if reports_directory == None:
-        raise Exception("MDAS_REPORTS_DIRECTORY not set")
+        raise Exception("REPORTS_DIRECTORY not set")
     file_path = os.path.join(reports_directory, filename)
+    print(f"Reading report from {file_path}")
     try:
         with open(file_path) as f:
             data = json.load(f)
         return data
     except FileNotFoundError:
         raise HTTPException(
-            status_code=404, detail=f"File {filename}.json not found"
+            status_code=404, detail=f"File {filename} not found"
         )
 

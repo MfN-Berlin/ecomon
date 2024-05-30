@@ -9,21 +9,21 @@ services:
       depends_on:
          - db
       environment:
-         MDAS_MARIADB_HOST: db
-         MDAS_MARIADB_DATABASE: ${MDAS_MARIADB_DATABASE}
-         MDAS_MARIADB_PORT: ${MDAS_MARIADB_PORT}
-         MDAS_MARIADB_USER: ${MDAS_MARIADB_USER}
-         MDAS_MARIADB_PASSWORD: ${MDAS_MARIADB_PASSWORD}
-         MDAS_TMP_DIRECTORY: /tmp
-         MDAS_SAMPLE_FILES_DIRECTORY: /files
-         MDAS_PROXY_PATH_PREFIX: /api/v1
+         MARIADB_HOST: db
+         MARIADB_DATABASE: ${MARIADB_DATABASE}
+         MARIADB_PORT: ${MARIADB_PORT}
+         MARIADB_USER: ${MARIADB_USER}
+         MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+         TMP_DIRECTORY: /tmp
+         SAMPLE_FILES_DIRECTORY: /files
+         PROXY_PATH_PREFIX: /api/v1
          ROOT_PATH: /api/v1
-         MDAS_REPORTS_DIRECTORY: /reports
+         REPORTS_DIRECTORY: /reports
       volumes:
-         - ${MDAS_SAMPLE_FILES_DIRECTORY}:/files
-         - ${MDAS_TMP_DIRECTORY}:/tmp
-         - ${MDAS_DATA_DIRECTORY}:${MDAS_DATA_DIRECTORY}
-         - ${MDAS_REPORTS_DIRECTORY}:/reports
+         - ${SAMPLE_FILES_DIRECTORY}:/files
+         - ${TMP_DIRECTORY}:/tmp
+         - ${DATA_DIRECTORY}:${DATA_DIRECTORY}
+         - ${REPORTS_DIRECTORY}:/reports
 
    frontend:
       image: mdas-frontend
@@ -35,12 +35,12 @@ services:
       image: mariadb:10
       restart: always
       environment:
-         MARIADB_ROOT_PASSWORD: "${MDAS_MARIADB_ROOT_PASSWORD}"
-         MARIADB_DATABASE: "${MDAS_MARIADB_DATABASE}"
-         MARIADB_USER: "${MDAS_MARIADB_USER}"
-         MARIADB_PASSWORD: "${MDAS_MARIADB_PASSWORD}"
+         MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
+         MARIADB_DATABASE: "${MARIADB_DATABASE}"
+         MARIADB_USER: "${MARIADB_USER}"
+         MARIADB_PASSWORD: "${MARIADB_PASSWORD}"
       ports:
-         - "${MDAS_MARIADB_PORT}:3306"
+         - "${MARIADB_PORT}:3306"
       volumes:
          - ./runtime-data/db-data/data:/var/lib/mysql
          - ./runtime-data/db-data/conf:/etc/mysql

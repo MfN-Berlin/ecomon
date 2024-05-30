@@ -8,7 +8,7 @@ from fastapi.responses import RedirectResponse
 from os import getenv
 
 from db import database, connect_to_db, disconnect_from_db
-from sql.initial import create_jobs_table
+
 
 # Import routers
 from routes.prefix.records import router as records_router
@@ -37,7 +37,7 @@ async def startup():
     get_log_config(getenv("LOG_LEVEL","debug"))
     await connect_to_db()
     # check if table jobs exists and create if not
-    await database.execute(create_jobs_table())
+
 
 @app.on_event("shutdown")
 async def shutdown():

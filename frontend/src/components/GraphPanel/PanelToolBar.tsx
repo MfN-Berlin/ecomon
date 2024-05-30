@@ -14,8 +14,8 @@ import { PanelToolBarContext, IPanelToolBar } from './contexts/PanelToolBarConte
 import Box from '@mui/material/Box'
 import { useGetCollectionListQuery } from '../../services/api'
 const classifierOptions = [
-   { value: 'BIRDNET', label: 'Birdnet' },
-   { value: 'BIRDID', label: 'BirdId' }
+   { value: 'birdnet', label: 'Birdnet' },
+   { value: 'birdid', label: 'BirdId' }
 ]
 
 export const denseSelectStyles = {

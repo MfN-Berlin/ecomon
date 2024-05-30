@@ -48,9 +48,9 @@ random_sample_executor = ThreadPoolExecutor(10)
 @router.post("/sample", response_model=JobId, operation_id="getRandomSample")
 async def get_random_sample(request: RandomSampleRequest):
     # synchronous function in thread for asyncio compatibility
-    MDAS_TMP_DIRECTORY = os.getenv("MDAS_TMP_DIRECTORY")
-    if not path.exists(MDAS_TMP_DIRECTORY):
-        os.makedirs(MDAS_TMP_DIRECTORY)
+    TMP_DIRECTORY = os.getenv("TMP_DIRECTORY")
+    if not path.exists(TMP_DIRECTORY):
+        os.makedirs(TMP_DIRECTORY)
     # parse start string to datetime object
 
     if request.start_datetime:
@@ -77,7 +77,7 @@ async def get_random_sample(request: RandomSampleRequest):
     ).strftime("%Y%m%d_%H%M%S")
     logger.debug(end_datetime_str)
 
-    result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
+    result_directory = os.getenv("SAMPLE_FILES_DIRECTORY")
     if not path.exists(result_directory):
         os.makedirs(result_directory)
     result_filename = "{time}_{prefix}_{species}_{threshold_min}_{threshold_max}_from_{from_date}_until_{until}_samples_{samples}_padding_{padding}.zip".format(
@@ -107,7 +107,7 @@ async def get_random_sample(request: RandomSampleRequest):
             create_sample(
                 prefix=request.prefix,
                 result_filepath=result_filepath,
-                MDAS_TMP_DIRECTORY=MDAS_TMP_DIRECTORY,
+                TMP_DIRECTORY=TMP_DIRECTORY,
                 species=request.species,
                 threshold_min=request.threshold_min,
                 threshold_max=request.threshold_max,
@@ -146,6 +146,7 @@ async def get_random_sample(request: RandomSampleRequest):
             },
         )
     )
+    logger.debug(f"Job {job_id} added to queue")
     asyncio.ensure_future(task(database, job_id))
     return {"job_id": job_id}
     # return file stream
@@ -156,6 +157,6 @@ async def get_random_sample(request: RandomSampleRequest):
 
 @router.get("/random_sample/file/{filename}", operation_id="getRandomSampleFile")
 async def get_random_sample(filename: str) -> FileResponse:
-    result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
+    result_directory = os.getenv("SAMPLE_FILES_DIRECTORY")
     result_filepath = os.path.join(result_directory, filename)
     return FileResponse(result_filepath, media_type="application/zip")

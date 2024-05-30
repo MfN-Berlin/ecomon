@@ -1,4 +1,4 @@
-# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+# Folder Path to be relative to DATA_DIRECTORY environment variable
 recordFolder:
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202303
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/AKWAMO/AKWAMO03C1A/AKWAMO03C1A_202304

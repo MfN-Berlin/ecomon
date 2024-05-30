@@ -1,0 +1,25 @@
+# docker-compose.yml
+version: "3"
+services:
+   birdid-0:
+      cpuset: "1"
+      container_name: "bai-birdid-0"
+      image: "birdid-europe254-2103-flask-v04"
+      restart: "always"
+      ipc: "host"
+      ports:
+         - "9000:4000"
+      volumes:
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
+   birdid-1:
+      cpuset: "2"
+      container_name: "bai-birdid-1"
+      image: "birdid-europe254-2103-flask-v04"
+      restart: "always"
+      ipc: "host"
+      ports:
+         - "9001:4000"
+      volumes:
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"

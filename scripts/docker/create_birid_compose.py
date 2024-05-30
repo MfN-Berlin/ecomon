@@ -12,14 +12,14 @@ def generate_docker_compose(num_containers, output_filename):
         service_name = f"birdid-{i}"
         base_config["services"][service_name] = {
             "cpuset": str(i + 1),
-            "container_name": f"{getenv('MDAS_MARIADB_DATABASE')}-{service_name}",
+            "container_name": f"{getenv('MARIADB_DATABASE')}-{service_name}",
             "image": "birdid-europe254-2103-flask-v04",
             "restart": "always",
             "ipc": "host",
             "ports": [f"{9000 + i}:4000"],
             "volumes": [
-                "${MDAS_DATA_DIRECTORY}:/mnt/data",
-                "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+                "${DATA_DIRECTORY}:/mnt/data",
+                "${RESULT_DIRECTORY}:/mnt/result"
             ]
         }
 

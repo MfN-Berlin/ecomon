@@ -49,7 +49,7 @@ def create_sample(
     start_datetime=None,
     end_datetime=None,
     result_filepath=None,
-    MDAS_TMP_DIRECTORY=None,
+    TMP_DIRECTORY=None,
     job_id=None,
     random=True,
     high_pass_frequency=0,
@@ -88,10 +88,10 @@ def create_sample(
     # create folder for samples
     directoryName = uuid4().hex
     directory = ""
-    if MDAS_TMP_DIRECTORY is None:
+    if TMP_DIRECTORY is None:
         directory = path.join(os.getcwd(), "tmp", directoryName)
     else:
-        directory = path.join(MDAS_TMP_DIRECTORY, directoryName)
+        directory = path.join(TMP_DIRECTORY, directoryName)
     os.makedirs(directory, exist_ok=True)
     # create csv of results
 
@@ -102,7 +102,7 @@ def create_sample(
     if job_id is not None:
         db_cursor.execute(get_job_by_id(job_id))
         job = db_cursor.fetchone()
-        metadata = json.loads(job[4])
+        metadata = job[4]
         metadata["samples"] = length
         db_cursor.execute(update_job_metadata(job_id, metadata))
         db_connection.commit()
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     parser.add_argument("--start_datetime", type=str, default=None)
     parser.add_argument("--end_datetime", type=str, default=None)
     parser.add_argument("--result_filepath", type=str, default=None)
-    parser.add_argument("--MDAS_TMP_DIRECTORY", type=str, default=None)
+    parser.add_argument("--TMP_DIRECTORY", type=str, default=None)
     args = parser.parse_args()
     create_sample(
         prefix=args.prefix,
@@ -230,5 +230,5 @@ if __name__ == "__main__":
         start_datetime=args.start_datetime,
         end_datetime=args.end_datetime,
         result_filepath=args.result_filepath,
-        MDAS_TMP_DIRECTORY=args.MDAS_TMP_DIRECTORY,
+        TMP_DIRECTORY=args.TMP_DIRECTORY,
     )

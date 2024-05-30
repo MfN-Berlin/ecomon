@@ -14,6 +14,7 @@ def analyze_loop_factory(
     model_output_style=None,
     batchSize=None,
     nCpuWorkers=None,
+    index_to_name=None,
     debug=False,
 ):
     if(debug):
@@ -43,7 +44,7 @@ def analyze_loop_factory(
             # "http://localhost:4001/identify?path=/mnt/file.wav&outputDir=/mnt/Results&outputStyle=resultDict"
             relative_file = path.relpath(filepath, start=data_path)
             result_path = path.join(
-                getenv("MDAS_RESULT_DIRECTORY"),
+                getenv("RESULT_DIRECTORY"),
                 relative_result_path,
                 f"{(path.basename(filepath)).split('.')[0]}.pkl",
             )

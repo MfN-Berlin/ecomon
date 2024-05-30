@@ -9,14 +9,14 @@ Use script to analyze big collections auf recordings
 1. clone repository
 2. copy .env-default to .env ans set following variables
    ```bash
-   MDAS_MARIADB_PORT=3306                 # port of database
-   MDAS_MARIADB_DATABASE=DATABASE_NAME    # database name of the service, It will be created in the docker container
-   MDAS_MARIADB_USER=DB_USER              # database user
-   MDAS_MARIADB_PASSWORD=dev_password     # password of database user
-   MDAS_MARIADB_ROOT_PASSWORD=root_password # root password of the database
-   MDAS_DATA_DIRECTORY=/net/              # root directory of monitoring recordings
-   MDAS_TMP_DIRECTORY=./runtime-data/backend/tmp # directory for temporary files used for packaging result zip files
-   MDAS_SAMPLE_FILES_DIRECTORY=./runtime-data/backend/files # files created from the service
+   MARIADB_PORT=3306                 # port of database
+   MARIADB_DATABASE=DATABASE_NAME    # database name of the service, It will be created in the docker container
+   MARIADB_USER=DB_USER              # database user
+   MARIADB_PASSWORD=dev_password     # password of database user
+   MARIADB_ROOT_PASSWORD=root_password # root password of the database
+   DATA_DIRECTORY=/net/              # root directory of monitoring recordings
+   TMP_DIRECTORY=./runtime-data/backend/tmp # directory for temporary files used for packaging result zip files
+   SAMPLE_FILES_DIRECTORY=./runtime-data/backend/files # files created from the service
    ```
 3. change environment variables in .env
 4. start service with `docker-compose up -d`
@@ -42,10 +42,16 @@ pip install pyyaml
 
 A collection should not be to big, One Collection is one station one year.
 
+0. Requirements: FFMPEG has to be installed
+
+```bash
+sudo apt install ffmpeg
+```
+
 1. Add following variables to .env file
 
 ```bash
-MDAS_RESULT_DIRECTORY=/folder/results #folder where result pickle files of the classifier container will be stored
+RESULT_DIRECTORY=/folder/results #folder where result pickle files of the classifier container will be stored
 ```
 
 2. Adapt the docker-compose file to your needs and to the hardware of the computer. Start the containers with `docker-compose -f filename.yaml up -d`
@@ -53,7 +59,7 @@ MDAS_RESULT_DIRECTORY=/folder/results #folder where result pickle files of the c
 3. Create a yaml config file with following schema
 
 ```yaml
-# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+# Folder Path to be relative to DATA_DIRECTORY environment variable
 recordFolder: # List of directories containing the recordings
    - folder1
    - folder2

@@ -1,19 +1,18 @@
-# app/database.py
 import os
 import databases
 from dotenv import load_dotenv
-
+from logging import getLogger
+logger = getLogger(__name__)
 load_dotenv()
 
-user = os.getenv("MDAS_MARIADB_USER")
-password = os.getenv("MDAS_MARIADB_PASSWORD")
-host = os.getenv("MDAS_MARIADB_HOST")
-port = int(os.getenv("MDAS_MARIADB_PORT"))
-database_name = os.getenv("MDAS_MARIADB_DATABASE")
-database_connection_string = "mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4".format(
-    user=user, password=password, host=host, port=port, dbname=database_name
-)
+user = os.getenv("POSTGRES_USER")
+password = os.getenv("POSTGRES_PASSWORD")
+host = os.getenv("POSTGRES_HOST")
+port = int(os.getenv("POSTGRES_PORT"))
+dbname = os.getenv("POSTGRES_DATABASE")
 
+database_connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+logger.debug(f"Database connection string: {database_connection_string}")
 database = databases.Database(database_connection_string)
 
 async def connect_to_db():

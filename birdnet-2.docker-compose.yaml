@@ -1,0 +1,28 @@
+version: "3"
+services:
+        birdnet-0:
+          container_name: "bai-birdnet-0"
+          image: birdnet-public-3k-v2.2:latest
+          restart: always
+          ipc: host
+          ports:
+             - "7100:6000"
+          volumes:
+             - /home/bewr/projects/mfn/batch-audiofile-inferencing/runtime-data/files:/mnt/data
+             - /home/bewr/projects/mfn/batch-audiofile-inferencing/runtime-data/results:/mnt/result
+          environment:
+            - OVERLAP=1
+    
+        birdnet-1:
+          container_name: "bai-birdnet-1"
+          image: birdnet-public-3k-v2.2:latest
+          restart: always
+          ipc: host
+          ports:
+             - "7101:6000"
+          volumes:
+             - /home/bewr/projects/mfn/batch-audiofile-inferencing/runtime-data/files:/mnt/data
+             - /home/bewr/projects/mfn/batch-audiofile-inferencing/runtime-data/results:/mnt/result
+          environment:
+            - OVERLAP=1
+    

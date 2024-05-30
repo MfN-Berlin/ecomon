@@ -86,6 +86,7 @@ def analyze(
                     debug=debug,
                     nCpuWorkers=config.get("nCpuWorkers"),
                     batchSize=config.get("batchSize"),
+                    index_to_name=index_to_name
                 )
             )
             for i in range(analyze_thread_count)
