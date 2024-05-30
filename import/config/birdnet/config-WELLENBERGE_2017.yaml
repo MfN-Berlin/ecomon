@@ -1,6 +1,6 @@
-# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+# Folder Path to be relative to DATA_DIRECTORY environment variable
 recordFolder:
-    - /net/mfnstore-archiv/TSA_Collection/soundscapes/WELLENBERGE_2017
+   - /net/mfnstore-archiv/TSA_Collection/soundscapes/WELLENBERGE_2017
 fileEnding:
    - mp3 # wav
    - wav

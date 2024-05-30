@@ -1,4 +1,4 @@
-# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+# Folder Path to be relative to DATA_DIRECTORY environment variable
 recordFolder:
    - /net/mfnstore-archiv/TSA_Collection/soundscapes/CRIEWEN_2022/CRIEWEN03
 fileEnding:

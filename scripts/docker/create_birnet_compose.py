@@ -30,8 +30,8 @@ def generate_birdnet_config(count, output_file):
     """.format(
                 number=i,
                 port=port + i,
-                data=os.getenv("MDAS_DATA_DIRECTORY"),
-                result=os.getenv("MDAS_RESULT_DIRECTORY"),
+                data=os.getenv("DATA_DIRECTORY"),
+                result=os.getenv("RESULT_DIRECTORY"),
             )
         )
     with open(output_file, "w") as f:

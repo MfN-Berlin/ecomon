@@ -10,8 +10,8 @@ services:
       ports:
          - "9000:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-1:
       cpuset: "2"
       container_name: "bai-birdid-1"
@@ -21,8 +21,8 @@ services:
       ports:
          - "9001:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-2:
       cpuset: "3"
       container_name: "bai-birdid-2"
@@ -32,8 +32,8 @@ services:
       ports:
          - "9002:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-3:
       cpuset: "4"
       container_name: "bai-birdid-3"
@@ -43,8 +43,8 @@ services:
       ports:
          - "9003:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-4:
       cpuset: "5"
       container_name: "bai-birdid-4"
@@ -54,8 +54,8 @@ services:
       ports:
          - "9004:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-5:
       cpuset: "6"
       container_name: "bai-birdid-5"
@@ -65,8 +65,8 @@ services:
       ports:
          - "9005:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-6:
       cpuset: "7"
       container_name: "bai-birdid-6"
@@ -76,8 +76,8 @@ services:
       ports:
          - "9006:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-7:
       cpuset: "8"
       container_name: "bai-birdid-7"
@@ -87,8 +87,8 @@ services:
       ports:
          - "9007:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-8:
       cpuset: "9"
       container_name: "bai-birdid-8"
@@ -98,8 +98,8 @@ services:
       ports:
          - "9008:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-9:
       cpuset: "10"
       container_name: "bai-birdid-9"
@@ -109,8 +109,8 @@ services:
       ports:
          - "9009:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-10:
       cpuset: "11"
       container_name: "bai-birdid-10"
@@ -120,8 +120,8 @@ services:
       ports:
          - "9010:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-11:
       cpuset: "12"
       container_name: "bai-birdid-11"
@@ -131,8 +131,8 @@ services:
       ports:
          - "9011:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-12:
       cpuset: "13"
       container_name: "bai-birdid-12"
@@ -142,8 +142,8 @@ services:
       ports:
          - "9012:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-13:
       cpuset: "14"
       container_name: "bai-birdid-13"
@@ -153,8 +153,8 @@ services:
       ports:
          - "9013:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-14:
       cpuset: "15"
       container_name: "bai-birdid-14"
@@ -164,8 +164,8 @@ services:
       ports:
          - "9014:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-15:
       cpuset: "16"
       container_name: "bai-birdid-15"
@@ -175,8 +175,8 @@ services:
       ports:
          - "9015:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-16:
       cpuset: "17"
       container_name: "bai-birdid-16"
@@ -186,8 +186,8 @@ services:
       ports:
          - "9016:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-17:
       cpuset: "18"
       container_name: "bai-birdid-17"
@@ -197,8 +197,8 @@ services:
       ports:
          - "9017:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-18:
       cpuset: "19"
       container_name: "bai-birdid-18"
@@ -208,8 +208,8 @@ services:
       ports:
          - "9018:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-19:
       cpuset: "20"
       container_name: "bai-birdid-19"
@@ -219,8 +219,8 @@ services:
       ports:
          - "9019:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-20:
       cpuset: "21"
       container_name: "bai-birdid-20"
@@ -230,8 +230,8 @@ services:
       ports:
          - "9020:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-21:
       cpuset: "22"
       container_name: "bai-birdid-21"
@@ -241,8 +241,8 @@ services:
       ports:
          - "9021:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-22:
       cpuset: "23"
       container_name: "bai-birdid-22"
@@ -252,8 +252,8 @@ services:
       ports:
          - "9022:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-23:
       cpuset: "24"
       container_name: "bai-birdid-23"
@@ -263,8 +263,8 @@ services:
       ports:
          - "9023:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-24:
       cpuset: "25"
       container_name: "bai-birdid-24"
@@ -274,8 +274,8 @@ services:
       ports:
          - "9024:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-25:
       cpuset: "26"
       container_name: "bai-birdid-25"
@@ -285,8 +285,8 @@ services:
       ports:
          - "9025:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-26:
       cpuset: "27"
       container_name: "bai-birdid-26"
@@ -296,8 +296,8 @@ services:
       ports:
          - "9026:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-27:
       cpuset: "28"
       container_name: "bai-birdid-27"
@@ -307,8 +307,8 @@ services:
       ports:
          - "9027:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-28:
       cpuset: "29"
       container_name: "bai-birdid-28"
@@ -318,8 +318,8 @@ services:
       ports:
          - "9028:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
    birdid-29:
       cpuset: "30"
       container_name: "bai-birdid-29"
@@ -329,5 +329,5 @@ services:
       ports:
          - "9029:4000"
       volumes:
-         - "${MDAS_DATA_DIRECTORY}:/mnt/data"
-         - "${MDAS_RESULT_DIRECTORY}:/mnt/result"
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"

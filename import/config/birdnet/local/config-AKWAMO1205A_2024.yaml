@@ -1,0 +1,45 @@
+# Folder Path to be relative to DATA_DIRECTORY environment variable
+
+recordFolder:
+   - /home/bewr/projects/mfn/batch-audiofile-inferencing/runtime-data/files/AKWAMO1205A_202403
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdnet-public-3k-v2.2/AMMOD/AKWAMO/AKWAMO1205A/2024
+indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDNET_AKWAMO1205A_2024"
+testRun: False
+timezone: CET
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - strix_aluco
+   - dendrocoptes_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_sibilatrix
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - troglodytes_troglodytes
+   - turdus_merula
+   - turdus_philomelos
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_ochruros
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 7100
+analyzeThreads: 2
+transformModelOutput: True
+allThreadsUseSamePort: False
+repeats: 2

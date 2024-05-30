@@ -55,7 +55,7 @@ def create_voucher(
         if job_id is not None:
             db_cursor.execute(get_job_by_id(job_id))
             job = db_cursor.fetchone()
-            metadata = json.loads(job[4])
+            metadata = job[4]
             metadata["samples"] = sample_size
             metadata["filename"] = result_filename
             metadata["filepath"]: path.join(results_directory, result_filepath)

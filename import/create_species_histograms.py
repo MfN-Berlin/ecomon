@@ -1,5 +1,6 @@
 import argparse
-import mariadb
+import psycopg2
+from psycopg2 import sql
 import datetime
 import re
 import pytz
@@ -20,11 +21,11 @@ logging.basicConfig(
 load_dotenv()  # load environment variables from .env
 
 # Replace these variables with your own database credentials
-DB_HOST = getenv("MDAS_MARIADB_HOST")
-DB_USER = getenv("MDAS_MARIADB_USER")
-DB_PASS = getenv("MDAS_MARIADB_PASSWORD")
-DB_NAME = getenv("MDAS_MARIADB_DATABASE")
-DB_PORT = int(getenv("MDAS_MARIADB_PORT"))
+DB_HOST = getenv("POSTGRES_HOST")
+DB_USER = getenv("POSTGRES_USER")
+DB_PASS = getenv("POSTGRES_PASSWORD")
+DB_NAME = getenv("POSTGRES_DATABASE")
+DB_PORT = int(getenv("POSTGRES_PORT"))
 
 BIN_SIZE = 0.01
 
@@ -32,36 +33,36 @@ BIN_SIZE = 0.01
 def drop_table(db_connection, tablename):
     try:
         with db_connection.cursor() as cursor:
-            sql = f"DROP TABLE IF EXISTS {tablename}"
-            cursor.execute(sql)
+            cursor.execute(sql.SQL("DROP TABLE IF EXISTS {}").format(sql.Identifier(tablename)))
         db_connection.commit()
         debug(f"Table '{tablename}' dropped successfully.")
-    except error as e:
+    except psycopg2.Error as e:
         warn(f"Error occurred while dropping table '{tablename}': {e}")
 
 
 def create_predictions_species_histogram_query(dataset_name, bin_size):
     num_bins = round(1 / bin_size)
     # Define the start of the SQL query
-    sql_query = f"CREATE TABLE `{dataset_name}_species_histogram` ( \n `id` BIGINT NOT NULL AUTO_INCREMENT, \n `species` VARCHAR(255), \n"
+    sql_query = f"CREATE TABLE {dataset_name}_species_histogram ( \n id BIGSERIAL PRIMARY KEY, \n species VARCHAR(255), \n"
 
     # Generate a column for each bin
+    bin_size_labels = [];
     for i in range(num_bins):
         # Format the bin label as a float with three decimal places
-        bin_label = f"`bin_{i*bin_size:.3f}` INT DEFAULT 0, \n"
-        sql_query += bin_label
-
+        bin_label = f"bin_{i*bin_size:.3f}".replace('.', '_')
+        bin_size_labels.append(bin_label)
+    sql_query += ",\n".join([f"{label} INT" for label in bin_size_labels])
     # Add the primary key and index to the SQL query
-    sql_query += "PRIMARY KEY (`id`), \n"
-    sql_query += "INDEX `species_index` (`species` ASC)) \n ENGINE = InnoDB;"
+    sql_query += ");\n"
+    sql_query += f"CREATE INDEX IF NOT EXISTS species_index ON {dataset_name}_species_histogram  (species)"
     return sql_query
 
 
 def get_all_species_names_of_prediction_tables(db_connection, dataset_name):
     with db_connection.cursor() as db_cursor:
         non_species_columns = ["id", "record_id", "start_time", "end_time", "channel"]
-        sql_query = f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{dataset_name}_predictions'"
-        db_cursor.execute(sql_query)
+        sql_query = sql.SQL("SELECT column_name FROM information_schema.columns WHERE table_name = %s")
+        db_cursor.execute(sql_query, (f"{dataset_name}_predictions",))
         column_names = [column[0] for column in db_cursor.fetchall()]
         species_names = [
             column_name
@@ -84,7 +85,7 @@ def get_predictions_species_histogram_query(dataset_name, species_name, bin_size
     for i in range(num_bins):
         lower_bound = i * bin_size
         upper_bound = (i + 1) * bin_size
-        bin_label = f"`bin_{i*bin_size:.3f}`"
+        bin_label = f"bin_{i*bin_size:.3f}".replace('.', '_')
         # print(bin_label)
         # The last bin includes the upper bound
         if i == num_bins - 1:
@@ -98,7 +99,7 @@ def get_predictions_species_histogram_query(dataset_name, species_name, bin_size
     sql_query = sql_query[:-2]
 
     # Add the FROM clause to the SQL query
-    sql_query += f" FROM `{dataset_name}_predictions`;"
+    sql_query += f" FROM {dataset_name}_predictions;"
     # print(sql_query)
     # Print the SQL query
 
@@ -133,15 +134,16 @@ def fill_species_histogram_table(db_connection, dataset_name, bin_size):
 
             # Insert the histogram data into the species histogram table
             insert_query = (
-                f"INSERT INTO `{dataset_name}_species_histogram` (`species`, "
+                f"INSERT INTO {dataset_name}_species_histogram (species, "
             )
             for i in range(num_bins):
-                insert_query += f"`bin_{i*bin_size:.3f}`, "
+                insert_query += f"bin_{i*bin_size:.3f}, ".replace('.', '_')
             insert_query = insert_query[:-2] + ") VALUES (%s, "
             for count in bin_counts:
                 insert_query += "%s, "
             insert_query = insert_query[:-2] + ")"
-            # print(insert_query)
+
+            print(f'insert_query: {insert_query}' )
             cursor.execute(insert_query, (species_name, *bin_counts))
             db_connection.commit()
 
@@ -151,7 +153,7 @@ def fill_species_histogram_table(db_connection, dataset_name, bin_size):
 
 def worker_function(args):
     dataset_name, bin_size = args
-    db_connection = mariadb.connect(
+    db_connection = psycopg2.connect(
         host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, port=DB_PORT
     )
     fill_species_histogram_table(db_connection, dataset_name, bin_size)
@@ -159,11 +161,11 @@ def worker_function(args):
 
 
 def main(partial_name=None, cores=1):
-    connection = mariadb.connect(
+    connection = psycopg2.connect(
         host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, port=DB_PORT
     )
     with connection.cursor() as db_cursor:
-        db_cursor.execute("SHOW TABLES")
+        db_cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_name LIKE %s", ('%_records',))
         tables = db_cursor.fetchall()
 
         dataset_names = [
@@ -212,7 +214,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.debug:
-        info("Debug mode endabled!")
+        info("Debug mode enabled!")
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)  # Set the level to DEBUG
     main(partial_name=args.partial_name, cores=args.cores)

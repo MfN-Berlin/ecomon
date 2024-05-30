@@ -81,7 +81,7 @@ parse_filename_for_location_date_time_function_dict = {
 def load_config(filepath):
     with open(filepath, "r") as file:
         config_dict = yaml.safe_load(file)
-        config_dict["data_folder"] = os.getenv("MDAS_DATA_DIRECTORY")
+        config_dict["data_folder"] = os.getenv("DATA_DIRECTORY")
         record_folders = config_dict["recordFolder"]
         # if recordFolders is a string, convert it to a list
         if isinstance(record_folders, str):
@@ -107,7 +107,7 @@ def load_config(filepath):
         config_dict["analyzeThreads"] = (
             int(config_dict["analyzeThreads"])
             if "analyzeThreads" in config_dict
-            else int(os.getenv("MDAS_ANALYZE_THREADS", 1))
+            else int(os.getenv("ANALYZE_THREADS", 1))
         )
         config_dict["allThreadsUseSamePort"] = (
             config_dict["allThreadsUseSamePort"]

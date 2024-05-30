@@ -241,28 +241,22 @@ def get_datetime_of_last_record_in_sql_table(table_name: str):
 
 
 def get_column_names_of_sql_table_query(table_name: str):
-    return """
-    SELECT column_name FROM information_schema.columns WHERE table_name = '{}'
-    """.format(
-        table_name
-    )
+    return f"""
+    SELECT column_name 
+    FROM information_schema.columns 
+    WHERE table_name = '{table_name}'
+    ORDER BY ordinal_position;
+    """
 
 
 def create_index_for_sql_table(table_name: str, column_name: str):
-    return """
-    CREATE INDEX {}_index ON {}({})
-    """.format(
-        column_name, table_name, column_name
-    )
+    return f"CREATE INDEX {table_name}_{column_name}_index ON {table_name}({column_name})"
 
 
 # drop index for column with index_name and table_name
 def drop_index_for_sql_table(table_name, column_name):
-    return """
-    ALTER TABLE {} DROP INDEX {}_index
-    """.format(
-        table_name, column_name
-    )
+    index_name = f"{table_name}_{column_name}_index"
+    return f"DROP INDEX IF EXISTS {index_name}"
 
 
 def count_entries_in_sql_table(table_name: str):
@@ -282,11 +276,11 @@ def count_predictions(prefix):
 
 
 def get_index_names_of_sql_table_ending_with(table_name: str, ending: str):
-    return """
-    SELECT index_name FROM information_schema.statistics WHERE table_name = '{}' AND index_name like '%{}'
-    """.format(
-        table_name, ending
-    )
+    return f"""
+    SELECT indexname 
+    FROM pg_indexes 
+    WHERE tablename = '{table_name}' AND indexname LIKE '%{ending}';
+    """
 
 
 def sum_values_of_sql_table_column(table_name: str, column_name: str):
@@ -362,7 +356,7 @@ def count_species_over_threshold_in_date_range(
 
 def get_all_prediction_table_names():
     return f"""
-    SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = '{getenv('MDAS_MARIADB_DATABASE')}' and TABLE_NAME like '%_predictions'
+    SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_NAME like '%_predictions'
     """
 
 
@@ -395,18 +389,18 @@ def get_job_by_id(job_id):
 
 
 def add_job(prefix: str, type: JobTypes, status: JobStatus, metadata: dict):
-    metadata_str = escape_string(json.dumps(metadata))
+    metadata_str = json.dumps(metadata)
     logger.debug(f"prefix: {prefix}")
     logger.debug(f"type: {type}")
     logger.debug(f"status: {status}")
     logger.debug(f"metadata: {metadata_str}")
-    query = f"INSERT INTO jobs (prefix, type, status,metadata) VALUES ('{prefix}', '{type}', '{status}', '{metadata_str}')"
+    query = f"INSERT INTO jobs (prefix, type, status,metadata) VALUES ('{prefix}', '{type}', '{status}', '{metadata_str}') RETURNING id"
     logger.debug(f"query: {query}")
     return query
 
 
 def update_job_metadata(job_id: int, metadata: dict):
-    metadata_str = escape_string(json.dumps(metadata))
+    metadata_str = json.dumps(metadata)
     return """
     UPDATE jobs SET metadata = '{}' WHERE id = {}
     """.format(

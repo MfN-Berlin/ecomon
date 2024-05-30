@@ -1,4 +1,4 @@
-# Folder Path to be relative to MDAS_DATA_DIRECTORY environment variable
+# Folder Path to be relative to DATA_DIRECTORY environment variable
 recordFolder:
    - /net/z/Projekte/AMMOD/AudioData/BRITZ02/Britz02_2021_03
    - /net/z/Projekte/AMMOD/AudioData/BRITZ02/Britz02_2021_04

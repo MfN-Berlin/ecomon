@@ -2,7 +2,7 @@ import argparse
 from datetime import datetime
 import os
 import json
-import mariadb
+import psycopg2
 import pandas as pd
 from tqdm import tqdm
 from os import getenv, path
@@ -15,18 +15,15 @@ from multiprocessing import Pool
 
 load_dotenv()
 
-
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, decimal.Decimal):
             return float(obj)
         return super(CustomJSONEncoder, self).default(obj)
 
-
 def create_json_file(report_data, report_path):
     with open(report_path, "w") as f:
         json.dump(report_data, f, indent=2, cls=CustomJSONEncoder)
-
 
 def createYearMonthDayList(year):
     yearMonthDayList = []
@@ -38,10 +35,7 @@ def createYearMonthDayList(year):
                 pass
     return yearMonthDayList
 
-
-def report(
-    cursor, table_name, predictions_table, queries, report_path, output_format="text"
-):
+def report(cursor, table_name, predictions_table, queries, report_path, output_format="text"):
     report_data = {}
     cursor.execute(queries[0][1])
     result = cursor.fetchone()
@@ -65,9 +59,7 @@ def report(
     last_datetime_tz = last_datetime.replace(tzinfo=utc).astimezone(desired_tz)
 
     # Convert first_datetime to UTC datetime string
-    first_datetime_utc = first_datetime_tz.replace(tzinfo=timezone("UTC")).astimezone(
-        utc
-    )
+    first_datetime_utc = first_datetime_tz.replace(tzinfo=timezone("UTC")).astimezone(utc)
     report_data["first_record_datetime"] = first_datetime_utc.isoformat()
 
     # Convert last_datetime to UTC datetime string
@@ -98,15 +90,6 @@ def report(
                 ]
             else:
                 report_data[formatted_key] = [{str(row[0]): row[1]} for row in result]
-        # elif query_name.endswith("daily_summary_query"):
-        #     report_data[formatted_key] = [
-        #         {
-        #             "date": f"{row[0]}/{row[1]}/{row[2]}",
-        #             "count": row[3],
-        #             "duration": row[4],
-        #         }
-        #         for row in result
-        #     ]
         elif query_name.endswith("daily_summary_query"):
             daily_summary = {}
             for row in result:
@@ -136,11 +119,6 @@ def report(
                 }
                 for date_str in sorted(daily_summary.keys())
             ]
-        # elif query_name.endswith("monthly_summary_query"):
-        #     report_data[formatted_key] = [
-        #         {"date": f"{row[0]}/{row[1]}", "count": row[2], "duration": row[3],}
-        #         for row in result
-        #     ]
         elif query_name.endswith("monthly_summary_query"):
             result_dict = {
                 (row[0], row[1]): {"count": row[2], "duration": row[3]}
@@ -172,26 +150,25 @@ def report(
     elif output_format == "json":
         create_json_file(report_data, report_path)
 
-
-# create a connection to the MySQL database
+# create a connection to the PostgreSQL database
 def create_report(prefix=None, output_format="json", prefix_includes=None):
-    root_dir = getenv("MDAS_DATA_DIRECTORY")
+    root_dir = getenv("DATA_DIRECTORY")
 
-    cnx = mariadb.connect(
-        user=getenv("MDAS_MARIADB_USER"),
-        password=getenv("MDAS_MARIADB_PASSWORD"),
-        database=getenv("MDAS_MARIADB_DATABASE"),
-        host=getenv("MDAS_MARIADB_HOST"),
-        port=int(getenv("MDAS_MARIADB_PORT")),
+    cnx = psycopg2.connect(
+        user=getenv("POSTGRES_USER"),
+        password=getenv("POSTGRES_PASSWORD"),
+        database=getenv("POSTGRES_DATABASE"),
+        host=getenv("POSTGRES_HOST"),
+        port=int(getenv("POSTGRES_PORT")),
     )
 
     cursor = cnx.cursor()
 
-    REPORTS_DIR = getenv("MDAS_REPORTS_DIRECTORY", "./reports")
+    REPORTS_DIR = getenv("REPORTS_DIRECTORY", "./reports")
     if prefix is not None:
         prefixes = [prefix]
     else:
-        cursor.execute("SHOW TABLES LIKE '%\\_records'")
+        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%_records';")
         tables = cursor.fetchall()
         prefixes = [table[0][: -len("_records")] for table in tables]
     if prefix_includes is not None:
@@ -243,20 +220,29 @@ def create_report(prefix=None, output_format="json", prefix_includes=None):
             (
                 "monthly_summary_query",
                 f"""
-        SELECT YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')) AS year, MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')) AS month, COUNT(DISTINCT {table_name}.id) AS record_count, SUM({table_name}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
-        FROM {table_name}
-        LEFT JOIN {predictions_table} ON {table_name}.id = {predictions_table}.record_id
-        GROUP BY YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '+01:00')), MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00'));
-        """,
+                SELECT EXTRACT(YEAR FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1') AS year, 
+                       EXTRACT(MONTH FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1') AS month, 
+                       COUNT(DISTINCT {table_name}.id) AS record_count, 
+                       SUM({table_name}.duration) AS total_duration, 
+                       COUNT({predictions_table}.id) AS prediction_count
+                FROM {table_name}
+                LEFT JOIN {predictions_table} ON {table_name}.id = {predictions_table}.record_id
+                GROUP BY year, month;
+                """,
             ),
             (
                 "daily_summary_query",
                 f"""
-        SELECT YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')) AS year, LPAD(MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')), 2, '0') AS month, LPAD(DAY(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')), 2, '0') AS day, COUNT(DISTINCT {table_name}.id) AS record_count, SUM({table_name}.duration) AS total_duration, COUNT({predictions_table}.id) AS prediction_count
-        FROM {table_name}
-        LEFT JOIN {predictions_table} ON {table_name}.id = {predictions_table}.record_id
-        GROUP BY YEAR(CONVERT_TZ({table_name}.record_datetime, '+00:00', '+01:00')), MONTH(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00')), DAY(CONVERT_TZ({table_name}.record_datetime, '+00:00', '-01:00'));
-        """,
+                SELECT EXTRACT(YEAR FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1') AS year, 
+                       LPAD(EXTRACT(MONTH FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1')::text, 2, '0') AS month, 
+                       LPAD(EXTRACT(DAY FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1')::text, 2, '0') AS day, 
+                       COUNT(DISTINCT {table_name}.id) AS record_count, 
+                       SUM({table_name}.duration) AS total_duration, 
+                       COUNT({predictions_table}.id) AS prediction_count
+                FROM {table_name}
+                LEFT JOIN {predictions_table} ON {table_name}.id = {predictions_table}.record_id
+                GROUP BY year, month, day;
+                """,
             ),
         ]
 
@@ -271,14 +257,12 @@ def create_report(prefix=None, output_format="json", prefix_includes=None):
             output_format=output_format,
         )
 
-
 def process_prefix(prefix):
     create_report(
         prefix=prefix,
         output_format=args.output_format,
         prefix_includes=args.prefix_includes,
     )
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate report for a collection")
@@ -317,15 +301,15 @@ if __name__ == "__main__":
     else:
         # Fetch all prefixes if not specified
         if args.collection_prefix is None:
-            cnx = mariadb.connect(
-                user=getenv("MDAS_MARIADB_USER"),
-                password=getenv("MDAS_MARIADB_PASSWORD"),
-                database=getenv("MDAS_MARIADB_DATABASE"),
-                host=getenv("MDAS_MARIADB_HOST"),
-                port=int(getenv("MDAS_MARIADB_PORT")),
+            cnx = psycopg2.connect(
+                user=getenv("POSTGRES_USER"),
+                password=getenv("POSTGRES_PASSWORD"),
+                database=getenv("POSTGRES_DATABASE"),
+                host=getenv("POSTGRES_HOST"),
+                port=int(getenv("POSTGRES_PORT")),
             )
             cursor = cnx.cursor()
-            cursor.execute("SHOW TABLES LIKE '%\\_records'")
+            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%_records';")
             tables = cursor.fetchall()
             prefixes = [table[0][: -len("_records")] for table in tables]
             if args.prefix_includes:

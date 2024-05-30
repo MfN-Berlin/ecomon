@@ -7,14 +7,14 @@ from util.files import check_audio_file
 # create a connection to the MySQL database
 load_dotenv()  # load environment variables from .env
 
-root_dir = getenv("MDAS_DATA_DIRECTORY")
+root_dir = getenv("DATA_DIRECTORY")
 
 cnx = mariadb.connect(
-    user=getenv("MDAS_MARIADB_USER"),
-    password=getenv("MDAS_MARIADB_PASSWORD"),
-    database=getenv("MDAS_MARIADB_DATABASE"),
-    host=getenv("MDAS_MARIADB_HOST"),
-    port=int(getenv("MDAS_MARIADB_PORT")),
+    user=getenv("MARIADB_USER"),
+    password=getenv("MARIADB_PASSWORD"),
+    database=getenv("MARIADB_DATABASE"),
+    host=getenv("MARIADB_HOST"),
+    port=int(getenv("MARIADB_PORT")),
 )
 
 # create a cursor object

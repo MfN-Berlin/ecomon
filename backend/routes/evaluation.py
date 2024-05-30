@@ -98,7 +98,7 @@ async def get_bin_sizes(
     species = request.species
     bin_width = request.bin_width
     audio_padding = request.audio_padding
-    result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
+    result_directory = os.getenv("SAMPLE_FILES_DIRECTORY")
 
     if not path.exists(result_directory):
         os.makedirs(result_directory)
@@ -131,6 +131,7 @@ async def get_bin_sizes(
             },
         )
     )
+    logger.debug(f"Job {job_id} added to queue")
     asyncio.create_task(
         create_histogram(
             database,
@@ -163,7 +164,7 @@ async def get_predictions(
     request_timezone = request.request_timezone
     min_threshold = request.min_threshold
     max_threshold = request.max_threshold
-    result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
+    result_directory = os.getenv("SAMPLE_FILES_DIRECTORY")
 
     if not path.exists(result_directory):
         os.makedirs(result_directory)
@@ -198,6 +199,7 @@ async def get_predictions(
             },
         )
     )
+    logger.debug(f"Job {job_id} added to queue")
     asyncio.create_task(
         create_predictions(
             database,
@@ -233,7 +235,7 @@ async def get_daily_histograms(
     request_timezone = request.request_timezone
     min_threshold = request.min_threshold
     max_threshold = request.max_threshold
-    result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
+    result_directory = os.getenv("SAMPLE_FILES_DIRECTORY")
 
     if not path.exists(result_directory):
         os.makedirs(result_directory)
@@ -269,6 +271,7 @@ async def get_daily_histograms(
             },
         )
     )
+    logger.debug(f"Job {job_id} added to queue")
     asyncio.create_task(
         create_daily_histograms(
             database,
@@ -296,11 +299,11 @@ async def get_daily_histograms(
 async def get_collection_vouchers(
     request: VoucherRequest,
 ) -> JobCreatedResponse:
-    tmp_directory = os.getenv("MDAS_TMP_DIRECTORY")
+    tmp_directory = os.getenv("TMP_DIRECTORY")
     if not path.exists(tmp_directory):
         os.makedirs(tmp_directory)
 
-    result_directory = os.getenv("MDAS_SAMPLE_FILES_DIRECTORY")
+    result_directory = os.getenv("SAMPLE_FILES_DIRECTORY")
     if not path.exists(result_directory):
         os.makedirs(result_directory)
 
