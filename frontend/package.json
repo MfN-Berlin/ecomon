@@ -47,7 +47,8 @@
       "eject": "react-app-rewired eject",
       "format": "prettier --write src/**/*.ts{,x}",
       "lint": "tsc --noEmit && eslint src/**/*.ts{,x}",
-      "generate:api": "openapi-generator-cli generate -i http://localhost:8888/openapi.json -g typescript-axios -o ./src/generated/api"
+      "generate:api": "openapi-generator-cli generate -i http://localhost:8888/openapi.json -g typescript-axios -o ./src/generated/api",
+      "release": "docker build -t ecomon/ecomon-frontend:latest . && docker push ecomon/ecomon-frontend:latest"
    },
    "eslintConfig": {
       "extends": [
