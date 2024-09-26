@@ -1,2 +1,2 @@
 #!/bin/bash
-uvicorn app:app --reload --port 8888
+POSTGRES_HOST=localhost uvicorn app:app --reload --port 8888

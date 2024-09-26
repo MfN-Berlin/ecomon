@@ -11,10 +11,10 @@ databases==0.6.1
 fastapi==0.79.1
 ffmpeg-python==0.2.0
 future==1.0.0
-greenlet==1.1.2
+greenlet==3.1.1
 h11==0.13.0
 idna==3.3
-mariadb==1.0.11
+mariadb==1.1.10
 mpmath==1.2.1
 numpy==1.26.4
 pandas==2.2.2

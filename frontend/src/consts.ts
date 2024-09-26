@@ -4,7 +4,7 @@ function getApiPath() {
       return process.env.REACT_APP_API_PATH
    }
    if (process.env.NODE_ENV === 'production') {
-      return '/api/v1'
+      return '/ecomon/api/v1'
    }
    return 'http://localhost:8888'
 }
