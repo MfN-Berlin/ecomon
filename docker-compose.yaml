@@ -1,35 +1,43 @@
-# docker-compose.yml
-version: "3"
 services:
-   backend:
-      image: mdas-backend
-      build: ./backend
-      ports:
-         - "8000:80"
-      depends_on:
-         - db
-      environment:
-         MARIADB_HOST: db
-         MARIADB_DATABASE: ${MARIADB_DATABASE}
-         MARIADB_PORT: ${MARIADB_PORT}
-         MARIADB_USER: ${MARIADB_USER}
-         MARIADB_PASSWORD: ${MARIADB_PASSWORD}
-         TMP_DIRECTORY: /tmp
-         SAMPLE_FILES_DIRECTORY: /files
-         PROXY_PATH_PREFIX: /api/v1
-         ROOT_PATH: /api/v1
-         REPORTS_DIRECTORY: /reports
-      volumes:
-         - ${SAMPLE_FILES_DIRECTORY}:/files
-         - ${TMP_DIRECTORY}:/tmp
-         - ${DATA_DIRECTORY}:${DATA_DIRECTORY}
-         - ${REPORTS_DIRECTORY}:/reports
+   # backend:
+   #    image: mdas-backend
+   #    build: ./backend
+   #    ports:
+   #       - "8000:80"
+   #    depends_on:
+   #       - db
+   #    environment:
+   #       MARIADB_HOST: db
+   #       MARIADB_DATABASE: ${MARIADB_DATABASE}
+   #       MARIADB_PORT: ${MARIADB_PORT}
+   #       MARIADB_USER: ${MARIADB_USER}
+   #       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+   #       TMP_DIRECTORY: /tmp
+   #       SAMPLE_FILES_DIRECTORY: /files
+   #       PROXY_PATH_PREFIX: /api/v1
+   #       ROOT_PATH: /api/v1
+   #       REPORTS_DIRECTORY: /reports
+   #    volumes:
+   #       - ${SAMPLE_FILES_DIRECTORY}:/files
+   #       - ${TMP_DIRECTORY}:/tmp
+   #       - ${DATA_DIRECTORY}:${DATA_DIRECTORY}
+   #       - ${REPORTS_DIRECTORY}:/reports
+   #    labels:
+   #       - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+   #       - "traefik.http.routers.backend.entrypoints=web"
+   #       - "traefik.http.routers.backend.middlewares=auth"
+   #       - "traefik.http.services.backend.loadbalancer.server.port=80"
 
    frontend:
       image: mdas-frontend
       build: ./frontend
       ports:
-         - "80:80"
+         - "8001:80"
+      labels:
+         - "traefik.http.routers.frontend.rule=PathPrefix(`/ecomon`)"
+         - "traefik.http.routers.frontend.entrypoints=web"
+         - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
    db:
       container_name: "bai-mariadb"
       image: mariadb:10
@@ -44,3 +52,21 @@ services:
       volumes:
          - ./runtime-data/db-data/data:/var/lib/mysql
          - ./runtime-data/db-data/conf:/etc/mysql
+
+   traefik:
+      image: traefik:v2.10
+      command:
+         - "--api.insecure=true"
+         - "--providers.docker=true"
+         - "--entrypoints.web.address=:80"
+      ports:
+         - "80:80"
+         - "8080:8080" # Traefik dashboard
+      volumes:
+         - /var/run/docker.sock:/var/run/docker.sock
+      labels:
+         - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
+         - "traefik.http.routers.traefik.rule=PathPrefix(`/traefik`)"
+         - "traefik.http.routers.traefik.entrypoints=web"
+         - "traefik.http.routers.traefik.service=api@internal"
+         - "traefik.http.routers.traefik.middlewares=auth"
