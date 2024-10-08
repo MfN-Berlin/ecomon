@@ -49,7 +49,7 @@ speciesIndexList:
    - fringilla_coelebs
 basePort: 9000
 analyzeThreads: 9
-transformModelOutput: False
+transformModelOutput: True
 allThreadsUseSamePort: False
 repeats: 2
 modelOutputStyle: resultDict

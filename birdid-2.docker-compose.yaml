@@ -1,12 +1,15 @@
 # docker-compose.yml
-version: "3"
 services:
    birdid-0:
       cpuset: "1"
       container_name: "bai-birdid-0"
       image: "birdid-europe254-2103-flask-v04"
       restart: "always"
-      ipc: "host"
+      runtime: nvidia
+      ipc: host
+      environment:
+         NVIDIA_VISIBLE_DEVICES: "0"
+         NVIDIA_DRIVER_CAPABILITIES: "all"
       ports:
          - "9000:4000"
       volumes:
@@ -17,9 +20,73 @@ services:
       container_name: "bai-birdid-1"
       image: "birdid-europe254-2103-flask-v04"
       restart: "always"
-      ipc: "host"
+      runtime: nvidia
+      ipc: host
+      environment:
+         NVIDIA_VISIBLE_DEVICES: "1"
+         NVIDIA_DRIVER_CAPABILITIES: "all"
       ports:
          - "9001:4000"
+      volumes:
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
+   birdid-2:
+      cpuset: "2"
+      container_name: "bai-birdid-2"
+      image: "birdid-europe254-2103-flask-v04"
+      restart: "always"
+      runtime: nvidia
+      ipc: host
+      environment:
+         NVIDIA_VISIBLE_DEVICES: "0"
+         NVIDIA_DRIVER_CAPABILITIES: "all"
+      ports:
+         - "9002:4000"
+      volumes:
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
+   birdid-3:
+      cpuset: "3"
+      container_name: "bai-birdid-3"
+      image: "birdid-europe254-2103-flask-v04"
+      restart: "always"
+      runtime: nvidia
+      ipc: host
+      environment:
+         NVIDIA_VISIBLE_DEVICES: "1"
+         NVIDIA_DRIVER_CAPABILITIES: "all"
+      ports:
+         - "9003:4000"
+      volumes:
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
+   birdid-4:
+      cpuset: "4"
+      container_name: "bai-birdid-4"
+      image: "birdid-europe254-2103-flask-v04"
+      restart: "always"
+      runtime: nvidia
+      ipc: host
+      environment:
+         NVIDIA_VISIBLE_DEVICES: "0"
+         NVIDIA_DRIVER_CAPABILITIES: "all"
+      ports:
+         - "9004:4000"
+      volumes:
+         - "${DATA_DIRECTORY}:/mnt/data"
+         - "${RESULT_DIRECTORY}:/mnt/result"
+   birdid-5:
+      cpuset: "5"
+      container_name: "bai-birdid-5"
+      image: "birdid-europe254-2103-flask-v04"
+      restart: "always"
+      runtime: nvidia
+      ipc: host
+      environment:
+         NVIDIA_VISIBLE_DEVICES: "1"
+         NVIDIA_DRIVER_CAPABILITIES: "all"
+      ports:
+         - "9005:4000"
       volumes:
          - "${DATA_DIRECTORY}:/mnt/data"
          - "${RESULT_DIRECTORY}:/mnt/result"

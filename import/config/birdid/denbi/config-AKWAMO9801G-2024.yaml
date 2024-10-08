@@ -1,0 +1,59 @@
+# Folder Path to be relative to DATA_DIRECTORY environment variable
+recordFolder:
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202401
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202402
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202403
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202404
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202405
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202406
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202407
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202408
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202409
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202410
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202411
+   - /mnt/akwamodata/AKWAMO9801G/AKWAMO9801G_202412
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO9801G/2024
+# Index to name File of your used model
+indexToNameFile: ./birdid-europe-254_index_to_name.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDID_AKWAMO9801G_2024"
+testRun: False
+timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - strix_aluco
+   - dendrocoptes_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_sibilatrix
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - troglodytes_troglodytes
+   - turdus_merula
+   - turdus_philomelos
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_ochruros
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 9000
+analyzeThreads: 6
+transformModelOutput: False
+allThreadsUseSamePort: False
+repeats: 2
+modelOutputStyle: resultDict
+batchSize: 2
+nCpuWorkers: 1
