@@ -90,13 +90,11 @@ def init_db(batch_prefix, index_to_name):
         if not records_exists:
             print("Create {}_records table".format(batch_prefix))
             query_str = queries.create_record_table(batch_prefix)
-            print(f"Query: {query_str}")
             db_cursor.execute(query_str)
             db_connection.commit()
         if not predictions_exists:
             print("Create {}_predictions table".format(batch_prefix))
             query_str = queries.create_predictions_table(batch_prefix, species)
-            print(f"Query: {query_str}")
             db_cursor.execute(query_str)
             db_connection.commit()
     except psycopg2.Error as e:

@@ -104,7 +104,7 @@ def analyze(
                 test_run=config["testRun"],
                 filename_parsing=config["filenameParsing"],
                 timezone=timezone(config["timezone"]) if config["timezone"] else None,
-                index_to_name=index_to_name if config["transformModelOutput"] else None,
+                index_to_name=index_to_name,
                 only_analyze=config["onlyAnalyze"],
                 retry_corrupted_files=retry_corrupted_files,
                 debug=debug,
