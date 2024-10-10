@@ -44,9 +44,11 @@ async def get_all_jobs(
     type: Union[str, None] = None,
     status: Union[str, None] = None,
 ) -> List[ResultJob]:
+    logger.debug(f"Fetching jobs with prefix={prefix}, type={type}, status={status}")
     jobs = await database.fetch_all(
         get_all_jobs_query(prefix=prefix, type=type, status=status)
     )
+    logger.debug(f"Jobs fetched: {jobs}")
     result = []
     for job in jobs:
         result.append(
@@ -63,6 +65,7 @@ async def get_all_jobs(
             }
         )
 
+    logger.debug(f"Result to return: {result}")
     return result
 
 @router.get("/{id}", response_model=ResultJob, operation_id="getJobById")

@@ -9,7 +9,7 @@ export function useUpdateJobs() {
    const { dispatch } = globalState
 
    function updateJobs() {
-      fetch(`${API_PATH}/jobs`)
+      fetch(`${API_PATH}/jobs/`)
          .then((res) => res.json())
          .then((jobs) => {
             console.log(jobs)

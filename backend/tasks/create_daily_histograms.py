@@ -83,11 +83,8 @@ async def create_daily_histograms(
     for index, step in enumerate(steps):
         header.append(
             (
-                "{start} <= x < {end}".format(
-                    start=round(step, decimal_places),
-                    end=round(step + bin_width, decimal_places),
-                ),
-                "bin_{}".format(index),
+                f"{round(step, decimal_places)} <= x < {round(step + bin_width, decimal_places)}",
+                f"bin_{index}",
             )
         )
     # Get predictions from database
@@ -119,9 +116,9 @@ async def create_daily_histograms(
         row = {}
         row["record_date"] = record_date
         for index, bin_count in enumerate(bins):
-            row["bin_{}".format(index)] = bin_count
+            row[f"bin_{index}"] = bin_count
         rows.append(row)
-    logger.debug(rows)
+    logger.debug(f"Rows: {rows}")
     await database.execute(update_job_progress(job_id, 80))
     write_execl_file(result_filepath, rows, header)
     await database.execute(update_job_progress(job_id, 100))

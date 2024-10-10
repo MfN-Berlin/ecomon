@@ -19,7 +19,8 @@ def main(
                 paths.append(file_path)
         else:
             paths.append(config)
-
+    
+        print("Importing the following configs: {}".format(paths))
         for path in paths:
             cmd_str = "python3 import/import_records.py " + path
 

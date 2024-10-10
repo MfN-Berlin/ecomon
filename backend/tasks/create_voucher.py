@@ -34,7 +34,7 @@ def create_voucher(
     tmp_directory: Optional[str] = path.join(os.getcwd(), "tmp"),
     results_directory: Optional[str] = path.join(os.getcwd(), "web_results"),
 ) -> None:
-    # logger.debug("High pass frequency: ", high_pass_frequency)
+    logger.debug(f"High pass frequency: {high_pass_frequency}")
     load_dotenv()
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()
@@ -71,7 +71,7 @@ def create_voucher(
                 species,
                 sample_size,
             )
-            logger.debug(query)
+            logger.debug(f"Query: {query}")
             db_cursor.execute(query)
             result = db_cursor.fetchall()
             entries_length = len(result)
@@ -113,7 +113,7 @@ def create_voucher(
                         padding=audio_padding,
                         high_pass_frequency=high_pass_frequency,
                     )
-                # logger.debug("out_filepath", out_filepath)
+                # logger.debug(f"out_filepath: {out_filepath}")
 
                 tmp = {
                     "species": first_letter_to_upper_case(species).replace("_", " "),

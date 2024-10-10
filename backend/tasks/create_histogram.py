@@ -42,11 +42,11 @@ async def create_histogram(
     result_filepath,
     job_id,
 ):
-    species_list = [species] if species != None else []
+    species_list = [species] if species is not None else []
     steps = list(float_range(0, 1, bin_width))
-    logger.debug(steps)
+    logger.debug(f"Steps before reverse: {steps}")
     steps.reverse()
-    logger.debug(steps)
+    logger.debug(f"Steps after reverse: {steps}")
     total_steps = len(steps) * len(species_list)
     counter = 0
     result_list = []
@@ -58,10 +58,10 @@ async def create_histogram(
     for species_id in species_list:
         name = species_row_to_name(species_id)
         header.append(
-            ("{} Accumulative".format(name), "{}_predictions_acc".format(species_id),)
+            (f"{name} Accumulative", f"{species_id}_predictions_acc")
         )
         header.append(
-            ("{} Count".format(name), "{}_predictions_count".format(species_id))
+            (f"{name} Count", f"{species_id}_predictions_count")
         )
     # Create rows for excel file
     for idx, threshold_min in enumerate(steps):
@@ -82,15 +82,15 @@ async def create_histogram(
                 datetime.fromisoformat(end_datetime[:-1]).replace(tzinfo=timezone.utc),
             )
             prediction_count = (await database.fetch_one(query))[0]
-            row["{}_predictions_acc".format(species_id)] = prediction_count
-            row["{}_predictions_count".format(species_id)] = (
+            row[f"{species_id}_predictions_acc"] = prediction_count
+            row[f"{species_id}_predictions_count"] = (
                 prediction_count
-                - result_list[idx - 1]["{}_predictions_acc".format(species_id)]
+                - result_list[idx - 1][f"{species_id}_predictions_acc"]
                 if idx > 0
                 else prediction_count
             )
 
-            counter = counter + 1
+            counter += 1
             result_list.append(row)
             await database.execute(
                 update_job_progress(job_id, round(counter / total_steps * 100))

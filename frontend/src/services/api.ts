@@ -12,7 +12,13 @@ export const evaluationClient = new EvaluationApi(apiConfig)
 // Define a service using a base URL and expected endpoints
 export const backendApi = createApi({
    reducerPath: 'api',
-   baseQuery: fetchBaseQuery({ baseUrl: API_PATH }),
+   baseQuery: fetchBaseQuery({ 
+      baseUrl: API_PATH,
+      prepareHeaders: (headers) => {
+         headers.set('Content-Type', 'application/json')
+         return headers
+      }
+   }),
    endpoints: (builder) => ({
       getCollections: builder.query<Array<string>, void>({
          queryFn: () => {

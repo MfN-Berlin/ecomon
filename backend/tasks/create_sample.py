@@ -54,7 +54,7 @@ def create_sample(
     random=True,
     high_pass_frequency=0,
 ):
-    logger.debug("High pass frequency: ", high_pass_frequency)
+    logger.debug(f"High pass frequency: {high_pass_frequency}")
     load_dotenv()
     db_connection = connect_to_db()
     db_cursor = db_connection.cursor()
@@ -179,7 +179,7 @@ def create_sample(
             csv_list,
             header,
         )
-        logger.debug("result_filepath", result_filepath)
+        logger.debug(f"result_filepath: {result_filepath}")
         if result_filepath is not None:
             zip_folder_and_delete(directory, result_filepath)
             if job_id is not None:

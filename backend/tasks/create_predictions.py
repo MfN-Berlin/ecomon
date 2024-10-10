@@ -60,9 +60,9 @@ async def create_predictions(
     min_threshold=None,
     max_threshold=None,
 ):
-    logger.debug("Requested timezone: ", request_timezone)
-    logger.debug("Start datetime: ", start_datetime)
-    logger.debug("End datetime: ", end_datetime)
+    logger.debug(f"Requested timezone: {request_timezone}")
+    logger.debug(f"Start datetime: {start_datetime}")
+    logger.debug(f"End datetime: {end_datetime}")
 
     request_timezone = pytz.timezone(request_timezone)
     result_list = []
