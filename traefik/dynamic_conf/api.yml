@@ -1,0 +1,40 @@
+http:
+  routers:
+    backend:
+      rule: "PathPrefix(`/ecomon/api/v1`)"
+      entryPoints: ["web"]
+      middlewares: ["strip-prefix"]
+      service: "backend"
+
+    frontend:
+      rule: "PathPrefix(`/ecomon`)"
+      entryPoints: ["web"]
+      service: "frontend"
+
+    traefik:
+      rule: "PathPrefix(`/traefik`)"
+      entryPoints: ["web"]
+      service: "api@internal"
+      middlewares: ["auth"]
+
+  middlewares:
+    strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/ecomon/api/v1"
+
+    auth:
+      basicAuth:
+        users:
+          - "admin:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
+
+  services:
+    backend:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8888"
+
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://frontend:80"

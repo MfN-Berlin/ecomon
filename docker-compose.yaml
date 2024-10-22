@@ -2,8 +2,6 @@ services:
    backend:
       image: mdas-backend
       build: ./backend
-      ports:
-         - "8000:80"
       depends_on:
          - db
       environment:
@@ -22,22 +20,10 @@ services:
          - ${TMP_DIRECTORY}:/tmp
          - ${DATA_DIRECTORY}:${DATA_DIRECTORY}
          - ${REPORTS_DIRECTORY}:/reports
-      labels:
-         - "traefik.http.routers.backend.rule=PathPrefix(`/ecomon/api/v1`)"
-         - "traefik.http.routers.backend.entrypoints=web"
-         - "traefik.http.routers.backend.middlewares=strip-prefix@docker"
-         - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/ecomon/api/v1"
-         - "traefik.http.services.backend.loadbalancer.server.port=80"
 
    frontend:
       image: mdas-frontend
       build: ./frontend
-      ports:
-         - "8001:80"
-      labels:
-         - "traefik.http.routers.frontend.rule=PathPrefix(`/ecomon`)"
-         - "traefik.http.routers.frontend.entrypoints=web"
-         - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
    db:
       image: postgres:16
@@ -57,18 +43,22 @@ services:
       image: traefik:v2.10
       command:
          - "--api.insecure=true"
-         - "--providers.docker=true"
-         - "--entrypoints.web.address=:80"
+         - "--providers.docker=false"
+         - "--providers.file.directory=/etc/traefik/dynamic_conf"
+         - "--accesslog=true"
+         - "--accesslog.fields.headers.defaultmode=keep"
+         - "--accesslog.fields.headers.names.User-Agent=drop"
+         - "--accesslog.fields.headers.names.Content-Type=drop"
+         - "--entryPoints.web.address=:80"
       ports:
          - "80:80"
          - "8080:8080" # Traefik dashboard
       volumes:
          - /var/run/docker.sock:/var/run/docker.sock
-      labels:
-         - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
-         - "traefik.http.routers.traefik.rule=PathPrefix(`/traefik`)"
-         - "traefik.http.routers.traefik.entrypoints=web"
-         - "traefik.http.routers.traefik.service=api@internal"
-         - "traefik.http.routers.traefik.middlewares=auth"
+         - "./traefik/dynamic_conf:/etc/traefik/dynamic_conf"
+         - "./traefik/logs:/logs"
+      extra_hosts:
+         - "host.docker.internal:host-gateway"
+
 volumes:
    postgres_data:

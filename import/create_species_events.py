@@ -111,18 +111,18 @@ def main(partial_name=None, cores=1):
         with connection.cursor() as db_cursor:
             db_cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_name LIKE %s", ('%_records',))
             tables = db_cursor.fetchall()
-
+            info(f"Found {len(tables)} tables")
             dataset_names = [
                 table[0][:-8] for table in tables if table[0].endswith("_records")
             ]
-
+            info(f"Found {len(dataset_names)} dataset names")
             if partial_name is not None:
                 dataset_names = [
                     dataset_name
                     for dataset_name in dataset_names
                     if partial_name in dataset_name
                 ]
-
+            info(f"Found {dataset_names} dataset names")
             chunk_size = len(dataset_names) // cores
             datasets_split = [
                 dataset_names[i : i + chunk_size]
