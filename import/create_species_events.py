@@ -116,6 +116,7 @@ def main(partial_name=None, cores=1):
                 table[0][:-8] for table in tables if table[0].endswith("_records")
             ]
             info(f"Found {len(dataset_names)} dataset names")
+            
             if partial_name is not None:
                 dataset_names = [
                     dataset_name

@@ -125,7 +125,7 @@ async def get_prefix_species(prefix_name: str) -> List[Species]:
 async def get_collection_report(collection_name: str) -> Report:
     # read env variable for report path
 
-    filename = f"{collection_name.upper()}_report.json"
+    filename = f"{collection_name}_report.json"
     reports_directory = os.getenv("REPORTS_DIRECTORY")
     if reports_directory == None:
         raise Exception("REPORTS_DIRECTORY not set")

@@ -32,7 +32,8 @@ http:
     backend:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:8888"
+#          - url: "http://host.docker.internal:8888"
+          - url: "http://backend:80"
 
     frontend:
       loadBalancer:

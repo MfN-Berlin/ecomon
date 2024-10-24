@@ -1,6 +1,6 @@
 version: "3"
 services:
-    birdnet-0:
+   birdnet-0:
       container_name: "bai-birdnet-0"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -8,12 +8,12 @@ services:
       ports:
          - "7100:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-1:
+   birdnet-1:
       container_name: "bai-birdnet-1"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -21,12 +21,12 @@ services:
       ports:
          - "7101:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-2:
+   birdnet-2:
       container_name: "bai-birdnet-2"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -34,12 +34,12 @@ services:
       ports:
          - "7102:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-3:
+   birdnet-3:
       container_name: "bai-birdnet-3"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -47,12 +47,12 @@ services:
       ports:
          - "7103:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-4:
+   birdnet-4:
       container_name: "bai-birdnet-4"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -60,12 +60,12 @@ services:
       ports:
          - "7104:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-5:
+   birdnet-5:
       container_name: "bai-birdnet-5"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -73,12 +73,12 @@ services:
       ports:
          - "7105:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-6:
+   birdnet-6:
       container_name: "bai-birdnet-6"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -86,12 +86,12 @@ services:
       ports:
          - "7106:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-7:
+   birdnet-7:
       container_name: "bai-birdnet-7"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -99,12 +99,12 @@ services:
       ports:
          - "7107:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-8:
+   birdnet-8:
       container_name: "bai-birdnet-8"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -112,12 +112,12 @@ services:
       ports:
          - "7108:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-9:
+   birdnet-9:
       container_name: "bai-birdnet-9"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -125,12 +125,12 @@ services:
       ports:
          - "7109:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-10:
+   birdnet-10:
       container_name: "bai-birdnet-10"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -138,12 +138,12 @@ services:
       ports:
          - "7110:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-11:
+   birdnet-11:
       container_name: "bai-birdnet-11"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -151,12 +151,12 @@ services:
       ports:
          - "7111:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-12:
+   birdnet-12:
       container_name: "bai-birdnet-12"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -164,12 +164,12 @@ services:
       ports:
          - "7112:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-13:
+   birdnet-13:
       container_name: "bai-birdnet-13"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -177,12 +177,12 @@ services:
       ports:
          - "7113:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-14:
+   birdnet-14:
       container_name: "bai-birdnet-14"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -190,12 +190,12 @@ services:
       ports:
          - "7114:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-15:
+   birdnet-15:
       container_name: "bai-birdnet-15"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -203,12 +203,12 @@ services:
       ports:
          - "7115:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-16:
+   birdnet-16:
       container_name: "bai-birdnet-16"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -216,12 +216,12 @@ services:
       ports:
          - "7116:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-17:
+   birdnet-17:
       container_name: "bai-birdnet-17"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -229,12 +229,12 @@ services:
       ports:
          - "7117:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-18:
+   birdnet-18:
       container_name: "bai-birdnet-18"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -242,12 +242,12 @@ services:
       ports:
          - "7118:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-19:
+   birdnet-19:
       container_name: "bai-birdnet-19"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -255,12 +255,12 @@ services:
       ports:
          - "7119:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-20:
+   birdnet-20:
       container_name: "bai-birdnet-20"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -268,12 +268,12 @@ services:
       ports:
          - "7120:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-21:
+   birdnet-21:
       container_name: "bai-birdnet-21"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -281,12 +281,12 @@ services:
       ports:
          - "7121:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-22:
+   birdnet-22:
       container_name: "bai-birdnet-22"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -294,12 +294,12 @@ services:
       ports:
          - "7122:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-23:
+   birdnet-23:
       container_name: "bai-birdnet-23"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -307,12 +307,12 @@ services:
       ports:
          - "7123:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-24:
+   birdnet-24:
       container_name: "bai-birdnet-24"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -320,12 +320,12 @@ services:
       ports:
          - "7124:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-25:
+   birdnet-25:
       container_name: "bai-birdnet-25"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -333,12 +333,12 @@ services:
       ports:
          - "7125:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-26:
+   birdnet-26:
       container_name: "bai-birdnet-26"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -346,12 +346,12 @@ services:
       ports:
          - "7126:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-27:
+   birdnet-27:
       container_name: "bai-birdnet-27"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -359,12 +359,12 @@ services:
       ports:
          - "7127:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-28:
+   birdnet-28:
       container_name: "bai-birdnet-28"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -372,12 +372,12 @@ services:
       ports:
          - "7128:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
+         - OVERLAP=1
 
-    birdnet-29:
+   birdnet-29:
       container_name: "bai-birdnet-29"
       image: birdnet-public-3k-v2.2:latest
       restart: always
@@ -385,8 +385,7 @@ services:
       ports:
          - "7129:6000"
       volumes:
-         - /net/:/mnt/data
-         - /net/mfnstore-lin/export/tsa_transfer/Results/:/mnt/result
+         - ${DATA_DIRECTORY}:/mnt/akwamodata
+         - ${RESULT_DIRECTORY}:/mnt/result
       environment:
-        - OVERLAP=1   
-
+         - OVERLAP=1
