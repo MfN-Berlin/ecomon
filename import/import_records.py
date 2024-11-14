@@ -137,7 +137,7 @@ def analyze(
         )
 
     if create_report_flag is True:
-        create_report(prefix=config["prefix"], output_format="json")
+        create_report(prefix=config["prefix"].lower(), output_format="json")
 
 
 # parse parameter when called as script

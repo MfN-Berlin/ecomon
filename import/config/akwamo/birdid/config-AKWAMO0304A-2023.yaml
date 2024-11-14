@@ -1,0 +1,57 @@
+# config_template.yaml
+# Folder Path to be relative to DATA_DIRECTORY environment variable
+recordFolder:
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202301
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202302
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202303
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202304
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202305
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202306
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202307
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202308
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202309
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202310
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202311
+   - /mnt/akwamodata/AKWAMO0304A/AKWAMO0304A_202312
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdnet-public-3k-v2.2/AKWAMO/AKWAMO1205F/2024
+# Index to name File of your used model
+indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDNET_AKWAMO0304A_2023"
+testRun: False
+timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - strix_aluco
+   - dendrocopos_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_sibilatrix
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - troglodytes_troglodytes
+   - turdus_merula
+   - turdus_philomelos
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_ochruros
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 7100
+analyzeThreads: 30
+transformModelOutput: True
+allThreadsUseSamePort: False
+repeats: 1

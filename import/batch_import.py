@@ -9,6 +9,9 @@ def main(
     create_report=False,
     drop_index=False,
     create_index=False,
+    generate_events=False,
+    generate_histograms=False,
+    all=False,
 ):
     # Add YAML configs from folder to configs list
     for config in configs:
@@ -22,19 +25,25 @@ def main(
     
         print("Importing the following configs: {}".format(paths))
         for path in paths:
+            print("Importing: {}".format(path)  )
             cmd_str = "python3 import/import_records.py " + path
 
-            if drop_index:
+            if drop_index or all:
                 cmd_str += " --drop_index"
             if retry:
                 cmd_str += " --retry"
-            if create_index:
+            if create_index or all:
                 cmd_str += " --create_index"
-            if create_report:
+            if create_report or all:
                 cmd_str += " --create_report"
 
-            print(cmd_str)
+            if generate_histograms or all:
+                cmd_str += " --generate_histograms"
+
             os.system(cmd_str)
+            if generate_events or all:
+
+            os.system("python3 import")
 
 
 if __name__ == "__main__":
@@ -58,6 +67,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--create_report", help="create JSON report", action="store_true", default=False
     )
+    parser.add_argument(
+        "--generate_events", help="generate events", action="store_true", default=False
+    )
+    parser.add_argument(
+        "--generate_histograms", help="generate histograms", action="store_true", default=False
+    )
+    parser.add_argument(
+        "--all", help="generate all (report, index, events, histograms)", action="store_true", default=False
+    )
     args = parser.parse_args()
     configs = args.configs or []
 
@@ -67,4 +85,7 @@ if __name__ == "__main__":
         create_index=args.create_index,
         drop_index=args.drop_index,
         create_report=args.create_report,
+        generate_events=args.generate_events,
+        generate_histograms=args.generate_histograms,
+        all=args.all,
     )
