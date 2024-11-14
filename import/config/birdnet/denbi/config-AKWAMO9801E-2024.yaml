@@ -1,5 +1,11 @@
 # Folder Path to be relative to DATA_DIRECTORY environment variable
 recordFolder:
+   - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202401
+   - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202402
+   - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202403
+   - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202404
+   - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202405
+   - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202406
    - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202407
    - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202408
    - /mnt/akwamodata/AKWAMO9801E/AKWAMO9801E_202409
@@ -48,6 +54,3 @@ analyzeThreads: 30
 transformModelOutput: True
 allThreadsUseSamePort: False
 repeats: 2
-modelOutputStyle: resultDict
-batchSize: 2
-nCpuWorkers: 1
