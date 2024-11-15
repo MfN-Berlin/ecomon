@@ -6,6 +6,8 @@ from worker.store import store_loop_factory
 from util.db import init_db, DbWorker
 from pytz import timezone
 from create_reports import create_report
+from create_species_events import create_species_events
+from create_species_histograms import create_species_histograms
 from time import sleep
 
 from util.tools import (
@@ -24,6 +26,8 @@ def analyze(
     drop_index=False,
     create_report_flag=False,
     retry_corrupted_files=False,
+    create_events_flag=False,
+    create_histograms_flag=False,
     debug=False,
     max_files=None,
 ):
@@ -46,7 +50,7 @@ def analyze(
             config["prefix"],
             species_index_list=config["speciesIndexList"],
         )
-    for i in range(1, config["repeats"], 2):
+    for i in range(0, config["repeats"], 1):
         files_queue = queue.Queue()
         results_queue = queue.Queue()
         all_analyzed_event = threading.Event()
@@ -131,10 +135,14 @@ def analyze(
     if create_index and config["onlyAnalyze"] is False:
         if debug:
             print("Create index" if create_index else "Drop index")
-        create_species_indices(
+        create_species_indices(     
             config["prefix"],
             species_index_list=config["speciesIndexList"],
         )
+    if create_events_flag is True:
+        create_species_events(config["prefix"].lower())
+    if create_histograms_flag is True:
+        create_species_histograms(config["prefix"].lower())
 
     if create_report_flag is True:
         create_report(prefix=config["prefix"].lower(), output_format="json")
@@ -184,6 +192,13 @@ if __name__ == "__main__":
         default=None,
     )
 
+    parser.add_argument(
+        "--generate_events", help="generate events", action="store_true", default=False
+    )
+    parser.add_argument(
+        "--generate_histograms", help="generate histograms", action="store_true", default=False
+    )
+
     args = parser.parse_args()
     if args.config_filepath:
         analyze(
@@ -194,6 +209,8 @@ if __name__ == "__main__":
             retry_corrupted_files=args.retry,
             debug=args.debug,
             max_files=args.max_files,
+            create_events_flag=args.generate_events,
+            create_histograms_flag=args.generate_histograms,
         )
     else:
         print("No config file specified")

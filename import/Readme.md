@@ -24,10 +24,7 @@ python generate_config.py --model birdid --output ./config/akwamo --year 2024 --
 
 ```
 
-
-
-
- Create Reports Script
+# Create Reports Script
 
 This script is designed to generate reports from a ecomon database, summarizing records  from specified prefiox. It supports both text and JSON output formats and can utilize multiple CPU cores for parallel processing.
 

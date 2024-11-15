@@ -36,14 +36,14 @@ def main(
                 cmd_str += " --create_index"
             if create_report or all:
                 cmd_str += " --create_report"
+            if generate_events or all:
+                cmd_str += " --generate_events"
 
             if generate_histograms or all:
                 cmd_str += " --generate_histograms"
 
             os.system(cmd_str)
-            if generate_events or all:
 
-            os.system("python3 import")
 
 
 if __name__ == "__main__":

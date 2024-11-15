@@ -160,7 +160,7 @@ def worker_function(args):
     db_connection.close()
 
 
-def main(partial_name=None, cores=1):
+def create_species_histograms(partial_name=None, cores=1):
     connection = psycopg2.connect(
         host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, port=DB_PORT
     )
@@ -217,4 +217,4 @@ if __name__ == "__main__":
         info("Debug mode enabled!")
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)  # Set the level to DEBUG
-    main(partial_name=args.partial_name, cores=args.cores)
+    create_species_histograms(partial_name=args.partial_name, cores=args.cores)

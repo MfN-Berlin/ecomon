@@ -104,7 +104,7 @@ def worker(datasets):
     connection.close()
 
 
-def main(partial_name=None, cores=1):
+def create_species_events(partial_name=None, cores=1):
     with psycopg2.connect(
         host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, port=DB_PORT
     ) as connection:
@@ -160,4 +160,4 @@ if __name__ == "__main__":
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)  # Set the level to DEBUG
 
-    main(partial_name=args.partial_name, cores=args.cores)
+    create_species_events(partial_name=args.partial_name, cores=args.cores)
