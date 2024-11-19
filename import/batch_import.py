@@ -12,6 +12,7 @@ def main(
     generate_events=False,
     generate_histograms=False,
     all=False,
+    config_includes=None,
 ):
     # Add YAML configs from folder to configs list
     for config in configs:
@@ -19,7 +20,9 @@ def main(
         if os.path.isdir(config):
             # Collect all YAML files in the directory
             for file_path in glob.glob(os.path.join(config, "*.yaml")):
-                paths.append(file_path)
+                # Filter files if config_includes is specified
+                if config_includes is None or config_includes in os.path.basename(file_path):
+                    paths.append(file_path)
         else:
             paths.append(config)
     
@@ -76,6 +79,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--all", help="generate all (report, index, events, histograms)", action="store_true", default=False
     )
+    parser.add_argument(
+        "--config_includes",
+        help="Only process config files that include this string in their filename",
+        type=str,
+        default=None,
+        required=False,
+    )
     args = parser.parse_args()
     configs = args.configs or []
 
@@ -88,4 +98,5 @@ if __name__ == "__main__":
         generate_events=args.generate_events,
         generate_histograms=args.generate_histograms,
         all=args.all,
+        config_includes=args.config_includes,
     )

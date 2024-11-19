@@ -87,6 +87,13 @@ modelOutputStyle: resultDict # if not none this will be added to the classifier 
    import_records.py parameters:
    -  filepath to config yaml file
    -  --create_index if you want to create database species column index
+   -  --drop_index if you want to drop the index before creating a new one
+   -  --create_report if you want to create a JSON report
+   -  --generate_events if you want to generate events
+   -  --generate_histograms if you want to generate histograms
+   -  --all if you want to run all of the above
+   -  --config_includes Only process config files that include this string in their filename.
+
 5. If you wan to run more then one import use batch_import.py
 
 # MARIABDB - MYSQLWORCKBENCH
