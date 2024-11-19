@@ -20,12 +20,12 @@ fileEnding:
    - WAV
    - flac
    - FLAC
-resultFolder: birdnet-public-3k-v2.2/AKWAMO/AKWAMO1205F/2024
+resultFolder: birdid-europe254-2103/AKWAMO/AKWAMO03C1A/2024
 # Index to name File of your used model
-indexToNameFile: ./birdnet-public-3k-v2.2_index_to_name_dog2019.json
+indexToNameFile: ./birdid-europe-254_index_to_name.json
 # prefix of databales of your anlaze run and progress cached file
 filenameParsing: "ammod" # | "inpediv"
-prefix: "BIRDNET_AKWAMO03C1A_2024"
+prefix: "BIRDID_AKWAMO03C1A_2024"
 testRun: False
 timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
 speciesIndexList:
@@ -50,8 +50,11 @@ speciesIndexList:
    - phoenicurus_ochruros
    - phoenicurus_phoenicurus
    - fringilla_coelebs
-basePort: 7100
-analyzeThreads: 30
-transformModelOutput: True
+basePort: 9000
+analyzeThreads: 6
+transformModelOutput: False
 allThreadsUseSamePort: False
 repeats: 1
+modelOutputStyle: resultDict
+batchSize: 2
+nCpuWorkers: 1
