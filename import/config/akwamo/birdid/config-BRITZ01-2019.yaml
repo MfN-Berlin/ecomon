@@ -1,0 +1,60 @@
+# config_template.yaml
+# Folder Path to be relative to DATA_DIRECTORY environment variable
+recordFolder:
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201901
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201902
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201903
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201904
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201905
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201906
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201907
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201908
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201909
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201910
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201911
+   - /mnt/akwamodata/BRITZ01/BRITZ01_201912
+fileEnding:
+   - mp3 # wav
+   - wav
+   - MP3
+   - WAV
+   - flac
+   - FLAC
+resultFolder: birdid-europe254-2103/AKWAMO/BRITZ01/2019
+# Index to name File of your used model
+indexToNameFile: ./birdid-europe-254_index_to_name.json
+# prefix of databales of your anlaze run and progress cached file
+filenameParsing: "ammod" # | "inpediv"
+prefix: "BIRDID_BRITZ01_2019"
+testRun: False
+timezone: Etc/GMT-1 #CET CET is interpred wrong so use a synonym
+speciesIndexList:
+   - grus_grus
+   - ardea_cinerea
+   - strix_aluco
+   - dendrocopos_medius
+   - dendrocopos_major
+   - lophophanes_cristatus
+   - phylloscopus_sibilatrix
+   - phylloscopus_trochilus
+   - phylloscopus_collybita
+   - locustella_luscinioides
+   - sylvia_atricapilla
+   - regulus_ignicapilla
+   - troglodytes_troglodytes
+   - turdus_merula
+   - turdus_philomelos
+   - turdus_viscivorus
+   - erithacus_rubecula
+   - luscinia_luscinia
+   - phoenicurus_ochruros
+   - phoenicurus_phoenicurus
+   - fringilla_coelebs
+basePort: 9000
+analyzeThreads: 6
+transformModelOutput: False
+allThreadsUseSamePort: False
+repeats: 1
+modelOutputStyle: resultDict
+batchSize: 2
+nCpuWorkers: 1
