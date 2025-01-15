@@ -13,16 +13,19 @@ import { firstLetterUpperAndReplaceSpace } from '../../tools/stringHandling'
 import { PanelToolBarContext, IPanelToolBar } from './contexts/PanelToolBarContext'
 import Box from '@mui/material/Box'
 import { useGetCollectionListQuery } from '../../services/api'
+
+// Sort classifier options alphabetically by label
 const classifierOptions = [
-   { value: 'birdnet', label: 'Birdnet' },
-   { value: 'birdid', label: 'BirdId' }
-]
+   { value: 'birdid', label: 'BirdId' },
+   { value: 'birdnet', label: 'Birdnet' }
+].sort((a, b) => a.label.localeCompare(b.label))
 
 export const denseSelectStyles = {
    control: (provided: any) => ({
       ...provided,
-      minHeight: '30px', // You can adjust these sizes to make it even more compact
-      height: '30px'
+      minHeight: '30px',
+      height: '30px',
+      minWidth: '180px'
    }),
    valueContainer: (provided: any) => ({
       ...provided,
@@ -152,7 +155,8 @@ export default function PanelToolBar({
                            .map((item) => {
                               const locationAndDate = item.split('_').slice(1)
                               return { value: locationAndDate.join('_'), label: locationAndDate.join(' ') }
-                           })}
+                           })
+                           .sort((a, b) => a.label.localeCompare(b.label))}
                         onChange={(item) => {
                            console.log(item)
                            if (item) {
