@@ -123,10 +123,7 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
 
    useEffect(() => {
       if (localStorageId && valuesInit) {
-         savePartialState(localStorageId, {
-            selectedSpecies,
-            lowerBorder
-         })
+         savePartialState(localStorageId, { selectedSpecies })
       }
       setAdditionalToolBarChilds(
          <Multiselect
@@ -146,7 +143,7 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
             }}
          />
       )
-   }, [selectedSpecies, isSpeciesListFetching, speciesList, lowerBorder])
+   }, [selectedSpecies, isSpeciesListFetching, speciesList])
 
    useEffect(() => {
       calculateXLabels()
@@ -251,28 +248,36 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
             data={Object.keys(dataMap).map((species) => ({
                x: xLabels,
                y: dataMap[species],
-               type: 'scatter', // or 'bar' for a bar plot
-               mode: 'lines',
-               //marker: { color: getColor(species) },  // You may want to change color for different species
-               name: species
+               type: 'bar',
+               name: species,
+               opacity: 0.7,
+               marker: {
+                  line: {
+                     width: 1,
+                     color: '#000000'
+                  }
+               }
             }))}
             layout={{
                xaxis: {
                   title: 'Value',
-                  autorange: true // Ensures x-axis is scaled automatically
+                  autorange: true
                },
                yaxis: {
                   title: 'Count',
+                  rangemode: 'nonnegative',
+                  autorange: true,
                   range: [0, 'max']
                },
                margin: {
-                  t: 10 // Top margin
+                  t: 10
                },
-               autosize: true // Enable automatic resizing
+               autosize: true,
+               barmode: 'group'
             }}
             useResizeHandler={true}
             style={{
-               position: 'absolute', // This will make the plot fill the parent div
+               position: 'absolute',
                top: 0,
                bottom: 0,
                left: 0,
@@ -281,8 +286,6 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
             config={{ responsive: true }}
             ref={plotRef}
             onClick={(data) => {
-               // data.points is an array of points that were clicked
-               // Each point has various properties like x, y, z, curveNumber, pointNumber, etc.
                console.log(data.points)
             }}
          />
