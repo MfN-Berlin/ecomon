@@ -15,6 +15,8 @@ import { useGetCollectionReportQuery } from '../../services/api'
 import DBIndexChipList from './DBIndexChipList'
 import CollectionStatsHistograms from './CollectionStatsHistograms'
 import CreateVoucherDialog from './CreateVoucherDialog'
+import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -25,7 +27,7 @@ interface CollectionStatsProps {
    collectionId: string | undefined
 }
 export default function CollectionStats({ collectionId: id }: CollectionStatsProps) {
-   const { data: report, refetch, isFetching } = useGetCollectionReportQuery(id)
+   const { data: report, refetch, isFetching, error } = useGetCollectionReportQuery(id)
 
    const {
       setReport,
@@ -53,6 +55,27 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
       setLoading(isFetching)
    }, [isFetching])
 
+   if (error) {
+      return (
+         <Grid container spacing={0} alignItems="flex-start" sx={{ height: '100%' }}>
+            <Grid xs={12}>
+               <Alert
+                  severity="error"
+                  sx={{
+                     height: '100%',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center'
+                  }}
+               >
+                  {/* @ts-expect-error - RTK Query error typing */}
+                  {error.status === 404 ? 'Collection not found' : 'Error loading collection stats'}
+               </Alert>
+            </Grid>
+         </Grid>
+      )
+   }
+
    return (
       <Grid container spacing={0} alignItems="flex-start">
          <Grid container xs={12} md={6} spacing={2}>
@@ -74,7 +97,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                      readOnly={true}
                      ampm={false}
                      loading={loading}
-                     onChange={(value: Date | null) => {}}
+                     onChange={(value: Date | null) => { }}
                   />
                   <DateTimePicker
                      renderInput={(props: TextFieldProps) => <TextField {...props} />}
@@ -84,7 +107,7 @@ export default function CollectionStats({ collectionId: id }: CollectionStatsPro
                      readOnly={true}
                      ampm={false}
                      loading={loading}
-                     onChange={(value: Date | null) => {}}
+                     onChange={(value: Date | null) => { }}
                   />
                </Stack>
             </Grid>
