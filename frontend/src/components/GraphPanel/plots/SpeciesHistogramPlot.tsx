@@ -65,6 +65,7 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
       if (localStorageId && !valuesInit) {
          const state = loadState(localStorageId)
          setSelectedSpecies((state && state.selectedSpecies) || [])
+         setLowerBorder((state && state.lowerBorder) || 0.0)
          setValuesInit(true)
       }
 
@@ -122,7 +123,10 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
 
    useEffect(() => {
       if (localStorageId && valuesInit) {
-         savePartialState(localStorageId, { selectedSpecies })
+         savePartialState(localStorageId, {
+            selectedSpecies,
+            lowerBorder
+         })
       }
       setAdditionalToolBarChilds(
          <Multiselect
@@ -142,7 +146,7 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
             }}
          />
       )
-   }, [selectedSpecies, isSpeciesListFetching, speciesList])
+   }, [selectedSpecies, isSpeciesListFetching, speciesList, lowerBorder])
 
    useEffect(() => {
       calculateXLabels()
@@ -177,10 +181,10 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
                   inputProps: { min: 0, max: 1, step: BIN_SIZE },
                   style: { backgroundColor: 'white' }
                }}
-               value="0.00"
+               value={lowerBorder}
                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const newValue = parseFloat(e.target.value)
-                  if (isNaN(newValue)) return
+                  if (isNaN(newValue) || newValue < 0 || newValue > 1) return
 
                   setLowerBorder(newValue)
                }}
@@ -188,7 +192,7 @@ export default function SpeciesHistogramPlot({ localStorageId }: SpeciesHistogra
                variant="standard"
                size="small"
                className={classes.customTextField}
-               style={{ marginLeft: '5px', width: '80px' }} // Provide some space between the elements
+               style={{ marginLeft: '5px', width: '80px' }}
             />
             <IconButton edge="end" color="inherit" key="download-csv" onClick={handleDownloadCsv}>
                <FileDownloadIcon />
