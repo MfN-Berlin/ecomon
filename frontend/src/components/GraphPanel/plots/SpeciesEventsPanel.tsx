@@ -53,8 +53,7 @@ export default function SpeciesHistogramPanel({ localStorageId }: SpeciesHistogr
       collectionName,
       species
    })
-
-
+   const [threshold, setThreshold] = useState<number>(0)
 
    function initHeatMapData(x: number, y: number) {
       // create arra whith zeros in the dimension x,y
@@ -76,7 +75,9 @@ export default function SpeciesHistogramPanel({ localStorageId }: SpeciesHistogr
             let dayOfYear = Math.floor((date.getTime() - new Date(YEAR, 0, 0).getTime()) / 1000 / 60 / 60 / 24)
             let timeSlot = Math.floor((date.getHours() * 60 + date.getMinutes()) / RECORD_INTERVAL) // adjust denominator to match your time slot duration
             try {
-               dataMap[timeSlot][dayOfYear] = item.value
+               // Apply threshold filter
+               const value = item.value >= threshold ? item.value : 0
+               dataMap[timeSlot][dayOfYear] = value
             } catch (error) {
                console.log('error on:', item)
                console.log('timeSlot:', timeSlot)
@@ -91,38 +92,56 @@ export default function SpeciesHistogramPanel({ localStorageId }: SpeciesHistogr
    }
 
    useEffect(() => {
-      console.log('localStorageId:' + localStorageId, species)
+      console.log('localStorageId:' + localStorageId, species, threshold)
       if (localStorageId && valuesInit) {
-         savePartialState(localStorageId, { species })
+         savePartialState(localStorageId, { species, threshold })
       }
-   }, [species])
+   }, [species, threshold])
 
    useEffect(() => {
       setMainToolBarChilds(
-         <Select
-            isSearchable
-            value={species == '' ? undefined : { value: species, label: firstLetterUpperAndReplaceSpace(species) }}
-            options={speciesList?.map((item) => ({
-               value: item.name,
-               label: firstLetterUpperAndReplaceSpace(item.name)
-            }))}
-            onChange={(item) => {
-               if (item) {
-                  setSpecies(item.value)
-               } else {
-                  setSpecies('')
-               }
-            }}
-            styles={denseSelectStyles}
-         />
+         <Box sx={{ display: 'flex', gap: 1 }}>
+            <Select
+               isSearchable
+               value={species == '' ? undefined : { value: species, label: firstLetterUpperAndReplaceSpace(species) }}
+               options={speciesList?.map((item) => ({
+                  value: item.name,
+                  label: firstLetterUpperAndReplaceSpace(item.name)
+               }))}
+               onChange={(item) => {
+                  if (item) {
+                     setSpecies(item.value)
+                  } else {
+                     setSpecies('')
+                  }
+               }}
+               styles={denseSelectStyles}
+            />
+            <input
+               type="number"
+               value={threshold}
+               min={0}
+               max={1}
+               step={0.05}
+               onChange={(e) => setThreshold(Number(e.target.value))}
+               style={{
+                  width: '80px',
+                  height: '30px',
+                  padding: '0 8px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+               }}
+            />
+         </Box>
       )
-   }, [speciesList, species])
+   }, [speciesList, species, threshold])
 
    useEffect(() => {
       if (localStorageId && !valuesInit) {
          const state = loadState(localStorageId)
-         if (state && state.species) {
-            setSpecies(state.species)
+         if (state) {
+            if (state.species) setSpecies(state.species)
+            if (state.threshold !== undefined) setThreshold(state.threshold)
          }
          setTimeout(() => setValuesInit(true), 0)
       }
@@ -134,7 +153,7 @@ export default function SpeciesHistogramPanel({ localStorageId }: SpeciesHistogr
 
    useEffect(() => {
       updateHeatMapData(data)
-   }, [data])
+   }, [data, threshold])
 
    useEffect(() => {
       // if one element is not set, clear the heatmap
