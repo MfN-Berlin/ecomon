@@ -27,6 +27,7 @@ def main():
     parser.add_argument('--model', type=str, choices=['birdid', 'birdnet'], required=True, help='The model to use in the configuration (birdid or birdnet).')
     parser.add_argument('--folder', type=str, help='Path to a folder. Generate configs for each subfolder as prefix.')
     parser.add_argument('--output', type=str, required=True, help='Output folder for generated configuration files.')
+    parser.add_argument('--filter', type=str, help='Filter subfolders by this substring.')
 
     args = parser.parse_args()
 
@@ -45,8 +46,10 @@ def main():
         # Generate configs for each subfolder
         for subfolder in os.listdir(args.folder):
             subfolder_path = os.path.join(args.folder, subfolder)
-            # Ignore hidden folders
+            # Ignore hidden folders and apply filter if specified
             if os.path.isdir(subfolder_path) and not subfolder.startswith('.'):
+                if args.filter and args.filter not in subfolder:
+                    continue
                 generate_config(subfolder, args.year, args.model, template, args.output)
     else:
         # Generate a single config
