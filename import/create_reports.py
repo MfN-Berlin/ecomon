@@ -128,7 +128,7 @@ def report(cursor, table_name, predictions_table, queries, report_path, output_f
 
             year = last_datetime.year
 
-            for month in range(1, 12):
+            for month in range(1, 13):
                 key = (year, month)
                 if key in result_dict:
                     report_data[formatted_key].append(
@@ -220,8 +220,8 @@ def create_report(prefix=None, output_format="json", prefix_includes=None):
             (
                 "monthly_summary_query",
                 f"""
-                SELECT EXTRACT(YEAR FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1') AS year, 
-                       EXTRACT(MONTH FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1') AS month, 
+                SELECT DATE_PART('year', {table_name}.record_datetime) AS year, 
+                       DATE_PART('month', {table_name}.record_datetime) AS month, 
                        COUNT(DISTINCT {table_name}.id) AS record_count, 
                        SUM({table_name}.duration) AS total_duration, 
                        COUNT({predictions_table}.id) AS prediction_count
@@ -233,9 +233,9 @@ def create_report(prefix=None, output_format="json", prefix_includes=None):
             (
                 "daily_summary_query",
                 f"""
-                SELECT EXTRACT(YEAR FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1') AS year, 
-                       LPAD(EXTRACT(MONTH FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1')::text, 2, '0') AS month, 
-                       LPAD(EXTRACT(DAY FROM {table_name}.record_datetime AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-1')::text, 2, '0') AS day, 
+                SELECT DATE_PART('year', {table_name}.record_datetime) AS year, 
+                       LPAD(DATE_PART('month', {table_name}.record_datetime)::text, 2, '0') AS month, 
+                       LPAD(DATE_PART('day', {table_name}.record_datetime)::text, 2, '0') AS day, 
                        COUNT(DISTINCT {table_name}.id) AS record_count, 
                        SUM({table_name}.duration) AS total_duration, 
                        COUNT({predictions_table}.id) AS prediction_count
