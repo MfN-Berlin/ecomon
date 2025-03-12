@@ -1,0 +1,28 @@
+table:
+  name: events
+  schema: public
+object_relationships:
+  - name: label
+    using:
+      foreign_key_constraint_on: label_id
+  - name: model
+    using:
+      foreign_key_constraint_on: model_id
+  - name: record
+    using:
+      foreign_key_constraint_on: record_id
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - label_id
+        - model_id
+        - record_id
+        - end_time
+        - start_time
+        - confidence
+        - channel
+      filter: {}
+      allow_aggregations: true
+    comment: ""

@@ -1,0 +1,21 @@
+table:
+  name: site_reports
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - site_id
+        - id
+        - record_duration
+        - records_count
+        - corrupted_files
+        - daily_histogram
+        - duration_histogram
+        - monthly_histogram
+        - records_heatmap
+        - first_record_date
+        - last_record_date
+        - created_at
+      filter: {}
+    comment: ""

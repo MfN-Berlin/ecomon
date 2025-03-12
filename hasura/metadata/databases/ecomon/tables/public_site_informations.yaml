@@ -1,0 +1,39 @@
+table:
+  name: site_informations
+  schema: public
+array_relationships:
+  - name: sites
+    using:
+      foreign_key_constraint_on:
+        column: site_information_id
+        table:
+          name: sites
+          schema: public
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - corrupted_record_count
+        - first_record
+        - last_record
+        - record_count
+        - record_duration
+        - remarks
+    comment: ""
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - corrupted_record_count
+        - id
+        - record_count
+        - record_duration
+        - remarks
+        - first_record
+        - last_record
+        - created_at
+        - updated_at
+      filter: {}
+      allow_aggregations: true
+    comment: ""

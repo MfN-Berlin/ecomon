@@ -1,0 +1,17 @@
+fragment SiteDirectory on site_directories {
+  id
+  site_id
+  directory
+}
+
+mutation insertSiteDirectory($directory: String!, $site_id: bigint!) {
+  data: insert_site_directories_one(object: { site_id: $site_id, directory: $directory }) {
+    ...SiteDirectory
+  }
+}
+
+mutation deleteSiteDirectory($id: bigint!) {
+  data: delete_site_directories_by_pk(id: $id) {
+    ...SiteDirectory
+  }
+}

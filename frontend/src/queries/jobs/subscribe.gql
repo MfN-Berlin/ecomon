@@ -1,0 +1,12 @@
+subscription subscribeActiveJobs {
+  jobs(order_by: { id: desc }, where: { status: { _nin: ["done", "failed"] } }) {
+    id
+    status
+    topic
+    payload
+    progress
+    error
+    updated_at
+    created_at
+  }
+}

@@ -1,0 +1,30 @@
+fragment Label on labels {
+  id
+  name
+  english
+  german
+  gbif
+  class
+  order
+}
+query getLabelsPagniated(
+  $limit: Int = 10
+  $offset: Int = 0
+  $order_by: [labels_order_by!] = { id: desc }
+  $where: labels_bool_exp = {}
+) {
+  items: labels(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
+    ...Label
+  }
+  total: labels_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}
+
+mutation deleteLabel($id: bigint!) {
+  data: delete_labels_by_pk(id: $id) {
+    ...Label
+  }
+}

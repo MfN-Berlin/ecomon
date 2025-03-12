@@ -1,0 +1,18 @@
+table:
+  name: model_label_mapping
+  schema: public
+object_relationships:
+  - name: label
+    using:
+      foreign_key_constraint_on: model_id
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - model_id
+        - model_label_index
+        - model_label_name
+      filter: {}
+      allow_aggregations: true
+    comment: ""

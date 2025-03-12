@@ -1,0 +1,15 @@
+http:
+  routers:
+    files:
+      entryPoints:
+        - web
+      rule: host(`localhost`) && PathPrefix(`/ecomon/static/files`)
+      service: files
+      middlewares:
+        - simple-auth
+        - strip-ecomon
+  services:
+    files:
+      loadBalancer:
+        servers:
+          - url: http://host.docker.internal:8000

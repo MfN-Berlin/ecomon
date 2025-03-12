@@ -1,0 +1,58 @@
+fragment Record on records {
+  id
+  filepath
+  filename
+  duration
+  channels
+  mime_type
+  record_datetime
+  sample_rate
+}
+
+query getRecordById($id: bigint!) {
+  data: records_by_pk(id: $id) {
+    ...Record
+  }
+}
+
+mutation updateRecord(
+  $id: bigint!
+  $filepath: String
+  $filename: String
+  $duration: numeric
+  $channels: String
+  $mime_type: String
+  $record_datetime: timestamp
+  $sample_rate: Int
+) {
+  data: update_records_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      filepath: $filepath
+      filename: $filename
+      duration: $duration
+      channels: $channels
+      mime_type: $mime_type
+      record_datetime: $record_datetime
+      sample_rate: $sample_rate
+    }
+  ) {
+    ...Record
+  }
+}
+
+query getRecordsPagniated(
+  $limit: Int = 10
+  $offset: Int = 0
+  $order_by: [records_order_by!] = { id: desc }
+  $where: records_bool_exp = {}
+) {
+  items: records(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
+    ...Record
+  }
+  total: records_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}

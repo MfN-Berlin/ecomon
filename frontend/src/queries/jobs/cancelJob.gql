@@ -1,0 +1,7 @@
+mutation cancelJob($jobId: Int!) {
+  data: cancelJobById(jobId: $jobId) {
+    message
+    success
+    jobId
+  }
+}

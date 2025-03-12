@@ -1,0 +1,51 @@
+table:
+  name: locations
+  schema: public
+array_relationships:
+  - name: sites
+    using:
+      foreign_key_constraint_on:
+        column: location_id
+        table:
+          name: sites
+          schema: public
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - lat
+        - long
+        - name
+        - remarks
+    comment: ""
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - created_at
+        - id
+        - lat
+        - long
+        - name
+        - remarks
+        - updated_at
+      filter: {}
+      allow_aggregations: true
+    comment: ""
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - lat
+        - long
+        - name
+        - remarks
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: user
+    permission:
+      filter: {}
+    comment: ""

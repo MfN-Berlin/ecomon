@@ -1,0 +1,130 @@
+fragment Site on sites {
+  id
+  name
+  remarks
+  record_regime_pause_duration
+  record_regime_recording_duration
+  updated_at
+  created_at
+  site_directories {
+    site_id
+    id
+    directory
+  }
+  alias
+  sample_rate
+  location {
+    id
+    name
+    long
+    lat
+  }
+  updated_at
+  created_at
+}
+
+fragment SiteList on sites {
+  id
+  name
+  alias
+  remarks
+  created_at
+  updated_at
+}
+
+query filterSite($search: String = "", $limit: Int = 10, $offset: Int = 10) {
+  data: sites(
+    order_by: { name: asc }
+    limit: $limit
+    offset: $offset
+    where: { _or: { name: { _like: $search }, remarks: { _like: $search } } }
+  ) {
+    ...SiteList
+  }
+}
+
+query getSiteList {
+  data: sites(order_by: { name: asc }) {
+    ...SiteList
+  }
+}
+
+query getSiteById($id: bigint!) {
+  data: sites_by_pk(id: $id) {
+    ...Site
+  }
+}
+
+mutation insertSite(
+  $remarks: String = ""
+  $name: String!
+  $alias: String!
+  $sample_rate: Int!
+  $record_regime_pause_duration: numeric!
+  $record_regime_recording_duration: numeric!
+  $location_id: bigint!
+) {
+  data: insert_sites_one(
+    object: {
+      name: $name
+      alias: $alias
+      remarks: $remarks
+      location_id: $location_id
+      sample_rate: $sample_rate
+      record_regime_pause_duration: $record_regime_pause_duration
+      record_regime_recording_duration: $record_regime_recording_duration
+    }
+  ) {
+    ...Site
+  }
+}
+mutation updateSite(
+  $id: bigint!
+  $name: String!
+  $alias: String = ""
+  $remarks: String = ""
+  $location_id: bigint!
+  $record_regime_recording_duration: numeric!
+  $record_regime_pause_duration: numeric!
+  $sample_rate: Int!
+) {
+  data: update_sites_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      name: $name
+      alias: $alias
+      remarks: $remarks
+      location_id: $location_id
+      record_regime_recording_duration: $record_regime_recording_duration
+      record_regime_pause_duration: $record_regime_pause_duration
+      sample_rate: $sample_rate
+    }
+  ) {
+    ...Site
+  }
+}
+
+mutation deleteSite($id: bigint!) {
+  data: delete_sites_by_pk(id: $id) {
+    ...Site
+  }
+}
+
+query getSitesPagniated(
+  $limit: Int = 10
+  $offset: Int = 0
+  $order_by: [sites_order_by!] = { id: desc }
+  $where: sites_bool_exp = {}
+) {
+  items: sites(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
+    ...Site
+    location {
+      ...Location
+    }
+  }
+  total: sites_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}

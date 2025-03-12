@@ -1,0 +1,27 @@
+table:
+  name: jobs
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - progress
+        - error
+        - payload
+        - topic
+        - created_at
+        - updated_at
+        - status
+      filter: {}
+      allow_aggregations: true
+    comment: ""
+delete_permissions:
+  - role: user
+    permission:
+      filter:
+        status:
+          _in:
+            - done
+            - failed
+    comment: ""

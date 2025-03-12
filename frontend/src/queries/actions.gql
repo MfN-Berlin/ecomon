@@ -1,0 +1,6 @@
+query listDataDirectories($subpath: String = "") {
+  data: listDataDirectories(subpath: $subpath) {
+    name
+    path
+  }
+}

@@ -1,0 +1,67 @@
+table:
+  name: sites
+  schema: public
+object_relationships:
+  - name: location
+    using:
+      foreign_key_constraint_on: location_id
+array_relationships:
+  - name: records
+    using:
+      foreign_key_constraint_on:
+        column: site_id
+        table:
+          name: records
+          schema: public
+  - name: sets_sites_selections
+    using:
+      foreign_key_constraint_on:
+        column: site_id
+        table:
+          name: sets_sites_selections
+          schema: public
+  - name: site_directories
+    using:
+      foreign_key_constraint_on:
+        column: site_id
+        table:
+          name: site_directories
+          schema: public
+  - name: site_reports
+    using:
+      foreign_key_constraint_on:
+        column: site_id
+        table:
+          name: site_reports
+          schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - location_id
+        - sample_rate
+        - record_regime_pause_duration
+        - record_regime_recording_duration
+        - alias
+        - name
+        - remarks
+        - created_at
+        - updated_at
+      filter: {}
+      allow_aggregations: true
+    comment: ""
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - alias
+        - location_id
+        - name
+        - record_regime_pause_duration
+        - record_regime_recording_duration
+        - remarks
+        - sample_rate
+      filter: {}
+      check: null
+    comment: ""

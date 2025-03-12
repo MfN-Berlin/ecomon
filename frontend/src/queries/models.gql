@@ -1,0 +1,76 @@
+fragment Model on models {
+  id
+  name
+  short_name
+  endpoint
+  remarks
+  updated_at
+  created_at
+}
+
+query filterModel($search: String = "", $limit: Int = 10, $offset: Int = 10) {
+  data: models(
+    order_by: { name: asc }
+    limit: $limit
+    offset: $offset
+    where: { _or: { name: { _ilike: $search }, endpoint: { _ilike: $search }, remarks: { _ilike: $search } } }
+  ) {
+    ...Model
+  }
+}
+
+query getModelList {
+  data: models(order_by: { name: asc }) {
+    ...Model
+  }
+}
+
+query getModelById($id: bigint!) {
+  data: models_by_pk(id: $id) {
+    ...Model
+  }
+}
+
+mutation insertModel(
+  $remarks: String = ""
+  $name: String!
+  $short_name: String = ""
+  $endpoint: String = ""
+) {
+  data: insert_models_one(
+    object: { name: $name, remarks: $remarks, endpoint: $endpoint, short_name: $short_name }
+  ) {
+    ...Model
+  }
+}
+
+mutation updateModel($id: bigint!, $name: String, $remarks: String, $endpoint: String, $short_name: String) {
+  data: update_models_by_pk(
+    pk_columns: { id: $id }
+    _set: { name: $name, remarks: $remarks, endpoint: $endpoint, short_name: $short_name }
+  ) {
+    ...Model
+  }
+}
+
+mutation deleteModel($id: bigint!) {
+  data: delete_models_by_pk(id: $id) {
+    ...Model
+  }
+}
+
+query getModelsPagniated(
+  $limit: Int = 10
+  $offset: Int = 0
+  $order_by: [models_order_by!] = {}
+  $where: models_bool_exp = {}
+) {
+  items: models(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
+    ...Model
+  }
+  total: models_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}

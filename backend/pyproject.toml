@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "ecomon"
+version = "0.1.0"
+description = "Platform to analyze eco accoustic monitoring data"
+authors = ["bw <benjamin.werner42@pm.com>"]
+readme = "README.md"
+
+
+packages = [
+  { include = "backend", from = "src" }
+]
+[tool.poetry.dependencies]
+python = "^3.11.0"
+fastapi = "^0.115.4"
+uvicorn = "^0.32.0"
+sqlalchemy = "^2.0.30"
+asyncpg = "^0.29.0"
+httpx = "^0.27.0"
+python-dotenv = "^1.0.1"
+pydantic = "^2.9.2"
+sqlacodegen-v2 = "^0.1.4"
+pydantic-settings = "^2.7.1"
+celery = {extras = ["redis"], version = "^5.4.0"}
+redis = "^5.2.1"
+soundfile = "^0.13.1"
+gevent = "^24.11.1"
+
+
+[tool.poetry.group.dev.dependencies]
+sqlacodegen-v2 = "^0.1.4"
+psycopg2-binary = "^2.9.10"
+faker = "^36.1.0"
+black = "^25.1.0"
+watchfiles = "^1.0.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+backend = "backend.api.__main__:main"
+generate-models = "backend.scripts.generate_models:main"
+generate-dummy-data = "backend.scripts.generate_dummy_data:main"
+download-labels = "backend.scripts.download_labels_csv:main"
+update-labels = "backend.scripts.update_labels_csv:main"

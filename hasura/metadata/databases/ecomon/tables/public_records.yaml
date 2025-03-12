@@ -1,0 +1,32 @@
+table:
+  name: records
+  schema: public
+object_relationships:
+  - name: site
+    using:
+      foreign_key_constraint_on: site_id
+array_relationships:
+  - name: events
+    using:
+      foreign_key_constraint_on:
+        column: record_id
+        table:
+          name: events
+          schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - site_id
+        - sample_rate
+        - errors
+        - duration
+        - channels
+        - filename
+        - filepath
+        - mime_type
+        - record_datetime
+        - created_at
+      filter: {}
+    comment: ""

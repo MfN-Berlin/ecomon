@@ -1,0 +1,53 @@
+table:
+  name: sets
+  schema: public
+object_relationships:
+  - name: set_information
+    using:
+      foreign_key_constraint_on: set_information_id
+array_relationships:
+  - name: sets_sites_selections
+    using:
+      foreign_key_constraint_on:
+        column: set_id
+        table:
+          name: sets_sites_selections
+          schema: public
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - name
+        - remarks
+        - set_information_id
+    comment: ""
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - set_information_id
+        - name
+        - remarks
+        - created_at
+        - updated_at
+      filter: {}
+      allow_aggregations: true
+    comment: ""
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - created_at
+        - name
+        - remarks
+        - set_information_id
+      filter: {}
+      check: null
+    comment: ""
+delete_permissions:
+  - role: user
+    permission:
+      filter: {}
+    comment: ""

@@ -1,0 +1,17 @@
+table:
+  name: labels
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - class
+        - english
+        - gbif
+        - german
+        - name
+        - order
+      filter: {}
+      allow_aggregations: true
+    comment: ""

@@ -1,0 +1,51 @@
+table:
+  name: models
+  schema: public
+array_relationships:
+  - name: events
+    using:
+      foreign_key_constraint_on:
+        column: model_id
+        table:
+          name: events
+          schema: public
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - endpoint
+        - name
+        - remarks
+        - short_name
+    comment: ""
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - created_at
+        - endpoint
+        - id
+        - name
+        - remarks
+        - short_name
+        - updated_at
+      filter: {}
+      allow_aggregations: true
+    comment: ""
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - endpoint
+        - name
+        - remarks
+        - short_name
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: user
+    permission:
+      filter: {}
+    comment: ""

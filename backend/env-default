@@ -1,0 +1,8 @@
+DB_USERNAME=ecomon
+DB_PASSWORD=ecomon
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=ecomon
+BASE_DATA_DIRECTORY=/../../data
+REDIS_HOST=localhost
+REDIS_PORT=6379

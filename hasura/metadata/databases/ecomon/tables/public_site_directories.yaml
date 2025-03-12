@@ -1,0 +1,65 @@
+table:
+  name: site_directories
+  schema: public
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - directory
+        - site_id
+    comment: ""
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - site_id
+        - directory
+      filter: {}
+      allow_aggregations: true
+    comment: ""
+delete_permissions:
+  - role: user
+    permission:
+      filter: {}
+    comment: ""
+event_triggers:
+  - name: site_directory_delete
+    definition:
+      delete:
+        columns: '*'
+      enable_manual: false
+    retry_conf:
+      interval_sec: 10
+      num_retries: 0
+      timeout_sec: 60
+    webhook: '{{HASURA_WEBHOOKS_BASE_URL}}'
+    request_transform:
+      body:
+        action: transform
+        template: "{\n  \"site_id\": {{$body.event.data.old.site_id}},\n  \"directory\": {{$body.event.data.old.directory}},\n  \"operation\": \"DELETE\"\n  \n}"
+      method: POST
+      query_params: {}
+      template_engine: Kriti
+      url: '{{$base_url}}/sites/directory-changed'
+      version: 2
+  - name: site_directory_insert
+    definition:
+      enable_manual: false
+      insert:
+        columns: '*'
+    retry_conf:
+      interval_sec: 10
+      num_retries: 0
+      timeout_sec: 60
+    webhook: '{{HASURA_WEBHOOKS_BASE_URL}}'
+    request_transform:
+      body:
+        action: transform
+        template: "{\n  \"site_id\": {{$body.event.data.new.site_id}},\n  \"directory\": {{$body.event.data.new.directory}},\n  \"operation\": \"INSERT\"\n  \n}"
+      method: POST
+      query_params: {}
+      template_engine: Kriti
+      url: '{{$base_url}}/sites/directory-changed'
+      version: 2

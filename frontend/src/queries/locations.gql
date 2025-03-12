@@ -1,0 +1,71 @@
+fragment Location on locations {
+  id
+  name
+  long
+  lat
+  remarks
+}
+query filterLocation($search: String = "%%", $limit: Int = 10, $offset: Int = 0, $order: order_by = asc) {
+  data: locations(
+    order_by: { name: $order }
+    where: { name: { _ilike: $search } }
+    limit: $limit
+    offset: $offset
+  ) {
+    ...Location
+  }
+}
+
+query getLocationList {
+  data: locations(order_by: { name: asc }) {
+    ...Location
+  }
+}
+
+mutation insertLocation($name: String!, $remarks: String = "", $long: numeric = null, $lat: numeric = null) {
+  data: insert_locations_one(object: { name: $name, remarks: $remarks, long: $long, lat: $lat }) {
+    ...Location
+  }
+}
+
+mutation deleteLocation($id: bigint!) {
+  data: delete_locations_by_pk(id: $id) {
+    ...Location
+  }
+}
+
+query getLocationById($id: bigint!) {
+  data: locations_by_pk(id: $id) {
+    ...Location
+    sites_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+}
+
+mutation updateLocation($id: bigint!, $lat: numeric, $long: numeric, $name: String, $remarks: String) {
+  data: update_locations_by_pk(
+    pk_columns: { id: $id }
+    _set: { lat: $lat, long: $long, name: $name, remarks: $remarks }
+  ) {
+    ...Location
+  }
+}
+
+query getLocationsPagniated(
+  $limit: Int = 10
+  $offset: Int = 0
+  $order_by: [locations_order_by!] = { id: desc }
+  $where: locations_bool_exp = {}
+) {
+  items: locations(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
+    ...Location
+  }
+  total: locations_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}

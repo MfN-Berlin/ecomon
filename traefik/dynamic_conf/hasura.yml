@@ -1,0 +1,25 @@
+http: 
+  routers:
+    hasura:
+      entryPoints:
+        - web
+      rule: host(`localhost`) && PathPrefix(`/ecomon/api/v1/graphql`)
+      service: hasura
+      middlewares:
+        - hasura
+        - simple-auth
+        - remove-auth-headers
+  services:
+    hasura:
+      loadBalancer:
+        servers:
+        - url: http://graphql-engine:8080
+  middlewares:
+    hasura:
+      stripPrefix:
+        prefixes:
+        - /ecomon/api
+    remove-auth-headers:
+      headers:
+        customRequestHeaders:
+          Authorization: ""

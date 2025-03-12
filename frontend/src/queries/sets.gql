@@ -1,0 +1,99 @@
+fragment SetListInfo on sets {
+  id
+  name
+  remarks
+  created_at
+  updated_at
+}
+
+fragment Set on sets {
+  id
+  name
+  remarks
+  set_information {
+    id
+    start_date
+    end_date
+    first_record
+    last_record
+    record_count
+    corrupted_record_count
+    record_regime_pause_duration
+    record_duration
+    record_regime_recording_duration
+    updated_at
+    created_at
+  }
+  sets_sites_selections {
+    id
+    from
+    set_id
+    site_id
+    to
+    site {
+      name
+      alias
+    }
+    updated_at
+    created_at
+  }
+  updated_at
+  created_at
+}
+
+query filterSets($search: String = "", $limit: Int = 10, $offset: Int = 10) {
+  data: sets(
+    order_by: { name: asc }
+    limit: $limit
+    offset: $offset
+    where: { _or: { name: { _like: $search }, remarks: { _like: $search } } }
+  ) {
+    ...SetListInfo
+  }
+}
+
+query getSetsList {
+  data: sets(order_by: { name: asc }) {
+    ...SetListInfo
+  }
+}
+
+query getSetsById($id: bigint = "") {
+  data: sets_by_pk(id: $id) {
+    ...Set
+  }
+}
+
+mutation insertSet($name: String, $remarks: String = "") {
+  data: insert_sets_one(object: { name: $name, remarks: $remarks }) {
+    ...Set
+  }
+}
+
+mutation updateSet($id: bigint!, $name: String = "", $remarks: String = "") {
+  data: update_sets_by_pk(pk_columns: { id: $id }, _set: { name: $name, remarks: $remarks }) {
+    ...Set
+  }
+}
+
+mutation deleteSet($id: bigint!) {
+  data: delete_sets_by_pk(id: $id) {
+    ...Set
+  }
+}
+
+query getSetsPagniated(
+  $limit: Int = 10
+  $offset: Int = 0
+  $order_by: [sets_order_by!] = { id: desc }
+  $where: sets_bool_exp = {}
+) {
+  items: sets(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
+    ...Set
+  }
+  total: sets_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}

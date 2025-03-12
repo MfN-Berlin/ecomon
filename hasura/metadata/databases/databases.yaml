@@ -1,0 +1,9 @@
+- name: ecomon
+  kind: postgres
+  configuration:
+    connection_info:
+      database_url:
+        from_env: PGDATABASE_URL
+      isolation_level: read-committed
+      use_prepared_statements: false
+  tables: "!include ecomon/tables/tables.yaml"

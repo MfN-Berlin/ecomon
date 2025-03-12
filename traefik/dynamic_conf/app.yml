@@ -1,0 +1,14 @@
+http:
+  routers:
+    frontend:
+      entryPoints:
+        - web
+      rule: host(`localhost`) && PathPrefix(`/ecomon`)
+      service: frontend
+      middlewares:
+        - simple-auth
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+          - url: http://host.docker.internal:3000

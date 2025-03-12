@@ -1,0 +1,11 @@
+.github/
+node_modules/
+dist/
+.git/
+.nuxt
+.vscode/
+.github/
+.env
+.nuxt
+.gitignore
+README.md

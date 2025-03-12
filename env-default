@@ -1,0 +1,8 @@
+
+POSTGRES_DATABASE=ecomon
+POSTGRES_USER=ecomon                
+POSTGRES_PASSWORD=ecomon
+POSTGRES_ROOT_PASSWORD=ecomon
+
+HASURA_ADMIN_SECRET=ecomon
+HASURA_WEBHOOKS_BASE_URL=http://host.docker.internal:8000

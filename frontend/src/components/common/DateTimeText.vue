@@ -1,0 +1,48 @@
+<template>
+  <time :datetime="$dayjs(props.time)"> {{ formattedDate }} </time>
+</template>
+
+<script lang="ts" setup>
+type DateTimeTextProps = {
+  time: string;
+  relativeTime?: boolean;
+  relativeTimeSpan?: number;
+  showSeconds?: boolean;
+  showTime?: boolean;
+  showDate?: boolean;
+};
+
+const { $dayjs } = useNuxtApp();
+const props = withDefaults(defineProps<DateTimeTextProps>(), {
+  relativeTime: true,
+  relativeTimeSpan: 1000 * 60 * 60 * 24, // 1 day
+  showSeconds: false,
+  showTime: true,
+  showDate: true
+});
+
+const formattedDate = computed(() => {
+  const timestamp = $dayjs(props.time);
+  const now = $dayjs();
+  const diff = now.diff(timestamp);
+
+  if (props.relativeTime && diff <= props.relativeTimeSpan) {
+    return timestamp.fromNow();
+  } else {
+    const formatOptions: Intl.DateTimeFormatOptions = {};
+    if (props.showDate) {
+      formatOptions.year = "numeric";
+      formatOptions.month = "2-digit";
+      formatOptions.day = "2-digit";
+    }
+    if (props.showTime) {
+      formatOptions.hour = "2-digit";
+      formatOptions.minute = "2-digit";
+      if (props.showSeconds) {
+        formatOptions.second = "2-digit";
+      }
+    }
+    return timestamp.toDate().toLocaleString(undefined, formatOptions);
+  }
+});
+</script>

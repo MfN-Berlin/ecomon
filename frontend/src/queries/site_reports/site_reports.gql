@@ -1,0 +1,45 @@
+query getSiteReportById($id: Int!) {
+  data: site_reports_by_pk(id: $id) {
+    id
+    first_record_date
+    last_record_date
+    record_duration
+    records_count
+    corrupted_files
+  }
+}
+
+query getSiteReportList($id: bigint!) {
+  data: site_reports(order_by: { created_at: desc }, where: { site_id: { _eq: $id } }) {
+    id
+    created_at
+  }
+}
+
+query getSiteReportMonthlyHistogram($id: Int!) {
+  data: site_reports_by_pk(id: $id) {
+    id
+    data: monthly_histogram
+  }
+}
+
+query getSiteReportDailyHistogram($id: Int!) {
+  data: site_reports_by_pk(id: $id) {
+    id
+    data: daily_histogram
+  }
+}
+
+query getSiteReportDurationHistogram($id: Int!) {
+  data: site_reports_by_pk(id: $id) {
+    id
+    data: duration_histogram
+  }
+}
+
+query getSiteReportRecordsHeatmap($id: Int!) {
+  data: site_reports_by_pk(id: $id) {
+    id
+    data: records_heatmap
+  }
+}

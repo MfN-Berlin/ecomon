@@ -1,0 +1,33 @@
+type Mutation {
+  cancelJobById(
+    jobId: Int!
+  ): CancelJobResponse
+}
+
+type Query {
+  listDataDirectories(
+    subpath: String
+  ): [DirectoryInfo]!
+}
+
+type DirectoryInfo {
+  name: String!
+  path: String!
+}
+
+type ListDirectoriesResponse {
+  directories: [DirectoryInfo]!
+}
+
+type ListDataDirectoriesResponse {
+  directories: [DirectoryInfo]!
+}
+
+type CancelJobResponse {
+  success: Boolean!
+  message: String
+  jobId: Int
+}
+
+scalar JSON
+

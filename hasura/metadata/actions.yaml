@@ -1,0 +1,47 @@
+actions:
+  - name: cancelJobById
+    definition:
+      kind: synchronous
+      handler: '{{HASURA_WEBHOOKS_BASE_URL}}'
+      forward_client_headers: true
+      request_transform:
+        body:
+          action: transform
+          template: '{}'
+        method: POST
+        query_params: {}
+        template_engine: Kriti
+        url: '{{$base_url}}/jobs/cancel/{{$body.input?.jobId}}'
+        version: 2
+    permissions:
+      - role: user
+    comment: Cancels a job by ID.
+  - name: listDataDirectories
+    definition:
+      kind: ""
+      handler: '{{HASURA_WEBHOOKS_BASE_URL}}'
+      forward_client_headers: true
+      request_transform:
+        method: GET
+        query_params:
+          subpath: '{{$body.input?.subpath}}'
+        request_headers:
+          add_headers: {}
+          remove_headers:
+            - content-type
+        template_engine: Kriti
+        url: '{{$base_url}}/sites/list-data-directories'
+        version: 2
+    permissions:
+      - role: user
+    comment: Lists all folders in the data directory. Optional subpath parameter to list specific subdirectory.
+custom_types:
+  enums: []
+  input_objects: []
+  objects:
+    - name: DirectoryInfo
+    - name: ListDirectoriesResponse
+    - name: ListDataDirectoriesResponse
+    - name: CancelJobResponse
+  scalars:
+    - name: JSON

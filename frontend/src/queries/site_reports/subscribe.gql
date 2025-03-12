@@ -1,0 +1,6 @@
+subscription SubscripeReportsBySiteId($siteId: bigint!) {
+  data: site_reports(where: { site_id: { _eq: $siteId } }, order_by: { created_at: desc }) {
+    id
+    created_at
+  }
+}
