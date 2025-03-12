@@ -1,0 +1,11 @@
+http:
+  middlewares:
+    simple-auth:
+      basicAuth:
+        users:
+          - "user:$apr1$xCKSO0nW$NJYz1UdQ/iRZYtIwB39tE/" # password: "user"
+    strip-ecomon:
+      stripPrefix:
+        prefixes:
+          - "/ecomon_next"
+        forceSlash: true

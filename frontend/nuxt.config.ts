@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   ],
 
   app: {
-    baseURL: "/ecomon/"
+    baseURL: "/ecomon_next/"
   },
   imports: {
     dirs: ["composables/**"]

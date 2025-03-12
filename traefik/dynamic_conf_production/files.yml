@@ -1,0 +1,14 @@
+http:
+  routers:
+    files:
+      entryPoints:
+        - web
+      rule: host(`129.70.51.241`) && PathPrefix(`/ecomon_next/static/files`)
+      service: files
+      middlewares:
+        - strip-ecomon
+  services:
+    files:
+      loadBalancer:
+        servers:
+          - url: http://api:80

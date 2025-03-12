@@ -65,3 +65,16 @@ update_permissions:
       filter: {}
       check: null
     comment: ""
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - alias
+        - location_id
+        - name
+        - record_regime_pause_duration
+        - record_regime_recording_duration
+        - remarks
+        - sample_rate
+    comment: ""

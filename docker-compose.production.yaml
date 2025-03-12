@@ -10,13 +10,13 @@ services:
       - "--accesslog.fields.headers.names.User-Agent=drop"
       - "--accesslog.fields.headers.names.Content-Type=drop"
       - "--entryPoints.web.address=:80"
-
+    restart: unless-stopped
     ports:
-      - "80:80"
-      - "8181:8080" # The Traefik dashboard
+      - "10000:80"
+      - "10181:8080" # The Traefik dashboard
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./traefik/dynamic_conf:/etc/traefik/dynamic_conf"
+      - "./traefik/dynamic_conf_production:/etc/traefik/dynamic_conf"
       - "./traefik/logs:/logs"
     networks:
       - traefik-ingress
@@ -27,16 +27,23 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "10300:3000"
     networks:
       - traefik-ingress
+    environment:
+      - NUXT_PUBLIC_GQL_HOST="https://129.70.51.241/ecomon_next/api/v1/graphql"
+      - NUXT_PUBLIC_API_BASE_URL="/ecomon_next"
+      - NUXT_PUBLIC_GRAPHQL_CLIENT_CLIENTS_DEFAULT_HOST="https://129.70.51.241/ecomon_next/api/v1/graphql"
+
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile.api
+    restart: unless-stopped
     ports:
-      - "8000:80"
+      - "10800:80"
     networks:
       - traefik-ingress
       - ecomon
@@ -54,6 +61,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.worker
+    restart: unless-stopped
     networks:
       - ecomon
     environment:
@@ -68,15 +76,15 @@ services:
       - ${BASE_DATA_DIRECTORY}:/data
   db:
     image: postgres:16
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ecomon
-      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_USER: "${DB_USERNAME}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
       POSTGRES_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       POSTGRES_DATABASE: "${DB_NAME}"
     ports:
-      - "5432:5432"
+      - "7432:5432"
     volumes:
       - ecomon_data:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
@@ -86,6 +94,7 @@ services:
     build:
       context: ./hasura
       dockerfile: Dockerfile.hasura-migrate
+    restart: unless-stopped
     depends_on:
       - db
       - graphql-engine
@@ -97,14 +106,16 @@ services:
       APPLY_SEEDS: "false"
     networks:
       - ecomon
+    volumes:
+      - ./hasura:/app
   graphql-engine:
     image: hasura/graphql-engine:v2.38.0-ce
     ports:
-      - "8080:8080"
-    restart: always
+      - "10080:8080"
+    restart: unless-stopped
     environment:
-      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/hasura
-      PGDATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/ecomon
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/hasura
+      PGDATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/ecomon
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
       HASURA_GRAPHQL_READ_ONLY_MODE: "false"
       HASURA_GRAPHQL_DEV_MODE: "true"
@@ -127,8 +138,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "10379:6379"
     networks:
       - ecomon
 volumes:

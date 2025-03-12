@@ -1,0 +1,14 @@
+http:
+  routers:
+    frontend:
+      entryPoints:
+        - web
+      rule: host(`129.70.51.241`) && PathPrefix(`/ecomon_next`)
+      service: frontend
+
+
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+          - url: http://frontend:3000
