@@ -13,7 +13,8 @@
     "lint": "eslint ",
     "lint-staged": "lint-staged",
     "eslint:fix": "eslint --quiet --fix",
-    "prettier:fix": "prettier --write --ignore-unknown ."
+    "prettier:fix": "prettier --write --ignore-unknown .",
+    "generate-gql": "gq http://localhost:8080/v1/graphql -H 'X-Hasura-Admin-Secret: ecomon' --introspect > schema.graphql"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
@@ -35,6 +36,7 @@
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/core": "^12.5.0",
     "@vueuse/nuxt": "^12.5.0",
+    "graphqurl": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
     "nanoid": "^5.1.2",
     "nuxt": "3.15.4",

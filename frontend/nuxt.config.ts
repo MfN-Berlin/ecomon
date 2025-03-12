@@ -29,7 +29,15 @@ export default defineNuxtConfig({
     public: {
       LOG_LEVEL: "debug",
       GQL_HOST: "http://localhost:8080/v1/graphql",
-      API_BASE_URL: "/ecomon"
+      API_BASE_URL: "/ecomon",
+      "graphql-client": {
+        clients: {
+          default: {
+            schema: "../schema.graphql",
+            host: "http://localhost:8080/v1/graphql"
+          }
+        }
+      }
     }
   },
 
@@ -75,22 +83,12 @@ export default defineNuxtConfig({
       dedupeFragments: true,
       onlyOperationTypes: true,
       avoidOptionals: false,
-      disableOnBuild: true,
+      disableOnBuild: false,
       maybeValue: "T | null"
     },
     watch: true,
-    autoImport: true,
-    clients: {
-      default: {
-        clientHost: "http://localhost:8080/v1/graphql",
-        host: "http://localhost:8080/v1/graphql",
-
-        codegenHeaders: {
-          "x-hasura-admin-secret": "ecomon"
-        }
-      }
-    }
+    autoImport: true
   },
 
-  compatibilityDate: "2024-11-11"
+  compatibilityDate: "2025-03-12"
 });
