@@ -50,4 +50,16 @@ For local Development you need docker, nodejs, poetry, python3.10 installed on y
 ### Production
 1. Copy production_env_default to .env and change the variables to your own a
 2. To start production environment run `docker compose -f docker-compose.production.yaml up -d`
-
+3. Import labels from csv with inside the production container 
+```bash
+# find api container
+docker ps | grep api
+# example output: 
+# d150cb190c58   akwamo-webservice-next-api     ...
+# attach shell to container
+docker exec -it d150cb190c58 /bin/bash
+# run download-labels and update-labels
+poetry run download-labels && poetry run update-labels
+# exit container
+exit
+```

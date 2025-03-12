@@ -25,7 +25,7 @@ COPY ./pyproject.toml /app/pyproject.toml
 COPY ./poetry.lock /app/poetry.lock
 COPY ./entrypoint.api.sh /app/entrypoint.api.sh
 COPY ./README.md /app/README.md
-
+RUN mkdir -p /app/assets
 # Create data directory
 RUN mkdir -p /data
 
