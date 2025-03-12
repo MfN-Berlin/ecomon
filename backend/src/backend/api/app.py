@@ -46,6 +46,8 @@ app.include_router(jobs_router)
 @app.on_event("startup")
 async def startup_event():
     """Initialize configuration and database on startup"""
+    logger.info("Starting up application")
+    logger.info(f"Current settings: {settings}")
     try:
         async with engine.begin() as conn:
             logger.info("Connected to database")

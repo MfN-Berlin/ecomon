@@ -1,0 +1,141 @@
+services:
+  traefik:
+    image: traefik:latest
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=false"
+      - "--providers.file.directory=/etc/traefik/dynamic_conf"
+      - "--accesslog=true"
+      - "--accesslog.fields.headers.defaultmode=keep"
+      - "--accesslog.fields.headers.names.User-Agent=drop"
+      - "--accesslog.fields.headers.names.Content-Type=drop"
+      - "--entryPoints.web.address=:80"
+
+    ports:
+      - "80:80"
+      - "8181:8080" # The Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/dynamic_conf:/etc/traefik/dynamic_conf"
+      - "./traefik/logs:/logs"
+    networks:
+      - traefik-ingress
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - traefik-ingress
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:80"
+    networks:
+      - traefik-ingress
+      - ecomon
+    environment:
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    volumes:
+      - ${BASE_DATA_DIRECTORY}:/data
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    networks:
+      - ecomon
+    environment:
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    volumes:
+      - ${BASE_DATA_DIRECTORY}:/data
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: ecomon
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_ROOT_PASSWORD: "${POSTGRES_ROOT_PASSWORD}"
+      POSTGRES_DATABASE: "${POSTGRES_DATABASE}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ecomon_data:/var/lib/postgresql/data
+      - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - ecomon
+  db-migrate:
+    build:
+      context: ./hasura
+      dockerfile: Dockerfile.hasura-migrate
+    depends_on:
+      - db
+      - graphql-engine
+    environment:
+      HASURA_ENDPOINT: "http://graphql-engine:8080"
+      HASURA_ADMIN_SECRET: ${HASURA_ADMIN_SECRET}
+      APPLY_METADATA: "true"
+      APPLY_MIGRATIONS: "true"
+      APPLY_SEEDS: "false"
+    networks:
+      - ecomon
+  graphql-engine:
+    image: hasura/graphql-engine:v2.38.0-ce
+    ports:
+      - "8080:8080"
+    restart: always
+    environment:
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/hasura
+      PGDATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/ecomon
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+      HASURA_GRAPHQL_READ_ONLY_MODE: "false"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_ADMIN_SECRET}
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "user" # Allow access without admin secret
+      HASURA_WEBHOOKS_BASE_URL: ${HASURA_WEBHOOKS_BASE_URL}
+      # HASURA_GRAPHQL_AUTH_HOOK: ${HASURA_WEBHOOKS_BASE_URL}/session
+      # HASURA_WEBHOOKS_API_KEY: ${HASURA_API_KEY}
+      # HASURA_GRAPHQL_AUTH_HOOK_SEND_REQUEST_BODY: ${HASURA_GRAPHQL_AUTH_HOOK_SEND_REQUEST_BODY}
+
+    depends_on:
+      - db
+
+    networks:
+      - ecomon
+      - traefik-ingress
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ecomon
+volumes:
+  ecomon_data:
+
+networks:
+  ecomon:
+    driver: bridge
+  traefik-ingress:
+    driver: bridge
