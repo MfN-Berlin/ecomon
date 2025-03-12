@@ -37,7 +37,7 @@ const selectedData = computed(() => {
     }
   );
 });
-function downloadData() {
+function downloadData(siteId: number, year: string) {
   const dataToDownload = selectedData.value;
   if (!dataToDownload || dataToDownload.length === 0) {
     console.warn("No data available for download.");
@@ -57,7 +57,7 @@ function downloadData() {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = "daily_histogram.csv";
+  link.download = `daily_histogram_${siteId}_${year}.csv`;
   link.style.display = "none";
   document.body.appendChild(link);
   link.click();

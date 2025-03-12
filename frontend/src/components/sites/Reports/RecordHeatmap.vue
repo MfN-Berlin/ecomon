@@ -39,42 +39,50 @@ watch(isLoading, (value) => {
 const dates = computed(() => generateDayDatesForYearRange(props.startYear, props.endYear));
 const times = computed(() => generateTimeArray(props.timeStepSeconds));
 const selectedData = computed(() => {
-  if (!props.timePeriod || props.timePeriod == "All" || !data.value) {
-    const tmp = data.value?.data;
-    if (tmp) {
-      if (tmp.length < dates.value.length) {
-        console.log("tmp.length < dates.value.length");
-        return tmp.concat(Array(dates.value.length - tmp.length).fill(Array(times.value.length).fill(0)));
-      }
-    }
-
-    return tmp;
-  }
-  // calculate year start index
   const yearsDayCounts = generateYearsDayCountsArray(props.startYear, props.endYear);
-  const selectedYear = parseInt(props.timePeriod!);
-  const selectedYearCountsIndex = selectedYear - props.startYear;
-  const yearStartIndex = range(selectedYearCountsIndex).reduce((acc, curr) => acc + yearsDayCounts[curr], 0);
-  // calculate year end index
-  const selectedData = data.value?.data.slice(
-    yearStartIndex,
-    yearStartIndex + yearsDayCounts[selectedYearCountsIndex]
-  );
+  let selectedYear;
+  let selectedYearCountsIndex;
+  let yearStartIndex;
+  let endIndex;
+  if (!props.timePeriod || props.timePeriod == "All" || !data.value) {
+    selectedYear = props.startYear;
+    selectedYearCountsIndex = 0;
+    yearStartIndex = 0;
+    endIndex = dates.value.length - 1;
+  } else {
+    // calculate year start index
 
-  return selectedData;
+    selectedYear = parseInt(props.timePeriod!);
+    selectedYearCountsIndex = selectedYear - props.startYear;
+    yearStartIndex = range(selectedYearCountsIndex).reduce((acc, curr) => acc + yearsDayCounts[curr], 0);
+    endIndex = yearStartIndex + yearsDayCounts[selectedYearCountsIndex] - 1;
+  }
+
+  console.log("yearsDayCounts", yearsDayCounts);
+  console.log("yearStartIndex", yearStartIndex);
+
+  console.log("endIndex", endIndex);
+  console.log("dates.value.length", dates.value.length);
+  // calculate year end index
+
+  return {
+    data: data.value?.data.slice(yearStartIndex, endIndex + 1),
+    xAxis: dates.value.slice(yearStartIndex, endIndex + 1),
+    yAxis: times.value
+  };
 });
-function downloadData() {
+function downloadData(siteId: number, year: string) {
   const dataToDownload = selectedData.value;
-  if (!dataToDownload || dataToDownload.length === 0) {
+  if (!dataToDownload || dataToDownload.data.length === 0) {
     console.warn("No data available for download.");
     return;
   }
 
   // Create CSV content from the data
-  let csvContent = "time," + dates.value.join(",") + "\n" + dataToDownload.y.join(",");
+  let csvContent = "time," + dates.value.join(",") + "\n" + dataToDownload.yAxis.join(",");
   if (data && data.value)
-    for (let i = 0; i < dataToDownload.length; i++) {
-      csvContent += times.value[i] + "," + data.value.data[i].join(",");
+    for (let i = 0; i < dataToDownload.data.length; i++) {
+      csvContent += times.value[i] + "," + dataToDownload.data[i].join(",");
     }
 
   // Create a Blob from the CSV content and generate a URL
@@ -83,7 +91,7 @@ function downloadData() {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = "record_heatmap.csv";
+  link.download = `record_heatmap_${siteId}_${year}.csv`;
   link.style.display = "none";
   document.body.appendChild(link);
   link.click();
@@ -100,9 +108,9 @@ defineExpose({
 <template>
   <v-container v-if="selectedData" class="pa-1 pt-4">
     <common-heatmap-plot
-      :data="selectedData"
-      :x-axis="dates"
-      :y-axis="times"
+      :data="selectedData.data"
+      :x-axis="selectedData.xAxis"
+      :y-axis="selectedData.yAxis"
       title="Records Heatmap"
       x-axis-label="Date"
       y-axis-label="Time"

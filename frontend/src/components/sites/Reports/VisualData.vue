@@ -44,7 +44,7 @@ watch(
 // Watch the reports computed for changes and auto-select the first report once it's loaded.
 const downloadComponent = ref<any>([]);
 function downloadData() {
-  downloadComponent.value.downloadData();
+  downloadComponent.value.downloadData(props.site.id, timePeriod.value);
 }
 const isLoading = ref(false);
 
