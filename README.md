@@ -47,4 +47,7 @@ For local Development you need docker, nodejs, poetry, python3.10 installed on y
 10. Run the frontend with `npm start`
 11. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql endpoint
 
-### Backend
+### Production
+1. Copy production_env_default to .env and change the variables to your own a
+2. To start production environment run `docker compose -f docker-compose.production.yaml up -d`
+
