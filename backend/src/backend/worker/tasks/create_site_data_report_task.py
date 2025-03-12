@@ -69,7 +69,6 @@ def create_site_data_report_task(self, site_id: int):
             last_record_date.replace(month=12, day=31),
         )
 
-        logger.info(f"Expected records array: {records_heatmap}")
         # Add the new instance to the session
         # Create a new SiteReports instance
         new_site_report = SiteReports(
@@ -281,9 +280,6 @@ def calc_records_heatmap(site_id, session, first_record_date, last_record_date):
     records_per_day = 60 * 60 * 24 / cycle_duration
     recorded_days = (last_record_date - first_record_date).days + 1
 
-    logger.info(
-        f"Recorded days: {recorded_days} and records per day: {records_per_day}"
-    )
     records_heatmap = None
     # if records_per_day is not an integer it is not possible to create an expected record array
     if records_per_day == records_per_day.to_integral_value():

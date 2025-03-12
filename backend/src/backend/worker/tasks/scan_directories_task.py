@@ -68,7 +68,6 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                 }
             if file_path.suffix.lower() not in settings.audio_extensions_list:
                 processed_files += 1
-                print(f"Skipping non-audio file: {file_path}")
                 continue
 
             try:

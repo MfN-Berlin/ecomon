@@ -3,7 +3,7 @@ http:
     frontend:
       entryPoints:
         - web
-      rule: host(`129.70.51.241`) && PathPrefix(`/ecomon_next`)
+      rule: host(`{{env "DOMAIN"}}`) && PathPrefix(`{{env "SUB_PATH"}}`)
       service: frontend
 
 

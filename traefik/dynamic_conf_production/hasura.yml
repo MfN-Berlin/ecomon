@@ -3,7 +3,7 @@ http:
     hasura:
       entryPoints:
         - web
-      rule: host(`129.70.51.241`) && PathPrefix(`/ecomon_next/api/v1/graphql`)
+      rule: host(`{{env "DOMAIN"}}`) && PathPrefix(`{{env "SUB_PATH"}}/api/v1/graphql`)
       service: hasura
       middlewares:
         - hasura
@@ -17,7 +17,7 @@ http:
     hasura:
       stripPrefix:
         prefixes:
-        - /ecomon_next/api
+        - {{env "SUB_PATH"}}/api
     remove-auth-headers:
       headers:
         customRequestHeaders:

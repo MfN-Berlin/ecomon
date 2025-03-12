@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+
 import logging
 from logging.config import dictConfig
 from backend.api.routers.sites import router as sites_router
@@ -47,7 +49,6 @@ app.include_router(jobs_router)
 async def startup_event():
     """Initialize configuration and database on startup"""
     logger.info("Starting up application")
-    logger.info(f"Current settings: {settings}")
     try:
         async with engine.begin() as conn:
             logger.info("Connected to database")
