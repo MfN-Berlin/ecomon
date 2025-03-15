@@ -11,7 +11,6 @@ const { mutate: deleteFn, isPending: deletePending } = useSiteDirectoryDelete();
 const { mutate: addFn, isPending: addPending } = useSiteDirectoryInsert();
 
 const showAddDialog = ref(false);
-const newDirectory = ref("");
 const { $activeJobs } = useNuxtApp();
 const store = useJobsStore();
 
@@ -53,11 +52,12 @@ function handleSync(id: number) {
   console.log("sync", id);
 }
 
-function handleSubmit(path: string) {
+function handleSubmit(path: string[]) {
   console.log("submit", path);
-  addFn({ directory: path, site_id: siteId });
   showAddDialog.value = false;
-  newDirectory.value = "";
+  for (const p of path) {
+    addFn({ directory: p, site_id: siteId });
+  }
 }
 </script>
 
@@ -86,6 +86,7 @@ function handleSubmit(path: string) {
           <template v-slot:activator="{ props }">
             <v-btn
               icon
+              class="mr-4"
               density="compact"
               color="primary"
               variant="tonal"
@@ -152,7 +153,7 @@ function handleSubmit(path: string) {
       </v-list-item>
     </v-list>
   </v-sheet>
-  <v-dialog v-model="showAddDialog" max-width="500px">
-    <sites-data-directory-browser @select="handleSubmit" />
+  <v-dialog v-model="showAddDialog" persistent max-width="500px">
+    <sites-data-directory-browser @select="handleSubmit" @cancel="showAddDialog = false" />
   </v-dialog>
 </template>
