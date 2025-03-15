@@ -101,6 +101,9 @@ function handleSubmit(path: string[]) {
       </v-toolbar>
       <v-list-item v-for="(item, i) in data" :key="i">
         <v-list-item-title>{{ item.directory }}</v-list-item-title>
+        <template #prepend>
+          <v-icon>mdi-folder</v-icon>
+        </template>
         <template #append>
           <v-tooltip text="Sync Directory">
             <template v-slot:activator="{ props }">
