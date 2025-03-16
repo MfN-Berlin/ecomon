@@ -128,3 +128,9 @@ query getSitesPagniated(
     }
   }
 }
+
+mutation createSiteDataReport($id: Int!) {
+  data: createSiteDataReport(createDataReportRequestInput: { siteId: $id }) {
+    jobId
+  }
+}

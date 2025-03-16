@@ -1,7 +1,9 @@
 // plugins/graphql-subscription.ts
 import type {
   SubscripeReportsBySiteIdSubscription,
-  SubscripeReportsBySiteIdSubscriptionVariables
+  SubscripeReportsBySiteIdSubscriptionVariables,
+  CreateSiteDataReportMutationVariables,
+  CreateSiteDataReportMutation
 } from "#gql/default";
 import { SubscripeReportsBySiteIdDocument } from "#gql/default";
 
@@ -43,3 +45,5 @@ export function useSubscribeReportsBySiteId(siteId: number) {
 
   return { data, error, pending, unsubscribe };
 }
+
+export const useCreateSiteReport = useCreateAction(GqlCreateSiteDataReport);

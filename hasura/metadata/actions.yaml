@@ -16,6 +16,34 @@ actions:
     permissions:
       - role: user
     comment: Cancels a job by ID.
+  - name: createSiteDataReport
+    definition:
+      kind: synchronous
+      handler: '{{HASURA_WEBHOOKS_BASE_URL}}'
+      forward_client_headers: true
+      request_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "site_id": {{$body.input.createDataReportRequestInput?['siteId']}}
+            }
+        method: POST
+        query_params: {}
+        template_engine: Kriti
+        url: '{{$base_url}}/sites/create-data-report'
+        version: 2
+      response_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "jobId": {{$body?['job_id']}}
+            }
+        template_engine: Kriti
+        version: 2
+    permissions:
+      - role: user
   - name: listDataDirectories
     definition:
       kind: ""
@@ -35,13 +63,45 @@ actions:
     permissions:
       - role: user
     comment: Lists all folders in the data directory. Optional subpath parameter to list specific subdirectory.
+  - name: scanAllSiteDirectories
+    definition:
+      kind: synchronous
+      handler: '{{HASURA_WEBHOOKS_BASE_URL}}'
+      forward_client_headers: true
+      request_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "site_id": {{$body.input.siteDirectoriesScanRequestInput?['siteId']}}
+            }
+        method: POST
+        query_params: {}
+        template_engine: Kriti
+        url: '{{$base_url}}/sites/scan-all-directories'
+        version: 2
+      response_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "jobId": {{$body?['job_id']}}
+            }
+        template_engine: Kriti
+        version: 2
+    permissions:
+      - role: user
 custom_types:
   enums: []
-  input_objects: []
+  input_objects:
+    - name: CreateDataReportRequestInput
+    - name: SiteDirectoriesScanRequestInput
   objects:
     - name: DirectoryInfo
     - name: ListDirectoriesResponse
     - name: ListDataDirectoriesResponse
     - name: CancelJobResponse
+    - name: SiteDataReportResponse
+    - name: SiteDirectoriesScanResponse
   scalars:
     - name: JSON

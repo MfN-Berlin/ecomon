@@ -15,3 +15,9 @@ mutation deleteSiteDirectory($id: bigint!) {
     ...SiteDirectory
   }
 }
+
+mutation scanAllSiteDirectories($id: Int!) {
+  data: scanAllSiteDirectories(siteDirectoriesScanRequestInput: { siteId: $id }) {
+    jobId
+  }
+}

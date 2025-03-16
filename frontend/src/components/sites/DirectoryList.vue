@@ -9,6 +9,7 @@ const { siteId, data } = defineProps<{
 
 const { mutate: deleteFn, isPending: deletePending } = useSiteDirectoryDelete();
 const { mutate: addFn, isPending: addPending } = useSiteDirectoryInsert();
+const { mutate: scanAllDirectories, isPending: scanAllDirectoriesPending } = useSiteScanAllDirectories();
 
 const showAddDialog = ref(false);
 const { $activeJobs } = useNuxtApp();
@@ -48,10 +49,6 @@ function handleCancel(id: number) {
   store.cancelJob(id);
 }
 
-function handleSync(id: number) {
-  console.log("sync", id);
-}
-
 function handleSubmit(path: string[]) {
   console.log("submit", path);
   showAddDialog.value = false;
@@ -76,7 +73,9 @@ function handleSubmit(path: string[]) {
               color="primary"
               variant="tonal"
               v-bind="props"
-              @click="handleAllSync"
+              :disabled="scanAllDirectoriesPending"
+              :loading="scanAllDirectoriesPending"
+              @click="scanAllDirectories({ id: siteId })"
             >
               <v-icon>mdi-sync</v-icon>
             </v-btn>

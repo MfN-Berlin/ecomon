@@ -6,7 +6,7 @@ const props = defineProps<{
   site: SiteFragment;
 }>();
 const { data: reportList, pending: isLoading } = useSubscribeReportsBySiteId(props.site.id);
-
+const { mutate: createReport, pending: isCreatingReport } = useCreateSiteReport();
 const reports = computed(() => {
   return (
     reportList.value?.data?.map((report) => {
@@ -44,8 +44,18 @@ watch(
           item-value="id"
         />
       </div>
-
-      <v-btn icon="mdi-refresh" variant="text" />
+      <v-tooltip text="Create Report">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            icon="mdi-refresh"
+            variant="text"
+            v-bind="props"
+            :disabled="isCreatingReport"
+            :loading="isCreatingReport"
+            @click="createReport({ id: site.id })"
+          />
+        </template>
+      </v-tooltip>
     </v-toolbar>
 
     <sites-reports-basic-data v-if="selectedReportId" :reportId="selectedReportId" />

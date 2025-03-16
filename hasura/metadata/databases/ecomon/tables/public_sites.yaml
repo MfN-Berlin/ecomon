@@ -34,6 +34,19 @@ array_relationships:
         table:
           name: site_reports
           schema: public
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - alias
+        - location_id
+        - name
+        - record_regime_pause_duration
+        - record_regime_recording_duration
+        - remarks
+        - sample_rate
+    comment: ""
 select_permissions:
   - role: user
     permission:
@@ -64,17 +77,4 @@ update_permissions:
         - sample_rate
       filter: {}
       check: null
-    comment: ""
-insert_permissions:
-  - role: user
-    permission:
-      check: {}
-      columns:
-        - alias
-        - location_id
-        - name
-        - record_regime_pause_duration
-        - record_regime_recording_duration
-        - remarks
-        - sample_rate
     comment: ""

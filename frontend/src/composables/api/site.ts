@@ -22,3 +22,5 @@ export const useSitePagniated = useCreatePagniated({
   baseQueryKey: QUERY_KEYS.sites,
   pagniatedQueryFn: GqlGetSitesPagniated
 });
+
+export const useSiteScanAllDirectories = useCreateAction(GqlScanAllSiteDirectories);

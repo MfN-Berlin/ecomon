@@ -4,10 +4,30 @@ type Mutation {
   ): CancelJobResponse
 }
 
+type Mutation {
+  createSiteDataReport(
+    createDataReportRequestInput: CreateDataReportRequestInput!
+  ): SiteDataReportResponse
+}
+
 type Query {
   listDataDirectories(
     subpath: String
   ): [DirectoryInfo]!
+}
+
+type Mutation {
+  scanAllSiteDirectories(
+    siteDirectoriesScanRequestInput: SiteDirectoriesScanRequestInput!
+  ): SiteDirectoriesScanResponse
+}
+
+input CreateDataReportRequestInput {
+  siteId: Int!
+}
+
+input SiteDirectoriesScanRequestInput {
+  siteId: Int!
 }
 
 type DirectoryInfo {
@@ -27,6 +47,14 @@ type CancelJobResponse {
   success: Boolean!
   message: String
   jobId: Int
+}
+
+type SiteDataReportResponse {
+  jobId: Int!
+}
+
+type SiteDirectoriesScanResponse {
+  jobId: Int!
 }
 
 scalar JSON

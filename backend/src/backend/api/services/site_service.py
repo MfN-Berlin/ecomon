@@ -32,3 +32,10 @@ class SiteService:
                 if result.scalar_one_or_none() is None:
                     return False
             return True
+
+    async def get_directories_for_site(self, site_id: int) -> list[str]:
+        async with self.db.begin():
+            result = await self.db.execute(
+                select(SiteDirectories).filter(SiteDirectories.site_id == site_id)
+            )
+            return [row.directory for row in result.scalars()]
