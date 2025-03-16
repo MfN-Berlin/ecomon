@@ -156,6 +156,10 @@ function handleSubmit(path: string[]) {
     </v-list>
   </v-sheet>
   <v-dialog v-model="showAddDialog" persistent max-width="500px">
-    <sites-data-directory-browser @select="handleSubmit" @cancel="showAddDialog = false" />
+    <sites-data-directory-browser
+      @select="handleSubmit"
+      @cancel="showAddDialog = false"
+      :directories="data.map((item) => item.directory)"
+    />
   </v-dialog>
 </template>

@@ -3,6 +3,9 @@ const emit = defineEmits<{
   (e: "select", path: string[]): void;
   (e: "cancel"): void;
 }>();
+const props = defineProps<{
+  directories: string[];
+}>();
 const params = ref({ subpath: "" });
 const { data, isPending } = useSiteListDataDirectories(params);
 const breadcrumbs = computed(() => ["data", ...params.value.subpath.split("/").filter(Boolean)]);
@@ -47,6 +50,10 @@ function handleMultiSelect() {
     directorySelection.value.map((dirIndex) => data.value![dirIndex]!.path)
   );
 }
+
+const isAlreadyAdded = computed(() => {
+  return (path: string) => props.directories.includes(path);
+});
 </script>
 
 <template>
@@ -90,12 +97,18 @@ function handleMultiSelect() {
             <v-list-item-title>..</v-list-item-title>
           </v-list-item>
 
-          <v-list-item v-for="item in data" :key="item.path" :style="{ cursor: 'pointer' }" density="compact">
+          <v-list-item
+            v-for="item in data"
+            :key="item.path"
+            :style="{ cursor: 'pointer' }"
+            density="compact"
+            :disabled="isAlreadyAdded(item?.path)"
+          >
             <template #prepend>
               <v-icon>mdi-folder</v-icon>
             </template>
             <template #append>
-              <v-item v-slot="{ isSelected, toggle }">
+              <v-item v-if="!isAlreadyAdded(item?.path)" v-slot="{ isSelected, toggle }">
                 <v-checkbox-btn :value="isSelected" density="compact" @click="toggle"></v-checkbox-btn>
               </v-item>
             </template>
