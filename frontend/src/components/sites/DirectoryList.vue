@@ -10,6 +10,7 @@ const { siteId, data } = defineProps<{
 const { mutate: deleteFn, isPending: deletePending } = useSiteDirectoryDelete();
 const { mutate: addFn, isPending: addPending } = useSiteDirectoryInsert();
 const { mutate: scanAllDirectories, isPending: scanAllDirectoriesPending } = useSiteScanAllDirectories();
+const { mutate: scanDirectory, isPending: scanDirectoryPending } = useSiteScanDirectory();
 
 const showAddDialog = ref(false);
 const { $activeJobs } = useNuxtApp();
@@ -37,9 +38,7 @@ function handleDelete(id: number) {
   console.log("delete", id);
   deleteFn({ id });
 }
-function handleAllSync() {
-  console.log("all sync");
-}
+
 function handleAdd() {
   showAddDialog.value = true;
 }
@@ -134,7 +133,7 @@ function handleSubmit(path: string[]) {
                 size="small"
                 variant="text"
                 v-bind="props"
-                @click="handleSync(item.id)"
+                @click="scanDirectory({ id: siteId, directory: item.directory })"
               />
             </template>
           </v-tooltip>

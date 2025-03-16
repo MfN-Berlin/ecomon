@@ -21,3 +21,9 @@ mutation scanAllSiteDirectories($id: Int!) {
     jobId
   }
 }
+
+mutation scanSiteDirectory($id: Int!, $directory: String!) {
+  data: scanSiteDirectory(siteDirectoryScanRequestInput: { siteId: $id, directory: $directory }) {
+    jobId
+  }
+}

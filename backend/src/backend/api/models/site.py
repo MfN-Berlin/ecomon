@@ -26,3 +26,12 @@ class SiteDirectoriesScanResponse(BaseModel):
 
 class SiteDataReportResponse(BaseModel):
     job_id: int
+
+
+class SiteDirectoryScanRequest(BaseModel):
+    site_id: int
+    directory: str
+
+
+class SiteDirectoryScanResponse(BaseModel):
+    job_id: int

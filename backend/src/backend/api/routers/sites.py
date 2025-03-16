@@ -9,6 +9,8 @@ from backend.api.models.site import (
     SiteDirectoriesScanRequest,
     SiteDirectoriesScanResponse,
     SiteDataReportResponse,
+    SiteDirectoryScanRequest,
+    SiteDirectoryScanResponse,
 )
 from backend.api.services.job_service import JobService
 from backend.api.services.site_service import SiteService
@@ -97,6 +99,16 @@ async def scan_site_directories(
     directories = await SiteService(db).get_directories_for_site(payload.site_id)
     job_id = await check_directories_and_create_import_job(
         db, payload.site_id, directories
+    )
+    return {"job_id": job_id}
+
+
+@router.post("/scan-directory", response_model=SiteDirectoryScanResponse)
+async def scan_site_directory(
+    payload: SiteDirectoryScanRequest, db: AsyncSession = Depends(get_db)
+):
+    job_id = await check_directories_and_create_import_job(
+        db, payload.site_id, [payload.directory]
     )
     return {"job_id": job_id}
 

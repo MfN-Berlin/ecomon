@@ -22,11 +22,22 @@ type Mutation {
   ): SiteDirectoriesScanResponse
 }
 
+type Mutation {
+  scanSiteDirectory(
+    siteDirectoryScanRequestInput: SiteDirectoryScanRequestInput!
+  ): SiteDirectoryScanResponse
+}
+
 input CreateDataReportRequestInput {
   siteId: Int!
 }
 
 input SiteDirectoriesScanRequestInput {
+  siteId: Int!
+}
+
+input SiteDirectoryScanRequestInput {
+  directory: String!
   siteId: Int!
 }
 
@@ -54,6 +65,10 @@ type SiteDataReportResponse {
 }
 
 type SiteDirectoriesScanResponse {
+  jobId: Int!
+}
+
+type SiteDirectoryScanResponse {
   jobId: Int!
 }
 

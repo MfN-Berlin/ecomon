@@ -70,6 +70,15 @@ type SiteDirectoriesScanResponse {
   jobId: Int!
 }
 
+input SiteDirectoryScanRequestInput {
+  directory: String!
+  siteId: Int!
+}
+
+type SiteDirectoryScanResponse {
+  jobId: Int!
+}
+
 """
 Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
 """
@@ -2552,6 +2561,7 @@ type mutation_root {
     on_conflict: sites_on_conflict
   ): sites
   scanAllSiteDirectories(siteDirectoriesScanRequestInput: SiteDirectoriesScanRequestInput!): SiteDirectoriesScanResponse
+  scanSiteDirectory(siteDirectoryScanRequestInput: SiteDirectoryScanRequestInput!): SiteDirectoryScanResponse
 
   """
   update data of the table: "events"

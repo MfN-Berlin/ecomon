@@ -91,11 +91,41 @@ actions:
         version: 2
     permissions:
       - role: user
+  - name: scanSiteDirectory
+    definition:
+      kind: synchronous
+      handler: '{{HASURA_WEBHOOKS_BASE_URL}}'
+      forward_client_headers: true
+      request_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "site_id": {{$body.input.siteDirectoryScanRequestInput?['siteId']}},
+              "directory": {{$body.input.siteDirectoryScanRequestInput?['directory']}}
+            }
+        method: POST
+        query_params: {}
+        template_engine: Kriti
+        url: '{{$base_url}}/sites/scan-directory'
+        version: 2
+      response_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "jobId": {{$body?['job_id']}}
+            }
+        template_engine: Kriti
+        version: 2
+    permissions:
+      - role: user
 custom_types:
   enums: []
   input_objects:
     - name: CreateDataReportRequestInput
     - name: SiteDirectoriesScanRequestInput
+    - name: SiteDirectoryScanRequestInput
   objects:
     - name: DirectoryInfo
     - name: ListDirectoriesResponse
@@ -103,5 +133,6 @@ custom_types:
     - name: CancelJobResponse
     - name: SiteDataReportResponse
     - name: SiteDirectoriesScanResponse
+    - name: SiteDirectoryScanResponse
   scalars:
     - name: JSON

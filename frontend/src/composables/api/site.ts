@@ -24,3 +24,5 @@ export const useSitePagniated = useCreatePagniated({
 });
 
 export const useSiteScanAllDirectories = useCreateAction(GqlScanAllSiteDirectories);
+
+export const useSiteScanDirectory = useCreateAction(GqlScanSiteDirectory);
