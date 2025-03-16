@@ -78,7 +78,11 @@ function updateLoading(value: boolean) {
       />
     </div>
     <v-spacer />
-    <v-btn icon="mdi-download" variant="text" @click="downloadData" />
+    <v-tooltip text="Download Data of selected graph and period">
+      <template v-slot:activator="{ props }">
+        <v-btn icon="mdi-download" variant="text" v-bind="props" @click="downloadData" />
+      </template>
+    </v-tooltip>
   </v-toolbar>
   <template v-if="id">
     <sites-reports-daily-histogram

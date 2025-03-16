@@ -34,6 +34,9 @@ const rootPath = computed(() => {
   console.log("Unknown path", route.path);
   return "";
 });
+const name = computed(() => {
+  return rootPath.value.slice(1, -1);
+});
 function fetch() {
   active.value?.fetchNextPage();
 }
@@ -45,6 +48,7 @@ function onSearchTermChanged(searchTerm: string) {
   <app-sub-navbar-layout>
     <template #sub-nav-bar>
       <app-navigation-sub-bar
+        :name="name"
         :data="data as Item[]"
         :root-path="rootPath"
         :loading="loading"

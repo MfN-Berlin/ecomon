@@ -8,6 +8,7 @@ type Props = {
   loading: boolean;
   data: Item[];
   rootPath: string;
+  name: string;
 };
 type Emits = {
   (e: "fetch-next-page"): void;
@@ -39,7 +40,13 @@ onMounted(() => {
       <v-spacer></v-spacer>
 
       <NuxtLink :to="`${rootPath}/create`">
-        <v-btn icon density="compact" color="primary" variant="tonal"><v-icon>mdi-plus</v-icon> </v-btn>
+        <v-tooltip :text="`Create new ${name}`" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn icon density="compact" color="primary" v-bind="props" variant="tonal"
+              ><v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
       </NuxtLink>
     </v-toolbar>
     <div class="flex-grow-1 overflow-auto">
