@@ -29,8 +29,7 @@ services:
       POSTGRES_DB: ecomon
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_ROOT_PASSWORD: ${POSTGRES_ROOT_PASSWORD}
-      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRES_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
       - 5432:5432
     volumes:
@@ -50,7 +49,7 @@ services:
       HASURA_ADMIN_SECRET: ${HASURA_ADMIN_SECRET}
       APPLY_METADATA: true
       APPLY_MIGRATIONS: true
-      APPLY_SEEDS: false
+      APPLY_SEEDS: true
     # import current files as volume so a rebuild is no required on database/metada changes
     volumes:
       - ./hasura:/app
