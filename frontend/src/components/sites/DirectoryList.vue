@@ -57,6 +57,13 @@ function handleSubmit(path: string[]) {
     addFn({ directory: p, site_id: siteId });
   }
 }
+function skipAllSyncs() {
+  openDialog(`Skip All Syncs`, `Are you sure you want to skip all syncs for this site?`, () => async () => {
+    currentJobs.value?.forEach((job) => {
+      cancelJob({ jobId: job.id });
+    });
+  });
+}
 </script>
 
 <template>
@@ -65,9 +72,26 @@ function handleSubmit(path: string[]) {
       <v-list-subheader> DATA DIRECTORIES </v-list-subheader>
       <v-toolbar flat density="compact" class="w-100" color="surface">
         <v-spacer></v-spacer>
-        <v-tooltip text="Sync All Directories">
+        <v-tooltip :text="siteHasScanningJob ? 'Cancel All Syncs' : 'Sync All Directories'">
           <template v-slot:activator="{ props }">
+            <template v-if="siteHasScanningJob">
+              <v-progress-circular indeterminate color="secondary" v-bind="props">
+                <v-btn
+                  icon
+                  size="small"
+                  density="compact"
+                  color="primary"
+                  variant="tonal"
+                  v-bind="props"
+                  :disabled="scanAllDirectoriesPending"
+                  :loading="scanAllDirectoriesPending"
+                  @click="skipAllSyncs()"
+                  ><v-icon>mdi-cancel</v-icon></v-btn
+                >
+              </v-progress-circular>
+            </template>
             <v-btn
+              v-else
               icon
               class="mr-2"
               density="compact"
@@ -115,7 +139,7 @@ function handleSubmit(path: string[]) {
             <template v-slot:activator="{ props }">
               <template v-if="activeJobInfo(item.directory)">
                 <v-progress-circular
-                  v-if="activeJobInfo(item.directory)?.isRunning"
+                  :indeterminate="!activeJobInfo(item.directory)?.isRunning"
                   :model-value="activeJobInfo(item.directory)?.progress || 0"
                   color="secondary"
                 >
@@ -133,13 +157,6 @@ function handleSubmit(path: string[]) {
                     "
                   />
                 </v-progress-circular>
-                <v-chip
-                  v-else
-                  small
-                  :color="activeJobInfo(item.directory)?.status === 'completed' ? 'success' : 'error'"
-                >
-                  {{ activeJobInfo(item.directory)?.status }}
-                </v-chip>
               </template>
               <v-btn
                 v-else
