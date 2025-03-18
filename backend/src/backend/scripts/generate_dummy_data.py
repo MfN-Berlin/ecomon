@@ -14,7 +14,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from backend.shared.models.db.models import (
     Locations,
-    Models,
     Sites,
     Records,
     SetInformations,
@@ -52,22 +51,6 @@ def create_dummy_data(db_url: str, num_entries: int = 5):
     session = Session(engine)
 
     try:
-        # Create Labels
-
-        # Create Models
-        models = []
-        model_types = ["BirdNET", "OpenSoundscape", "DeepSpectrogram"]
-        for _ in range(num_entries):
-            name = f"{random.choice(model_types)}-v{generate_version()}"
-            model = Models(
-                short_name=name.lower(),
-                name=name,
-                endpoint=f"/api/models/{fake.slug()}",
-                remarks=fake.sentence(),
-            )
-            models.append(model)
-            session.add(model)
-        session.flush()  # Flush to get IDs
 
         # Create Locations
         locations = []
