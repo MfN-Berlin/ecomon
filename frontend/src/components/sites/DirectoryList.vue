@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { GetSiteByIdQuery } from "#gql";
 
+import ScanLog from "./ScanLog.vue";
+
 type SiteInformationProps = NonNullable<GetSiteByIdQuery["data"]>["site_directories"];
 const { siteId, data } = defineProps<{
   siteId: number;
   data: SiteInformationProps;
 }>();
 
+const scanLogRef = ref<InstanceType<typeof ScanLog>>();
 const { mutate: deleteFn } = useSiteDirectoryDelete();
 const { mutate: addFn, isPending: addPending } = useSiteDirectoryInsert();
 const { mutate: scanAllDirectories, isPending: scanAllDirectoriesPending } = useSiteScanAllDirectories();
@@ -71,6 +74,7 @@ function skipAllSyncs() {
     <v-list>
       <v-list-subheader> DATA DIRECTORIES </v-list-subheader>
       <v-toolbar flat density="compact" class="w-100" color="surface">
+        <v-btn prepend-icon="mdi-eye" @click="scanLogRef?.open()">Scan Log</v-btn>
         <v-spacer></v-spacer>
         <v-tooltip :text="siteHasScanningJob ? 'Cancel All Syncs' : 'Sync All Directories'">
           <template v-slot:activator="{ props }">
@@ -198,4 +202,5 @@ function skipAllSyncs() {
       :directories="data.map((item) => item.directory)"
     />
   </v-dialog>
+  <scan-log ref="scanLogRef" :site-id="siteId" />
 </template>

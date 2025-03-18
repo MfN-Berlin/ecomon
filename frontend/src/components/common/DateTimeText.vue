@@ -1,5 +1,7 @@
 <template>
-  <time :datetime="$dayjs(props.time)"> {{ formattedDate }} </time>
+  <span :class="`${sizeMap[props.size]}`">
+    <time :datetime="$dayjs(props.time) + ''"> {{ formattedDate }} </time>
+  </span>
 </template>
 
 <script lang="ts" setup>
@@ -10,15 +12,22 @@ type DateTimeTextProps = {
   showSeconds?: boolean;
   showTime?: boolean;
   showDate?: boolean;
+  size?: "small" | "medium" | "large";
 };
 
+const sizeMap = {
+  small: "text-caption",
+  medium: "text-body-2",
+  large: "text-h6"
+};
 const { $dayjs } = useNuxtApp();
 const props = withDefaults(defineProps<DateTimeTextProps>(), {
   relativeTime: true,
   relativeTimeSpan: 1000 * 60 * 60 * 24, // 1 day
   showSeconds: false,
   showTime: true,
-  showDate: true
+  showDate: true,
+  size: "medium"
 });
 
 const formattedDate = computed(() => {

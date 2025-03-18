@@ -5,6 +5,7 @@ export const enum QUERY_KEYS {
   dataDirectories = "dataDirectories",
   records = "record",
   jobs = "job",
+  siteJobs = "siteJobs",
   sets = "set",
   labels = "label",
   siteReports = "siteReport",
