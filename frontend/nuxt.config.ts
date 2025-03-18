@@ -16,6 +16,9 @@ export default defineNuxtConfig({
   ],
 
   app: {
+    head: {
+      link: [{ rel: "icon", type: "image/x-icon", href: "/ecomon_next/favicon.ico" }]
+    },
     baseURL: "/ecomon_next/"
   },
   imports: {
