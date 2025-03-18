@@ -15,6 +15,7 @@ const { mutate: scanDirectory, isPending: scanDirectoryPending } = useSiteScanDi
 const showAddDialog = ref(false);
 const { $activeJobs } = useNuxtApp();
 const store = useJobsStore();
+const dialogStore = useDialogStore();
 
 const currentJobs = computed(() => {
   return $activeJobs.value?.jobs.filter((job) => job.payload.site_id === siteId);
@@ -74,7 +75,13 @@ function handleSubmit(path: string[]) {
               v-bind="props"
               :disabled="scanAllDirectoriesPending"
               :loading="scanAllDirectoriesPending"
-              @click="scanAllDirectories({ id: siteId })"
+              @click="
+                dialogStore.openDialog(
+                  `Scan all directories`,
+                  `This will rescan all directories for this site and add all new files to the database.`,
+                  () => `scanAllDirectories({ id: siteId )`
+                )
+              "
             >
               <v-icon>mdi-sync</v-icon>
             </v-btn>
@@ -103,7 +110,7 @@ function handleSubmit(path: string[]) {
           <v-icon>mdi-folder</v-icon>
         </template>
         <template #append>
-          <v-tooltip text="Sync Directory">
+          <v-tooltip :text="activeJobInfo(item.directory)?.isRunning ? 'Cancel Sync' : 'Sync Directory'">
             <template v-slot:activator="{ props }">
               <template v-if="activeJobInfo(item.directory)">
                 <v-progress-circular
@@ -146,7 +153,13 @@ function handleSubmit(path: string[]) {
                 variant="text"
                 v-bind="props"
                 :disabled="activeJobInfo(item.directory)?.isRunning"
-                @click="handleDelete(item.id)"
+                @click="
+                  dialogStore.openDialog(
+                    `Delete Directory`,
+                    `Are you sure you want to delete  ${item.directory} from this site ?`,
+                    () => handleDelete(item.id)
+                  )
+                "
               />
             </template>
           </v-tooltip>

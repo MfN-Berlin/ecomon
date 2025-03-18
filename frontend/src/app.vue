@@ -25,6 +25,7 @@ onMounted(() => {
         </div>
 
         <app-audio-player />
+        <app-dialog />
       </v-main>
     </NuxtLayout>
   </v-app>
