@@ -75,7 +75,7 @@ CREATE SEQUENCE public.jobs_id_seq
     CACHE 1;
 ALTER SEQUENCE public.jobs_id_seq OWNED BY public.jobs.id;
 CREATE TABLE public.labels (
-    id bigint NOT NULL,
+    id integer NOT NULL,
     name text NOT NULL,
     english text,
     german text,
@@ -107,14 +107,40 @@ CREATE SEQUENCE public.location_id_seq
     NO MAXVALUE
     CACHE 1;
 ALTER SEQUENCE public.location_id_seq OWNED BY public.locations.id;
-CREATE TABLE public.models (
+CREATE TABLE public.model_inference_results (
     id bigint NOT NULL,
+    record_id bigint NOT NULL,
+    model_id integer NOT NULL,
+    label_id integer NOT NULL,
+    probability real NOT NULL
+);
+CREATE SEQUENCE public.model_inference_results_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE public.model_inference_results_id_seq OWNED BY public.model_inference_results.id;
+CREATE TABLE public.model_labels (
+    model_id integer NOT NULL,
+    label_id integer NOT NULL,
+    id integer NOT NULL
+);
+COMMENT ON TABLE public.model_labels IS 'Contains all all labels a mode uses';
+CREATE SEQUENCE public.model_labels_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE public.model_labels_id_seq OWNED BY public.model_labels.id;
+CREATE TABLE public.models (
+    id integer NOT NULL,
     name text NOT NULL,
     remarks text,
-    endpoint text NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone,
-    short_name text NOT NULL
+    updated_at timestamp without time zone
 );
 CREATE SEQUENCE public.models_id_seq
     START WITH 1
@@ -257,6 +283,8 @@ ALTER TABLE ONLY public.events ALTER COLUMN id SET DEFAULT nextval('public.event
 ALTER TABLE ONLY public.jobs ALTER COLUMN id SET DEFAULT nextval('public.jobs_id_seq'::regclass);
 ALTER TABLE ONLY public.labels ALTER COLUMN id SET DEFAULT nextval('public.labels_id_seq'::regclass);
 ALTER TABLE ONLY public.locations ALTER COLUMN id SET DEFAULT nextval('public.location_id_seq'::regclass);
+ALTER TABLE ONLY public.model_inference_results ALTER COLUMN id SET DEFAULT nextval('public.model_inference_results_id_seq'::regclass);
+ALTER TABLE ONLY public.model_labels ALTER COLUMN id SET DEFAULT nextval('public.model_labels_id_seq'::regclass);
 ALTER TABLE ONLY public.models ALTER COLUMN id SET DEFAULT nextval('public.models_id_seq'::regclass);
 ALTER TABLE ONLY public.records ALTER COLUMN id SET DEFAULT nextval('public.records_id_seq'::regclass);
 ALTER TABLE ONLY public.set_informations ALTER COLUMN id SET DEFAULT nextval('public.set_informations_id_seq'::regclass);
@@ -277,12 +305,14 @@ ALTER TABLE ONLY public.locations
     ADD CONSTRAINT location_name_key UNIQUE (name);
 ALTER TABLE ONLY public.locations
     ADD CONSTRAINT location_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.model_inference_results
+    ADD CONSTRAINT model_inference_results_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.model_labels
+    ADD CONSTRAINT model_labels_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.models
     ADD CONSTRAINT models_name_key UNIQUE (name);
 ALTER TABLE ONLY public.models
     ADD CONSTRAINT models_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY public.models
-    ADD CONSTRAINT models_short_name_key UNIQUE (short_name);
 ALTER TABLE ONLY public.records
     ADD CONSTRAINT records_filename_key UNIQUE (filename);
 ALTER TABLE ONLY public.records
@@ -309,8 +339,11 @@ ALTER TABLE ONLY public.sites
     ADD CONSTRAINT sites_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.sites
     ADD CONSTRAINT sites_short_id_key UNIQUE (alias);
+ALTER TABLE ONLY public.model_inference_results
+    ADD CONSTRAINT uq_model_record UNIQUE (model_id, record_id);
 CREATE INDEX created_at_index ON public.jobs USING btree (created_at);
 CREATE UNIQUE INDEX id_unique ON public.jobs USING btree (id);
+CREATE INDEX idx_model_record ON public.model_inference_results USING btree (model_id, record_id);
 CREATE INDEX record_datetime ON public.records USING brin (record_datetime);
 CREATE INDEX topic_index ON public.jobs USING btree (topic);
 CREATE INDEX updated_at_index ON public.jobs USING btree (updated_at);
@@ -331,6 +364,16 @@ ALTER TABLE ONLY public.events
     ADD CONSTRAINT events_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.events
     ADD CONSTRAINT events_record_id_fkey FOREIGN KEY (record_id) REFERENCES public.records(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.model_inference_results
+    ADD CONSTRAINT fk_label FOREIGN KEY (label_id) REFERENCES public.labels(id);
+ALTER TABLE ONLY public.model_inference_results
+    ADD CONSTRAINT fk_model FOREIGN KEY (model_id) REFERENCES public.models(id);
+ALTER TABLE ONLY public.model_inference_results
+    ADD CONSTRAINT fk_record FOREIGN KEY (record_id) REFERENCES public.records(id);
+ALTER TABLE ONLY public.model_labels
+    ADD CONSTRAINT model_labels_label_id_fkey FOREIGN KEY (label_id) REFERENCES public.labels(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.model_labels
+    ADD CONSTRAINT model_labels_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.records
     ADD CONSTRAINT records_site_id_fkey FOREIGN KEY (site_id) REFERENCES public.sites(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.sets

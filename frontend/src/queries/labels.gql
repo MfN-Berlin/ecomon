@@ -23,7 +23,7 @@ query getLabelsPagniated(
   }
 }
 
-mutation deleteLabel($id: bigint!) {
+mutation deleteLabel($id: Int!) {
   data: delete_labels_by_pk(id: $id) {
     ...Label
   }

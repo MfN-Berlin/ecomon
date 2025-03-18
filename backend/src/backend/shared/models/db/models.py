@@ -35,7 +35,7 @@ class Labels(Base):
         UniqueConstraint('name', name='labels_name_key')
     )
 
-    id = mapped_column(BigInteger)
+    id = mapped_column(Integer)
     name = mapped_column(Text, nullable=False)
     english = mapped_column(Text)
     german = mapped_column(Text)
@@ -43,7 +43,9 @@ class Labels(Base):
     class_ = mapped_column('class', Text)
     order = mapped_column(Text)
 
+    model_labels: Mapped[List['ModelLabels']] = relationship('ModelLabels', uselist=True, back_populates='label')
     events: Mapped[List['Events']] = relationship('Events', uselist=True, back_populates='label')
+    model_inference_results: Mapped[List['ModelInferenceResults']] = relationship('ModelInferenceResults', uselist=True, back_populates='label')
 
 
 class Locations(Base):
@@ -69,19 +71,18 @@ class Models(Base):
     __tablename__ = 'models'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='models_pkey'),
-        UniqueConstraint('name', name='models_name_key'),
-        UniqueConstraint('short_name', name='models_short_name_key')
+        UniqueConstraint('name', name='models_name_key')
     )
 
-    id = mapped_column(BigInteger)
+    id = mapped_column(Integer)
     name = mapped_column(Text, nullable=False)
-    endpoint = mapped_column(Text, nullable=False)
     created_at = mapped_column(DateTime, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
-    short_name = mapped_column(Text, nullable=False)
     remarks = mapped_column(Text)
     updated_at = mapped_column(DateTime)
 
+    model_labels: Mapped[List['ModelLabels']] = relationship('ModelLabels', uselist=True, back_populates='model')
     events: Mapped[List['Events']] = relationship('Events', uselist=True, back_populates='model')
+    model_inference_results: Mapped[List['ModelInferenceResults']] = relationship('ModelInferenceResults', uselist=True, back_populates='model')
 
 
 class SetInformations(Base):
@@ -107,6 +108,23 @@ class SetInformations(Base):
     remarks = mapped_column(Text)
 
     sets: Mapped[List['Sets']] = relationship('Sets', uselist=True, back_populates='set_information')
+
+
+class ModelLabels(Base):
+    __tablename__ = 'model_labels'
+    __table_args__ = (
+        ForeignKeyConstraint(['label_id'], ['labels.id'], ondelete='CASCADE', onupdate='CASCADE', name='model_labels_label_id_fkey'),
+        ForeignKeyConstraint(['model_id'], ['models.id'], ondelete='CASCADE', onupdate='CASCADE', name='model_labels_model_id_fkey'),
+        PrimaryKeyConstraint('id', name='model_labels_pkey'),
+        {'comment': 'Contains all all labels a mode uses'}
+    )
+
+    model_id = mapped_column(Integer, nullable=False)
+    label_id = mapped_column(Integer, nullable=False)
+    id = mapped_column(Integer)
+
+    label: Mapped['Labels'] = relationship('Labels', back_populates='model_labels')
+    model: Mapped['Models'] = relationship('Models', back_populates='model_labels')
 
 
 class Sets(Base):
@@ -181,6 +199,7 @@ class Records(Base):
 
     site: Mapped['Sites'] = relationship('Sites', back_populates='records')
     events: Mapped[List['Events']] = relationship('Events', uselist=True, back_populates='record')
+    model_inference_results: Mapped[List['ModelInferenceResults']] = relationship('ModelInferenceResults', uselist=True, back_populates='record')
 
 
 class SetsSitesSelections(Base):
@@ -263,3 +282,25 @@ class Events(Base):
     label: Mapped['Labels'] = relationship('Labels', back_populates='events')
     model: Mapped['Models'] = relationship('Models', back_populates='events')
     record: Mapped['Records'] = relationship('Records', back_populates='events')
+
+
+class ModelInferenceResults(Base):
+    __tablename__ = 'model_inference_results'
+    __table_args__ = (
+        ForeignKeyConstraint(['label_id'], ['labels.id'], name='fk_label'),
+        ForeignKeyConstraint(['model_id'], ['models.id'], name='fk_model'),
+        ForeignKeyConstraint(['record_id'], ['records.id'], name='fk_record'),
+        PrimaryKeyConstraint('id', name='model_inference_results_pkey'),
+        UniqueConstraint('model_id', 'record_id', name='uq_model_record'),
+        Index('idx_model_record', 'model_id', 'record_id')
+    )
+
+    id = mapped_column(BigInteger)
+    record_id = mapped_column(BigInteger, nullable=False)
+    model_id = mapped_column(Integer, nullable=False)
+    label_id = mapped_column(Integer, nullable=False)
+    probability = mapped_column(Float, nullable=False)
+
+    label: Mapped['Labels'] = relationship('Labels', back_populates='model_inference_results')
+    model: Mapped['Models'] = relationship('Models', back_populates='model_inference_results')
+    record: Mapped['Records'] = relationship('Records', back_populates='model_inference_results')

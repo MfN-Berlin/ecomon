@@ -1,8 +1,6 @@
 fragment Model on models {
   id
   name
-  short_name
-  endpoint
   remarks
   updated_at
   created_at
@@ -13,7 +11,7 @@ query filterModel($search: String = "", $limit: Int = 10, $offset: Int = 10) {
     order_by: { name: asc }
     limit: $limit
     offset: $offset
-    where: { _or: { name: { _ilike: $search }, endpoint: { _ilike: $search }, remarks: { _ilike: $search } } }
+    where: { _or: { name: { _ilike: $search }, remarks: { _ilike: $search } } }
   ) {
     ...Model
   }
@@ -25,35 +23,25 @@ query getModelList {
   }
 }
 
-query getModelById($id: bigint!) {
+query getModelById($id: Int!) {
   data: models_by_pk(id: $id) {
     ...Model
   }
 }
 
-mutation insertModel(
-  $remarks: String = ""
-  $name: String!
-  $short_name: String = ""
-  $endpoint: String = ""
-) {
-  data: insert_models_one(
-    object: { name: $name, remarks: $remarks, endpoint: $endpoint, short_name: $short_name }
-  ) {
+mutation insertModel($remarks: String = "", $name: String!) {
+  data: insert_models_one(object: { name: $name, remarks: $remarks }) {
     ...Model
   }
 }
 
-mutation updateModel($id: bigint!, $name: String, $remarks: String, $endpoint: String, $short_name: String) {
-  data: update_models_by_pk(
-    pk_columns: { id: $id }
-    _set: { name: $name, remarks: $remarks, endpoint: $endpoint, short_name: $short_name }
-  ) {
+mutation updateModel($id: Int!, $name: String, $remarks: String) {
+  data: update_models_by_pk(pk_columns: { id: $id }, _set: { name: $name, remarks: $remarks }) {
     ...Model
   }
 }
 
-mutation deleteModel($id: bigint!) {
+mutation deleteModel($id: Int!) {
   data: delete_models_by_pk(id: $id) {
     ...Model
   }

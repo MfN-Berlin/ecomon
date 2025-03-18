@@ -1157,7 +1157,7 @@ type labels {
   english: String
   gbif: String
   german: String
-  id: bigint!
+  id: Int!
   name: String!
   order: String
 }
@@ -1203,7 +1203,7 @@ input labels_bool_exp {
   english: String_comparison_exp
   gbif: String_comparison_exp
   german: String_comparison_exp
-  id: bigint_comparison_exp
+  id: Int_comparison_exp
   name: String_comparison_exp
   order: String_comparison_exp
 }
@@ -1227,7 +1227,7 @@ enum labels_constraint {
 input type for incrementing numeric columns in table "labels"
 """
 input labels_inc_input {
-  id: bigint
+  id: Int
 }
 
 """
@@ -1238,7 +1238,7 @@ input labels_insert_input {
   english: String
   gbif: String
   german: String
-  id: bigint
+  id: Int
   name: String
   order: String
 }
@@ -1249,7 +1249,7 @@ type labels_max_fields {
   english: String
   gbif: String
   german: String
-  id: bigint
+  id: Int
   name: String
   order: String
 }
@@ -1260,7 +1260,7 @@ type labels_min_fields {
   english: String
   gbif: String
   german: String
-  id: bigint
+  id: Int
   name: String
   order: String
 }
@@ -1308,7 +1308,7 @@ input labels_order_by {
 
 """primary key columns input for table: labels"""
 input labels_pk_columns_input {
-  id: bigint!
+  id: Int!
 }
 
 """
@@ -1345,7 +1345,7 @@ input labels_set_input {
   english: String
   gbif: String
   german: String
-  id: bigint
+  id: Int
   name: String
   order: String
 }
@@ -1382,14 +1382,14 @@ input labels_stream_cursor_value_input {
   english: String
   gbif: String
   german: String
-  id: bigint
+  id: Int
   name: String
   order: String
 }
 
 """aggregate sum on columns"""
 type labels_sum_fields {
-  id: bigint
+  id: Int
 }
 
 """
@@ -1796,11 +1796,677 @@ type locations_variance_fields {
 }
 
 """
+columns and relationships of "model_inference_results"
+"""
+type model_inference_results {
+  id: bigint!
+  label_id: Int!
+  model_id: Int!
+  probability: Float!
+  record_id: bigint!
+}
+
+"""
+aggregated selection of "model_inference_results"
+"""
+type model_inference_results_aggregate {
+  aggregate: model_inference_results_aggregate_fields
+  nodes: [model_inference_results!]!
+}
+
+"""
+aggregate fields of "model_inference_results"
+"""
+type model_inference_results_aggregate_fields {
+  avg: model_inference_results_avg_fields
+  count(columns: [model_inference_results_select_column!], distinct: Boolean): Int!
+  max: model_inference_results_max_fields
+  min: model_inference_results_min_fields
+  stddev: model_inference_results_stddev_fields
+  stddev_pop: model_inference_results_stddev_pop_fields
+  stddev_samp: model_inference_results_stddev_samp_fields
+  sum: model_inference_results_sum_fields
+  var_pop: model_inference_results_var_pop_fields
+  var_samp: model_inference_results_var_samp_fields
+  variance: model_inference_results_variance_fields
+}
+
+"""aggregate avg on columns"""
+type model_inference_results_avg_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+  probability: Float
+  record_id: Float
+}
+
+"""
+Boolean expression to filter rows from the table "model_inference_results". All fields are combined with a logical 'AND'.
+"""
+input model_inference_results_bool_exp {
+  _and: [model_inference_results_bool_exp!]
+  _not: model_inference_results_bool_exp
+  _or: [model_inference_results_bool_exp!]
+  id: bigint_comparison_exp
+  label_id: Int_comparison_exp
+  model_id: Int_comparison_exp
+  probability: Float_comparison_exp
+  record_id: bigint_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "model_inference_results"
+"""
+enum model_inference_results_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  model_inference_results_pkey
+
+  """
+  unique or primary key constraint on columns "model_id", "record_id"
+  """
+  uq_model_record
+}
+
+"""
+input type for incrementing numeric columns in table "model_inference_results"
+"""
+input model_inference_results_inc_input {
+  id: bigint
+  label_id: Int
+  model_id: Int
+  probability: Float
+  record_id: bigint
+}
+
+"""
+input type for inserting data into table "model_inference_results"
+"""
+input model_inference_results_insert_input {
+  id: bigint
+  label_id: Int
+  model_id: Int
+  probability: Float
+  record_id: bigint
+}
+
+"""aggregate max on columns"""
+type model_inference_results_max_fields {
+  id: bigint
+  label_id: Int
+  model_id: Int
+  probability: Float
+  record_id: bigint
+}
+
+"""aggregate min on columns"""
+type model_inference_results_min_fields {
+  id: bigint
+  label_id: Int
+  model_id: Int
+  probability: Float
+  record_id: bigint
+}
+
+"""
+response of any mutation on the table "model_inference_results"
+"""
+type model_inference_results_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [model_inference_results!]!
+}
+
+"""
+on_conflict condition type for table "model_inference_results"
+"""
+input model_inference_results_on_conflict {
+  constraint: model_inference_results_constraint!
+  update_columns: [model_inference_results_update_column!]! = []
+  where: model_inference_results_bool_exp
+}
+
+"""Ordering options when selecting data from "model_inference_results"."""
+input model_inference_results_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+  probability: order_by
+  record_id: order_by
+}
+
+"""primary key columns input for table: model_inference_results"""
+input model_inference_results_pk_columns_input {
+  id: bigint!
+}
+
+"""
+select columns of table "model_inference_results"
+"""
+enum model_inference_results_select_column {
+  """column name"""
+  id
+
+  """column name"""
+  label_id
+
+  """column name"""
+  model_id
+
+  """column name"""
+  probability
+
+  """column name"""
+  record_id
+}
+
+"""
+input type for updating data in table "model_inference_results"
+"""
+input model_inference_results_set_input {
+  id: bigint
+  label_id: Int
+  model_id: Int
+  probability: Float
+  record_id: bigint
+}
+
+"""aggregate stddev on columns"""
+type model_inference_results_stddev_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+  probability: Float
+  record_id: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type model_inference_results_stddev_pop_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+  probability: Float
+  record_id: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type model_inference_results_stddev_samp_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+  probability: Float
+  record_id: Float
+}
+
+"""
+Streaming cursor of the table "model_inference_results"
+"""
+input model_inference_results_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: model_inference_results_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input model_inference_results_stream_cursor_value_input {
+  id: bigint
+  label_id: Int
+  model_id: Int
+  probability: Float
+  record_id: bigint
+}
+
+"""aggregate sum on columns"""
+type model_inference_results_sum_fields {
+  id: bigint
+  label_id: Int
+  model_id: Int
+  probability: Float
+  record_id: bigint
+}
+
+"""
+update columns of table "model_inference_results"
+"""
+enum model_inference_results_update_column {
+  """column name"""
+  id
+
+  """column name"""
+  label_id
+
+  """column name"""
+  model_id
+
+  """column name"""
+  probability
+
+  """column name"""
+  record_id
+}
+
+input model_inference_results_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: model_inference_results_inc_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: model_inference_results_set_input
+
+  """filter the rows which have to be updated"""
+  where: model_inference_results_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type model_inference_results_var_pop_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+  probability: Float
+  record_id: Float
+}
+
+"""aggregate var_samp on columns"""
+type model_inference_results_var_samp_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+  probability: Float
+  record_id: Float
+}
+
+"""aggregate variance on columns"""
+type model_inference_results_variance_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+  probability: Float
+  record_id: Float
+}
+
+"""Contains all all labels a mode uses"""
+type model_labels {
+  id: Int!
+
+  """An object relationship"""
+  label: labels!
+  label_id: Int!
+  model_id: Int!
+}
+
+"""
+aggregated selection of "model_labels"
+"""
+type model_labels_aggregate {
+  aggregate: model_labels_aggregate_fields
+  nodes: [model_labels!]!
+}
+
+input model_labels_aggregate_bool_exp {
+  count: model_labels_aggregate_bool_exp_count
+}
+
+input model_labels_aggregate_bool_exp_count {
+  arguments: [model_labels_select_column!]
+  distinct: Boolean
+  filter: model_labels_bool_exp
+  predicate: Int_comparison_exp!
+}
+
+"""
+aggregate fields of "model_labels"
+"""
+type model_labels_aggregate_fields {
+  avg: model_labels_avg_fields
+  count(columns: [model_labels_select_column!], distinct: Boolean): Int!
+  max: model_labels_max_fields
+  min: model_labels_min_fields
+  stddev: model_labels_stddev_fields
+  stddev_pop: model_labels_stddev_pop_fields
+  stddev_samp: model_labels_stddev_samp_fields
+  sum: model_labels_sum_fields
+  var_pop: model_labels_var_pop_fields
+  var_samp: model_labels_var_samp_fields
+  variance: model_labels_variance_fields
+}
+
+"""
+order by aggregate values of table "model_labels"
+"""
+input model_labels_aggregate_order_by {
+  avg: model_labels_avg_order_by
+  count: order_by
+  max: model_labels_max_order_by
+  min: model_labels_min_order_by
+  stddev: model_labels_stddev_order_by
+  stddev_pop: model_labels_stddev_pop_order_by
+  stddev_samp: model_labels_stddev_samp_order_by
+  sum: model_labels_sum_order_by
+  var_pop: model_labels_var_pop_order_by
+  var_samp: model_labels_var_samp_order_by
+  variance: model_labels_variance_order_by
+}
+
+"""
+input type for inserting array relation for remote table "model_labels"
+"""
+input model_labels_arr_rel_insert_input {
+  data: [model_labels_insert_input!]!
+
+  """upsert condition"""
+  on_conflict: model_labels_on_conflict
+}
+
+"""aggregate avg on columns"""
+type model_labels_avg_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+}
+
+"""
+order by avg() on columns of table "model_labels"
+"""
+input model_labels_avg_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""
+Boolean expression to filter rows from the table "model_labels". All fields are combined with a logical 'AND'.
+"""
+input model_labels_bool_exp {
+  _and: [model_labels_bool_exp!]
+  _not: model_labels_bool_exp
+  _or: [model_labels_bool_exp!]
+  id: Int_comparison_exp
+  label: labels_bool_exp
+  label_id: Int_comparison_exp
+  model_id: Int_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "model_labels"
+"""
+enum model_labels_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  model_labels_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "model_labels"
+"""
+input model_labels_inc_input {
+  id: Int
+  label_id: Int
+  model_id: Int
+}
+
+"""
+input type for inserting data into table "model_labels"
+"""
+input model_labels_insert_input {
+  id: Int
+  label: labels_obj_rel_insert_input
+  label_id: Int
+  model_id: Int
+}
+
+"""aggregate max on columns"""
+type model_labels_max_fields {
+  id: Int
+  label_id: Int
+  model_id: Int
+}
+
+"""
+order by max() on columns of table "model_labels"
+"""
+input model_labels_max_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""aggregate min on columns"""
+type model_labels_min_fields {
+  id: Int
+  label_id: Int
+  model_id: Int
+}
+
+"""
+order by min() on columns of table "model_labels"
+"""
+input model_labels_min_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""
+response of any mutation on the table "model_labels"
+"""
+type model_labels_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [model_labels!]!
+}
+
+"""
+on_conflict condition type for table "model_labels"
+"""
+input model_labels_on_conflict {
+  constraint: model_labels_constraint!
+  update_columns: [model_labels_update_column!]! = []
+  where: model_labels_bool_exp
+}
+
+"""Ordering options when selecting data from "model_labels"."""
+input model_labels_order_by {
+  id: order_by
+  label: labels_order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""primary key columns input for table: model_labels"""
+input model_labels_pk_columns_input {
+  id: Int!
+}
+
+"""
+select columns of table "model_labels"
+"""
+enum model_labels_select_column {
+  """column name"""
+  id
+
+  """column name"""
+  label_id
+
+  """column name"""
+  model_id
+}
+
+"""
+input type for updating data in table "model_labels"
+"""
+input model_labels_set_input {
+  id: Int
+  label_id: Int
+  model_id: Int
+}
+
+"""aggregate stddev on columns"""
+type model_labels_stddev_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+}
+
+"""
+order by stddev() on columns of table "model_labels"
+"""
+input model_labels_stddev_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""aggregate stddev_pop on columns"""
+type model_labels_stddev_pop_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+}
+
+"""
+order by stddev_pop() on columns of table "model_labels"
+"""
+input model_labels_stddev_pop_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""aggregate stddev_samp on columns"""
+type model_labels_stddev_samp_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+}
+
+"""
+order by stddev_samp() on columns of table "model_labels"
+"""
+input model_labels_stddev_samp_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""
+Streaming cursor of the table "model_labels"
+"""
+input model_labels_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: model_labels_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input model_labels_stream_cursor_value_input {
+  id: Int
+  label_id: Int
+  model_id: Int
+}
+
+"""aggregate sum on columns"""
+type model_labels_sum_fields {
+  id: Int
+  label_id: Int
+  model_id: Int
+}
+
+"""
+order by sum() on columns of table "model_labels"
+"""
+input model_labels_sum_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""
+update columns of table "model_labels"
+"""
+enum model_labels_update_column {
+  """column name"""
+  id
+
+  """column name"""
+  label_id
+
+  """column name"""
+  model_id
+}
+
+input model_labels_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: model_labels_inc_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: model_labels_set_input
+
+  """filter the rows which have to be updated"""
+  where: model_labels_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type model_labels_var_pop_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+}
+
+"""
+order by var_pop() on columns of table "model_labels"
+"""
+input model_labels_var_pop_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""aggregate var_samp on columns"""
+type model_labels_var_samp_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+}
+
+"""
+order by var_samp() on columns of table "model_labels"
+"""
+input model_labels_var_samp_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""aggregate variance on columns"""
+type model_labels_variance_fields {
+  id: Float
+  label_id: Float
+  model_id: Float
+}
+
+"""
+order by variance() on columns of table "model_labels"
+"""
+input model_labels_variance_order_by {
+  id: order_by
+  label_id: order_by
+  model_id: order_by
+}
+
+"""
 columns and relationships of "models"
 """
 type models {
   created_at: timestamp!
-  endpoint: String!
 
   """An array relationship"""
   events(
@@ -1837,10 +2503,45 @@ type models {
     """filter the rows returned"""
     where: events_bool_exp
   ): events_aggregate!
-  id: bigint!
+  id: Int!
+
+  """An array relationship"""
+  model_labels(
+    """distinct select on columns"""
+    distinct_on: [model_labels_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_labels_order_by!]
+
+    """filter the rows returned"""
+    where: model_labels_bool_exp
+  ): [model_labels!]!
+
+  """An aggregate relationship"""
+  model_labels_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_labels_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_labels_order_by!]
+
+    """filter the rows returned"""
+    where: model_labels_bool_exp
+  ): model_labels_aggregate!
   name: String!
   remarks: String
-  short_name: String!
   updated_at: timestamp
 }
 
@@ -1882,13 +2583,13 @@ input models_bool_exp {
   _not: models_bool_exp
   _or: [models_bool_exp!]
   created_at: timestamp_comparison_exp
-  endpoint: String_comparison_exp
   events: events_bool_exp
   events_aggregate: events_aggregate_bool_exp
-  id: bigint_comparison_exp
+  id: Int_comparison_exp
+  model_labels: model_labels_bool_exp
+  model_labels_aggregate: model_labels_aggregate_bool_exp
   name: String_comparison_exp
   remarks: String_comparison_exp
-  short_name: String_comparison_exp
   updated_at: timestamp_comparison_exp
 }
 
@@ -1905,18 +2606,13 @@ enum models_constraint {
   unique or primary key constraint on columns "id"
   """
   models_pkey
-
-  """
-  unique or primary key constraint on columns "short_name"
-  """
-  models_short_name_key
 }
 
 """
 input type for incrementing numeric columns in table "models"
 """
 input models_inc_input {
-  id: bigint
+  id: Int
 }
 
 """
@@ -1924,34 +2620,29 @@ input type for inserting data into table "models"
 """
 input models_insert_input {
   created_at: timestamp
-  endpoint: String
   events: events_arr_rel_insert_input
-  id: bigint
+  id: Int
+  model_labels: model_labels_arr_rel_insert_input
   name: String
   remarks: String
-  short_name: String
   updated_at: timestamp
 }
 
 """aggregate max on columns"""
 type models_max_fields {
   created_at: timestamp
-  endpoint: String
-  id: bigint
+  id: Int
   name: String
   remarks: String
-  short_name: String
   updated_at: timestamp
 }
 
 """aggregate min on columns"""
 type models_min_fields {
   created_at: timestamp
-  endpoint: String
-  id: bigint
+  id: Int
   name: String
   remarks: String
-  short_name: String
   updated_at: timestamp
 }
 
@@ -1988,18 +2679,17 @@ input models_on_conflict {
 """Ordering options when selecting data from "models"."""
 input models_order_by {
   created_at: order_by
-  endpoint: order_by
   events_aggregate: events_aggregate_order_by
   id: order_by
+  model_labels_aggregate: model_labels_aggregate_order_by
   name: order_by
   remarks: order_by
-  short_name: order_by
   updated_at: order_by
 }
 
 """primary key columns input for table: models"""
 input models_pk_columns_input {
-  id: bigint!
+  id: Int!
 }
 
 """
@@ -2008,9 +2698,6 @@ select columns of table "models"
 enum models_select_column {
   """column name"""
   created_at
-
-  """column name"""
-  endpoint
 
   """column name"""
   id
@@ -2022,9 +2709,6 @@ enum models_select_column {
   remarks
 
   """column name"""
-  short_name
-
-  """column name"""
   updated_at
 }
 
@@ -2033,11 +2717,9 @@ input type for updating data in table "models"
 """
 input models_set_input {
   created_at: timestamp
-  endpoint: String
-  id: bigint
+  id: Int
   name: String
   remarks: String
-  short_name: String
   updated_at: timestamp
 }
 
@@ -2070,17 +2752,15 @@ input models_stream_cursor_input {
 """Initial value of the column from where the streaming should start"""
 input models_stream_cursor_value_input {
   created_at: timestamp
-  endpoint: String
-  id: bigint
+  id: Int
   name: String
   remarks: String
-  short_name: String
   updated_at: timestamp
 }
 
 """aggregate sum on columns"""
 type models_sum_fields {
-  id: bigint
+  id: Int
 }
 
 """
@@ -2091,9 +2771,6 @@ enum models_update_column {
   created_at
 
   """column name"""
-  endpoint
-
-  """column name"""
   id
 
   """column name"""
@@ -2101,9 +2778,6 @@ enum models_update_column {
 
   """column name"""
   remarks
-
-  """column name"""
-  short_name
 
   """column name"""
   updated_at
@@ -2178,7 +2852,7 @@ type mutation_root {
   """
   delete single row from the table: "labels"
   """
-  delete_labels_by_pk(id: bigint!): labels
+  delete_labels_by_pk(id: Int!): labels
 
   """
   delete data from the table: "locations"
@@ -2194,6 +2868,32 @@ type mutation_root {
   delete_locations_by_pk(id: bigint!): locations
 
   """
+  delete data from the table: "model_inference_results"
+  """
+  delete_model_inference_results(
+    """filter the rows which have to be deleted"""
+    where: model_inference_results_bool_exp!
+  ): model_inference_results_mutation_response
+
+  """
+  delete single row from the table: "model_inference_results"
+  """
+  delete_model_inference_results_by_pk(id: bigint!): model_inference_results
+
+  """
+  delete data from the table: "model_labels"
+  """
+  delete_model_labels(
+    """filter the rows which have to be deleted"""
+    where: model_labels_bool_exp!
+  ): model_labels_mutation_response
+
+  """
+  delete single row from the table: "model_labels"
+  """
+  delete_model_labels_by_pk(id: Int!): model_labels
+
+  """
   delete data from the table: "models"
   """
   delete_models(
@@ -2204,7 +2904,7 @@ type mutation_root {
   """
   delete single row from the table: "models"
   """
-  delete_models_by_pk(id: bigint!): models
+  delete_models_by_pk(id: Int!): models
 
   """
   delete data from the table: "records"
@@ -2384,6 +3084,50 @@ type mutation_root {
     """upsert condition"""
     on_conflict: locations_on_conflict
   ): locations
+
+  """
+  insert data into the table: "model_inference_results"
+  """
+  insert_model_inference_results(
+    """the rows to be inserted"""
+    objects: [model_inference_results_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: model_inference_results_on_conflict
+  ): model_inference_results_mutation_response
+
+  """
+  insert a single row into the table: "model_inference_results"
+  """
+  insert_model_inference_results_one(
+    """the row to be inserted"""
+    object: model_inference_results_insert_input!
+
+    """upsert condition"""
+    on_conflict: model_inference_results_on_conflict
+  ): model_inference_results
+
+  """
+  insert data into the table: "model_labels"
+  """
+  insert_model_labels(
+    """the rows to be inserted"""
+    objects: [model_labels_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: model_labels_on_conflict
+  ): model_labels_mutation_response
+
+  """
+  insert a single row into the table: "model_labels"
+  """
+  insert_model_labels_one(
+    """the row to be inserted"""
+    object: model_labels_insert_input!
+
+    """upsert condition"""
+    on_conflict: model_labels_on_conflict
+  ): model_labels
 
   """
   insert data into the table: "models"
@@ -2740,6 +3484,74 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [locations_updates!]!
   ): [locations_mutation_response]
+
+  """
+  update data of the table: "model_inference_results"
+  """
+  update_model_inference_results(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_inference_results_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_inference_results_set_input
+
+    """filter the rows which have to be updated"""
+    where: model_inference_results_bool_exp!
+  ): model_inference_results_mutation_response
+
+  """
+  update single row of the table: "model_inference_results"
+  """
+  update_model_inference_results_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_inference_results_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_inference_results_set_input
+    pk_columns: model_inference_results_pk_columns_input!
+  ): model_inference_results
+
+  """
+  update multiples rows of table: "model_inference_results"
+  """
+  update_model_inference_results_many(
+    """updates to execute, in order"""
+    updates: [model_inference_results_updates!]!
+  ): [model_inference_results_mutation_response]
+
+  """
+  update data of the table: "model_labels"
+  """
+  update_model_labels(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_labels_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_labels_set_input
+
+    """filter the rows which have to be updated"""
+    where: model_labels_bool_exp!
+  ): model_labels_mutation_response
+
+  """
+  update single row of the table: "model_labels"
+  """
+  update_model_labels_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_labels_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_labels_set_input
+    pk_columns: model_labels_pk_columns_input!
+  ): model_labels
+
+  """
+  update multiples rows of table: "model_labels"
+  """
+  update_model_labels_many(
+    """updates to execute, in order"""
+    updates: [model_labels_updates!]!
+  ): [model_labels_mutation_response]
 
   """
   update data of the table: "models"
@@ -3260,7 +4072,7 @@ type query_root {
   ): labels_aggregate!
 
   """fetch data from the table: "labels" using primary key columns"""
-  labels_by_pk(id: bigint!): labels
+  labels_by_pk(id: Int!): labels
 
   """
   Lists all folders in the data directory. Optional subpath parameter to list specific subdirectory.
@@ -3311,6 +4123,90 @@ type query_root {
   locations_by_pk(id: bigint!): locations
 
   """
+  fetch data from the table: "model_inference_results"
+  """
+  model_inference_results(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_bool_exp
+  ): [model_inference_results!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_results"
+  """
+  model_inference_results_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_bool_exp
+  ): model_inference_results_aggregate!
+
+  """
+  fetch data from the table: "model_inference_results" using primary key columns
+  """
+  model_inference_results_by_pk(id: bigint!): model_inference_results
+
+  """An array relationship"""
+  model_labels(
+    """distinct select on columns"""
+    distinct_on: [model_labels_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_labels_order_by!]
+
+    """filter the rows returned"""
+    where: model_labels_bool_exp
+  ): [model_labels!]!
+
+  """An aggregate relationship"""
+  model_labels_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_labels_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_labels_order_by!]
+
+    """filter the rows returned"""
+    where: model_labels_bool_exp
+  ): model_labels_aggregate!
+
+  """fetch data from the table: "model_labels" using primary key columns"""
+  model_labels_by_pk(id: Int!): model_labels
+
+  """
   fetch data from the table: "models"
   """
   models(
@@ -3351,7 +4247,7 @@ type query_root {
   ): models_aggregate!
 
   """fetch data from the table: "models" using primary key columns"""
-  models_by_pk(id: bigint!): models
+  models_by_pk(id: Int!): models
 
   """An array relationship"""
   records(
@@ -7440,7 +8336,7 @@ type subscription_root {
   ): labels_aggregate!
 
   """fetch data from the table: "labels" using primary key columns"""
-  labels_by_pk(id: bigint!): labels
+  labels_by_pk(id: Int!): labels
 
   """
   fetch data from the table in a streaming manner: "labels"
@@ -7514,6 +8410,118 @@ type subscription_root {
   ): [locations!]!
 
   """
+  fetch data from the table: "model_inference_results"
+  """
+  model_inference_results(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_bool_exp
+  ): [model_inference_results!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_results"
+  """
+  model_inference_results_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_bool_exp
+  ): model_inference_results_aggregate!
+
+  """
+  fetch data from the table: "model_inference_results" using primary key columns
+  """
+  model_inference_results_by_pk(id: bigint!): model_inference_results
+
+  """
+  fetch data from the table in a streaming manner: "model_inference_results"
+  """
+  model_inference_results_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [model_inference_results_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: model_inference_results_bool_exp
+  ): [model_inference_results!]!
+
+  """An array relationship"""
+  model_labels(
+    """distinct select on columns"""
+    distinct_on: [model_labels_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_labels_order_by!]
+
+    """filter the rows returned"""
+    where: model_labels_bool_exp
+  ): [model_labels!]!
+
+  """An aggregate relationship"""
+  model_labels_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_labels_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_labels_order_by!]
+
+    """filter the rows returned"""
+    where: model_labels_bool_exp
+  ): model_labels_aggregate!
+
+  """fetch data from the table: "model_labels" using primary key columns"""
+  model_labels_by_pk(id: Int!): model_labels
+
+  """
+  fetch data from the table in a streaming manner: "model_labels"
+  """
+  model_labels_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [model_labels_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: model_labels_bool_exp
+  ): [model_labels!]!
+
+  """
   fetch data from the table: "models"
   """
   models(
@@ -7554,7 +8562,7 @@ type subscription_root {
   ): models_aggregate!
 
   """fetch data from the table: "models" using primary key columns"""
-  models_by_pk(id: bigint!): models
+  models_by_pk(id: Int!): models
 
   """
   fetch data from the table in a streaming manner: "models"

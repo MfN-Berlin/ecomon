@@ -9,41 +9,13 @@ array_relationships:
         table:
           name: events
           schema: public
-insert_permissions:
-  - role: user
-    permission:
-      check: {}
-      columns:
-        - endpoint
-        - name
-        - remarks
-        - short_name
-    comment: ""
-select_permissions:
-  - role: user
-    permission:
-      columns:
-        - created_at
-        - endpoint
-        - id
-        - name
-        - remarks
-        - short_name
-        - updated_at
-      filter: {}
-      allow_aggregations: true
-    comment: ""
-update_permissions:
-  - role: user
-    permission:
-      columns:
-        - endpoint
-        - name
-        - remarks
-        - short_name
-      filter: {}
-      check: {}
-    comment: ""
+  - name: model_labels
+    using:
+      foreign_key_constraint_on:
+        column: model_id
+        table:
+          name: model_labels
+          schema: public
 delete_permissions:
   - role: user
     permission:

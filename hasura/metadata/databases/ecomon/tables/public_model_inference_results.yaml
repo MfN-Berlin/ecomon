@@ -1,0 +1,15 @@
+table:
+  name: model_inference_results
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - record_id
+        - label_id
+        - model_id
+        - probability
+      filter: {}
+      allow_aggregations: true
+    comment: ""
