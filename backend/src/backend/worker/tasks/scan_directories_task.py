@@ -69,11 +69,13 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
             if file_path.suffix.lower() not in settings.audio_extensions_list:
                 processed_files += 1
                 continue
-
+            exists = False
             try:
                 # Simplified exists check
                 exists = (
-                    session.query(Records.id).filter_by(filepath=str(file_path)).first()
+                    session.query(Records.id)
+                    .filter_by(filename=str(file_path.name))
+                    .first()
                     is not None
                 )
                 file_path_relative_to_base_data_directory = file_path.relative_to(
@@ -130,7 +132,6 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                     raise e
 
             processed_files += 1
-            time.sleep(0.1)
 
         if session.dirty or session.new or session.deleted:
             session.commit()
@@ -138,6 +139,7 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
         # Attempt to acquire the lock with a timeout
         wait_for_lock_and_create_report(job_id, site_id, session, logger)
         JobService.update_job_progress(session, job_id, 100)
+
     except Exception as e:
         session.rollback()
         JobService.set_job_error(session, job_id, str(e))
