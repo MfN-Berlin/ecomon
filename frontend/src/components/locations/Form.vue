@@ -89,6 +89,7 @@ const markers = computed(() => {
     <v-number-input
       v-model="lat"
       type="number"
+      :precision="6"
       :error-messages="latError"
       label="Latitude"
       density="compact"
@@ -96,6 +97,7 @@ const markers = computed(() => {
     <v-number-input
       v-model="long"
       type="number"
+      :precision="6"
       :error-messages="longError"
       label="Longitude"
       density="compact"
