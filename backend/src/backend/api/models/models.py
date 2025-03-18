@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 class AnalyzeSiteRequest(BaseModel):
     site_id: int
+    model_id: int
 
 
 class AnalyzeSiteResponse(BaseModel):

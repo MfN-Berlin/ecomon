@@ -20,6 +20,7 @@ app = Celery(
         "backend.worker.tasks.scan_directories_task",
         "backend.worker.tasks.delete_records_from_site_task",
         "backend.worker.tasks.create_site_data_report_task",
+        "backend.worker.tasks.model_inference_site_task",
     ],
 )
 

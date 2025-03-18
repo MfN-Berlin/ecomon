@@ -8,6 +8,7 @@ class WorkerSettings(BackendBaseSettings):
     redis_port: str
     audio_extensions: str = "wav,mp3,flac"
     wait_for_soft_cancel_timeout: int = 10
+    tmp_dir: str
 
     @property
     def broker_url(self) -> str:

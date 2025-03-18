@@ -45,3 +45,4 @@ poetry/core/*
 __pycache__/
 .DS_Store
 .pyc
+runtime-data/**

@@ -16,6 +16,18 @@ array_relationships:
         table:
           name: model_labels
           schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - name
+        - remarks
+        - created_at
+        - updated_at
+      filter: {}
+      allow_aggregations: true
+    comment: ""
 delete_permissions:
   - role: user
     permission:

@@ -28,6 +28,8 @@ COPY ./README.md /app/README.md
 RUN mkdir -p /app/assets
 # Create data directory
 RUN mkdir -p /data
+RUN mkdir -p /tmp
+RUN mkdir -p /results
 
 WORKDIR /app
 

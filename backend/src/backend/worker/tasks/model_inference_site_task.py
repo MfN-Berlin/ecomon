@@ -1,6 +1,6 @@
 import os
 import time
-
+from sqlalchemy.orm import selectinload
 from backend.worker.tasks.utils.site_tasks import wait_for_lock_and_create_report
 import soundfile as sf
 from pathlib import Path
@@ -9,7 +9,7 @@ from celery.utils.log import get_task_logger
 from celery import states
 
 from backend.worker.app import app
-from backend.shared.models.db.models import Records, SiteDirectories
+from backend.shared.models.db.models import Records, ModelInferenceResults
 
 from backend.worker.tools import parse_datetime
 from backend.worker.settings import WorkerSettings
@@ -37,95 +37,52 @@ BATCH_SIZE = 100
     base=BaseTask,
     track_started=True,
 )
-def model_inference_site_task(self, site_id: int):
+def model_inference_site_task(self, site_id: int, model_id: int):
     job_id = self.request.id
     session = db_session()
     try:
-        Records.query.filter_by(site_id=site_id).join()       
+        file_counter = 0
+        logger.info(f"Fetching records for site {site_id} and model {model_id}")
+        records = (
+            session.query(Records)
+            .options(selectinload(Records.model_inference_results))
+            .outerjoin(
+                ModelInferenceResults,
+                (Records.id == ModelInferenceResults.record_id)
+                & (ModelInferenceResults.model_id == model_id),
+            )
+            .filter(Records.site_id == site_id)
+            .filter(ModelInferenceResults.id.is_(None))
+            .all()
+        )
+        logger.info(f"Found {len(records)} records to process")
+        # Prepare inputPaths.txt file for the model
 
-        for idx, file_path in enumerate(all_files, 1):
+        input_paths_file = os.path.join(settings.tmp_dir, job_id, "inputPaths.txt")
+        os.makedirs(os.path.join(settings.tmp_dir, job_id), exist_ok=True)
+        logger.info(f"Input paths file: {input_paths_file}")
+        model_output_dir = os.path.join(settings.tmp_dir, job_id, "model_output")
+        logger.info(f"Model output directory: {model_output_dir}")
+        os.makedirs(model_output_dir, exist_ok=True)
+        logger.info(f"Data Base Directory: {settings.base_data_directory}")
 
-            if self.check_revoked():
-                time.sleep(1)
-                # Wait for 1 second to ensure the task is revoked
+        with open(input_paths_file, "w") as f:
+            for record in records:
+                f.write(os.path.join("/data", record.filepath) + "\n")
 
-                return {
-                    "status": "revoked",
-                    "message": "Task was revoked.",
-                }
-            if file_path.suffix.lower() not in settings.audio_extensions_list:
-                processed_files += 1
-                continue
-            exists = False
-            try:
-                # Simplified exists check
-                exists = (
-                    session.query(Records.id)
-                    .filter_by(filename=str(file_path.name))
-                    .first()
-                    is not None
-                )
-                file_path_relative_to_base_data_directory = file_path.relative_to(
-                    settings.base_data_directory
-                )
-            except Exception as e:
-                logger.error(f"Error checking file existence: {str(e)}")
-                raise e
+        # run os command to run the model
+        command = f"""docker run -v /var/run/docker.sock:/var/run/docker.sock \
+                    -v {input_paths_file}:/app/inputPaths.txt \
+                    -v {model_output_dir}:/output \
+                    -v {settings.base_data_directory}:/data\
+                    --gpus all \
+                    runmodel -i /app/inputPaths.txt -o /output"""
+        logger.info(f"Running command: {command}")
+        os.system(command)
 
-            if not exists:
-                try:
-                    record_datetime = parse_datetime(file_path.stem)
-                    with sf.SoundFile(file_path) as audio:
-                        duration = audio.frames / audio.samplerate
-                        channels = str(audio.channels)
-                        sample_rate = audio.samplerate
+        # Fetch a chunk of records that do NOT have an inference for the current model_id.
 
-                    record = Records(
-                        site_id=site_id,
-                        filepath=str(file_path_relative_to_base_data_directory),
-                        filename=file_path.name,
-                        record_datetime=record_datetime,
-                        duration=float(duration),
-                        channels=channels,
-                        sample_rate=sample_rate,
-                        mime_type=f"audio/{file_path.suffix[1:].lower()}",
-                    )
-
-                    session.add(record)
-                    current_batch += 1
-
-                    if current_batch >= BATCH_SIZE:
-                        session.commit()
-                        session.close()
-                        db_session.remove()
-                        session = db_session()
-                        current_batch = 0
-                        logger.info(f"Committed {idx}/{total_files} files")
-
-                except Exception as e:
-                    session.rollback()
-                    logger.error(f"Error processing {file_path}: {str(e)}")
-                    current_batch = 0
-
-            if (processed_files % max(1, total_files // 100)) == 0:
-                progress = int((processed_files / total_files) * 100)
-                try:
-                    JobService.update_job_progress(session, job_id, progress)
-                    session.commit()
-                except Exception as e:
-                    logger.error(f"Progress update failed: {str(e)}")
-                    # Additional logging for debugging
-                    logger.debug(f"Job ID: {job_id}, Progress: {progress}")
-                    raise e
-
-            processed_files += 1
-
-        if session.dirty or session.new or session.deleted:
-            session.commit()
-
-        # Attempt to acquire the lock with a timeout
-        wait_for_lock_and_create_report(job_id, site_id, session, logger)
-        JobService.update_job_progress(session, job_id, 100)
+        file_counter += len(records)
 
     except Exception as e:
         session.rollback()
@@ -135,5 +92,5 @@ def model_inference_site_task(self, site_id: int):
 
     return {
         "status": "success",
-        "message": f"Successfully scanned {len(directories)} directories for site {site_id}",
+        "message": f"Successfully analyzed {file_counter} records for site {site_id}",
     }

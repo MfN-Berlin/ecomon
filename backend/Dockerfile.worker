@@ -34,6 +34,8 @@ RUN poetry install
 
 # Create data directory
 RUN mkdir -p /data
+RUN mkdir -p /tmp
+RUN mkdir -p /results
 
 
 # Your entrypoint/cmd as needed
