@@ -108,7 +108,7 @@ const isAlreadyAdded = computed(() => {
               <v-icon>mdi-folder</v-icon>
             </template>
             <template #append>
-              <v-item v-if="!isAlreadyAdded(item?.path)" v-slot="{ isSelected, toggle }">
+              <v-item v-show="!isAlreadyAdded(item?.path)" v-slot="{ isSelected, toggle }">
                 <v-checkbox-btn :value="isSelected" density="compact" @click="toggle"></v-checkbox-btn>
               </v-item>
             </template>

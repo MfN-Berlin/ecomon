@@ -7,18 +7,24 @@ const { siteId, data } = defineProps<{
   data: SiteInformationProps;
 }>();
 
-const { mutate: deleteFn, isPending: deletePending } = useSiteDirectoryDelete();
+const { mutate: deleteFn } = useSiteDirectoryDelete();
 const { mutate: addFn, isPending: addPending } = useSiteDirectoryInsert();
 const { mutate: scanAllDirectories, isPending: scanAllDirectoriesPending } = useSiteScanAllDirectories();
-const { mutate: scanDirectory, isPending: scanDirectoryPending } = useSiteScanDirectory();
-
+const { mutate: scanDirectory } = useSiteScanDirectory();
+const { mutate: cancelJob } = useCancelJob();
 const showAddDialog = ref(false);
 const { $activeJobs } = useNuxtApp();
-const store = useJobsStore();
-const dialogStore = useDialogStore();
+
+const { openDialog } = useDialogStore();
 
 const currentJobs = computed(() => {
   return $activeJobs.value?.jobs.filter((job) => job.payload.site_id === siteId);
+});
+
+const siteHasScanningJob = computed(() => {
+  return currentJobs.value?.some(
+    (job) => job.payload.directories.length > 0 && ["running", "pending"].includes(job.status)
+  );
 });
 
 const activeJobInfo = computed(() => (directory: string) => {
@@ -42,11 +48,6 @@ function handleDelete(id: number) {
 
 function handleAdd() {
   showAddDialog.value = true;
-}
-
-function handleCancel(id: number) {
-  console.log("cancel", id);
-  store.cancelJob(id);
 }
 
 function handleSubmit(path: string[]) {
@@ -76,10 +77,10 @@ function handleSubmit(path: string[]) {
               :disabled="scanAllDirectoriesPending"
               :loading="scanAllDirectoriesPending"
               @click="
-                dialogStore.openDialog(
+                openDialog(
                   `Scan all directories`,
                   `This will rescan all directories for this site and add all new files to the database.`,
-                  () => `scanAllDirectories({ id: siteId )`
+                  () => scanAllDirectories({ id: siteId })
                 )
               "
             >
@@ -123,7 +124,13 @@ function handleSubmit(path: string[]) {
                     size="small"
                     variant="text"
                     v-bind="props"
-                    @click="handleCancel(activeJobInfo(item.directory)?.id)"
+                    @click="
+                      openDialog(
+                        `Cancel Job`,
+                        `Are you sure you want to cancel job scanning directory ${item.directory}?`,
+                        async () => await cancelJob({ jobId: activeJobInfo(item.directory)?.id })
+                      )
+                    "
                   />
                 </v-progress-circular>
                 <v-chip
@@ -154,7 +161,7 @@ function handleSubmit(path: string[]) {
                 v-bind="props"
                 :disabled="activeJobInfo(item.directory)?.isRunning"
                 @click="
-                  dialogStore.openDialog(
+                  openDialog(
                     `Delete Directory`,
                     `Are you sure you want to delete  ${item.directory} from this site ?`,
                     () => handleDelete(item.id)
