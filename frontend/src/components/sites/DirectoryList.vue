@@ -119,16 +119,15 @@ function skipAllSyncs() {
         <v-tooltip text="Add New Directory">
           <template v-slot:activator="{ props }">
             <v-btn
-              icon
+              prepend-icon="mdi-plus"
               class="mr-4"
-              density="compact"
               color="primary"
               variant="tonal"
               v-bind="props"
               :loading="addPending"
               @click="handleAdd"
             >
-              <v-icon>mdi-plus</v-icon>
+              Add Directory
             </v-btn>
           </template>
         </v-tooltip>

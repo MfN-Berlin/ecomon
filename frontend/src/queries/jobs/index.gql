@@ -1,3 +1,13 @@
+fragment Job on jobs {
+  id
+  status
+  topic
+  payload
+  progress
+  error
+  updated_at
+  created_at
+}
 query getJobsPagniated(
   $limit: Int = 10
   $offset: Int = 0
@@ -5,14 +15,7 @@ query getJobsPagniated(
   $where: jobs_bool_exp = {}
 ) {
   items: jobs(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
-    id
-    status
-    topic
-    payload
-    progress
-    error
-    updated_at
-    created_at
+    ...Job
   }
   total: jobs_aggregate(where: $where) {
     aggregate {
@@ -26,12 +29,6 @@ query getSiteJobsByTopic($siteId: Int!, $_or: [jobs_bool_exp!]!) {
     where: { _and: { _or: $_or, payload: { _contains: { site_id: $siteId } } } }
     order_by: { created_at: desc }
   ) {
-    id
-    payload
-    topic
-    status
-    progress
-    error
-    created_at
+    ...Job
   }
 }

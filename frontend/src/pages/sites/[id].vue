@@ -32,6 +32,8 @@ const { mutate, isPending } = useSiteUpdate();
             }
           "
         ></sites-form>
+
+        <sites-model-site-controls class="mt-4" :siteId="data?.id" />
       </v-col>
       <v-col cols="12" md="6">
         <sites-reports v-if="data" :site="data" />
