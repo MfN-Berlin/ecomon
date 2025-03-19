@@ -299,7 +299,9 @@ class ModelInferenceResults(Base):
     record_id = mapped_column(BigInteger, nullable=False)
     model_id = mapped_column(Integer, nullable=False)
     label_id = mapped_column(Integer, nullable=False)
-    probability = mapped_column(Float, nullable=False)
+    start_time = mapped_column(Numeric(9, 4), nullable=False)
+    end_time = mapped_column(Numeric(9, 4), nullable=False)
+    confidence = mapped_column(Float, nullable=False)
 
     label: Mapped['Labels'] = relationship('Labels', back_populates='model_inference_results')
     model: Mapped['Models'] = relationship('Models', back_populates='model_inference_results')

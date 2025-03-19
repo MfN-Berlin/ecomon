@@ -24,6 +24,7 @@ celery = {extras = ["redis"], version = "^5.4.0"}
 redis = "^5.2.1"
 soundfile = "^0.13.1"
 gevent = "^24.11.1"
+pandas = "^2.2.3"
 
 
 [tool.poetry.group.dev.dependencies]

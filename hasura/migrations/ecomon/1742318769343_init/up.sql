@@ -112,7 +112,9 @@ CREATE TABLE public.model_inference_results (
     record_id bigint NOT NULL,
     model_id integer NOT NULL,
     label_id integer NOT NULL,
-    probability real NOT NULL
+    start_time numeric(9,4) NOT NULL,
+    end_time numeric(9,4) NOT NULL,
+    confidence real NOT NULL
 );
 CREATE SEQUENCE public.model_inference_results_id_seq
     START WITH 1

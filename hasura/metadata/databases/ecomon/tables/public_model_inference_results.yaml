@@ -5,11 +5,13 @@ select_permissions:
   - role: user
     permission:
       columns:
+        - end_time
         - id
-        - record_id
         - label_id
         - model_id
         - probability
+        - record_id
+        - start_time
       filter: {}
       allow_aggregations: true
     comment: ""
