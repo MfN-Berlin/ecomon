@@ -29,4 +29,5 @@ select_permissions:
         - record_datetime
         - created_at
       filter: {}
+      allow_aggregations: true
     comment: ""

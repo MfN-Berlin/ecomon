@@ -57,8 +57,10 @@ services:
       - DB_NAME=${DB_NAME}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - TMP_DIR=/tmp
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
+      - ${TMP_DIR}:/tmp
   worker:
     build:
       context: ./backend
@@ -74,8 +76,10 @@ services:
       - DB_NAME=${DB_NAME}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - TMP_DIR=/tmp
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
+      - ${TMP_DIR}:/tmp
     depends_on:
       - redis
 
@@ -107,7 +111,7 @@ services:
       HASURA_ADMIN_SECRET: ${HASURA_ADMIN_SECRET}
       APPLY_METADATA: "true"
       APPLY_MIGRATIONS: "true"
-      APPLY_SEEDS: "false"
+      APPLY_SEEDS: "true"
     networks:
       - ecomon
     volumes:
@@ -148,6 +152,7 @@ services:
       - ecomon
 volumes:
   ecomon_data:
+
 
 networks:
   ecomon:

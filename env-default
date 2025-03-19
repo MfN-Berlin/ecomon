@@ -17,3 +17,4 @@ DOMAIN=localhost
 SUB_PATH=/ecomon_next
 ENTRY_PORT=80
 PROTOCOL=http
+TMP_DIR=/YOUR_TMP_DIR
