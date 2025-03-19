@@ -1,5 +1,6 @@
 import os
 import time
+import shutil
 from sqlalchemy.orm import selectinload
 from backend.worker.tasks.utils.site_tasks import wait_for_lock_and_create_report
 import soundfile as sf
@@ -40,6 +41,9 @@ BATCH_SIZE = 100
 def model_inference_site_task(self, site_id: int, model_id: int):
     job_id = self.request.id
     session = db_session()
+    # create temp directories for the job
+    job_temp_dir = os.path.join(settings.tmp_dir, job_id)
+
     try:
         file_counter = 0
         logger.info(f"Fetching records for site {site_id} and model {model_id}")
@@ -56,19 +60,17 @@ def model_inference_site_task(self, site_id: int, model_id: int):
             .all()
         )
         logger.info(f"Found {len(records)} records to process")
-        # Prepare inputPaths.txt file for the model
 
-        input_paths_file = os.path.join(settings.tmp_dir, job_id, "inputPaths.txt")
-        os.makedirs(os.path.join(settings.tmp_dir, job_id), exist_ok=True)
-        logger.info(f"Input paths file: {input_paths_file}")
-        model_output_dir = os.path.join(settings.tmp_dir, job_id, "model_output")
-        logger.info(f"Model output directory: {model_output_dir}")
+        input_paths_file = os.path.join(job_temp_dir, "inputPaths.txt")
+        os.makedirs(job_temp_dir, exist_ok=True)
+        model_output_dir = os.path.join(job_temp_dir, "output")
         os.makedirs(model_output_dir, exist_ok=True)
-        logger.info(f"Data Base Directory: {settings.base_data_directory}")
-
+        # Prepare inputPaths.txt file for the model
         with open(input_paths_file, "w") as f:
             for record in records:
-                f.write(os.path.join("/data", record.filepath) + "\n")
+                f.write(
+                    os.path.join(settings.base_data_directory, record.filepath) + "\n"
+                )
 
         # run os command to run the model
         command = f"""docker run -v /var/run/docker.sock:/var/run/docker.sock \
@@ -76,7 +78,7 @@ def model_inference_site_task(self, site_id: int, model_id: int):
                     -v {model_output_dir}:/output \
                     -v {settings.base_data_directory}:/data\
                     --gpus all \
-                    runmodel -i /app/inputPaths.txt -o /output"""
+                    runmodel -i /app/inputPaths.txt -o /output -ov {model_output_dir} --removeTemporaryResultFiles"""
         logger.info(f"Running command: {command}")
         os.system(command)
 
@@ -89,7 +91,10 @@ def model_inference_site_task(self, site_id: int, model_id: int):
         JobService.set_job_error(session, job_id, str(e))
         logger.error(f"Task failed: {str(e)}")
         raise e
-
+    finally:
+        # delete the temp directories
+        # shutil.rmtree(job_temp_dir)
+        pass
     return {
         "status": "success",
         "message": f"Successfully analyzed {file_counter} records for site {site_id}",

@@ -7,6 +7,9 @@ const { data: modelList } = useModelList();
 const selectedModel = ref<number | null>(null);
 const startDateTime = ref<Date | null>(null);
 const endDateTime = ref<Date | null>(null);
+
+const selectedStartDateTime = ref<string>("2025-03-19 12:00:00");
+
 const dialog = ref(false);
 </script>
 
@@ -20,6 +23,7 @@ const dialog = ref(false);
       >
     </v-card-actions>
     <v-card-text>
+      <CommonDateTimePicker v-model="selectedStartDateTime" label="Start Date Time" />
       <v-list>
         <v-list-item v-for="model in modelList" :key="model.id">
           <v-list-item-title>{{ model.name }}</v-list-item-title>
