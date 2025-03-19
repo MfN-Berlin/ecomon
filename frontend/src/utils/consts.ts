@@ -13,5 +13,6 @@ export const enum QUERY_KEYS {
   siteReportsMonthlyHistogram = "siteReportsMonthlyHistogram",
   siteReportsDailyHistogram = "siteReportsDailyHistogram",
   siteReportsDurationHistogram = "siteReportsDurationHistogram",
-  siteReportsRecordsHeatmap = "siteReportsRecordsHeatmap"
+  siteReportsRecordsHeatmap = "siteReportsRecordsHeatmap",
+  siteFirstLastRecordDate = "siteFirstLastRecordDate"
 }

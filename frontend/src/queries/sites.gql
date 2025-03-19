@@ -134,3 +134,10 @@ mutation createSiteDataReport($id: Int!) {
     jobId
   }
 }
+
+query getSiteFirstAndLastRecordDate($id: bigint!) {
+  data: site_reports(where: { site_id: { _eq: $id } }, order_by: { created_at: asc }, limit: 1) {
+    first_record_date
+    last_record_date
+  }
+}

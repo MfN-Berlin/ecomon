@@ -3,13 +3,18 @@ const props = defineProps<{
   siteId: number;
 }>();
 const open = ref(false);
-const { data: logs } = useGetSiteJobsByTopic({
+const { data: logs, refetch } = useGetSiteJobsByTopic({
   siteId: props.siteId,
   _or: [{ topic: { _eq: "scan_directories" } }, { topic: { _eq: "delete_records_from_site" } }]
 });
 defineExpose({
   open: () => {
     open.value = true;
+  }
+});
+watch(open, (val) => {
+  if (val) {
+    refetch();
   }
 });
 </script>

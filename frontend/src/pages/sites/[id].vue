@@ -33,11 +33,11 @@ const { mutate, isPending } = useSiteUpdate();
           "
         ></sites-form>
 
-        <sites-model-site-controls class="mt-4" :siteId="data?.id" />
+        <sites-model-site-controls class="mt-4" :siteId="id" />
       </v-col>
       <v-col cols="12" md="6">
         <sites-reports v-if="data" :site="data" />
-        <sites-directory-list v-if="data" class="mt-4" :siteId="data.id" :data="data.site_directories" />
+        <sites-directory-list v-if="data" class="mt-4" :siteId="id" :data="data.site_directories" />
       </v-col>
     </v-row>
   </v-container>
