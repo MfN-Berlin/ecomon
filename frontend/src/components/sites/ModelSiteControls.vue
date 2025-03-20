@@ -51,6 +51,11 @@ watch(dialog, (val) => {
   if (val) {
     refetch();
     refetchModelList();
+    if (lastRecordDate.value && firstRecordDate.value) {
+      selectedStartDateTime.value = firstRecordDate.value;
+      selectedEndDateTime.value = lastRecordDate.value;
+    }
+    selectedModel.value = null;
   }
 });
 watch(firstAndLastRecordDate, (val) => {

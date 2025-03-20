@@ -1,4 +1,6 @@
 import logging
+import subprocess
+import time
 from celery import Celery, signals
 from celery.signals import task_revoked
 
@@ -42,7 +44,48 @@ def reset_startup_jobs():
         db_session.remove()
 
 
-reset_startup_jobs()
+def shutdown_docker_containers():
+    """Shutdown all running Docker containers with names starting with 'bmz_' or 'bmzu_'"""
+    try:
+        # Get all running containers with names starting with 'bmz_' or 'bmzu_'
+        cmd_list = ["docker", "ps", "--format", "{{.Names}}"]
+        result = subprocess.run(cmd_list, capture_output=True, text=True, check=True)
+
+        containers = [
+            container
+            for container in result.stdout.strip().split("\n")
+            if container
+            and (container.startswith("bmz_") or container.startswith("bmzu_"))
+        ]
+
+        if containers:
+            logger.warning(
+                f"Found {len(containers)} containers to shut down: {containers}"
+            )
+
+            # Stop each container
+            for container in containers:
+                logger.info(f"Stopping container: {container}")
+                stop_cmd = ["docker", "stop", container]
+                subprocess.run(stop_cmd, check=True)
+
+            logger.warning("All matching containers have been stopped")
+            time.sleep(5)  # Wait for birdId zoo containers to stop
+        else:
+            logger.warning("No matching containers found to shut down")
+
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error executing Docker command: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error shutting down Docker containers: {str(e)}")
+
+
+@signals.celeryd_init.connect
+def celery_init_handler(**kwargs):
+    """Handler that runs when Celery initializes"""
+    logger.info("Celery initializing, performing startup tasks...")
+    shutdown_docker_containers()
+    reset_startup_jobs()
 
 
 @signals.task_success.connect
