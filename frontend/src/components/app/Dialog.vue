@@ -19,7 +19,7 @@ async function handleConfirm() {
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="secondary" variant="text" :disabled="isPending" @click="store.visible = false">
+        <v-btn color="secondary" variant="text" :disabled="pending" @click="store.visible = false">
           {{ store.options.cancelLabel }}
         </v-btn>
         <v-btn color="error" variant="flat" @click="handleConfirm"> {{ store.options.okLabel }} </v-btn>

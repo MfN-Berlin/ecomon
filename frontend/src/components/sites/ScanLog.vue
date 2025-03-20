@@ -45,12 +45,11 @@ watch(open, (val) => {
                   <div v-if="log.topic === 'scan_directories'" class="text-caption">
                     Added Records:
                     {{ log.result?.added_records }}
+                    {{ log.error }}
                   </div>
                   <div v-else class="text-caption">
                     Deleted Records:
                     {{ log.result?.deleted_records }}
-                  </div>
-                  <div v-if="log.error" class="text-caption">
                     {{ log.error }}
                   </div>
                 </div>

@@ -4,12 +4,34 @@ const props = defineProps<{
 }>();
 
 const { data: firstAndLastRecordDate, refetch } = useSiteGetFirstAndLastRecordDate(props.siteId);
-const { data: modelList, isLoading: modelListLoading, refetch: refetchModelList } = useModelList();
+
 const { mutate: startInference, isPending: startInferencePending } = useInferenceSiteTimespan();
+const { $activeJobs } = useNuxtApp();
+const activeJobs = computed(() =>
+  $activeJobs.value?.jobs.filter(
+    (job) => job.metadata.site_id === props.siteId && job.topic === "model_inference_site"
+  )
+);
 const selectedModel = ref<number | null>(null);
 const selectedStartDateTime = ref<Date>(new Date());
 const selectedEndDateTime = ref<Date>(new Date());
 const dialog = ref(false);
+
+const { data: modelList, isLoading: modelListLoading, refetch: refetchModelList } = useModelList();
+
+const modelIdMap = computed(() => {
+  return modelList.value?.reduce(
+    (acc, model) => {
+      acc[model.id] = model.name;
+      return acc;
+    },
+    {} as Record<number, string>
+  );
+});
+
+const modelNameById = computed(() => {
+  return (id: number) => modelIdMap.value?.[id];
+});
 
 const firstRecordDate = computed(() => {
   if (!firstAndLastRecordDate.value || !firstAndLastRecordDate.value[0]) {
@@ -60,14 +82,29 @@ async function onStartInference() {
 <template>
   <v-card :class="$attrs.class">
     <v-list>
-      <v-list-subheader> Inference Panel </v-list-subheader>
-      <v-toolbar flat density="compact" class="w-100" color="surface">
+      <v-toolbar flat density="compact" class="w-100 pr-3" color="surface">
         <sites-inference-log :site-id="props.siteId"></sites-inference-log>
         <v-spacer></v-spacer>
         <v-btn prepend-icon="mdi-brain" color="primary" variant="tonal" @click="dialog = true"
           >Start Inference</v-btn
         >
       </v-toolbar>
+      <v-list-subheader>Active Inference Jobs</v-list-subheader>
+      <v-list-item v-for="job in activeJobs" :key="job.id">
+        <sites-inference-info
+          :id="job.id"
+          :created-at="job.created_at"
+          :updated-at="job.updated_at"
+          :model-name="modelNameById(job.metadata.model_id) ?? 'unkown'"
+          :start-datetime="job.metadata.start_datetime"
+          :end-datetime="job.metadata.end_datetime"
+          :error="job.error"
+          border
+          class="pa-3"
+          :status="job.status"
+          :progress="job.progress"
+        ></sites-inference-info>
+      </v-list-item>
     </v-list>
   </v-card>
   <v-dialog v-model="dialog" max-width="500">

@@ -1,5 +1,6 @@
 <template>
   <span :class="`${sizeMap[props.size]}`">
+    <v-icon v-if="props.icon" :icon="props.icon" :size="props.size" class="mr-1"></v-icon>
     <time :datetime="time.toISOString()"> {{ formattedDate }} </time>
   </span>
 </template>
@@ -7,6 +8,7 @@
 <script lang="ts" setup>
 type DateTimeTextProps = {
   time: string;
+  icon?: string | null;
   relativeTime?: boolean;
   relativeTimeSpan?: number;
   showSeconds?: boolean;
@@ -28,7 +30,8 @@ const props = withDefaults(defineProps<DateTimeTextProps>(), {
   showSeconds: false,
   showTime: true,
   showDate: true,
-  size: "medium"
+  size: "medium",
+  icon: null
 });
 const time = computed(() => {
   if (props.preventLocal) {

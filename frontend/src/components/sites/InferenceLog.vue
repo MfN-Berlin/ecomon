@@ -35,7 +35,7 @@ watch(open, (val) => {
 <template>
   <v-btn prepend-icon="mdi-eye" color="primary">
     Inference logs
-    <v-dialog v-model="open" width="auto" max-width="800px" activator="parent">
+    <v-dialog v-model="open" max-width="800px" activator="parent">
       <v-card class="h-75">
         <v-toolbar color="primary" class="px-4">
           <v-icon icon="mdi-eye"></v-icon>
@@ -43,72 +43,27 @@ watch(open, (val) => {
         </v-toolbar>
 
         <v-card-text class="h-75 overflow-y-auto">
-          <v-timeline class="h-75 mr-6" align="start" side="end">
-            <v-timeline-item
-              v-for="log in logs"
-              :key="log.id"
-              :dot-color="log.error ? 'error' : 'primary'"
-              :icon="log.error ? 'mdi-alert' : 'mdi-check'"
-              size="small"
-            >
-              <v-sheet
-                elevation="1"
-                class="pa-2 flex-grow-1"
-                :color="log.error ? 'red-lighten-5' : 'green-lighten-5'"
-              >
-                <v-row no-gutters class="mb-3">
-                  <common-date-time-text
-                    class="me-4"
-                    :time="log.created_at"
-                    size="small"
-                  ></common-date-time-text>
-                </v-row>
-                <v-row no-gutters>
-                  <v-col cols="12" md="12">
-                    <v-text-field
-                      label="Model"
-                      class="flex-grow-1"
-                      prepend-inner-icon="mdi-brain"
-                      disabled
-                      variant="outlined"
-                      density="compact"
-                      :model-value="modelNameById(log.metadata?.model_id)"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      class="pr-1"
-                      label="Start Datetime"
-                      prepend-inner-icon="mdi-calendar-start"
-                      disabled
-                      variant="outlined"
-                      density="compact"
-                      :model-value="log.metadata?.start_datetime"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      class="pl-1"
-                      label="End Datetime"
-                      prepend-inner-icon="mdi-calendar-end"
-                      disabled
-                      variant="outlined"
-                      density="compact"
-                      :model-value="log.metadata?.end_datetime"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col v-if="!log.error" cols="12" md="12" class="pl-2">
-                    Analysed Records:
-                    <span class="font-weight-bold">{{ log.result?.inferred_records }}</span>
-                  </v-col>
-                  <v-col v-else cols="12" md="12" class="pl-2">
-                    Error:
-                    <span class="font-weight-bold">{{ log.error }}</span>
-                  </v-col>
-                </v-row>
-              </v-sheet>
-            </v-timeline-item>
-          </v-timeline>
+          <v-list>
+            <v-list-item v-for="log in logs" :key="log.id">
+              <template #prepend>
+                <v-icon
+                  :icon="log.error ? 'mdi-alert' : 'mdi-check'"
+                  :color="log.error ? 'error' : 'primary'"
+                ></v-icon>
+              </template>
+              <sites-inference-info
+                :id="log.id"
+                :created-at="log.created_at"
+                :finished-at="log.updated_at"
+                :model-name="modelNameById(log.metadata?.model_id) ?? 'unkown'"
+                :start-datetime="log.metadata?.start_datetime"
+                :end-datetime="log.metadata?.end_datetime"
+                :inferred-records="log.result?.inferred_records"
+                :error="log.error"
+              ></sites-inference-info>
+              <v-divider></v-divider>
+            </v-list-item>
+          </v-list>
         </v-card-text>
         <v-card-actions>
           <v-btn @click="open = false">Close</v-btn>

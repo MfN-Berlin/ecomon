@@ -25,13 +25,13 @@ const currentJobs = computed(() => {
 
 const siteHasScanningJob = computed(() => {
   return currentJobs.value?.some(
-    (job) => job.metadata.directories.length > 0 && ["running", "pending"].includes(job.status)
+    (job) => job.metadata.directories?.length > 0 && ["running", "pending"].includes(job.status)
   );
 });
 
 const activeJobInfo = computed(() => (directory: string) => {
   const job = currentJobs.value?.find(
-    (job) => job.metadata.directories.includes(directory) && ["running", "pending"].includes(job.status)
+    (job) => job.metadata.directories?.includes(directory) && ["running", "pending"].includes(job.status)
   );
   return job
     ? {
@@ -200,5 +200,4 @@ function skipAllSyncs() {
       @cancel="showAddDialog = false"
     />
   </v-dialog>
-  <scan-log ref="scanLogRef" :site-id="siteId" />
 </template>

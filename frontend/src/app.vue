@@ -14,7 +14,6 @@ onMounted(() => {
 <template>
   <v-app id="inspire">
     <AppToastProvider />
-    <AppJobCancelDialog />
     <NuxtLayout>
       <NuxtLoadingIndicator />
       <v-main class="d-flex flex-column" style="height: 100vh">
