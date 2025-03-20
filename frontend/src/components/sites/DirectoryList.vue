@@ -72,7 +72,6 @@ function skipAllSyncs() {
 <template>
   <v-sheet v-bind="$attrs">
     <v-list>
-      <v-list-subheader> DATA DIRECTORIES </v-list-subheader>
       <v-toolbar flat density="compact" class="w-100" color="surface">
         <v-btn prepend-icon="mdi-eye" @click="scanLogRef?.open()">Scan Log</v-btn>
         <v-spacer></v-spacer>
@@ -132,6 +131,7 @@ function skipAllSyncs() {
           </template>
         </v-tooltip>
       </v-toolbar>
+      <v-list-subheader> DATA DIRECTORIES </v-list-subheader>
       <v-list-item v-for="(item, i) in data" :key="i">
         <v-list-item-title>{{ item.directory }}</v-list-item-title>
         <template #prepend>

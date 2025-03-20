@@ -62,7 +62,7 @@ async function onStartInference() {
     <v-list>
       <v-list-subheader> Inference Panel </v-list-subheader>
       <v-toolbar flat density="compact" class="w-100" color="surface">
-        <v-btn prepend-icon="mdi-eye" color="primary" @click="dialog = true"> Inference logs </v-btn>
+        <sites-inference-log :site-id="props.siteId"></sites-inference-log>
         <v-spacer></v-spacer>
         <v-btn prepend-icon="mdi-brain" color="primary" variant="tonal" @click="dialog = true"
           >Start Inference</v-btn
