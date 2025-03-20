@@ -30,9 +30,7 @@ function onOk() {
     <v-dialog v-model="visible" activator="parent" width="auto">
       <template v-slot:default="{ isActive }">
         <v-card class="">
-          <v-toolbar v-if="props.dialogTitle" color="primary">
-            <v-toolbar-title>{{ props.dialogTitle }}</v-toolbar-title>
-          </v-toolbar>
+          <v-toolbar v-if="props.dialogTitle" color="primary" :title="props.dialogTitle"> </v-toolbar>
           <v-row no-gutters>
             <v-date-picker v-model="date" class="mt-2" show-adjacent-months></v-date-picker>
             <v-time-picker

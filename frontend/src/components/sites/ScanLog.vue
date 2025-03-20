@@ -22,9 +22,8 @@ watch(open, (val) => {
 <template>
   <v-dialog v-model="open" width="auto" max-width="800px" class="h-75">
     <v-card class="h-75">
-      <v-toolbar color="primary" style="z-index: 1000">
-        <v-toolbar-title>Scan Log</v-toolbar-title>
-      </v-toolbar>
+      <v-toolbar color="primary" title="Scan Log"></v-toolbar>
+
       <v-card-text class="h-75 overflow-y-auto">
         <v-timeline class="h-75 mr-6" align="start" side="end">
           <v-timeline-item

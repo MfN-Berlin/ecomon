@@ -37,6 +37,8 @@ async def analyse_site_timespan(
         metadata={
             "site_id": payload.site_id,
             "model_id": payload.model_id,
+            "start_datetime": payload.start_datetime.strftime("%Y-%m-%d %H:%M"),
+            "end_datetime": payload.end_datetime.strftime("%Y-%m-%d %H:%M"),
         },
     )
 
@@ -44,6 +46,11 @@ async def analyse_site_timespan(
 
     model_inference_site_task.apply_async(
         task_id=celery_task_id,
-        kwargs={"site_id": payload.site_id, "model_id": payload.model_id},
+        kwargs={
+            "site_id": payload.site_id,
+            "model_id": payload.model_id,
+            "start_datetime": payload.start_datetime,
+            "end_datetime": payload.end_datetime,
+        },
     )
     return {"job_id": job_id}

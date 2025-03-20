@@ -58,7 +58,8 @@ const isAlreadyAdded = computed(() => {
 
 <template>
   <v-card height="400">
-    <v-card-title class="d-flex justify-space-between"> Select Directory </v-card-title>
+    <v-toolbar title="Select Directory" color="primary"></v-toolbar>
+
     <v-card-text class="pa-0">
       <div class="d-flex justify-space-between">
         <v-breadcrumbs :items="breadcrumbs" class="px-4">

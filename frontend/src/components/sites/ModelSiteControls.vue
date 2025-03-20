@@ -43,9 +43,8 @@ watch(firstAndLastRecordDate, (val) => {
   </v-card>
   <v-dialog v-model="dialog" max-width="500">
     <v-card>
-      <v-toolbar color="primary">
-        <v-toolbar-title>Start Inference</v-toolbar-title>
-      </v-toolbar>
+      <v-toolbar color="primary" title="Start Inference"></v-toolbar>
+
       <v-card-text>
         <v-select
           v-model="selectedModel"
