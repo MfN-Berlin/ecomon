@@ -1,6 +1,6 @@
 <template>
   <span :class="`${sizeMap[props.size]}`">
-    <time :datetime="$dayjs(props.time) + ''"> {{ formattedDate }} </time>
+    <time :datetime="time.toISOString()"> {{ formattedDate }} </time>
   </span>
 </template>
 
@@ -13,6 +13,7 @@ type DateTimeTextProps = {
   showTime?: boolean;
   showDate?: boolean;
   size?: "small" | "medium" | "large";
+  preventLocal?: boolean;
 };
 
 const sizeMap = {
@@ -29,9 +30,14 @@ const props = withDefaults(defineProps<DateTimeTextProps>(), {
   showDate: true,
   size: "medium"
 });
-
+const time = computed(() => {
+  if (props.preventLocal) {
+    return $dayjs.utc(props.time);
+  }
+  return $dayjs.utc(props.time).local();
+});
 const formattedDate = computed(() => {
-  const timestamp = $dayjs(props.time);
+  const timestamp = time.value;
   const now = $dayjs();
   const diff = now.diff(timestamp);
 
@@ -39,6 +45,7 @@ const formattedDate = computed(() => {
     return timestamp.fromNow();
   } else {
     const formatOptions: Intl.DateTimeFormatOptions = {};
+
     if (props.showDate) {
       formatOptions.year = "numeric";
       formatOptions.month = "2-digit";
@@ -50,8 +57,10 @@ const formattedDate = computed(() => {
       if (props.showSeconds) {
         formatOptions.second = "2-digit";
       }
+      formatOptions.hourCycle = "h23";
     }
-    return timestamp.toDate().toLocaleString(undefined, formatOptions);
+
+    return new Intl.DateTimeFormat(undefined, formatOptions).format(timestamp.toDate());
   }
 });
 </script>

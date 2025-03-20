@@ -6967,9 +6967,9 @@ type site_reports {
     """JSON select path"""
     path: String
   ): jsonb!
-  first_record_date: timestamp!
+  first_record_date: timestamp
   id: Int!
-  last_record_date: timestamp!
+  last_record_date: timestamp
   monthly_histogram(
     """JSON select path"""
     path: String
