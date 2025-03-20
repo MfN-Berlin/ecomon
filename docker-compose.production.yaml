@@ -84,6 +84,7 @@ services:
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
       - ${TMP_DIR}:/tmp
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     depends_on:
       - redis
 
