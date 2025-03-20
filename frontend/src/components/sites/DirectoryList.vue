@@ -9,7 +9,6 @@ const { siteId, data } = defineProps<{
   data: SiteInformationProps;
 }>();
 
-const scanLogRef = ref<InstanceType<typeof ScanLog>>();
 const { mutate: deleteFn } = useSiteDirectoryDelete();
 const { mutate: addFn, isPending: addPending } = useSiteDirectoryInsert();
 const { mutate: scanAllDirectories, isPending: scanAllDirectoriesPending } = useSiteScanAllDirectories();
@@ -21,18 +20,18 @@ const { $activeJobs } = useNuxtApp();
 const { openDialog } = useDialogStore();
 
 const currentJobs = computed(() => {
-  return $activeJobs.value?.jobs.filter((job) => job.payload.site_id === siteId);
+  return $activeJobs.value?.jobs.filter((job) => job.metadata.site_id === siteId);
 });
 
 const siteHasScanningJob = computed(() => {
   return currentJobs.value?.some(
-    (job) => job.payload.directories.length > 0 && ["running", "pending"].includes(job.status)
+    (job) => job.metadata.directories.length > 0 && ["running", "pending"].includes(job.status)
   );
 });
 
 const activeJobInfo = computed(() => (directory: string) => {
   const job = currentJobs.value?.find(
-    (job) => job.payload.directories.includes(directory) && ["running", "pending"].includes(job.status)
+    (job) => job.metadata.directories.includes(directory) && ["running", "pending"].includes(job.status)
   );
   return job
     ? {
@@ -73,7 +72,7 @@ function skipAllSyncs() {
   <v-sheet v-bind="$attrs">
     <v-list>
       <v-toolbar flat density="compact" class="w-100" color="surface">
-        <v-btn prepend-icon="mdi-eye" @click="scanLogRef?.open()">Scan Log</v-btn>
+        <sites-scan-log :site-id="siteId" />
         <v-spacer></v-spacer>
         <v-tooltip :text="siteHasScanningJob ? 'Cancel All Syncs' : 'Sync All Directories'">
           <template v-slot:activator="{ props }">
@@ -196,9 +195,9 @@ function skipAllSyncs() {
   </v-sheet>
   <v-dialog v-model="showAddDialog" persistent max-width="500px">
     <sites-data-directory-browser
+      :directories="data.map((item) => item.directory)"
       @select="handleSubmit"
       @cancel="showAddDialog = false"
-      :directories="data.map((item) => item.directory)"
     />
   </v-dialog>
   <scan-log ref="scanLogRef" :site-id="siteId" />
