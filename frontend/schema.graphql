@@ -13,6 +13,17 @@ directive @cached(
   refresh: Boolean! = false
 ) on QUERY
 
+input AnalyzeSiteRequestInput {
+  endDatetime: String!
+  modelId: Int!
+  siteId: Int!
+  startDatetime: String!
+}
+
+type AnalyzeSiteResponse {
+  jobId: Int!
+}
+
 type CancelJobResponse {
   jobId: Int
   message: String
@@ -1888,11 +1899,6 @@ enum model_inference_results_constraint {
   unique or primary key constraint on columns "id"
   """
   model_inference_results_pkey
-
-  """
-  unique or primary key constraint on columns "model_id", "record_id"
-  """
-  uq_model_record
 }
 
 """
@@ -2877,6 +2883,8 @@ type models_variance_fields {
 
 """mutation root"""
 type mutation_root {
+  analyseSiteTimespan(analyzeSiteRequestInput: AnalyzeSiteRequestInput!): AnalyzeSiteResponse
+
   """Cancels a job by ID."""
   cancelJobById(jobId: Int!): CancelJobResponse
   createSiteDataReport(createDataReportRequestInput: CreateDataReportRequestInput!): SiteDataReportResponse

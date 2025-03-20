@@ -136,7 +136,7 @@ mutation createSiteDataReport($id: Int!) {
 }
 
 query getSiteFirstAndLastRecordDate($id: bigint!) {
-  data: site_reports(where: { site_id: { _eq: $id } }, order_by: { created_at: asc }, limit: 1) {
+  data: site_reports(where: { site_id: { _eq: $id } }, order_by: { created_at: desc }, limit: 1) {
     first_record_date
     last_record_date
   }

@@ -62,3 +62,16 @@ query getModelsPagniated(
     }
   }
 }
+
+mutation analyseSiteTimespan($modelId: Int!, $siteId: Int!, $startDatetime: String!, $endDatetime: String!) {
+  data: analyseSiteTimespan(
+    analyzeSiteRequestInput: {
+      modelId: $modelId
+      siteId: $siteId
+      startDatetime: $startDatetime
+      endDatetime: $endDatetime
+    }
+  ) {
+    jobId
+  }
+}

@@ -13,3 +13,5 @@ export const useModelPagniated = useCreatePagniated({
   baseQueryKey: QUERY_KEYS.models,
   pagniatedQueryFn: GqlGetModelsPagniated
 });
+
+export const useInferenceSiteTimespan = useCreateAction(GqlAnalyseSiteTimespan);

@@ -1,16 +1,21 @@
 <script setup lang="ts">
 const { $dayjs } = useNuxtApp();
+
+const props = defineProps<{
+  dialogTitle?: string;
+  icon?: string;
+}>();
+
+const visible = ref(false);
+const time = ref("11:15");
+const date = ref<Date>(new Date());
+const model = defineModel<Date>();
+
 const formattedDate = computed(() => {
   if (!model.value) return "";
   return $dayjs(model.value).format("YYYY-MM-DD HH:mm");
 });
-const model = defineModel<Date>();
-const props = defineProps<{
-  dialogTitle?: string;
-}>();
-const visible = ref(false);
-const time = ref("11:15");
-const date = ref<Date>(new Date());
+
 watch(visible, (val) => {
   if (val) {
     time.value = $dayjs(model.value).format("HH:mm");
@@ -30,7 +35,10 @@ function onOk() {
     <v-dialog v-model="visible" activator="parent" width="auto">
       <template v-slot:default="{ isActive }">
         <v-card class="">
-          <v-toolbar v-if="props.dialogTitle" color="primary" :title="props.dialogTitle"> </v-toolbar>
+          <v-toolbar v-if="props.dialogTitle" class="px-4" color="primary">
+            <v-icon v-if="props.icon" :icon="props.icon"></v-icon>
+            <v-toolbar-title>{{ props.dialogTitle }}</v-toolbar-title>
+          </v-toolbar>
           <v-row no-gutters>
             <v-date-picker v-model="date" class="mt-2" show-adjacent-months></v-date-picker>
             <v-time-picker

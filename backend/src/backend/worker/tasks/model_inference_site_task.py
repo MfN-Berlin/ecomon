@@ -61,7 +61,7 @@ def model_inference_site_task(
         if not model:
             raise Exception(f"Model {model_id} not found")
         file_counter = 0
-        offset = 0
+
         # Get current user and group IDs to make the docker output files readable
         uid = os.getuid()
         gid = os.getgid()
@@ -92,7 +92,7 @@ def model_inference_site_task(
                 "message": f"No records to process for site {site_id}",
             }
 
-        while total_count > offset:
+        while total_count > file_counter:
             if self.check_revoked():
                 time.sleep(1)
                 # Wait for 1 second to ensure the task is revoked
@@ -111,7 +111,6 @@ def model_inference_site_task(
                 .filter(Records.site_id == site_id)
                 .filter(ModelInferenceResults.id.is_(None))
                 .limit(BATCH_SIZE)
-                .offset(offset)
                 .all()
             )
             if len(records) == 0:
@@ -153,9 +152,9 @@ def model_inference_site_task(
                 )
             session.commit()
             file_counter += len(records)
-            offset += BATCH_SIZE
+
             JobService.update_job_progress_by_counter(
-                session, job_id, offset, total_count
+                session, job_id, file_counter, total_count
             )
             # delete all files in the job_temp_dir for the next batch
             for file in os.listdir(job_temp_dir):

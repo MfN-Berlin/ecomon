@@ -1,4 +1,10 @@
 type Mutation {
+  analyseSiteTimespan(
+    analyzeSiteRequestInput: AnalyzeSiteRequestInput!
+  ): AnalyzeSiteResponse
+}
+
+type Mutation {
   cancelJobById(
     jobId: Int!
   ): CancelJobResponse
@@ -41,6 +47,13 @@ input SiteDirectoryScanRequestInput {
   siteId: Int!
 }
 
+input AnalyzeSiteRequestInput {
+  endDatetime: String!
+  modelId: Int!
+  siteId: Int!
+  startDatetime: String!
+}
+
 type DirectoryInfo {
   name: String!
   path: String!
@@ -69,6 +82,10 @@ type SiteDirectoriesScanResponse {
 }
 
 type SiteDirectoryScanResponse {
+  jobId: Int!
+}
+
+type AnalyzeSiteResponse {
   jobId: Int!
 }
 
