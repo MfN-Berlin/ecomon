@@ -5,7 +5,8 @@ CREATE TYPE public.job_status AS ENUM (
     'finalizing',
     'done',
     'failed',
-    'pending'
+    'pending',
+    'canceled'
 );
 CREATE TYPE public.job_type AS ENUM (
     'analyze_with_model',

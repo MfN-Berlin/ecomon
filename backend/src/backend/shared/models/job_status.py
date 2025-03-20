@@ -8,3 +8,4 @@ class JobStatus(Enum):
     FAILED = "failed"
     PREPARING = "preparing"
     FINALIZING = "finalizing"
+    CANCELED = "canceled"

@@ -1,9 +1,8 @@
--- Seed for model: avesecho_v1.3.0
 DO $$
 DECLARE
     model_id integer;
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM public.MODELS LIMIT 1) THEN
+
         INSERT INTO public.models (id, name) VALUES (0, 'avesecho_v1.3.0') RETURNING id INTO model_id;
         INSERT INTO public.model_labels (model_id, label_id) VALUES (0, 7343);
         INSERT INTO public.model_labels (model_id, label_id) VALUES (0, 819);
@@ -11582,7 +11581,7 @@ BEGIN
         INSERT INTO public.model_labels (model_id, label_id) VALUES (5, 17911);
         INSERT INTO public.model_labels (model_id, label_id) VALUES (5, 17913);
         INSERT INTO public.model_labels (model_id, label_id) VALUES (5, 17927);
-    END IF;
+
 END $$;
 
 

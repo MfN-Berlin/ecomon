@@ -159,8 +159,9 @@ def model_inference_site_task(
             # delete all files in the job_temp_dir for the next batch
             for file in os.listdir(job_temp_dir):
                 os.remove(os.path.join(job_temp_dir, file))
+            JobService.updateResult(session, job_id, {"inferred_records": file_counter})
         JobService.update_job_progress(session, job_id, 100)
-        JobService.updateResult(session, job_id, {"inferred_records": file_counter})
+
     except Exception as e:
         session.rollback()
         JobService.set_job_error(session, job_id, str(e))

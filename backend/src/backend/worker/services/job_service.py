@@ -104,6 +104,11 @@ class JobService:
         JobService.update_job_status(session, job_id, JobStatus.DONE.value)
 
     @staticmethod
+    def set_job_canceled(session, job_id):
+        """Set a job's status to canceled"""
+        JobService.update_job_status(session, job_id, JobStatus.CANCELED.value)
+
+    @staticmethod
     def update_job_progress_by_counter(
         session: Session, job_id: str, current: int, total: int
     ):
@@ -135,7 +140,15 @@ class JobService:
         """
         running_jobs = (
             session.query(Jobs)
-            .filter(Jobs.status.notin_([JobStatus.DONE.value, JobStatus.FAILED.value]))
+            .filter(
+                Jobs.status.notin_(
+                    [
+                        JobStatus.DONE.value,
+                        JobStatus.FAILED.value,
+                        JobStatus.CANCELED.value,
+                    ]
+                )
+            )
             .all()
         )
 

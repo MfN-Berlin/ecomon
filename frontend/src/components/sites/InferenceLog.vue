@@ -24,6 +24,19 @@ const modelNameById = computed(() => {
   return (id: number) => modelIdMap.value?.[id];
 });
 
+const colorMap: Record<string, string> = {
+  cancled: "warning",
+
+  done: "primary",
+  failed: "error"
+};
+
+const iconMap: Record<string, string> = {
+  cancled: "mdi-close",
+  done: "mdi-check",
+  failed: "mdi-alert-circle-outline"
+};
+
 watch(open, (val) => {
   if (val) {
     refetch();
@@ -46,10 +59,7 @@ watch(open, (val) => {
           <v-list>
             <v-list-item v-for="log in logs" :key="log.id">
               <template #prepend>
-                <v-icon
-                  :icon="log.error ? 'mdi-alert' : 'mdi-check'"
-                  :color="log.error ? 'error' : 'primary'"
-                ></v-icon>
+                <v-icon :icon="iconMap[log.status]" :color="colorMap[log.status]"></v-icon>
               </template>
               <sites-inference-info
                 :id="log.id"

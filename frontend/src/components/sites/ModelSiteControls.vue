@@ -16,6 +16,7 @@ const selectedModel = ref<number | null>(null);
 const selectedStartDateTime = ref<Date>(new Date());
 const selectedEndDateTime = ref<Date>(new Date());
 const dialog = ref(false);
+const { $currentTimeString } = useNuxtApp();
 
 const { data: modelList, isLoading: modelListLoading, refetch: refetchModelList } = useModelList();
 
@@ -99,7 +100,7 @@ async function onStartInference() {
         <sites-inference-info
           :id="job.id"
           :created-at="job.created_at"
-          :updated-at="job.updated_at"
+          :updated-at="$currentTimeString"
           :model-name="modelNameById(job.metadata.model_id) ?? 'unkown'"
           :start-datetime="job.metadata.start_datetime"
           :end-datetime="job.metadata.end_datetime"

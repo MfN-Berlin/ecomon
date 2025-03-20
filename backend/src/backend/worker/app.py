@@ -47,15 +47,16 @@ def reset_startup_jobs():
 def shutdown_docker_containers():
     """Shutdown all running Docker containers with names starting with 'bmz_' or 'bmzu_'"""
     try:
-        # Get all running containers with names starting with 'bmz_' or 'bmzu_'
+        # Get all running containers with names starting with 'bmz_'
+        # this containers are started before the crash for crash recovery it is important
+        # to stop them before starting the new containers
         cmd_list = ["docker", "ps", "--format", "{{.Names}}"]
         result = subprocess.run(cmd_list, capture_output=True, text=True, check=True)
 
         containers = [
             container
             for container in result.stdout.strip().split("\n")
-            if container
-            and (container.startswith("bmz_") or container.startswith("bmzu_"))
+            if container and (container.startswith("bmz_"))
         ]
 
         if containers:
@@ -92,12 +93,15 @@ def celery_init_handler(**kwargs):
 def task_success_handler(sender=None, **kwargs):
     session = get_new_Session()
     try:
-        JobService.set_job_done(session, sender.request.id)
+        result_data = kwargs.get("result")
+        if result_data.get("status") == "revoked":
+            JobService.set_job_canceled(session, sender.request.id)
+        else:
+            JobService.set_job_done(session, sender.request.id)
 
         session.commit()
-        result = app.AsyncResult(sender.request.id)
 
-        logger.info(f"Task {sender.name} succeeded {result.state} !")
+        logger.warning(f"Task {sender.name} {result_data.get('status')} !")
     except Exception as e:
         logger.error(f"Task success error: {str(e)}", exc_info=True)
         session.rollback()

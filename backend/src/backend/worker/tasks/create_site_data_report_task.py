@@ -329,4 +329,4 @@ def calc_records_heatmap(site_id, session, first_record_date, last_record_date):
 
             offset += page_size  # Move to the next batch
 
-    return records_heatmap.tolist()
+    return records_heatmap.tolist() if records_heatmap is not None else []

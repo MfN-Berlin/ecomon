@@ -134,15 +134,15 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
 
             processed_files += 1
 
-        JobService.updateResult(
-            session,
-            job_id,
-            {
-                "total_files": total_files,
-                "processed_files": processed_files,
-                "added_records": added_records,
-            },
-        )
+            JobService.updateResult(
+                session,
+                job_id,
+                {
+                    "total_files": total_files,
+                    "processed_files": processed_files,
+                    "added_records": added_records,
+                },
+            )
         if session.dirty or session.new or session.deleted:
             session.commit()
 

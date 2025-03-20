@@ -25,19 +25,12 @@ const durationHumanReadable = computed(() => {
 
 <template>
   <v-sheet v-bind="$attrs">
-    <v-row dense class="pb-3 align-center">
+    <v-row dense class="pb-3 align-center pt-1">
       <common-date-time-text
-        class="me-4"
+        class="me-4 ml-1"
         :time="props.createdAt"
         size="small"
-        icon="mdi-ray-start"
-      ></common-date-time-text>
-      <common-date-time-text
-        v-if="props.finishedAt"
-        class="me-4"
-        :time="props.finishedAt"
-        size="small"
-        icon="mdi-ray-end"
+        icon="mdi-clock-start"
       ></common-date-time-text>
       <div v-if="props.finishedAt || props.updatedAt">
         <v-tooltip :text="`Cancel Inference Job`" location="top">
@@ -67,8 +60,12 @@ const durationHumanReadable = computed(() => {
           </template>
         </v-tooltip>
       </div>
-      <v-icon v-else class="mr-1" icon="mdi-clock-fast" size="small"></v-icon>
-      <span class="text-caption">{{ durationHumanReadable }} minutes </span>
+      <common-date-time-duration
+        icon="mdi-clock-fast"
+        :start="props.createdAt"
+        :end="props.finishedAt || props.updatedAt"
+        size="small"
+      ></common-date-time-duration>
     </v-row>
     <v-row dense>
       <v-col cols="12" md="4">

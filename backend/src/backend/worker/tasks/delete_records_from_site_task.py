@@ -66,13 +66,13 @@ def delete_records_from_site_task(self, site_id: int, directories: list[str]):
             except Exception as e:
                 session.rollback()
                 logger.error(f"Progress update failed: {str(e)}")
-        JobService.updateResult(
-            session,
-            job_id,
-            {
-                "deleted_records": deleted_records,
-            },
-        )
+            JobService.updateResult(
+                session,
+                job_id,
+                {
+                    "deleted_records": deleted_records,
+                },
+            )
         if deleted_records == 0:
             return "No records found to delete"
         wait_for_lock_and_create_report(job_id, site_id, session, logger)

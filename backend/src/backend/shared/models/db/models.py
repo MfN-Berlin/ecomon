@@ -20,7 +20,7 @@ class Jobs(Base):
 
     id = mapped_column(BigInteger)
     topic = mapped_column(Text, nullable=False)
-    status = mapped_column(Enum('running', 'preparing', 'finalizing', 'done', 'failed', 'pending', name='job_status'), nullable=False, server_default=text("'running'::job_status"))
+    status = mapped_column(Enum('running', 'preparing', 'finalizing', 'done', 'failed', 'pending', 'canceled', name='job_status'), nullable=False, server_default=text("'running'::job_status"))
     progress = mapped_column(Double(53), nullable=False, server_default=text('0'))
     created_at = mapped_column(DateTime, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     metadata_ = mapped_column('metadata', JSONB)
@@ -292,7 +292,7 @@ class ModelInferenceResults(Base):
         ForeignKeyConstraint(['model_id'], ['models.id'], name='fk_model'),
         ForeignKeyConstraint(['record_id'], ['records.id'], name='fk_record'),
         PrimaryKeyConstraint('id', name='model_inference_results_pkey'),
-        UniqueConstraint('model_id', 'record_id', name='uq_model_record'),
+        Index('idx_model_id', 'model_id'),
         Index('idx_model_record', 'model_id', 'record_id')
     )
 
