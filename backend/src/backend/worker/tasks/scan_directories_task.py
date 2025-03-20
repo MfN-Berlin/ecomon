@@ -4,12 +4,11 @@ import time
 from backend.worker.tasks.utils.site_tasks import wait_for_lock_and_create_report
 import soundfile as sf
 from pathlib import Path
-from datetime import datetime
+
 from celery.utils.log import get_task_logger
-from celery import states
 
 from backend.worker.app import app
-from backend.shared.models.db.models import Records, SiteDirectories
+from backend.shared.models.db.models import Records
 
 from backend.worker.tools import parse_datetime
 from backend.worker.settings import WorkerSettings
@@ -55,6 +54,7 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
 
         current_batch = 0
         processed_files = 0
+        added_records = 0
 
         for idx, file_path in enumerate(all_files, 1):
 
@@ -106,6 +106,7 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
 
                     session.add(record)
                     current_batch += 1
+                    added_records += 1
 
                     if current_batch >= BATCH_SIZE:
                         session.commit()
@@ -133,6 +134,15 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
 
             processed_files += 1
 
+        JobService.updateResult(
+            session,
+            job_id,
+            {
+                "total_files": total_files,
+                "processed_files": processed_files,
+                "added_records": added_records,
+            },
+        )
         if session.dirty or session.new or session.deleted:
             session.commit()
 

@@ -20,28 +20,38 @@ watch(open, (val) => {
 </script>
 
 <template>
-  <v-dialog v-model="open" max-width="500px" class="h-75">
+  <v-dialog v-model="open" width="auto" max-width="800px" class="h-75">
     <v-card class="h-75">
-      <v-card-title class="position-sticky top-0 bg-white" style="z-index: 1000">Scan Log</v-card-title>
-      <v-card-text>
-        <v-list class="overflow-y-auto h-75" density="compact">
-          <template v-for="log in logs" :key="log.id">
-            <v-list-item>
-              <template v-slot:prepend>
-                <v-icon color="grey">{{
-                  log.topic === "scan_directories" ? "mdi-plus" : "mdi-delete"
-                }}</v-icon>
-              </template>
-              <v-list-item class="text-body-2">{{ log.payload.directories.join(", ") }}</v-list-item>
-              <template v-slot:append>
-                <common-date-time-text :time="log.created_at as string" size="small" />
-              </template>
-            </v-list-item>
-            <v-divider></v-divider>
-          </template>
-        </v-list>
+      <v-toolbar color="primary" style="z-index: 1000">
+        <v-toolbar-title>Scan Log</v-toolbar-title>
+      </v-toolbar>
+      <v-card-text class="h-75 overflow-y-auto">
+        <v-timeline class="h-75 mr-6" align="start" side="end">
+          <v-timeline-item
+            v-for="log in logs"
+            :key="log.id"
+            dot-color="primary"
+            :icon="log.topic === 'scan_directories' ? 'mdi-plus' : 'mdi-delete'"
+            size="small"
+          >
+            <div class="d-flex">
+              <common-date-time-text class="me-4" :time="log.created_at" size="small"></common-date-time-text>
+              <div>
+                <strong>{{ log.metadata?.directories?.join(", ") }}</strong>
+                <div v-if="log.topic === 'scan_directories'" class="text-caption">
+                  Added Records:
+                  {{ log.result?.added_records }}
+                </div>
+                <div v-else class="text-caption">
+                  Deleted Records:
+                  {{ log.result?.deleted_records }}
+                </div>
+              </div>
+            </div>
+          </v-timeline-item>
+        </v-timeline>
       </v-card-text>
-      <v-card-actions class="position-sticky bottom-0 bg-white">
+      <v-card-actions>
         <v-btn @click="open = false">Close</v-btn>
       </v-card-actions>
     </v-card>

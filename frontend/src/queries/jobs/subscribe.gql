@@ -3,7 +3,8 @@ subscription subscribeActiveJobs {
     id
     status
     topic
-    payload
+    metadata
+    result
     progress
     error
     updated_at

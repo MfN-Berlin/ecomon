@@ -2,7 +2,8 @@ fragment Job on jobs {
   id
   status
   topic
-  payload
+  metadata
+  result
   progress
   error
   updated_at
@@ -26,7 +27,7 @@ query getJobsPagniated(
 
 query getSiteJobsByTopic($siteId: Int!, $_or: [jobs_bool_exp!]!) {
   data: jobs(
-    where: { _and: { _or: $_or, payload: { _contains: { site_id: $siteId } } } }
+    where: { _and: { _or: $_or, metadata: { _contains: { site_id: $siteId } } } }
     order_by: { created_at: desc }
   ) {
     ...Job

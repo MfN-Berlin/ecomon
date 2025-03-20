@@ -16,22 +16,22 @@ class JobService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_job(self, job_topic: str, payload: Optional[dict] = None) -> str:
+    async def create_job(self, job_topic: str, metadata: Optional[dict] = None) -> str:
         """
         Create a new job db entry with a unique ID
 
         Args:
             job_type: Type of job from JobType enum
-            payload: Optional payload about the job
+            metadata: Optional metadata about the job
         """
         job = Jobs(
             topic=job_topic,
-            payload=payload,
+            metadata_=metadata,
             status=JobStatus.PENDING.value,
         )
 
         logger.info(
-            f"Creating job: {job} on topic: {job_topic} with payload: {payload}"
+            f"Creating job: {job} on topic: {job_topic} with metadata: {metadata}"
         )
         self.db.add(job)
         await self.db.commit()

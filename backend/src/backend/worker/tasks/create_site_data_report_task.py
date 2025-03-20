@@ -65,8 +65,8 @@ def create_site_data_report_task(self, site_id: int):
         records_heatmap = calc_records_heatmap(
             site_id,
             session,
-            first_record_date.replace(month=1, day=1),
-            last_record_date.replace(month=12, day=31),
+            first_record_date.replace(month=1, day=1) if first_record_date else None,
+            last_record_date.replace(month=12, day=31) if last_record_date else None,
         )
 
         # Add the new instance to the session
@@ -245,12 +245,14 @@ def calc_basic_report_data(site_id, session):
         .first()
     )
     records_count = session.query(Records).filter(Records.site_id == site_id).count()
-    # get complete recrord duration
+    # get complete recrord duration if null return 0
     record_duration = (
         session.query(func.sum(Records.duration))
         .filter(Records.site_id == site_id)
         .scalar()
     )
+    if record_duration is None:
+        record_duration = 0
     corrupted_files = (
         session.query(
             func.jsonb_build_object("id", Records.id, "errors", Records.errors)
@@ -263,8 +265,8 @@ def calc_basic_report_data(site_id, session):
     corrupted_files_array = [file[0] for file in corrupted_files]
 
     return (
-        first_record.record_datetime.date(),
-        last_record.record_datetime.date(),
+        first_record.record_datetime.date() if first_record else None,
+        last_record.record_datetime.date() if last_record else None,
         records_count,
         record_duration,
         corrupted_files_array,
@@ -272,6 +274,8 @@ def calc_basic_report_data(site_id, session):
 
 
 def calc_records_heatmap(site_id, session, first_record_date, last_record_date):
+    if first_record_date is None or last_record_date is None:
+        return []
     site = session.query(Sites).filter(Sites.id == site_id).first()
     cycle_duration = (
         site.record_regime_recording_duration + site.record_regime_pause_duration

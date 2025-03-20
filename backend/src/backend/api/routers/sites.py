@@ -44,7 +44,7 @@ async def check_directories_and_create_import_job(
 
     job_id = await JobService(db).create_job(
         f"{task_topic.SCAN_DIRECTORIES.value}",
-        payload={
+        metadata={
             "site_id": site_id,
             "directories": directories,
         },
@@ -79,7 +79,7 @@ async def directory_changed(
     if payload.operation == "DELETE":
         job_id = await JobService(db).create_job(
             "delete_records_from_site",
-            payload={"site_id": payload.site_id, "directories": [payload.directory]},
+            metadata={"site_id": payload.site_id, "directories": [payload.directory]},
         )
 
         celery_task_id = str(job_id)
@@ -120,7 +120,7 @@ async def create_data_report(
     job_service = JobService(db)
     job_id = await job_service.create_job(
         f"{task_topic.CREATE_SITE_DATA_REPORT.value}",
-        payload={
+        metadata={
             "site_id": payload.site_id,
         },
     )

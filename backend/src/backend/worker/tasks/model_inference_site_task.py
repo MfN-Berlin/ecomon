@@ -65,7 +65,9 @@ def model_inference_site_task(self, site_id: int, model_id: int):
             .filter(ModelInferenceResults.id.is_(None))
             .all()
         )
-        logger.info(f"Found {len(records)} records to process")
+        logger.info(
+            f"Found {len(records)} records to process for site {site_id} and model {model_id}"
+        )
         if len(records) == 0:
             return {
                 "status": "success",

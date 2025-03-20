@@ -15,7 +15,6 @@ from sqlalchemy.orm import Session
 from backend.shared.models.db.models import (
     Locations,
     Sites,
-    Records,
     SetInformations,
     Sets,
 )
@@ -80,55 +79,6 @@ def create_dummy_data(db_url: str, num_entries: int = 5):
             sites.append(site)
             session.add(site)
         session.flush()  # Flush to get IDs
-
-        # Create Records
-        records = []
-        for _ in range(num_entries * 10):  # More records for realistic data
-            site = random.choice(sites)
-            record_date = fake.date_time_between(start_date="-6M")
-            record = Records(
-                site_id=site.id,
-                filepath=f"/data/{site.alias}/AudioMoth_{record_date.strftime('%Y%m%d_%H%M%S')}.wav",
-                filename=f"AudioMoth_{record_date.strftime('%Y%m%d_%H%M%S')}.wav",
-                record_datetime=record_date,
-                duration=site.record_regime_recording_duration,
-                channels="0",
-                sample_rate=site.sample_rate,
-                mime_type="audio/wav",
-            )
-            records.append(record)
-            session.add(record)
-        session.flush()  # Flush to get IDs
-
-        # Create SetInformations and Sets
-        for _ in range(num_entries):
-            start_date = fake.date_time_between(start_date="-1y")
-            end_date = fake.date_time_between(start_date=start_date)
-            set_info = SetInformations(
-                start_date=start_date.date(),
-                end_date=end_date.date(),
-                record_regime_recording_duration=300,
-                record_regime_pause_duration=0,
-                record_count=len(records) // num_entries,
-                record_duration=(len(records) // num_entries) * 300,
-                corrupted_record_count=random.randint(0, 5),
-            )
-            session.add(set_info)
-            session.flush()  # Flush to get ID
-
-            test_set = Sets(
-                name=f"Dataset {fake.word().capitalize()} {fake.date('%Y-%m')}",
-                set_information_id=set_info.id,
-                remarks=fake.text(max_nb_chars=100),
-            )
-            session.add(test_set)
-
-        # Create SiteDirectories
-        # for site in sites:
-        #     directory = SiteDirectories(
-        #         site_id=site.id, directory=f"/data/{site.alias}"
-        #     )
-        #     session.add(directory)
 
         session.commit()
         print("Successfully created dummy data!")

@@ -12,18 +12,18 @@ from backend.shared.consts import task_topic
 class JobService:
     @staticmethod
     def create_job(
-        session: Session, job_topic: str, payload: Optional[dict] = None
+        session: Session, job_topic: str, metadata: Optional[dict] = None
     ) -> str:
         """
         Create a new job db entry with a unique ID
 
         Args:
             job_type: Type of job from JobType enum
-            payload: Optional payload about the job
+            metadata: Optional metadata about the job
         """
         job = Jobs(
             topic=job_topic,
-            payload=payload,
+            metadata_=metadata,
             status=JobStatus.PENDING.value,
         )
 
@@ -161,10 +161,19 @@ class JobService:
         # Construct the query
         query = session.query(Jobs).filter(
             Jobs.topic.in_(topics),
-            cast(Jobs.payload, JSONB)["site_id"] == str(site_id),
+            cast(Jobs.metadata_, JSONB)["site_id"] == str(site_id),
             Jobs.status.notin_([JobStatus.DONE.value, JobStatus.FAILED.value]),
             Jobs.id != own_task_id,
         )
         exists_query = session.query(query.exists()).scalar()
 
         return exists_query
+
+    @staticmethod
+    def updateResult(session: Session, job_id: int, result: dict) -> Jobs:
+        """
+        Get a job by id and update the result
+        """
+        session.query(Jobs).filter(Jobs.id == job_id).update({"result": result})
+        session.commit()
+        return

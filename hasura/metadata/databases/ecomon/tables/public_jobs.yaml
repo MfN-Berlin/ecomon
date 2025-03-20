@@ -8,7 +8,8 @@ select_permissions:
         - id
         - progress
         - error
-        - payload
+        - metadata
+        - result
         - topic
         - created_at
         - updated_at

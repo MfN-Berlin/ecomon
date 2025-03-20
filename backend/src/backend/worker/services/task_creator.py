@@ -13,7 +13,7 @@ class TaskCreator:
         job_id = JobService.create_job(
             session,
             f"{task_topic.CREATE_SITE_DATA_REPORT.value}",
-            payload={
+            metadata={
                 "site_id": site_id,
             },
         )

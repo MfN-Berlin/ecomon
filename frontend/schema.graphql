@@ -755,11 +755,15 @@ type jobs {
     path: String
   ): jsonb
   id: bigint!
-  payload(
+  metadata(
     """JSON select path"""
     path: String
   ): jsonb
   progress: float8!
+  result(
+    """JSON select path"""
+    path: String
+  ): jsonb
   status: job_status!
   topic: String!
   updated_at: timestamp
@@ -793,7 +797,8 @@ type jobs_aggregate_fields {
 """append existing jsonb value of filtered columns with new jsonb value"""
 input jobs_append_input {
   error: jsonb
-  payload: jsonb
+  metadata: jsonb
+  result: jsonb
 }
 
 """aggregate avg on columns"""
@@ -812,8 +817,9 @@ input jobs_bool_exp {
   created_at: timestamp_comparison_exp
   error: jsonb_comparison_exp
   id: bigint_comparison_exp
-  payload: jsonb_comparison_exp
+  metadata: jsonb_comparison_exp
   progress: float8_comparison_exp
+  result: jsonb_comparison_exp
   status: job_status_comparison_exp
   topic: String_comparison_exp
   updated_at: timestamp_comparison_exp
@@ -839,7 +845,8 @@ delete the field or element with specified path (for JSON arrays, negative integ
 """
 input jobs_delete_at_path_input {
   error: [String!]
-  payload: [String!]
+  metadata: [String!]
+  result: [String!]
 }
 
 """
@@ -847,7 +854,8 @@ delete the array element with specified index (negative integers count from the 
 """
 input jobs_delete_elem_input {
   error: Int
-  payload: Int
+  metadata: Int
+  result: Int
 }
 
 """
@@ -855,7 +863,8 @@ delete key/value pair or string element. key/value pairs are matched based on th
 """
 input jobs_delete_key_input {
   error: String
-  payload: String
+  metadata: String
+  result: String
 }
 
 """
@@ -873,8 +882,9 @@ input jobs_insert_input {
   created_at: timestamp
   error: jsonb
   id: bigint
-  payload: jsonb
+  metadata: jsonb
   progress: float8
+  result: jsonb
   status: job_status
   topic: String
   updated_at: timestamp
@@ -925,8 +935,9 @@ input jobs_order_by {
   created_at: order_by
   error: order_by
   id: order_by
-  payload: order_by
+  metadata: order_by
   progress: order_by
+  result: order_by
   status: order_by
   topic: order_by
   updated_at: order_by
@@ -940,7 +951,8 @@ input jobs_pk_columns_input {
 """prepend existing jsonb value of filtered columns with new jsonb value"""
 input jobs_prepend_input {
   error: jsonb
-  payload: jsonb
+  metadata: jsonb
+  result: jsonb
 }
 
 """
@@ -957,10 +969,13 @@ enum jobs_select_column {
   id
 
   """column name"""
-  payload
+  metadata
 
   """column name"""
   progress
+
+  """column name"""
+  result
 
   """column name"""
   status
@@ -979,8 +994,9 @@ input jobs_set_input {
   created_at: timestamp
   error: jsonb
   id: bigint
-  payload: jsonb
+  metadata: jsonb
   progress: float8
+  result: jsonb
   status: job_status
   topic: String
   updated_at: timestamp
@@ -1020,8 +1036,9 @@ input jobs_stream_cursor_value_input {
   created_at: timestamp
   error: jsonb
   id: bigint
-  payload: jsonb
+  metadata: jsonb
   progress: float8
+  result: jsonb
   status: job_status
   topic: String
   updated_at: timestamp
@@ -1047,10 +1064,13 @@ enum jobs_update_column {
   id
 
   """column name"""
-  payload
+  metadata
 
   """column name"""
   progress
+
+  """column name"""
+  result
 
   """column name"""
   status
@@ -1799,11 +1819,13 @@ type locations_variance_fields {
 columns and relationships of "model_inference_results"
 """
 type model_inference_results {
+  confidence: Float!
+  end_time: numeric!
   id: bigint!
   label_id: Int!
   model_id: Int!
-  probability: Float!
   record_id: bigint!
+  start_time: numeric!
 }
 
 """
@@ -1833,11 +1855,13 @@ type model_inference_results_aggregate_fields {
 
 """aggregate avg on columns"""
 type model_inference_results_avg_fields {
+  confidence: Float
+  end_time: Float
   id: Float
   label_id: Float
   model_id: Float
-  probability: Float
   record_id: Float
+  start_time: Float
 }
 
 """
@@ -1847,11 +1871,13 @@ input model_inference_results_bool_exp {
   _and: [model_inference_results_bool_exp!]
   _not: model_inference_results_bool_exp
   _or: [model_inference_results_bool_exp!]
+  confidence: Float_comparison_exp
+  end_time: numeric_comparison_exp
   id: bigint_comparison_exp
   label_id: Int_comparison_exp
   model_id: Int_comparison_exp
-  probability: Float_comparison_exp
   record_id: bigint_comparison_exp
+  start_time: numeric_comparison_exp
 }
 
 """
@@ -1873,40 +1899,48 @@ enum model_inference_results_constraint {
 input type for incrementing numeric columns in table "model_inference_results"
 """
 input model_inference_results_inc_input {
+  confidence: Float
+  end_time: numeric
   id: bigint
   label_id: Int
   model_id: Int
-  probability: Float
   record_id: bigint
+  start_time: numeric
 }
 
 """
 input type for inserting data into table "model_inference_results"
 """
 input model_inference_results_insert_input {
+  confidence: Float
+  end_time: numeric
   id: bigint
   label_id: Int
   model_id: Int
-  probability: Float
   record_id: bigint
+  start_time: numeric
 }
 
 """aggregate max on columns"""
 type model_inference_results_max_fields {
+  confidence: Float
+  end_time: numeric
   id: bigint
   label_id: Int
   model_id: Int
-  probability: Float
   record_id: bigint
+  start_time: numeric
 }
 
 """aggregate min on columns"""
 type model_inference_results_min_fields {
+  confidence: Float
+  end_time: numeric
   id: bigint
   label_id: Int
   model_id: Int
-  probability: Float
   record_id: bigint
+  start_time: numeric
 }
 
 """
@@ -1931,11 +1965,13 @@ input model_inference_results_on_conflict {
 
 """Ordering options when selecting data from "model_inference_results"."""
 input model_inference_results_order_by {
+  confidence: order_by
+  end_time: order_by
   id: order_by
   label_id: order_by
   model_id: order_by
-  probability: order_by
   record_id: order_by
+  start_time: order_by
 }
 
 """primary key columns input for table: model_inference_results"""
@@ -1948,6 +1984,12 @@ select columns of table "model_inference_results"
 """
 enum model_inference_results_select_column {
   """column name"""
+  confidence
+
+  """column name"""
+  end_time
+
+  """column name"""
   id
 
   """column name"""
@@ -1957,48 +1999,56 @@ enum model_inference_results_select_column {
   model_id
 
   """column name"""
-  probability
+  record_id
 
   """column name"""
-  record_id
+  start_time
 }
 
 """
 input type for updating data in table "model_inference_results"
 """
 input model_inference_results_set_input {
+  confidence: Float
+  end_time: numeric
   id: bigint
   label_id: Int
   model_id: Int
-  probability: Float
   record_id: bigint
+  start_time: numeric
 }
 
 """aggregate stddev on columns"""
 type model_inference_results_stddev_fields {
+  confidence: Float
+  end_time: Float
   id: Float
   label_id: Float
   model_id: Float
-  probability: Float
   record_id: Float
+  start_time: Float
 }
 
 """aggregate stddev_pop on columns"""
 type model_inference_results_stddev_pop_fields {
+  confidence: Float
+  end_time: Float
   id: Float
   label_id: Float
   model_id: Float
-  probability: Float
   record_id: Float
+  start_time: Float
 }
 
 """aggregate stddev_samp on columns"""
 type model_inference_results_stddev_samp_fields {
+  confidence: Float
+  end_time: Float
   id: Float
   label_id: Float
   model_id: Float
-  probability: Float
   record_id: Float
+  start_time: Float
 }
 
 """
@@ -2014,26 +2064,36 @@ input model_inference_results_stream_cursor_input {
 
 """Initial value of the column from where the streaming should start"""
 input model_inference_results_stream_cursor_value_input {
+  confidence: Float
+  end_time: numeric
   id: bigint
   label_id: Int
   model_id: Int
-  probability: Float
   record_id: bigint
+  start_time: numeric
 }
 
 """aggregate sum on columns"""
 type model_inference_results_sum_fields {
+  confidence: Float
+  end_time: numeric
   id: bigint
   label_id: Int
   model_id: Int
-  probability: Float
   record_id: bigint
+  start_time: numeric
 }
 
 """
 update columns of table "model_inference_results"
 """
 enum model_inference_results_update_column {
+  """column name"""
+  confidence
+
+  """column name"""
+  end_time
+
   """column name"""
   id
 
@@ -2044,10 +2104,10 @@ enum model_inference_results_update_column {
   model_id
 
   """column name"""
-  probability
+  record_id
 
   """column name"""
-  record_id
+  start_time
 }
 
 input model_inference_results_updates {
@@ -2063,29 +2123,35 @@ input model_inference_results_updates {
 
 """aggregate var_pop on columns"""
 type model_inference_results_var_pop_fields {
+  confidence: Float
+  end_time: Float
   id: Float
   label_id: Float
   model_id: Float
-  probability: Float
   record_id: Float
+  start_time: Float
 }
 
 """aggregate var_samp on columns"""
 type model_inference_results_var_samp_fields {
+  confidence: Float
+  end_time: Float
   id: Float
   label_id: Float
   model_id: Float
-  probability: Float
   record_id: Float
+  start_time: Float
 }
 
 """aggregate variance on columns"""
 type model_inference_results_variance_fields {
+  confidence: Float
+  end_time: Float
   id: Float
   label_id: Float
   model_id: Float
-  probability: Float
   record_id: Float
+  start_time: Float
 }
 
 """Contains all all labels a mode uses"""

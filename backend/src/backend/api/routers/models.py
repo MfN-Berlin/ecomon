@@ -34,7 +34,7 @@ async def analyse_site_timespan(
     job_service = JobService(db)
     job_id = await job_service.create_job(
         f"{task_topic.MODEL_INFERENCE_SITE  .value}",
-        payload={
+        metadata={
             "site_id": payload.site_id,
             "model_id": payload.model_id,
         },

@@ -23,7 +23,8 @@ class Jobs(Base):
     status = mapped_column(Enum('running', 'preparing', 'finalizing', 'done', 'failed', 'pending', name='job_status'), nullable=False, server_default=text("'running'::job_status"))
     progress = mapped_column(Double(53), nullable=False, server_default=text('0'))
     created_at = mapped_column(DateTime, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
-    payload = mapped_column(JSONB)
+    metadata_ = mapped_column('metadata', JSONB)
+    result = mapped_column(JSONB)
     error = mapped_column(JSONB)
     updated_at = mapped_column(DateTime)
 
@@ -248,8 +249,6 @@ class SiteReports(Base):
     id = mapped_column(Integer, Sequence('site_report_id_seq'))
     created_at = mapped_column(DateTime(True), nullable=False, server_default=text('now()'))
     site_id = mapped_column(BigInteger, nullable=False)
-    first_record_date = mapped_column(DateTime, nullable=False)
-    last_record_date = mapped_column(DateTime, nullable=False)
     records_count = mapped_column(Integer, nullable=False)
     record_duration = mapped_column(Integer, nullable=False)
     corrupted_files = mapped_column(JSONB, nullable=False)
@@ -257,6 +256,8 @@ class SiteReports(Base):
     daily_histogram = mapped_column(JSONB, nullable=False)
     monthly_histogram = mapped_column(JSONB, nullable=False)
     records_heatmap = mapped_column(JSONB, nullable=False)
+    first_record_date = mapped_column(DateTime)
+    last_record_date = mapped_column(DateTime)
 
     site: Mapped['Sites'] = relationship('Sites', back_populates='site_reports')
 
