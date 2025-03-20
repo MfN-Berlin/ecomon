@@ -9,7 +9,7 @@ router = APIRouter(prefix="/sets", tags=["sets"])
 
 @router.post("/analyze-records")
 async def analyze_records():
-    return {"message": "Analyze records"}
+    return {"message": "Inference records"}
 
 
 @router.post("/create-event-map")

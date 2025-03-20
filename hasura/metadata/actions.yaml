@@ -1,35 +1,4 @@
 actions:
-  - name: analyseSiteTimespan
-    definition:
-      kind: synchronous
-      handler: http://lalal.de
-      forward_client_headers: true
-      request_transform:
-        body:
-          action: transform
-          template: |-
-            {
-              "site_id": {{$body.input.analyzeSiteRequestInput?['siteId']}},
-              "model_id": {{$body.input.analyzeSiteRequestInput?['modelId']}},
-              "start_datetime": {{$body.input.analyzeSiteRequestInput?['startDatetime']}},
-              "end_datetime": {{$body.input.analyzeSiteRequestInput?['endDatetime']}}
-            }
-        method: POST
-        query_params: {}
-        template_engine: Kriti
-        url: '{{$base_url}}/models/analyse-site-timespan'
-        version: 2
-      response_transform:
-        body:
-          action: transform
-          template: |-
-            {
-              "jobId": {{$body?['job_id']}}
-            }
-        template_engine: Kriti
-        version: 2
-    permissions:
-      - role: user
   - name: cancelJobById
     definition:
       kind: synchronous
@@ -63,6 +32,37 @@ actions:
         query_params: {}
         template_engine: Kriti
         url: '{{$base_url}}/sites/create-data-report'
+        version: 2
+      response_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "jobId": {{$body?['job_id']}}
+            }
+        template_engine: Kriti
+        version: 2
+    permissions:
+      - role: user
+  - name: inferenceSiteTimespan
+    definition:
+      kind: synchronous
+      handler: '{{HASURA_WEBHOOKS_BASE_URL}}'
+      forward_client_headers: true
+      request_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "site_id": {{$body.input.inferenceSiteRequestInput?['siteId']}},
+              "model_id": {{$body.input.inferenceSiteRequestInput?['modelId']}},
+              "start_datetime": {{$body.input.inferenceSiteRequestInput?['startDatetime']}},
+              "end_datetime": {{$body.input.inferenceSiteRequestInput?['endDatetime']}}
+            }
+        method: POST
+        query_params: {}
+        template_engine: Kriti
+        url: '{{$base_url}}/models/inference-site-timespan'
         version: 2
       response_transform:
         body:
@@ -157,7 +157,7 @@ custom_types:
     - name: CreateDataReportRequestInput
     - name: SiteDirectoriesScanRequestInput
     - name: SiteDirectoryScanRequestInput
-    - name: AnalyzeSiteRequestInput
+    - name: InferenceSiteRequestInput
   objects:
     - name: DirectoryInfo
     - name: ListDirectoriesResponse
@@ -166,6 +166,6 @@ custom_types:
     - name: SiteDataReportResponse
     - name: SiteDirectoriesScanResponse
     - name: SiteDirectoryScanResponse
-    - name: AnalyzeSiteResponse
+    - name: InferenceSiteResponse
   scalars:
     - name: JSON

@@ -13,17 +13,6 @@ directive @cached(
   refresh: Boolean! = false
 ) on QUERY
 
-input AnalyzeSiteRequestInput {
-  endDatetime: String!
-  modelId: Int!
-  siteId: Int!
-  startDatetime: String!
-}
-
-type AnalyzeSiteResponse {
-  jobId: Int!
-}
-
 type CancelJobResponse {
   jobId: Int
   message: String
@@ -52,6 +41,17 @@ input Float_comparison_exp {
   _lte: Float
   _neq: Float
   _nin: [Float!]
+}
+
+input InferenceSiteRequestInput {
+  endDatetime: String!
+  modelId: Int!
+  siteId: Int!
+  startDatetime: String!
+}
+
+type InferenceSiteResponse {
+  jobId: Int!
 }
 
 """
@@ -2883,8 +2883,6 @@ type models_variance_fields {
 
 """mutation root"""
 type mutation_root {
-  analyseSiteTimespan(analyzeSiteRequestInput: AnalyzeSiteRequestInput!): AnalyzeSiteResponse
-
   """Cancels a job by ID."""
   cancelJobById(jobId: Int!): CancelJobResponse
   createSiteDataReport(createDataReportRequestInput: CreateDataReportRequestInput!): SiteDataReportResponse
@@ -3070,6 +3068,7 @@ type mutation_root {
   delete single row from the table: "sites"
   """
   delete_sites_by_pk(id: bigint!): sites
+  inferenceSiteTimespan(inferenceSiteRequestInput: InferenceSiteRequestInput!): InferenceSiteResponse
 
   """
   insert data into the table: "events"

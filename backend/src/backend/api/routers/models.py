@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.services.directory_service import DirectoryService
 from backend.api.models.directory import DirectoryInfo
 from backend.api.models.models import (
-    AnalyzeSiteRequest,
-    AnalyzeSiteResponse,
+    InferenceSiteRequest,
+    InferenceSiteResponse,
 )
 from backend.api.services.job_service import JobService
 from backend.api.services.site_service import SiteService
@@ -27,9 +27,9 @@ directory_service = DirectoryService(ApiSettings())
 ###
 
 
-@router.post("/analyse-site-timespan", response_model=AnalyzeSiteResponse)
+@router.post("/inference-site-timespan", response_model=InferenceSiteResponse)
 async def analyse_site_timespan(
-    payload: AnalyzeSiteRequest, db: AsyncSession = Depends(get_db)
+    payload: InferenceSiteRequest, db: AsyncSession = Depends(get_db)
 ):
     job_service = JobService(db)
     job_id = await job_service.create_job(

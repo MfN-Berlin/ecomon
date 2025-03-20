@@ -1,10 +1,4 @@
 type Mutation {
-  analyseSiteTimespan(
-    analyzeSiteRequestInput: AnalyzeSiteRequestInput!
-  ): AnalyzeSiteResponse
-}
-
-type Mutation {
   cancelJobById(
     jobId: Int!
   ): CancelJobResponse
@@ -14,6 +8,12 @@ type Mutation {
   createSiteDataReport(
     createDataReportRequestInput: CreateDataReportRequestInput!
   ): SiteDataReportResponse
+}
+
+type Mutation {
+  inferenceSiteTimespan(
+    inferenceSiteRequestInput: InferenceSiteRequestInput!
+  ): InferenceSiteResponse
 }
 
 type Query {
@@ -47,7 +47,7 @@ input SiteDirectoryScanRequestInput {
   siteId: Int!
 }
 
-input AnalyzeSiteRequestInput {
+input InferenceSiteRequestInput {
   endDatetime: String!
   modelId: Int!
   siteId: Int!
@@ -85,7 +85,7 @@ type SiteDirectoryScanResponse {
   jobId: Int!
 }
 
-type AnalyzeSiteResponse {
+type InferenceSiteResponse {
   jobId: Int!
 }
 
