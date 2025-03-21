@@ -78,6 +78,10 @@ class Models(Base):
     id = mapped_column(Integer)
     name = mapped_column(Text, nullable=False)
     created_at = mapped_column(DateTime, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
+    additional_docker_arguments = mapped_column(Text)
+    additional_model_arguments = mapped_column(Text)
+    window_size = mapped_column(Integer)
+    step_size = mapped_column(Integer)
     remarks = mapped_column(Text)
     updated_at = mapped_column(DateTime)
 
