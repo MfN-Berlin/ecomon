@@ -58,8 +58,6 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - TMP_DIR=/tmp
-      - HOST_BASE_DATA_DIRECTORY=${BASE_DATA_DIRECTORY}
-      - HOST_TMP_DIR=${TMP_DIR}
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
       - ${TMP_DIR}:/tmp
@@ -81,6 +79,7 @@ services:
       - TMP_DIR=/tmp
       - HOST_BASE_DATA_DIRECTORY=${BASE_DATA_DIRECTORY}
       - HOST_TMP_DIR=${TMP_DIR}
+      - ENABLE_GPU=${ENABLE_GPU}
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
       - ${TMP_DIR}:/tmp
@@ -157,7 +156,6 @@ services:
       - ecomon
 volumes:
   ecomon_data:
-
 
 networks:
   ecomon:

@@ -12,6 +12,7 @@ class WorkerSettings(BackendBaseSettings):
     gpus: str = "none"
     host_base_data_directory: str
     host_tmp_dir: str
+    enable_gpu: bool = False
 
     @property
     def broker_url(self) -> str:

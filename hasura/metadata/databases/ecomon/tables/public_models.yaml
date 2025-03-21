@@ -20,13 +20,29 @@ select_permissions:
   - role: user
     permission:
       columns:
+        - additional_docker_arguments
+        - additional_model_arguments
+        - created_at
         - id
         - name
         - remarks
-        - created_at
+        - step_size
         - updated_at
+        - window_size
       filter: {}
       allow_aggregations: true
+    comment: ""
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - additional_docker_arguments
+        - additional_model_arguments
+        - remarks
+        - step_size
+        - window_size
+      filter: {}
+      check: null
     comment: ""
 delete_permissions:
   - role: user
