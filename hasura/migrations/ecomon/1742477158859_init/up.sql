@@ -18,12 +18,7 @@ CREATE TYPE public.job_type AS ENUM (
     'calc_activation',
     'create_voucher'
 );
-CREATE TYPE public.record_error_type AS ENUM (
-    'to_short',
-    'wrong_sample_rate',
-    'only_header',
-    'wrong_naming'
-);
+
 CREATE FUNCTION public.set_current_timestamp_updated_at() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -142,6 +137,10 @@ ALTER SEQUENCE public.model_labels_id_seq OWNED BY public.model_labels.id;
 CREATE TABLE public.models (
     id integer NOT NULL,
     name text NOT NULL,
+    additional_docker_arguments text,
+    additional_model_arguments text,
+    window_size integer,
+    step_size integer,
     remarks text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone
