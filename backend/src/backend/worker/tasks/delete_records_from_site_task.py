@@ -80,7 +80,10 @@ def delete_records_from_site_task(self, site_id: int, directories: list[str]):
                 },
             )
         if deleted_records == 0:
-            return "No records found to delete"
+            return {
+                "status": "success",
+                "message": "No records found to delete",
+            }
         wait_for_lock_and_create_report(job_id, site_id, session, logger)
     except Exception as e:
         session.rollback()
