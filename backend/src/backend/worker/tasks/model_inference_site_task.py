@@ -58,7 +58,15 @@ def model_inference_site_task(
 
     try:
         # get model string
-        model = session.query(Models.name).filter(Models.id == model_id).first()
+        model = (
+            session.query(
+                Models.name,
+                Models.additional_docker_arguments,
+                Models.additional_model_arguments,
+            )
+            .filter(Models.id == model_id)
+            .first()
+        )
         if not model:
             raise Exception(f"Model {model_id} not found")
         file_counter = 0
@@ -147,7 +155,9 @@ def model_inference_site_task(
                 ),
                 "models",
                 *(
-                    [model.additional_arguments] if model.additional_arguments else []
+                    [model.additional_model_arguments]
+                    if model.additional_model_arguments
+                    else []
                 ),  # additional models arguments
                 f"-i /app/inputPaths.txt",
                 f"-m {model.name}",
