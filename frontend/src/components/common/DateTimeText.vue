@@ -1,5 +1,5 @@
 <template>
-  <span :class="`${sizeMap[props.size]}`">
+  <span :class="`${sizeMap[props.size]}`" v-bind="$attrs">
     <v-icon v-if="props.icon" :icon="props.icon" :size="props.size" class="mr-1"></v-icon>
     <time :datetime="time.toISOString()"> {{ formattedDate }} </time>
   </span>
@@ -23,7 +23,7 @@ const sizeMap = {
   medium: "text-body-2",
   large: "text-h6"
 };
-const { $dayjs } = useNuxtApp();
+const { $dayjs, $currentTime } = useNuxtApp();
 const props = withDefaults(defineProps<DateTimeTextProps>(), {
   relativeTime: true,
   relativeTimeSpan: 1000 * 60 * 60 * 24, // 1 day
@@ -33,11 +33,13 @@ const props = withDefaults(defineProps<DateTimeTextProps>(), {
   size: "medium",
   icon: null
 });
-const time = computed(() => {
-  if (props.preventLocal) {
-    return $dayjs.utc(props.time);
+const time = ref($dayjs.utc(props.time).local() ? $dayjs.utc(props.time).local() : $dayjs.utc(props.time));
+
+watch($currentTime, () => {
+  const value = $dayjs.utc(props.time).local() ? $dayjs.utc(props.time).local() : $dayjs.utc(props.time);
+  if (value != time.value) {
+    time.value = value;
   }
-  return $dayjs.utc(props.time).local();
 });
 const formattedDate = computed(() => {
   const timestamp = time.value;

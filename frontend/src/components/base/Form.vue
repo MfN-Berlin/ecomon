@@ -45,13 +45,13 @@ const emit = defineEmits<{
         <div class="d-flex pr-2">
           <div class="text-caption label">Created:</div>
           <div class="text-caption">
-            <b><common-date-time-text :time="created_at as string" /></b>
+            <common-date-time-text class="font-weight-bold" :time="created_at as string" />
           </div>
         </div>
         <div v-if="updated_at" class="d-flex">
           <div class="text-caption label">Updated:</div>
           <div class="text-caption">
-            <b><common-date-time-text :time="updated_at as string" /></b>
+            <common-date-time-text class="font-weight-bold" :time="updated_at as string" />
           </div>
         </div>
       </v-container>

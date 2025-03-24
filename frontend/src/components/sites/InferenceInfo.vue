@@ -12,15 +12,9 @@ const props = defineProps<{
   status?: "pending" | "running" | "finished" | "failed";
   progress?: number;
 }>();
-const { $dayjs } = useNuxtApp();
+
 const { openDialog } = useDialogStore();
 const { mutate: cancelJob } = useCancelJob();
-const durationHumanReadable = computed(() => {
-  if (props.finishedAt) {
-    return $dayjs(props.finishedAt || props.updatedAt).diff(props.createdAt, "minutes");
-  }
-  return 0;
-});
 </script>
 
 <template>
