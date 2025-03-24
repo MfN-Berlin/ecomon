@@ -6,7 +6,7 @@ const props = defineProps<{
 const { data: firstAndLastRecordDate, refetch } = useSiteGetFirstAndLastRecordDate(props.siteId);
 
 const { mutate: startInference, isPending: startInferencePending } = useInferenceSiteTimespan();
-const { $activeJobs } = useNuxtApp();
+const { $activeJobs, $dayjs } = useNuxtApp();
 const activeJobs = computed(() =>
   $activeJobs.value?.jobs.filter(
     (job) => job.metadata.site_id === props.siteId && job.topic === "model_inference_site"
@@ -78,8 +78,8 @@ async function onStartInference() {
   await startInference({
     siteId: props.siteId,
     modelId: selectedModel.value!,
-    startDatetime: selectedStartDateTime.value.toISOString(),
-    endDatetime: selectedEndDateTime.value.toISOString()
+    startDatetime: $dayjs(selectedStartDateTime.value).local().format("YYYY-MM-DDTHH:mm:ss"),
+    endDatetime: $dayjs(selectedEndDateTime.value).local().format("YYYY-MM-DDTHH:mm:ss")
   });
   dialog.value = false;
 }

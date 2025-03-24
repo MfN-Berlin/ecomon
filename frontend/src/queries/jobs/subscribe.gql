@@ -1,5 +1,5 @@
 subscription subscribeActiveJobs {
-  jobs(order_by: { id: desc }, where: { status: { _nin: ["done", "failed"] } }) {
+  jobs(order_by: { id: desc }, where: { status: { _nin: ["done", "failed", "cancelled"] } }) {
     id
     status
     topic

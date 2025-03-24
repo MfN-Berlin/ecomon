@@ -16,15 +16,15 @@ export default defineNuxtPlugin(() => {
     });
   });
 
-  watch(data, (value, oldValue) => {
-    // find finished jobs which are not in the old value
-    console.log("value", value);
-    if (value && oldValue) {
-      const finishedJobs = value.jobs.filter((job) => !oldValue?.jobs.find((j) => j?.id === job?.id));
-      console.log("current value", JSON.stringify(value, null, 2));
-      console.log("finished jobs", JSON.stringify(finishedJobs, null, 2));
-    }
-  });
+  // watch(data, (value, oldValue) => {
+  //   // find finished jobs which are not in the old value
+  //   console.log("value", value);
+  //   if (value && oldValue) {
+  //     const finishedJobs = value.jobs.filter((job) => !oldValue?.jobs.find((j) => j?.id === job?.id));
+  //     console.log("current value", JSON.stringify(value, null, 2));
+  //     console.log("finished jobs", JSON.stringify(finishedJobs, null, 2));
+  //   }
+  // });
 
   return {
     provide: {
