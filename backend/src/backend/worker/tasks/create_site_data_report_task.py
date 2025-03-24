@@ -32,6 +32,7 @@ logger.setLevel(settings.log_level)
     bind=True,
     base=BaseTask,
     track_started=True,
+    queue="db_worker_queue",
 )
 def create_site_data_report_task(self, site_id: int):
     job_id = self.request.id

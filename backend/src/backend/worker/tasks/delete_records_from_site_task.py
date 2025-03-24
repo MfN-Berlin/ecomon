@@ -22,7 +22,13 @@ settings = WorkerSettings()
 logger.setLevel(settings.log_level)
 
 
-@app.task(name="delete_records_from_site", bind=True, base=BaseTask, track_started=True)
+@app.task(
+    name="delete_records_from_site",
+    bind=True,
+    base=BaseTask,
+    track_started=True,
+    queue="db_worker_queue",
+)
 def delete_records_from_site_task(self, site_id: int, directories: list[str]):
     job_id = self.request.id
     session = db_session()

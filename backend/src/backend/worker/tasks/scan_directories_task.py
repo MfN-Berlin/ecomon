@@ -35,6 +35,7 @@ BATCH_SIZE = 100
     bind=True,
     base=BaseTask,
     track_started=True,
+    queue="db_worker_queue",
 )
 def scan_directories_task(self, site_id: int, directories: list[str]):
     job_id = self.request.id
@@ -50,7 +51,10 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
         total_files = len(all_files)
         logger.info(f"Total files to process: {total_files}")
         if total_files == 0:
-            return "No files found in directories"
+            return {
+                "status": "success",
+                "message": "No files found in directories",
+            }
 
         current_batch = 0
         processed_files = 0

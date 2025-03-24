@@ -7,10 +7,12 @@ from celery.signals import task_revoked
 from backend.worker.settings import WorkerSettings
 from backend.worker.database import get_new_Session, db_session
 from backend.worker.services.job_service import JobService
+from kombu import Exchange, Queue
 
 settings = WorkerSettings()
 logger = logging.getLogger(__name__)
 logger.setLevel(settings.log_level)
+
 
 app = Celery(
     "ecomon",
@@ -24,6 +26,19 @@ app = Celery(
         "backend.worker.tasks.create_site_data_report_task",
         "backend.worker.tasks.model_inference_site_task",
     ],
+    task_queues=(
+        Queue(
+            "inference_queue", Exchange("inference_exchange"), routing_key="inference"
+        ),
+        Queue(
+            "db_worker_queue",
+            Exchange("db_worker_exchange"),
+            routing_key="db_worker",
+        ),
+    ),
+    task_default_queue="db_worker_queue",
+    task_default_exchange="db_worker_exchange",
+    task_default_routing_key="db_worker",
 )
 
 

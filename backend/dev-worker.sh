@@ -1,1 +1,0 @@
-poetry run watchfiles --filter python 'poetry run celery -A backend.worker.app.app worker -E'

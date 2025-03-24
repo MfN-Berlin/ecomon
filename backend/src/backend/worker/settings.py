@@ -9,10 +9,9 @@ class WorkerSettings(BackendBaseSettings):
     audio_extensions: str = "wav,mp3,flac"
     wait_for_soft_cancel_timeout: int = 10
     tmp_dir: str
-    gpus: str = "none"
     host_base_data_directory: str
     host_tmp_dir: str
-    enable_gpu: bool = False
+    use_gpu: str = "none"
 
     @property
     def broker_url(self) -> str:

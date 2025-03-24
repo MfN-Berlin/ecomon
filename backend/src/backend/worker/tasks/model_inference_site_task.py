@@ -39,6 +39,7 @@ BATCH_SIZE = 100
     bind=True,
     base=BaseTask,
     track_started=True,
+    queue="inference_queue",
 )
 def model_inference_site_task(
     self, site_id: int, model_id: int, start_datetime: datetime, end_datetime: datetime
