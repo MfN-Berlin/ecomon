@@ -126,14 +126,40 @@ def model_inference_site_task(
                         + "\n"
                     )
                     record_name_to_id[record.filename] = record.id
+            docker_volumes = [
+                f"-v {host_input_paths_file}:/app/inputPaths.txt",
+                f"-v {host_model_output_dir}:/output",
+                f"-v {settings.host_base_data_directory}:/data",
+            ]
+            # Build command as array for better readability and spacing control
+            command_parts = [
+                "docker run",
+                "-v /var/run/docker.sock:/var/run/docker.sock",  # needed for docker in docker
+                "--rm",  # remove the container after running
+                *docker_volumes,
+                *(
+                    [f"--gpus {settings.use_gpu}"] if settings.use_gpu != "none" else []
+                ),  # gpu
+                *(
+                    [model.additional_docker_arguments]  # additional docker arguments
+                    if model.additional_docker_arguments
+                    else []
+                ),
+                "models",
+                *(
+                    [model.additional_arguments] if model.additional_arguments else []
+                ),  # additional models arguments
+                f"-i /app/inputPaths.txt",
+                f"-m {model.name}",
+                f"-o /output",
+                f"-ov {host_model_output_dir}",
+                "--removeTemporaryResultFile",
+                f"-chown {uid}:{gid}",
+                "--f pkl",
+                "-on output",
+            ]
 
-            # run os command to run the model
-            command = f"""docker run -v /var/run/docker.sock:/var/run/docker.sock \
-                        --rm -v {host_input_paths_file}:/app/inputPaths.txt \
-                        -v {host_model_output_dir}:/output \
-                        -v {settings.host_base_data_directory}:/data \
-                        { f"--gpus {settings.gpus}" if settings.gpus != "none" else "" } \
-                        models -i /app/inputPaths.txt -m {model.name} -o /output -ov {host_model_output_dir} --removeTemporaryResultFile -chown {uid}:{gid} --f pkl -on output"""
+            command = " ".join(command_parts)
 
             logger.info(f"Running command: {command}")
             os.system(command)

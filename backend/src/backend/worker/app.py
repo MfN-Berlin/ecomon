@@ -109,14 +109,24 @@ def task_success_handler(sender=None, **kwargs):
     session = get_new_Session()
     try:
         result_data = kwargs.get("result")
-        if result_data.get("status") == "revoked":
+
+        # Handle different result types safely
+        if isinstance(result_data, dict):
+            status = result_data.get("status", "completed")
+        else:
+            # Log warning for unexpected result types
+            logger.warning(
+                f"Unexpected task result type: {type(result_data)}, assuming completed"
+            )
+            status = "completed"
+
+        if status == "revoked":
             JobService.set_job_canceled(session, sender.request.id)
         else:
             JobService.set_job_done(session, sender.request.id)
 
         session.commit()
-
-        logger.warning(f"Task {sender.name} {result_data.get('status')} !")
+        logger.info(f"Task {sender.name} completed with status: {status}")
     except Exception as e:
         logger.error(f"Task success error: {str(e)}", exc_info=True)
         session.rollback()
