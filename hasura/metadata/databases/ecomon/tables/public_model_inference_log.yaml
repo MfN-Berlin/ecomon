@@ -1,0 +1,12 @@
+table:
+  name: model_inference_log
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - model_id
+        - record_id
+        - analyzed
+      filter: {}
+    comment: ""

@@ -18,7 +18,6 @@ CREATE TYPE public.job_type AS ENUM (
     'calc_activation',
     'create_voucher'
 );
-
 CREATE FUNCTION public.set_current_timestamp_updated_at() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -104,6 +103,12 @@ CREATE SEQUENCE public.location_id_seq
     NO MAXVALUE
     CACHE 1;
 ALTER SEQUENCE public.location_id_seq OWNED BY public.locations.id;
+CREATE TABLE public.model_inference_log (
+    model_id bigint NOT NULL,
+    record_id bigint NOT NULL,
+    analyzed boolean DEFAULT true
+);
+COMMENT ON TABLE public.model_inference_log IS 'For every record analysed by and a model an entry willl be created';
 CREATE TABLE public.model_inference_results (
     id bigint NOT NULL,
     record_id bigint NOT NULL,
@@ -308,6 +313,10 @@ ALTER TABLE ONLY public.locations
     ADD CONSTRAINT location_name_key UNIQUE (name);
 ALTER TABLE ONLY public.locations
     ADD CONSTRAINT location_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.model_inference_log
+    ADD CONSTRAINT model_inference_log_model_id_record_id_key UNIQUE (model_id, record_id);
+ALTER TABLE ONLY public.model_inference_log
+    ADD CONSTRAINT model_inference_log_pkey PRIMARY KEY (record_id);
 ALTER TABLE ONLY public.model_inference_results
     ADD CONSTRAINT model_inference_results_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.model_labels
@@ -372,6 +381,10 @@ ALTER TABLE ONLY public.model_inference_results
     ADD CONSTRAINT fk_model FOREIGN KEY (model_id) REFERENCES public.models(id) ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_inference_results
     ADD CONSTRAINT fk_record FOREIGN KEY (record_id) REFERENCES public.records(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.model_inference_log
+    ADD CONSTRAINT model_inference_log_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public.model_inference_log
+    ADD CONSTRAINT model_inference_log_record_id_fkey FOREIGN KEY (record_id) REFERENCES public.records(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_labels
     ADD CONSTRAINT model_labels_label_id_fkey FOREIGN KEY (label_id) REFERENCES public.labels(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_labels
