@@ -10,9 +10,14 @@ from pathlib import Path
 from datetime import datetime
 from celery.utils.log import get_task_logger
 from celery import states
-
+from collections import namedtuple
 from backend.worker.app import app
-from backend.shared.models.db.models import Models, Records, ModelInferenceResults
+from backend.shared.models.db.models import (
+    ModelInferenceLogs,
+    Models,
+    Records,
+    ModelInferenceResults,
+)
 
 from backend.worker.tools import parse_datetime
 from backend.worker.settings import WorkerSettings
@@ -67,10 +72,16 @@ def model_inference_site_task(
             .filter(Models.id == model_id)
             .first()
         )
+
         if not model:
             raise Exception(f"Model {model_id} not found")
+        # detach model from session
+        ModelData = namedtuple(
+            "ModelData",
+            ["name", "additional_docker_arguments", "additional_model_arguments"],
+        )
+        model = ModelData(*model)
         file_counter = 0
-
         # Get current user and group IDs to make the docker output files readable
         uid = os.getuid()
         gid = os.getgid()
@@ -79,16 +90,17 @@ def model_inference_site_task(
         total_count = (
             session.query(func.count(Records.id))
             .join(
-                ModelInferenceResults,
-                (Records.id == ModelInferenceResults.record_id)
-                & (ModelInferenceResults.model_id == model_id),
+                ModelInferenceLogs,
+                (Records.id == ModelInferenceLogs.record_id)
+                & (ModelInferenceLogs.model_id == model_id),
                 isouter=True,
             )
-            .filter(Records.site_id == site_id, ModelInferenceResults.id.is_(None))
+            .filter(Records.site_id == site_id, ModelInferenceLogs.id.is_(None))
             .filter(Records.record_datetime >= start_datetime)
             .filter(Records.record_datetime <= end_datetime)
             .scalar()
         )
+
         # create the tmp directory
         logger.info(
             f"Found {total_count} records to process for site {site_id} and model {model.name}"
@@ -177,6 +189,13 @@ def model_inference_site_task(
             # read the output.pkl file and add the results to the database
             df = pandas.read_pickle(os.path.join(job_temp_dir, "output.pkl"))
             for _, row in df.iterrows():
+                confidence = row["confidence"]
+                # if confidence is 0 or below confidence resolution (0.0001)
+                if confidence <= 0.0001:
+                    logger.warning(
+                        f"Skipping record {row['filename']} with confidence {confidence}"
+                    )
+                    continue
                 session.add(
                     ModelInferenceResults(
                         record_id=record_name_to_id[row["filename"]],
@@ -187,7 +206,19 @@ def model_inference_site_task(
                         label_id=row["label_id"],
                     )
                 )
+            unique_filenames = df["filename"].unique()
+            for filename in unique_filenames:
+                session.add(
+                    ModelInferenceLogs(
+                        model_id=model_id,
+                        record_id=record_name_to_id[filename],
+                        analyzed=True,
+                    )
+                )
             session.commit()
+            session.close()
+            db_session.remove()
+            session = db_session()
             file_counter += len(records)
 
             JobService.update_job_progress_by_counter(

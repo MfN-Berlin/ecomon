@@ -87,7 +87,7 @@ class Models(Base):
 
     model_labels: Mapped[List['ModelLabels']] = relationship('ModelLabels', uselist=True, back_populates='model')
     events: Mapped[List['Events']] = relationship('Events', uselist=True, back_populates='model')
-    model_inference_log: Mapped[List['ModelInferenceLog']] = relationship('ModelInferenceLog', uselist=True, back_populates='model')
+    model_inference_logs: Mapped[List['ModelInferenceLogs']] = relationship('ModelInferenceLogs', uselist=True, back_populates='model')
     model_inference_results: Mapped[List['ModelInferenceResults']] = relationship('ModelInferenceResults', uselist=True, back_populates='model')
 
 
@@ -205,6 +205,7 @@ class Records(Base):
 
     site: Mapped['Sites'] = relationship('Sites', back_populates='records')
     events: Mapped[List['Events']] = relationship('Events', uselist=True, back_populates='record')
+    model_inference_logs: Mapped[List['ModelInferenceLogs']] = relationship('ModelInferenceLogs', uselist=True, back_populates='record')
     model_inference_results: Mapped[List['ModelInferenceResults']] = relationship('ModelInferenceResults', uselist=True, back_populates='record')
 
 
@@ -290,22 +291,24 @@ class Events(Base):
     record: Mapped['Records'] = relationship('Records', back_populates='events')
 
 
-class ModelInferenceLog(Records):
-    __tablename__ = 'model_inference_log'
+class ModelInferenceLogs(Base):
+    __tablename__ = 'model_inference_logs'
     __table_args__ = (
         ForeignKeyConstraint(['model_id'], ['models.id'], ondelete='CASCADE', onupdate='CASCADE', name='model_inference_log_model_id_fkey'),
         ForeignKeyConstraint(['record_id'], ['records.id'], ondelete='CASCADE', onupdate='CASCADE', name='model_inference_log_record_id_fkey'),
-        PrimaryKeyConstraint('record_id', name='model_inference_log_pkey'),
+        PrimaryKeyConstraint('id', name='model_inference_log_pkey'),
         UniqueConstraint('model_id', 'record_id', name='model_inference_log_model_id_record_id_key'),
         {'comment': 'For every record analysed by and a model an entry willl be '
                 'created'}
     )
 
     model_id = mapped_column(BigInteger, nullable=False)
-    record_id = mapped_column(BigInteger)
+    record_id = mapped_column(BigInteger, nullable=False)
+    id = mapped_column(BigInteger, Sequence('model_inference_log_id_seq'))
     analyzed = mapped_column(Boolean, server_default=text('true'))
 
-    model: Mapped['Models'] = relationship('Models', back_populates='model_inference_log')
+    model: Mapped['Models'] = relationship('Models', back_populates='model_inference_logs')
+    record: Mapped['Records'] = relationship('Records', back_populates='model_inference_logs')
 
 
 class ModelInferenceResults(Base):
