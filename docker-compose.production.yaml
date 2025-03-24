@@ -79,7 +79,7 @@ services:
       - TMP_DIR=/tmp
       - HOST_BASE_DATA_DIRECTORY=${BASE_DATA_DIRECTORY}
       - HOST_TMP_DIR=${TMP_DIR}
-      - ENABLE_GPU=${ENABLE_GPU}
+      - USE_GPU=${USE_GPU}
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
       - ${TMP_DIR}:/tmp
@@ -156,6 +156,7 @@ services:
       - ecomon
 volumes:
   ecomon_data:
+
 
 networks:
   ecomon:
