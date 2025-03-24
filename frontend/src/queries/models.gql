@@ -1,17 +1,21 @@
 fragment Model on models {
   id
   name
+  additional_docker_arguments
+  additional_model_arguments
+  window_size
+  step_size
   remarks
   updated_at
   created_at
 }
 
-query filterModel($search: String = "", $limit: Int = 10, $offset: Int = 10) {
+query filterModel($search: String = "%%", $limit: Int = 10, $offset: Int = 0, $order: order_by = asc) {
   data: models(
     order_by: { name: asc }
     limit: $limit
     offset: $offset
-    where: { _or: { name: { _ilike: $search }, remarks: { _ilike: $search } } }
+    where: { name: { _ilike: $search } }
   ) {
     ...Model
   }

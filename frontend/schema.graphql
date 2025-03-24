@@ -2538,6 +2538,8 @@ input model_labels_variance_order_by {
 columns and relationships of "models"
 """
 type models {
+  additional_docker_arguments: String
+  additional_model_arguments: String
   created_at: timestamp!
 
   """An array relationship"""
@@ -2614,7 +2616,9 @@ type models {
   ): model_labels_aggregate!
   name: String!
   remarks: String
+  step_size: Int
   updated_at: timestamp
+  window_size: Int
 }
 
 """
@@ -2645,6 +2649,8 @@ type models_aggregate_fields {
 """aggregate avg on columns"""
 type models_avg_fields {
   id: Float
+  step_size: Float
+  window_size: Float
 }
 
 """
@@ -2654,6 +2660,8 @@ input models_bool_exp {
   _and: [models_bool_exp!]
   _not: models_bool_exp
   _or: [models_bool_exp!]
+  additional_docker_arguments: String_comparison_exp
+  additional_model_arguments: String_comparison_exp
   created_at: timestamp_comparison_exp
   events: events_bool_exp
   events_aggregate: events_aggregate_bool_exp
@@ -2662,7 +2670,9 @@ input models_bool_exp {
   model_labels_aggregate: model_labels_aggregate_bool_exp
   name: String_comparison_exp
   remarks: String_comparison_exp
+  step_size: Int_comparison_exp
   updated_at: timestamp_comparison_exp
+  window_size: Int_comparison_exp
 }
 
 """
@@ -2685,37 +2695,51 @@ input type for incrementing numeric columns in table "models"
 """
 input models_inc_input {
   id: Int
+  step_size: Int
+  window_size: Int
 }
 
 """
 input type for inserting data into table "models"
 """
 input models_insert_input {
+  additional_docker_arguments: String
+  additional_model_arguments: String
   created_at: timestamp
   events: events_arr_rel_insert_input
   id: Int
   model_labels: model_labels_arr_rel_insert_input
   name: String
   remarks: String
+  step_size: Int
   updated_at: timestamp
+  window_size: Int
 }
 
 """aggregate max on columns"""
 type models_max_fields {
+  additional_docker_arguments: String
+  additional_model_arguments: String
   created_at: timestamp
   id: Int
   name: String
   remarks: String
+  step_size: Int
   updated_at: timestamp
+  window_size: Int
 }
 
 """aggregate min on columns"""
 type models_min_fields {
+  additional_docker_arguments: String
+  additional_model_arguments: String
   created_at: timestamp
   id: Int
   name: String
   remarks: String
+  step_size: Int
   updated_at: timestamp
+  window_size: Int
 }
 
 """
@@ -2750,13 +2774,17 @@ input models_on_conflict {
 
 """Ordering options when selecting data from "models"."""
 input models_order_by {
+  additional_docker_arguments: order_by
+  additional_model_arguments: order_by
   created_at: order_by
   events_aggregate: events_aggregate_order_by
   id: order_by
   model_labels_aggregate: model_labels_aggregate_order_by
   name: order_by
   remarks: order_by
+  step_size: order_by
   updated_at: order_by
+  window_size: order_by
 }
 
 """primary key columns input for table: models"""
@@ -2768,6 +2796,12 @@ input models_pk_columns_input {
 select columns of table "models"
 """
 enum models_select_column {
+  """column name"""
+  additional_docker_arguments
+
+  """column name"""
+  additional_model_arguments
+
   """column name"""
   created_at
 
@@ -2781,33 +2815,49 @@ enum models_select_column {
   remarks
 
   """column name"""
+  step_size
+
+  """column name"""
   updated_at
+
+  """column name"""
+  window_size
 }
 
 """
 input type for updating data in table "models"
 """
 input models_set_input {
+  additional_docker_arguments: String
+  additional_model_arguments: String
   created_at: timestamp
   id: Int
   name: String
   remarks: String
+  step_size: Int
   updated_at: timestamp
+  window_size: Int
 }
 
 """aggregate stddev on columns"""
 type models_stddev_fields {
   id: Float
+  step_size: Float
+  window_size: Float
 }
 
 """aggregate stddev_pop on columns"""
 type models_stddev_pop_fields {
   id: Float
+  step_size: Float
+  window_size: Float
 }
 
 """aggregate stddev_samp on columns"""
 type models_stddev_samp_fields {
   id: Float
+  step_size: Float
+  window_size: Float
 }
 
 """
@@ -2823,22 +2873,34 @@ input models_stream_cursor_input {
 
 """Initial value of the column from where the streaming should start"""
 input models_stream_cursor_value_input {
+  additional_docker_arguments: String
+  additional_model_arguments: String
   created_at: timestamp
   id: Int
   name: String
   remarks: String
+  step_size: Int
   updated_at: timestamp
+  window_size: Int
 }
 
 """aggregate sum on columns"""
 type models_sum_fields {
   id: Int
+  step_size: Int
+  window_size: Int
 }
 
 """
 update columns of table "models"
 """
 enum models_update_column {
+  """column name"""
+  additional_docker_arguments
+
+  """column name"""
+  additional_model_arguments
+
   """column name"""
   created_at
 
@@ -2852,7 +2914,13 @@ enum models_update_column {
   remarks
 
   """column name"""
+  step_size
+
+  """column name"""
   updated_at
+
+  """column name"""
+  window_size
 }
 
 input models_updates {
@@ -2869,16 +2937,22 @@ input models_updates {
 """aggregate var_pop on columns"""
 type models_var_pop_fields {
   id: Float
+  step_size: Float
+  window_size: Float
 }
 
 """aggregate var_samp on columns"""
 type models_var_samp_fields {
   id: Float
+  step_size: Float
+  window_size: Float
 }
 
 """aggregate variance on columns"""
 type models_variance_fields {
   id: Float
+  step_size: Float
+  window_size: Float
 }
 
 """mutation root"""

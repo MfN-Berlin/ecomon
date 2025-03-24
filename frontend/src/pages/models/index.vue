@@ -15,7 +15,21 @@ const {
 const headers = [
   { title: "id", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
   { title: "name", key: "name", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "remarks", key: "remarks", align: "end", search: { operator: "_like", type: "text" } }
+  { title: "remarks", key: "remarks", align: "end", search: { operator: "_like", type: "text" } },
+  {
+    title: "additional_docker_arguments",
+    key: "additional_docker_arguments",
+    align: "end",
+    search: { operator: "_like", type: "text" }
+  },
+  {
+    title: "additional_model_arguments",
+    key: "additional_model_arguments",
+    align: "end",
+    search: { operator: "_like", type: "text" }
+  },
+  { title: "window_size", key: "window_size", align: "end", search: { operator: "_eq", type: "number" } },
+  { title: "step_size", key: "step_size", align: "end", search: { operator: "_eq", type: "number" } }
 ] as const;
 </script>
 

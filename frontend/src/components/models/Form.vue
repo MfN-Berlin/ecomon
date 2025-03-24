@@ -18,7 +18,14 @@ const dirty = useIsFormDirty();
 
 const { value: name, errorMessage: nameError } = useField("name");
 const { value: short_name, errorMessage: short_nameError } = useField("short_name");
-const { value: endpoint, errorMessage: endPointError } = useField("endpoint");
+const { value: additional_docker_arguments, errorMessage: additional_docker_argumentsError } = useField(
+  "additional_docker_arguments"
+);
+const { value: additional_model_arguments, errorMessage: additional_model_argumentsError } = useField(
+  "additional_model_arguments"
+);
+const { value: window_size, errorMessage: window_sizeError } = useField("window_size");
+const { value: step_size, errorMessage: step_sizeError } = useField("step_size");
 const { value: remarks, errorMessage: remarksError } = useField("remarks");
 
 const submit = handleSubmit((values) => emit("submit", { id: data?.id, ...values }));
@@ -67,11 +74,30 @@ const propsUpdateForm = () => {
       density="compact"
     ></v-text-field>
     <v-text-field
-      v-model="endpoint"
-      :error-messages="endPointError"
-      label="Endpoint"
+      v-model="additional_docker_arguments"
+      :error-messages="additional_docker_argumentsError"
+      label="Additional Docker Arguments"
       density="compact"
     ></v-text-field>
+    <v-text-field
+      v-model="additional_model_arguments"
+      :error-messages="additional_model_argumentsError"
+      label="Additional Model Arguments"
+      density="compact"
+    ></v-text-field>
+    <v-number-input
+      v-model="window_size"
+      :error-messages="window_sizeError"
+      label="Window Size"
+      density="compact"
+    ></v-number-input>
+    <v-number-input
+      v-model="step_size"
+      :error-messages="step_sizeError"
+      label="Step Size"
+      density="compact"
+    ></v-number-input>
+
     <v-textarea
       v-model="remarks"
       :error-messages="remarksError"

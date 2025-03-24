@@ -18,6 +18,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/dynamic_conf:/etc/traefik/dynamic_conf
       - ./traefik/logs:/logs
+
     networks:
       - traefik-ingress
     extra_hosts:
