@@ -367,11 +367,11 @@ ALTER TABLE ONLY public.events
 ALTER TABLE ONLY public.events
     ADD CONSTRAINT events_record_id_fkey FOREIGN KEY (record_id) REFERENCES public.records(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_inference_results
-    ADD CONSTRAINT fk_label FOREIGN KEY (label_id) REFERENCES public.labels(id);
+    ADD CONSTRAINT fk_label FOREIGN KEY (label_id) REFERENCES public.labels(id) ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_inference_results
-    ADD CONSTRAINT fk_model FOREIGN KEY (model_id) REFERENCES public.models(id);
+    ADD CONSTRAINT fk_model FOREIGN KEY (model_id) REFERENCES public.models(id) ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_inference_results
-    ADD CONSTRAINT fk_record FOREIGN KEY (record_id) REFERENCES public.records(id);
+    ADD CONSTRAINT fk_record FOREIGN KEY (record_id) REFERENCES public.records(id) ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_labels
     ADD CONSTRAINT model_labels_label_id_fkey FOREIGN KEY (label_id) REFERENCES public.labels(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_labels

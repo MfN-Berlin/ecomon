@@ -4,6 +4,7 @@ type DialogOptions = {
   okLabel?: string;
   cancelLabel?: string;
   persistent?: boolean;
+  icon?: string;
   width?: string;
 };
 
@@ -18,7 +19,8 @@ const defaultOptions: DialogOptions = {
   okLabel: "OK",
   cancelLabel: "Cancel",
   persistent: false,
-  width: "400px"
+  width: "400px",
+  icon: "mdi-help"
 };
 
 export const useDialogStore = defineStore("dialog", {
@@ -42,6 +44,13 @@ export const useDialogStore = defineStore("dialog", {
       this.callbackFn = callbackFn;
       this.visible = true;
       this.options = { ...defaultOptions, ...options };
+    },
+    onOk() {
+      this.callbackFn();
+      this.visible = false;
+    },
+    onCancel() {
+      this.visible = false;
     }
   }
 });

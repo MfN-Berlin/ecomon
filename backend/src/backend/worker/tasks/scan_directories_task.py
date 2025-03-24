@@ -8,7 +8,7 @@ from pathlib import Path
 from celery.utils.log import get_task_logger
 
 from backend.worker.app import app
-from backend.shared.models.db.models import Records
+from backend.shared.models.db.models import Records, Sites
 
 from backend.worker.tools import parse_datetime
 from backend.worker.settings import WorkerSettings
@@ -16,7 +16,7 @@ from backend.worker.services.job_service import JobService
 
 from backend.worker.database import db_session
 from backend.worker.tasks.base_task import BaseTask
-
+from backend.shared.models.db.record_error import RecordError, RecordErrorsEnum
 
 from backend.shared.consts import task_topic
 
@@ -40,7 +40,13 @@ BATCH_SIZE = 100
 def scan_directories_task(self, site_id: int, directories: list[str]):
     job_id = self.request.id
     session = db_session()
+
     try:
+        site = session.query(Sites).filter(Sites.id == site_id).first()
+        if not site:
+            raise ValueError(f"Site with id {site_id} not found")
+        # detach site from session
+        session.expunge(site)
         all_files = []
         for directory in directories:
             dir_path = (settings.base_data_directory / Path(directory)).resolve()
@@ -90,40 +96,85 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                 raise e
 
             if not exists:
+                errors = []
+                # Validate filename prefix
+                if not file_path.name.startswith(site.alias):
+                    errors.append(
+                        {
+                            "type": "filename_format",
+                            "message": f"Filename must start with {site.alias}",
+                        }
+                    )
+                record_datetime = None
+
                 try:
                     record_datetime = parse_datetime(file_path.stem)
+                except Exception as e:
+                    errors.append(
+                        {
+                            "type": RecordErrorsEnum.RECORD_DATETIME_FORMAT.value,
+                            "message": f"Error parsing record datetime: {str(e)}",
+                        }
+                    )
+
+                duration = None
+                sample_rate = None
+                channels = None
+                try:
                     with sf.SoundFile(file_path) as audio:
                         duration = audio.frames / audio.samplerate
                         channels = str(audio.channels)
                         sample_rate = audio.samplerate
-
-                    record = Records(
-                        site_id=site_id,
-                        filepath=str(file_path_relative_to_base_data_directory),
-                        filename=file_path.name,
-                        record_datetime=record_datetime,
-                        duration=float(duration),
-                        channels=channels,
-                        sample_rate=sample_rate,
-                        mime_type=f"audio/{file_path.suffix[1:].lower()}",
+                        if sample_rate != site.sample_rate:
+                            errors.append(
+                                {
+                                    "type": RecordErrorsEnum.SAMPLERATE_MISSMATCH.value,
+                                    "message": f"Sample rate mismatch: {sample_rate} != {site.sample_rate}",
+                                }
+                            )
+                        if (  # sometimes the duration is off by a fraction off 1/sample_rate
+                            duration + (1 / site.sample_rate)
+                            < site.record_regime_recording_duration
+                            or duration - (1 / site.sample_rate)
+                            > site.record_regime_recording_duration
+                        ):
+                            errors.append(
+                                {
+                                    "type": RecordErrorsEnum.DURATION_MISSMATCH.value,
+                                    "message": f"Duration mismatch: {duration} != {site.record_regime_recording_duration}",
+                                }
+                            )
+                except Exception as e:
+                    errors.append(
+                        {
+                            "type": RecordErrorsEnum.FILE_READ_ERROR.value,
+                            "message": f"Error reading file: {str(e)}",
+                        }
                     )
 
-                    session.add(record)
-                    current_batch += 1
-                    added_records += 1
+                record = Records(
+                    site_id=site_id,
+                    filepath=str(file_path_relative_to_base_data_directory),
+                    filename=file_path.name,
+                    record_datetime=record_datetime,
+                    duration=float(duration),
+                    channels=channels,
+                    sample_rate=sample_rate,
+                    mime_type=f"audio/{file_path.suffix[1:].lower()}",
+                    errors=errors if len(errors) > 0 else None,
+                )
 
-                    if current_batch >= BATCH_SIZE:
-                        session.commit()
-                        session.close()
-                        db_session.remove()
-                        session = db_session()
-                        current_batch = 0
-                        logger.info(f"Committed {idx}/{total_files} files")
+                session.add(record)
+                current_batch += 1
+                added_records += 1
 
-                except Exception as e:
-                    session.rollback()
-                    logger.error(f"Error processing {file_path}: {str(e)}")
+                if current_batch >= BATCH_SIZE:
+                    session.commit()
                     current_batch = 0
+                    logger.info(f"Committed {idx}/{total_files} files")
+                    session.close()
+                    db_session.remove()
+                    session = db_session()
 
             if (processed_files % max(1, total_files // 100)) == 0:
                 progress = int((processed_files / total_files) * 100)
@@ -132,7 +183,6 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                     session.commit()
                 except Exception as e:
                     logger.error(f"Progress update failed: {str(e)}")
-                    # Additional logging for debugging
                     logger.debug(f"Job ID: {job_id}, Progress: {progress}")
                     raise e
 
