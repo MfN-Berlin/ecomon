@@ -17,7 +17,6 @@ const { handleSubmit, handleReset, resetForm } = useForm({
 const dirty = useIsFormDirty();
 
 const { value: name, errorMessage: nameError } = useField("name");
-const { value: short_name, errorMessage: short_nameError } = useField("short_name");
 const { value: additional_docker_arguments, errorMessage: additional_docker_argumentsError } = useField(
   "additional_docker_arguments"
 );
@@ -48,8 +47,10 @@ const propsUpdateForm = () => {
   resetForm({
     values: {
       name: data?.name,
-      short_name: data?.short_name,
-      endpoint: data?.endpoint,
+      additional_docker_arguments: data?.additional_docker_arguments,
+      additional_model_arguments: data?.additional_model_arguments,
+      window_size: data?.window_size,
+      step_size: data?.step_size,
       remarks: data?.remarks
     }
   });
@@ -66,13 +67,14 @@ const propsUpdateForm = () => {
     @submit="submit"
     @reset="handleReset"
   >
-    <v-text-field v-model="name" :error-messages="nameError" label="Name" density="compact"></v-text-field>
     <v-text-field
-      v-model="short_name"
-      :error-messages="short_nameError"
-      label="Short Name"
+      v-model="name"
+      :disabled="data"
+      :error-messages="nameError"
+      label="Name"
       density="compact"
     ></v-text-field>
+
     <v-text-field
       v-model="additional_docker_arguments"
       :error-messages="additional_docker_argumentsError"

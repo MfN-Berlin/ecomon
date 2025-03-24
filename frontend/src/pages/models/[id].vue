@@ -14,15 +14,19 @@ const { mutate, isPending } = useModelUpdate();
       :data="{
         id: data?.id,
         name: data?.name,
-        short_name: data?.short_name,
-        endpoint: data?.endpoint,
+        additional_docker_arguments: data?.additional_docker_arguments,
+        additional_model_arguments: data?.additional_model_arguments,
+        window_size: data?.window_size,
+        step_size: data?.step_size,
         remarks: data?.remarks,
         created_at: data?.created_at,
         updated_at: data?.updated_at
       }"
       @submit="
         (data) => {
-          mutate(data);
+          const payload = { ...data };
+          delete payload.name;
+          mutate(payload);
         }
       "
     ></models-form>

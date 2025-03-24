@@ -33,14 +33,46 @@ query getModelById($id: Int!) {
   }
 }
 
-mutation insertModel($remarks: String = "", $name: String!) {
-  data: insert_models_one(object: { name: $name, remarks: $remarks }) {
+mutation insertModel(
+  $remarks: String = ""
+  $name: String!
+  $additional_docker_arguments: String = ""
+  $additional_model_arguments: String = ""
+  $window_size: Int
+  $step_size: Int
+) {
+  data: insert_models_one(
+    object: {
+      name: $name
+      remarks: $remarks
+      additional_docker_arguments: ""
+      additional_model_arguments: ""
+      window_size: 0
+      step_size: 0
+    }
+  ) {
     ...Model
   }
 }
 
-mutation updateModel($id: Int!, $name: String, $remarks: String) {
-  data: update_models_by_pk(pk_columns: { id: $id }, _set: { name: $name, remarks: $remarks }) {
+mutation updateModel(
+  $id: Int!
+  $remarks: String
+  $additional_docker_arguments: String
+  $additional_model_arguments: String
+  $window_size: Int
+  $step_size: Int
+) {
+  data: update_models_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      remarks: $remarks
+      additional_docker_arguments: $additional_docker_arguments
+      additional_model_arguments: $additional_model_arguments
+      window_size: $window_size
+      step_size: $step_size
+    }
+  ) {
     ...Model
   }
 }
