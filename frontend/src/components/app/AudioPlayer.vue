@@ -6,9 +6,18 @@ const player = ref<HTMLAudioElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const container = ref<HTMLElement | null>;
 
-useAVBars(player, canvas, {
-  barColor: "lime"
-});
+watch(
+  () => store.visible,
+  (value) => {
+    if (value) {
+      useAVBars(player, canvas, {
+        barColor: "lime"
+      });
+    } else {
+      player.value?.pause();
+    }
+  }
+);
 </script>
 
 <template>
