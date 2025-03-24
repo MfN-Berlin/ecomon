@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Record } from "#gql/default";
+
 definePageMeta({ layout: "default" });
 
 const {
@@ -50,7 +52,7 @@ function playAudio(filepath: string) {
       <template v-slot:thead>
         <BaseTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
       </template>
-      <template #item.actions="{ item }">
+      <template #item.actions="{ item }: { item: Record }">
         <v-toolbar density="compact" color="surface">
           <v-btn icon variant="text" size="small" @click="playAudio(item.filepath)">
             <v-icon>mdi-play</v-icon>
