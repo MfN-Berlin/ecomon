@@ -26,9 +26,9 @@ select_permissions:
         - id
         - name
         - remarks
-        - step_size
+        - step_duration
         - updated_at
-        - window_size
+        - segment_duration
       filter: {}
       allow_aggregations: true
     comment: ""
@@ -39,8 +39,8 @@ update_permissions:
         - additional_docker_arguments
         - additional_model_arguments
         - remarks
-        - step_size
-        - window_size
+        - step_duration
+        - segment_duration
       filter: {}
       check: null
     comment: ""

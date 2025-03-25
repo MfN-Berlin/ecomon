@@ -125,8 +125,8 @@ class Models(Base):
     )
     additional_docker_arguments = mapped_column(Text)
     additional_model_arguments = mapped_column(Text)
-    window_size = mapped_column(Integer)
-    step_size = mapped_column(Integer)
+    segment_duration = mapped_column(Integer)
+    step_duration = mapped_column(Integer)
     remarks = mapped_column(Text)
     updated_at = mapped_column(DateTime)
 

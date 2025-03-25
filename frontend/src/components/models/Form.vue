@@ -23,8 +23,8 @@ const { value: additional_docker_arguments, errorMessage: additional_docker_argu
 const { value: additional_model_arguments, errorMessage: additional_model_argumentsError } = useField(
   "additional_model_arguments"
 );
-const { value: window_size, errorMessage: window_sizeError } = useField("window_size");
-const { value: step_size, errorMessage: step_sizeError } = useField("step_size");
+const { value: segment_duration, errorMessage: segment_durationError } = useField("segment_duration");
+const { value: step_duration, errorMessage: step_durationError } = useField("step_duration");
 const { value: remarks, errorMessage: remarksError } = useField("remarks");
 
 const submit = handleSubmit((values) => emit("submit", { id: data?.id, ...values }));
@@ -49,8 +49,8 @@ const propsUpdateForm = () => {
       name: data?.name,
       additional_docker_arguments: data?.additional_docker_arguments,
       additional_model_arguments: data?.additional_model_arguments,
-      window_size: data?.window_size,
-      step_size: data?.step_size,
+      segment_duration: data?.segment_duration,
+      step_duration: data?.step_duration,
       remarks: data?.remarks
     }
   });
@@ -88,14 +88,14 @@ const propsUpdateForm = () => {
       density="compact"
     ></v-text-field>
     <v-number-input
-      v-model="window_size"
-      :error-messages="window_sizeError"
+      v-model="segment_duration"
+      :error-messages="segment_durationError"
       label="Window Size"
       density="compact"
     ></v-number-input>
     <v-number-input
-      v-model="step_size"
-      :error-messages="step_sizeError"
+      v-model="step_duration"
+      :error-messages="step_durationError"
       label="Step Size"
       density="compact"
     ></v-number-input>

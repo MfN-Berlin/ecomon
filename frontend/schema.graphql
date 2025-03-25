@@ -2888,9 +2888,9 @@ type models {
   ): model_labels_aggregate!
   name: String!
   remarks: String
-  step_size: Int
+  segment_duration: Int
+  step_duration: Int
   updated_at: timestamp
-  window_size: Int
 }
 
 """
@@ -2921,8 +2921,8 @@ type models_aggregate_fields {
 """aggregate avg on columns"""
 type models_avg_fields {
   id: Float
-  step_size: Float
-  window_size: Float
+  segment_duration: Float
+  step_duration: Float
 }
 
 """
@@ -2942,9 +2942,9 @@ input models_bool_exp {
   model_labels_aggregate: model_labels_aggregate_bool_exp
   name: String_comparison_exp
   remarks: String_comparison_exp
-  step_size: Int_comparison_exp
+  segment_duration: Int_comparison_exp
+  step_duration: Int_comparison_exp
   updated_at: timestamp_comparison_exp
-  window_size: Int_comparison_exp
 }
 
 """
@@ -2967,8 +2967,8 @@ input type for incrementing numeric columns in table "models"
 """
 input models_inc_input {
   id: Int
-  step_size: Int
-  window_size: Int
+  segment_duration: Int
+  step_duration: Int
 }
 
 """
@@ -2983,9 +2983,9 @@ input models_insert_input {
   model_labels: model_labels_arr_rel_insert_input
   name: String
   remarks: String
-  step_size: Int
+  segment_duration: Int
+  step_duration: Int
   updated_at: timestamp
-  window_size: Int
 }
 
 """aggregate max on columns"""
@@ -2996,9 +2996,9 @@ type models_max_fields {
   id: Int
   name: String
   remarks: String
-  step_size: Int
+  segment_duration: Int
+  step_duration: Int
   updated_at: timestamp
-  window_size: Int
 }
 
 """aggregate min on columns"""
@@ -3009,9 +3009,9 @@ type models_min_fields {
   id: Int
   name: String
   remarks: String
-  step_size: Int
+  segment_duration: Int
+  step_duration: Int
   updated_at: timestamp
-  window_size: Int
 }
 
 """
@@ -3054,9 +3054,9 @@ input models_order_by {
   model_labels_aggregate: model_labels_aggregate_order_by
   name: order_by
   remarks: order_by
-  step_size: order_by
+  segment_duration: order_by
+  step_duration: order_by
   updated_at: order_by
-  window_size: order_by
 }
 
 """primary key columns input for table: models"""
@@ -3087,13 +3087,13 @@ enum models_select_column {
   remarks
 
   """column name"""
-  step_size
+  segment_duration
+
+  """column name"""
+  step_duration
 
   """column name"""
   updated_at
-
-  """column name"""
-  window_size
 }
 
 """
@@ -3106,30 +3106,30 @@ input models_set_input {
   id: Int
   name: String
   remarks: String
-  step_size: Int
+  segment_duration: Int
+  step_duration: Int
   updated_at: timestamp
-  window_size: Int
 }
 
 """aggregate stddev on columns"""
 type models_stddev_fields {
   id: Float
-  step_size: Float
-  window_size: Float
+  segment_duration: Float
+  step_duration: Float
 }
 
 """aggregate stddev_pop on columns"""
 type models_stddev_pop_fields {
   id: Float
-  step_size: Float
-  window_size: Float
+  segment_duration: Float
+  step_duration: Float
 }
 
 """aggregate stddev_samp on columns"""
 type models_stddev_samp_fields {
   id: Float
-  step_size: Float
-  window_size: Float
+  segment_duration: Float
+  step_duration: Float
 }
 
 """
@@ -3151,16 +3151,16 @@ input models_stream_cursor_value_input {
   id: Int
   name: String
   remarks: String
-  step_size: Int
+  segment_duration: Int
+  step_duration: Int
   updated_at: timestamp
-  window_size: Int
 }
 
 """aggregate sum on columns"""
 type models_sum_fields {
   id: Int
-  step_size: Int
-  window_size: Int
+  segment_duration: Int
+  step_duration: Int
 }
 
 """
@@ -3186,13 +3186,13 @@ enum models_update_column {
   remarks
 
   """column name"""
-  step_size
+  segment_duration
+
+  """column name"""
+  step_duration
 
   """column name"""
   updated_at
-
-  """column name"""
-  window_size
 }
 
 input models_updates {
@@ -3209,22 +3209,22 @@ input models_updates {
 """aggregate var_pop on columns"""
 type models_var_pop_fields {
   id: Float
-  step_size: Float
-  window_size: Float
+  segment_duration: Float
+  step_duration: Float
 }
 
 """aggregate var_samp on columns"""
 type models_var_samp_fields {
   id: Float
-  step_size: Float
-  window_size: Float
+  segment_duration: Float
+  step_duration: Float
 }
 
 """aggregate variance on columns"""
 type models_variance_fields {
   id: Float
-  step_size: Float
-  window_size: Float
+  segment_duration: Float
+  step_duration: Float
 }
 
 """mutation root"""

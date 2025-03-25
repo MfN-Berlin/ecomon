@@ -28,8 +28,13 @@ const headers = [
     align: "end",
     search: { operator: "_like", type: "text" }
   },
-  { title: "window_size", key: "window_size", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "step_size", key: "step_size", align: "end", search: { operator: "_eq", type: "number" } }
+  {
+    title: "segment_duration",
+    key: "segment_duration",
+    align: "end",
+    search: { operator: "_eq", type: "number" }
+  },
+  { title: "step_duration", key: "step_duration", align: "end", search: { operator: "_eq", type: "number" } }
 ] as const;
 </script>
 

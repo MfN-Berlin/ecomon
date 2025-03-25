@@ -3,8 +3,8 @@ fragment Model on models {
   name
   additional_docker_arguments
   additional_model_arguments
-  window_size
-  step_size
+  segment_duration
+  step_duration
   remarks
   updated_at
   created_at
@@ -38,8 +38,8 @@ mutation insertModel(
   $name: String!
   $additional_docker_arguments: String = ""
   $additional_model_arguments: String = ""
-  $window_size: Int
-  $step_size: Int
+  $segment_duration: Int
+  $step_duration: Int
 ) {
   data: insert_models_one(
     object: {
@@ -47,8 +47,8 @@ mutation insertModel(
       remarks: $remarks
       additional_docker_arguments: ""
       additional_model_arguments: ""
-      window_size: 0
-      step_size: 0
+      segment_duration: 0
+      step_duration: 0
     }
   ) {
     ...Model
@@ -60,8 +60,8 @@ mutation updateModel(
   $remarks: String
   $additional_docker_arguments: String
   $additional_model_arguments: String
-  $window_size: Int
-  $step_size: Int
+  $segment_duration: Int
+  $step_duration: Int
 ) {
   data: update_models_by_pk(
     pk_columns: { id: $id }
@@ -69,8 +69,8 @@ mutation updateModel(
       remarks: $remarks
       additional_docker_arguments: $additional_docker_arguments
       additional_model_arguments: $additional_model_arguments
-      window_size: $window_size
-      step_size: $step_size
+      segment_duration: $segment_duration
+      step_duration: $step_duration
     }
   ) {
     ...Model

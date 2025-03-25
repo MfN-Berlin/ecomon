@@ -25,8 +25,6 @@ This platform to analyze the audio monitoring data project.
 - **[Traefik](https://traefik.io/)**: A modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
 - **[Redis](https://redis.io/)**: An open-source, in-memory data structure store, used as a database, cache, and message broker used for communication between FastAPI and Celery.
 
-
-
 ## Architekture
 
 ![Architekture](./docs/architekture.png)
@@ -50,13 +48,15 @@ For local Development you need docker, nodejs, poetry, python3.10 installed on y
 11. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql endpoint
 
 ### Production
+
 1. Copy production_env_default to .env and change the variables to your own a
 2. To start production environment run `docker compose -f docker-compose.production.yaml up -d`
-3. Import labels from csv with inside the production container 
+3. Import labels from csv with inside the production container
+
 ```bash
 # find api container
 docker ps | grep api
-# example output: 
+# example output:
 # d150cb190c58   akwamo-webservice-next-api     ...
 # attach shell to container
 docker exec -it d150cb190c58 /bin/bash
@@ -66,8 +66,10 @@ poetry run download-labels && poetry run update-labels
 exit
 ```
 
-*** Prepare Inference Models ***
+**_ Prepare Inference Models _**
+
 1. Download the model which are needed for the inference to the infercen host
+
 ```bash
 # download the model
 scp -r /path/to/model user@infercen-host:/path/to/model
@@ -75,5 +77,8 @@ scp -r /path/to/model user@infercen-host:/path/to/model
 unzip model.zip
 ```
 
+TODO:
+create_voucher
+Create_Random Sample
 
-   echo "" | docker login ghcr.io -u your-username --password-stdin
+Random sample nur für eine art

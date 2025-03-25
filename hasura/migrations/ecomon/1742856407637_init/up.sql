@@ -152,8 +152,8 @@ CREATE TABLE public.models (
     name text NOT NULL,
     additional_docker_arguments text,
     additional_model_arguments text,
-    window_size integer,
-    step_size integer,
+    segment_duration integer,
+    step_duration integer,
     remarks text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone

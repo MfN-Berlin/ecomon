@@ -8,8 +8,8 @@ const modelSchema = z.object({
   name: z.string(),
   additional_docker_arguments: z.string().optional().nullable(),
   additional_model_arguments: z.string().optional().nullable(),
-  window_size: z.number().optional().nullable(),
-  step_size: z.number().optional().nullable(),
+  segment_duration: z.number().optional().nullable(),
+  step_duration: z.number().optional().nullable(),
   remarks: z.string().optional().nullable()
 });
 

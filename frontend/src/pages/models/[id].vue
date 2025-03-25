@@ -16,8 +16,8 @@ const { mutate, isPending } = useModelUpdate();
         name: data?.name,
         additional_docker_arguments: data?.additional_docker_arguments,
         additional_model_arguments: data?.additional_model_arguments,
-        window_size: data?.window_size,
-        step_size: data?.step_size,
+        segment_duration: data?.segment_duration,
+        step_duration: data?.step_duration,
         remarks: data?.remarks,
         created_at: data?.created_at,
         updated_at: data?.updated_at

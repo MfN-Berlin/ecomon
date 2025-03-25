@@ -92,8 +92,11 @@ services:
       - 6379:6379
     networks:
       - ecomon
+    volumes:
+      - redis_data:/data
 volumes:
   ecomon_data:
+  redis_data:
 
 networks:
   ecomon:
