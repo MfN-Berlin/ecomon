@@ -1,9 +1,7 @@
 // plugins/graphql-subscription.ts
 import type {
   SubscripeReportsBySiteIdSubscription,
-  SubscripeReportsBySiteIdSubscriptionVariables,
-  CreateSiteDataReportMutationVariables,
-  CreateSiteDataReportMutation
+  SubscripeReportsBySiteIdSubscriptionVariables
 } from "#gql/default";
 import { SubscripeReportsBySiteIdDocument } from "#gql/default";
 

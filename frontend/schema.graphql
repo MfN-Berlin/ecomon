@@ -2105,8 +2105,17 @@ type model_inference_results {
   confidence: Float!
   end_time: numeric!
   id: bigint!
+
+  """An object relationship"""
+  label: labels!
   label_id: Int!
+
+  """An object relationship"""
+  model: models!
   model_id: Int!
+
+  """An object relationship"""
+  record: records!
   record_id: bigint!
   start_time: numeric!
 }
@@ -2157,8 +2166,11 @@ input model_inference_results_bool_exp {
   confidence: Float_comparison_exp
   end_time: numeric_comparison_exp
   id: bigint_comparison_exp
+  label: labels_bool_exp
   label_id: Int_comparison_exp
+  model: models_bool_exp
   model_id: Int_comparison_exp
+  record: records_bool_exp
   record_id: bigint_comparison_exp
   start_time: numeric_comparison_exp
 }
@@ -2193,8 +2205,11 @@ input model_inference_results_insert_input {
   confidence: Float
   end_time: numeric
   id: bigint
+  label: labels_obj_rel_insert_input
   label_id: Int
+  model: models_obj_rel_insert_input
   model_id: Int
+  record: records_obj_rel_insert_input
   record_id: bigint
   start_time: numeric
 }
@@ -2246,8 +2261,11 @@ input model_inference_results_order_by {
   confidence: order_by
   end_time: order_by
   id: order_by
+  label: labels_order_by
   label_id: order_by
+  model: models_order_by
   model_id: order_by
+  record: records_order_by
   record_id: order_by
   start_time: order_by
 }

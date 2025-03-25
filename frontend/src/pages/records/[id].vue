@@ -7,7 +7,7 @@ const { data, isFetching } = useRecordGet(id);
 const { mutate, isPending } = useRecordUpdate();
 </script>
 <template>
-  <v-container>
+  <v-container class="">
     <v-row>
       <v-col cols="12" md="6">
         <records-form
@@ -41,7 +41,9 @@ const { mutate, isPending } = useRecordUpdate();
           max-width="800"
         />
       </v-col>
-      <v-col cols="12" md="3"> </v-col>
+      <v-col cols="12" md="6">
+        <infrence-results-table :record-id="id"></infrence-results-table>
+      </v-col>
     </v-row>
   </v-container>
 </template>

@@ -83,19 +83,21 @@ const propsUpdateForm = () => {
       :error-messages="filepathError"
       label="Filepath"
       density="compact"
+      readonly
     ></v-text-field>
     <v-text-field
       v-model="filename"
       :error-messages="filenameError"
       label="Filename"
       density="compact"
+      readonly
     ></v-text-field>
-    <common-date-time-picker
+    <v-text-field
       v-model="record_datetime"
       :error-messages="record_datetimeError"
       label="Record Datetime"
       density="compact"
-    ></common-date-time-picker>
+    ></v-text-field>
     <v-text-field
       v-model="duration"
       :error-messages="durationError"
@@ -121,7 +123,7 @@ const propsUpdateForm = () => {
       density="compact"
     ></v-text-field>
     <v-container class="d-flex justify-center">
-      <common-play-button :src="`${config.public.API_BASE_URL}/static/files/${data?.filepath}`" />
+      <app-play-button :src="`${config.public.API_BASE_URL}/static/files/${data?.filepath}`" />
     </v-container>
   </BaseForm>
 </template>

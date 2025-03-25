@@ -1,0 +1,27 @@
+query getRecordModelInferenceResults(
+  $limit: Int = 10
+  $offset: Int = 0
+  $order_by: [model_inference_results_order_by!] = { start_time: asc }
+  $where: model_inference_results_bool_exp = {}
+) {
+  items: model_inference_results(where: $where, order_by: $order_by, limit: $limit, offset: $offset) {
+    id
+    model_id
+    model {
+      name
+    }
+    record_id
+    label {
+      id
+      name
+    }
+    start_time
+    end_time
+    confidence
+  }
+  total: model_inference_results_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}

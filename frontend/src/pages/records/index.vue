@@ -14,7 +14,6 @@ const {
   handleSearch
 } = useRecordsPagniated();
 
-const store = useAudioPlayerStore();
 const config = useRuntimeConfig();
 const headers = [
   { title: "", key: "actions", align: "end", sortable: false, search: false },
@@ -27,17 +26,11 @@ const headers = [
   { title: "record_datetime", key: "record_datetime", align: "end", search: false },
   { title: "sample_rate", key: "sample_rate", align: "end", search: { operator: "_eq", type: "number" } }
 ] as const;
-const source = ref<string | undefined>(undefined);
-function playAudio(filepath: string) {
-  const url = `${config.public.API_BASE_URL}/static/files/${filepath}`;
-  store.play(url);
-}
 </script>
 
 <template>
   <v-container>
     <!-- <audio controls autoplay :src="source"></audio> -->
-    <av-bars :src="source" bar-color="#CCC"></av-bars>
     <v-data-table-server
       v-model:items-per-page="itemsPerPage"
       v-model:page="page"
@@ -53,7 +46,7 @@ function playAudio(filepath: string) {
       </template>
       <template #item.actions="{ item }: { item: Record }">
         <v-toolbar density="compact" color="surface">
-          <common-play-button
+          <app-play-button
             :src="`${config.public.API_BASE_URL}/static/files/${item.filepath}`"
             variant="text"
             size="small"

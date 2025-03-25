@@ -14,7 +14,8 @@ export const enum QUERY_KEYS {
   siteReportsDailyHistogram = "siteReportsDailyHistogram",
   siteReportsDurationHistogram = "siteReportsDurationHistogram",
   siteReportsRecordsHeatmap = "siteReportsRecordsHeatmap",
-  siteFirstLastRecordDate = "siteFirstLastRecordDate"
+  siteFirstLastRecordDate = "siteFirstLastRecordDate",
+  recordModelInferenceResults = "recordModelInferenceResults"
 }
 
 export const enum RECORD_ERRORS {
