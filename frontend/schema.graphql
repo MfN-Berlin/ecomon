@@ -13,6 +13,21 @@ directive @cached(
   refresh: Boolean! = false
 ) on QUERY
 
+"""
+Boolean expression to compare columns of type "Boolean". All fields are combined with logical 'AND'.
+"""
+input Boolean_comparison_exp {
+  _eq: Boolean
+  _gt: Boolean
+  _gte: Boolean
+  _in: [Boolean!]
+  _is_null: Boolean
+  _lt: Boolean
+  _lte: Boolean
+  _neq: Boolean
+  _nin: [Boolean!]
+}
+
 type CancelJobResponse {
   jobId: Int
   message: String
@@ -1826,6 +1841,263 @@ type locations_variance_fields {
   long: Float
 }
 
+"""For every record analysed by and a model an entry willl be created"""
+type model_inference_logs {
+  analyzed: Boolean
+  id: bigint!
+  model_id: bigint!
+  record_id: bigint!
+}
+
+"""
+aggregated selection of "model_inference_logs"
+"""
+type model_inference_logs_aggregate {
+  aggregate: model_inference_logs_aggregate_fields
+  nodes: [model_inference_logs!]!
+}
+
+"""
+aggregate fields of "model_inference_logs"
+"""
+type model_inference_logs_aggregate_fields {
+  avg: model_inference_logs_avg_fields
+  count(columns: [model_inference_logs_select_column!], distinct: Boolean): Int!
+  max: model_inference_logs_max_fields
+  min: model_inference_logs_min_fields
+  stddev: model_inference_logs_stddev_fields
+  stddev_pop: model_inference_logs_stddev_pop_fields
+  stddev_samp: model_inference_logs_stddev_samp_fields
+  sum: model_inference_logs_sum_fields
+  var_pop: model_inference_logs_var_pop_fields
+  var_samp: model_inference_logs_var_samp_fields
+  variance: model_inference_logs_variance_fields
+}
+
+"""aggregate avg on columns"""
+type model_inference_logs_avg_fields {
+  id: Float
+  model_id: Float
+  record_id: Float
+}
+
+"""
+Boolean expression to filter rows from the table "model_inference_logs". All fields are combined with a logical 'AND'.
+"""
+input model_inference_logs_bool_exp {
+  _and: [model_inference_logs_bool_exp!]
+  _not: model_inference_logs_bool_exp
+  _or: [model_inference_logs_bool_exp!]
+  analyzed: Boolean_comparison_exp
+  id: bigint_comparison_exp
+  model_id: bigint_comparison_exp
+  record_id: bigint_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "model_inference_logs"
+"""
+enum model_inference_logs_constraint {
+  """
+  unique or primary key constraint on columns "model_id", "record_id"
+  """
+  model_inference_log_model_id_record_id_key
+
+  """
+  unique or primary key constraint on columns "id"
+  """
+  model_inference_logs_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "model_inference_logs"
+"""
+input model_inference_logs_inc_input {
+  id: bigint
+  model_id: bigint
+  record_id: bigint
+}
+
+"""
+input type for inserting data into table "model_inference_logs"
+"""
+input model_inference_logs_insert_input {
+  analyzed: Boolean
+  id: bigint
+  model_id: bigint
+  record_id: bigint
+}
+
+"""aggregate max on columns"""
+type model_inference_logs_max_fields {
+  id: bigint
+  model_id: bigint
+  record_id: bigint
+}
+
+"""aggregate min on columns"""
+type model_inference_logs_min_fields {
+  id: bigint
+  model_id: bigint
+  record_id: bigint
+}
+
+"""
+response of any mutation on the table "model_inference_logs"
+"""
+type model_inference_logs_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [model_inference_logs!]!
+}
+
+"""
+on_conflict condition type for table "model_inference_logs"
+"""
+input model_inference_logs_on_conflict {
+  constraint: model_inference_logs_constraint!
+  update_columns: [model_inference_logs_update_column!]! = []
+  where: model_inference_logs_bool_exp
+}
+
+"""Ordering options when selecting data from "model_inference_logs"."""
+input model_inference_logs_order_by {
+  analyzed: order_by
+  id: order_by
+  model_id: order_by
+  record_id: order_by
+}
+
+"""primary key columns input for table: model_inference_logs"""
+input model_inference_logs_pk_columns_input {
+  id: bigint!
+}
+
+"""
+select columns of table "model_inference_logs"
+"""
+enum model_inference_logs_select_column {
+  """column name"""
+  analyzed
+
+  """column name"""
+  id
+
+  """column name"""
+  model_id
+
+  """column name"""
+  record_id
+}
+
+"""
+input type for updating data in table "model_inference_logs"
+"""
+input model_inference_logs_set_input {
+  analyzed: Boolean
+  id: bigint
+  model_id: bigint
+  record_id: bigint
+}
+
+"""aggregate stddev on columns"""
+type model_inference_logs_stddev_fields {
+  id: Float
+  model_id: Float
+  record_id: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type model_inference_logs_stddev_pop_fields {
+  id: Float
+  model_id: Float
+  record_id: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type model_inference_logs_stddev_samp_fields {
+  id: Float
+  model_id: Float
+  record_id: Float
+}
+
+"""
+Streaming cursor of the table "model_inference_logs"
+"""
+input model_inference_logs_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: model_inference_logs_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input model_inference_logs_stream_cursor_value_input {
+  analyzed: Boolean
+  id: bigint
+  model_id: bigint
+  record_id: bigint
+}
+
+"""aggregate sum on columns"""
+type model_inference_logs_sum_fields {
+  id: bigint
+  model_id: bigint
+  record_id: bigint
+}
+
+"""
+update columns of table "model_inference_logs"
+"""
+enum model_inference_logs_update_column {
+  """column name"""
+  analyzed
+
+  """column name"""
+  id
+
+  """column name"""
+  model_id
+
+  """column name"""
+  record_id
+}
+
+input model_inference_logs_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: model_inference_logs_inc_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: model_inference_logs_set_input
+
+  """filter the rows which have to be updated"""
+  where: model_inference_logs_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type model_inference_logs_var_pop_fields {
+  id: Float
+  model_id: Float
+  record_id: Float
+}
+
+"""aggregate var_samp on columns"""
+type model_inference_logs_var_samp_fields {
+  id: Float
+  model_id: Float
+  record_id: Float
+}
+
+"""aggregate variance on columns"""
+type model_inference_logs_variance_fields {
+  id: Float
+  model_id: Float
+  record_id: Float
+}
+
 """
 columns and relationships of "model_inference_results"
 """
@@ -3014,6 +3286,19 @@ type mutation_root {
   delete_locations_by_pk(id: bigint!): locations
 
   """
+  delete data from the table: "model_inference_logs"
+  """
+  delete_model_inference_logs(
+    """filter the rows which have to be deleted"""
+    where: model_inference_logs_bool_exp!
+  ): model_inference_logs_mutation_response
+
+  """
+  delete single row from the table: "model_inference_logs"
+  """
+  delete_model_inference_logs_by_pk(id: bigint!): model_inference_logs
+
+  """
   delete data from the table: "model_inference_results"
   """
   delete_model_inference_results(
@@ -3231,6 +3516,28 @@ type mutation_root {
     """upsert condition"""
     on_conflict: locations_on_conflict
   ): locations
+
+  """
+  insert data into the table: "model_inference_logs"
+  """
+  insert_model_inference_logs(
+    """the rows to be inserted"""
+    objects: [model_inference_logs_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: model_inference_logs_on_conflict
+  ): model_inference_logs_mutation_response
+
+  """
+  insert a single row into the table: "model_inference_logs"
+  """
+  insert_model_inference_logs_one(
+    """the row to be inserted"""
+    object: model_inference_logs_insert_input!
+
+    """upsert condition"""
+    on_conflict: model_inference_logs_on_conflict
+  ): model_inference_logs
 
   """
   insert data into the table: "model_inference_results"
@@ -3631,6 +3938,40 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [locations_updates!]!
   ): [locations_mutation_response]
+
+  """
+  update data of the table: "model_inference_logs"
+  """
+  update_model_inference_logs(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_inference_logs_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_inference_logs_set_input
+
+    """filter the rows which have to be updated"""
+    where: model_inference_logs_bool_exp!
+  ): model_inference_logs_mutation_response
+
+  """
+  update single row of the table: "model_inference_logs"
+  """
+  update_model_inference_logs_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_inference_logs_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_inference_logs_set_input
+    pk_columns: model_inference_logs_pk_columns_input!
+  ): model_inference_logs
+
+  """
+  update multiples rows of table: "model_inference_logs"
+  """
+  update_model_inference_logs_many(
+    """updates to execute, in order"""
+    updates: [model_inference_logs_updates!]!
+  ): [model_inference_logs_mutation_response]
 
   """
   update data of the table: "model_inference_results"
@@ -4268,6 +4609,51 @@ type query_root {
 
   """fetch data from the table: "locations" using primary key columns"""
   locations_by_pk(id: bigint!): locations
+
+  """
+  fetch data from the table: "model_inference_logs"
+  """
+  model_inference_logs(
+    """distinct select on columns"""
+    distinct_on: [model_inference_logs_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_logs_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_logs_bool_exp
+  ): [model_inference_logs!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_logs"
+  """
+  model_inference_logs_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_logs_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_logs_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_logs_bool_exp
+  ): model_inference_logs_aggregate!
+
+  """
+  fetch data from the table: "model_inference_logs" using primary key columns
+  """
+  model_inference_logs_by_pk(id: bigint!): model_inference_logs
 
   """
   fetch data from the table: "model_inference_results"
@@ -8555,6 +8941,65 @@ type subscription_root {
     """filter the rows returned"""
     where: locations_bool_exp
   ): [locations!]!
+
+  """
+  fetch data from the table: "model_inference_logs"
+  """
+  model_inference_logs(
+    """distinct select on columns"""
+    distinct_on: [model_inference_logs_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_logs_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_logs_bool_exp
+  ): [model_inference_logs!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_logs"
+  """
+  model_inference_logs_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_logs_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_logs_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_logs_bool_exp
+  ): model_inference_logs_aggregate!
+
+  """
+  fetch data from the table: "model_inference_logs" using primary key columns
+  """
+  model_inference_logs_by_pk(id: bigint!): model_inference_logs
+
+  """
+  fetch data from the table in a streaming manner: "model_inference_logs"
+  """
+  model_inference_logs_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [model_inference_logs_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: model_inference_logs_bool_exp
+  ): [model_inference_logs!]!
 
   """
   fetch data from the table: "model_inference_results"

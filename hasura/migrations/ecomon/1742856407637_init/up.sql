@@ -110,13 +110,13 @@ CREATE TABLE public.model_inference_logs (
     id bigint NOT NULL
 );
 COMMENT ON TABLE public.model_inference_logs IS 'For every record analysed by and a model an entry willl be created';
-CREATE SEQUENCE public.model_inference_log_id_seq
+CREATE SEQUENCE public.model_inference_logs_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-ALTER SEQUENCE public.model_inference_log_id_seq OWNED BY public.model_inference_logs.id;
+ALTER SEQUENCE public.model_inference_logs_id_seq OWNED BY public.model_inference_logs.id;
 CREATE TABLE public.model_inference_results (
     id bigint NOT NULL,
     record_id bigint NOT NULL,
@@ -299,7 +299,7 @@ ALTER TABLE ONLY public.events ALTER COLUMN id SET DEFAULT nextval('public.event
 ALTER TABLE ONLY public.jobs ALTER COLUMN id SET DEFAULT nextval('public.jobs_id_seq'::regclass);
 ALTER TABLE ONLY public.labels ALTER COLUMN id SET DEFAULT nextval('public.labels_id_seq'::regclass);
 ALTER TABLE ONLY public.locations ALTER COLUMN id SET DEFAULT nextval('public.location_id_seq'::regclass);
-ALTER TABLE ONLY public.model_inference_logs ALTER COLUMN id SET DEFAULT nextval('public.model_inference_log_id_seq'::regclass);
+ALTER TABLE ONLY public.model_inference_logs ALTER COLUMN id SET DEFAULT nextval('public.model_inference_logs_id_seq'::regclass);
 ALTER TABLE ONLY public.model_inference_results ALTER COLUMN id SET DEFAULT nextval('public.model_inference_results_id_seq'::regclass);
 ALTER TABLE ONLY public.model_labels ALTER COLUMN id SET DEFAULT nextval('public.model_labels_id_seq'::regclass);
 ALTER TABLE ONLY public.models ALTER COLUMN id SET DEFAULT nextval('public.models_id_seq'::regclass);
@@ -325,7 +325,7 @@ ALTER TABLE ONLY public.locations
 ALTER TABLE ONLY public.model_inference_logs
     ADD CONSTRAINT model_inference_log_model_id_record_id_key UNIQUE (model_id, record_id);
 ALTER TABLE ONLY public.model_inference_logs
-    ADD CONSTRAINT model_inference_log_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT model_inference_logs_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.model_inference_results
     ADD CONSTRAINT model_inference_results_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.model_labels
@@ -391,9 +391,9 @@ ALTER TABLE ONLY public.model_inference_results
 ALTER TABLE ONLY public.model_inference_results
     ADD CONSTRAINT fk_record FOREIGN KEY (record_id) REFERENCES public.records(id) ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_inference_logs
-    ADD CONSTRAINT model_inference_log_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT model_inference_logs_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_inference_logs
-    ADD CONSTRAINT model_inference_log_record_id_fkey FOREIGN KEY (record_id) REFERENCES public.records(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT model_inference_logs_record_id_fkey FOREIGN KEY (record_id) REFERENCES public.records(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_labels
     ADD CONSTRAINT model_labels_label_id_fkey FOREIGN KEY (label_id) REFERENCES public.labels(id) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY public.model_labels

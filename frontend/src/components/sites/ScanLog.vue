@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { loggers } from "winston";
-
 const props = defineProps<{
   siteId: number;
 }>();

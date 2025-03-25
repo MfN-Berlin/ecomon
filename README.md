@@ -25,6 +25,8 @@ This platform to analyze the audio monitoring data project.
 - **[Traefik](https://traefik.io/)**: A modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
 - **[Redis](https://redis.io/)**: An open-source, in-memory data structure store, used as a database, cache, and message broker used for communication between FastAPI and Celery.
 
+
+
 ## Architekture
 
 ![Architekture](./docs/architekture.png)
@@ -63,3 +65,15 @@ poetry run download-labels && poetry run update-labels
 # exit container
 exit
 ```
+
+*** Prepare Inference Models ***
+1. Download the model which are needed for the inference to the infercen host
+```bash
+# download the model
+scp -r /path/to/model user@infercen-host:/path/to/model
+# unzip the model
+unzip model.zip
+```
+
+
+   echo "" | docker login ghcr.io -u your-username --password-stdin

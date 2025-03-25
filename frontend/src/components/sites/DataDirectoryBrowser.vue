@@ -108,12 +108,12 @@ const isAlreadyAdded = computed(() => {
             <template #prepend>
               <v-icon>mdi-folder</v-icon>
             </template>
+            <v-list-item-title @click="handleClick(item.path)">{{ item.name }}</v-list-item-title>
             <template #append>
-              <v-item v-show="!isAlreadyAdded(item?.path)" v-slot="{ isSelected, toggle }">
+              <v-item v-slot="{ isSelected, toggle }">
                 <v-checkbox-btn :value="isSelected" density="compact" @click="toggle"></v-checkbox-btn>
               </v-item>
             </template>
-            <v-list-item-title @click="handleClick(item.path)">{{ item.name }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-item-group>

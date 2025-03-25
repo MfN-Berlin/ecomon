@@ -2,7 +2,7 @@
 - "!include public_jobs.yaml"
 - "!include public_labels.yaml"
 - "!include public_locations.yaml"
-- "!include public_model_inference_log.yaml"
+- "!include public_model_inference_logs.yaml"
 - "!include public_model_inference_results.yaml"
 - "!include public_model_labels.yaml"
 - "!include public_models.yaml"

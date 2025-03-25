@@ -118,7 +118,7 @@ function skipAllSyncs() {
           <template v-slot:activator="{ props }">
             <v-btn
               prepend-icon="mdi-plus"
-              class="mr-4"
+              class="mr-4 ml-2"
               color="primary"
               variant="tonal"
               v-bind="props"
@@ -192,12 +192,12 @@ function skipAllSyncs() {
         </template>
       </v-list-item>
     </v-list>
+    <v-dialog v-model="showAddDialog" persistent max-width="500px">
+      <sites-data-directory-browser
+        :directories="data.map((item) => item.directory)"
+        @select="handleSubmit"
+        @cancel="showAddDialog = false"
+      />
+    </v-dialog>
   </v-sheet>
-  <v-dialog v-model="showAddDialog" persistent max-width="500px">
-    <sites-data-directory-browser
-      :directories="data.map((item) => item.directory)"
-      @select="handleSubmit"
-      @cancel="showAddDialog = false"
-    />
-  </v-dialog>
 </template>

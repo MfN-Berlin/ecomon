@@ -158,7 +158,9 @@ def model_inference_site_task(
                 "--rm",  # remove the container after running
                 *docker_volumes,
                 *(
-                    [f"--gpus {settings.use_gpu}"] if settings.use_gpu != "none" else []
+                    [f"--gpus {settings.use_gpu}"]
+                    if settings.use_gpu.lower() != "none"
+                    else []
                 ),  # gpu
                 *(
                     [model.additional_docker_arguments]  # additional docker arguments

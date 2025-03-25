@@ -1,5 +1,5 @@
 table:
-  name: model_inference_log
+  name: model_inference_logs
   schema: public
 select_permissions:
   - role: user
