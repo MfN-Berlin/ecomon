@@ -17,7 +17,7 @@ const { handleSubmit, handleReset, resetForm } = useForm({
 const dirty = useIsFormDirty();
 
 const { value: name, errorMessage: nameError } = useField<Site["name"]>("name");
-const { value: alias, errorMessage: aliasError } = useField<Site["alias"]>("alias");
+const { value: prefix, errorMessage: prefixError } = useField<Site["prefix"]>("prefix");
 const { value: location_id, errorMessage: location_idError } = useField<Site["location_id"]>("location_id");
 const { value: record_regime_recording_duration, errorMessage: record_regime_recording_durationError } =
   useField<Site["record_regime_recording_duration"]>("record_regime_recording_duration");
@@ -47,7 +47,7 @@ const propsUpdateForm = () => {
   resetForm({
     values: {
       name: data?.name,
-      alias: data?.alias,
+      prefix: data?.prefix,
       location_id: data?.location_id,
       record_regime_recording_duration: data?.record_regime_recording_duration,
       record_regime_pause_duration: data?.record_regime_pause_duration,
@@ -88,7 +88,12 @@ const markers = computed(() => {
   >
     <BaseMap :markers="markers" height="200px" />
     <v-text-field v-model="name" :error-messages="nameError" label="Name" density="compact"></v-text-field>
-    <v-text-field v-model="alias" :error-messages="aliasError" label="Alias" density="compact"></v-text-field>
+    <v-text-field
+      v-model="prefix"
+      :error-messages="prefixError"
+      label="prefix"
+      density="compact"
+    ></v-text-field>
 
     <v-select
       v-model="location_id"

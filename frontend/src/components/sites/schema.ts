@@ -7,7 +7,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 const SiteSchema = z
   .object({
     name: z.string(),
-    alias: z.string(),
+    prefix: z.string(),
     location_id: z.number(),
     record_regime_recording_duration: z.number(),
     record_regime_pause_duration: z.number(),

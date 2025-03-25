@@ -17,7 +17,7 @@ const { mutate, isPending } = useSiteUpdate();
           :data="{
             id: data?.id,
             name: data?.name,
-            alias: data?.alias,
+            prefix: data?.prefix,
             location_id: data.location?.id,
             record_regime_recording_duration: data?.record_regime_recording_duration,
             record_regime_pause_duration: data?.record_regime_pause_duration,

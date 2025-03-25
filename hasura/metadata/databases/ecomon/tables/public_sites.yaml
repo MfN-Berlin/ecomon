@@ -39,7 +39,7 @@ insert_permissions:
     permission:
       check: {}
       columns:
-        - alias
+        - prefix
         - location_id
         - name
         - record_regime_pause_duration
@@ -56,7 +56,7 @@ select_permissions:
         - sample_rate
         - record_regime_pause_duration
         - record_regime_recording_duration
-        - alias
+        - prefix
         - name
         - remarks
         - created_at
@@ -68,7 +68,7 @@ update_permissions:
   - role: user
     permission:
       columns:
-        - alias
+        - prefix
         - location_id
         - name
         - record_regime_pause_duration

@@ -72,7 +72,7 @@ def create_dummy_data(db_url: str, num_entries: int = 5):
                 location_id=locations[i].id,  # This ensures we use a valid location_id
                 sample_rate=random.choice([44100, 48000, 96000]),
                 remarks=fake.text(max_nb_chars=200),
-                alias=f"SITE_{fake.lexify(text='???').upper()}",
+                prefix=f"SITE_{fake.lexify(text='???').upper()}",
                 record_regime_recording_duration=random.choice([300, 600]),
                 record_regime_pause_duration=random.choice([0, 60, 300]),
             )

@@ -98,11 +98,11 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
             if not exists:
                 errors = []
                 # Validate filename prefix
-                if not file_path.name.startswith(site.alias):
+                if not file_path.name.startswith(site.prefix):
                     errors.append(
                         {
                             "type": f"{RecordErrorsEnum.MISSING_FILE_PREFIX.value}",
-                            "message": f"Filename must start with {site.alias}",
+                            "message": f"Filename must start with {site.prefix}",
                         }
                     )
                 record_datetime = None

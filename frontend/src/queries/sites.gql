@@ -11,7 +11,7 @@ fragment Site on sites {
     id
     directory
   }
-  alias
+  prefix
   sample_rate
   location {
     id
@@ -26,7 +26,7 @@ fragment Site on sites {
 fragment SiteList on sites {
   id
   name
-  alias
+  prefix
   remarks
   created_at
   updated_at
@@ -58,7 +58,7 @@ query getSiteById($id: bigint!) {
 mutation insertSite(
   $remarks: String = ""
   $name: String!
-  $alias: String!
+  $prefix: String!
   $sample_rate: Int!
   $record_regime_pause_duration: numeric!
   $record_regime_recording_duration: numeric!
@@ -67,7 +67,7 @@ mutation insertSite(
   data: insert_sites_one(
     object: {
       name: $name
-      alias: $alias
+      prefix: $prefix
       remarks: $remarks
       location_id: $location_id
       sample_rate: $sample_rate
@@ -81,7 +81,7 @@ mutation insertSite(
 mutation updateSite(
   $id: bigint!
   $name: String!
-  $alias: String = ""
+  $prefix: String = ""
   $remarks: String = ""
   $location_id: bigint!
   $record_regime_recording_duration: numeric!
@@ -92,7 +92,7 @@ mutation updateSite(
     pk_columns: { id: $id }
     _set: {
       name: $name
-      alias: $alias
+      prefix: $prefix
       remarks: $remarks
       location_id: $location_id
       record_regime_recording_duration: $record_regime_recording_duration

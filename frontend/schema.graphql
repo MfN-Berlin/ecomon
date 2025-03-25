@@ -8019,7 +8019,6 @@ input site_reports_variance_order_by {
 columns and relationships of "sites"
 """
 type sites {
-  alias: String!
   created_at: timestamp!
   id: bigint!
 
@@ -8027,6 +8026,7 @@ type sites {
   location: locations!
   location_id: bigint!
   name: String!
+  prefix: String!
   record_regime_pause_duration: numeric!
   record_regime_recording_duration: numeric!
 
@@ -8268,12 +8268,12 @@ input sites_bool_exp {
   _and: [sites_bool_exp!]
   _not: sites_bool_exp
   _or: [sites_bool_exp!]
-  alias: String_comparison_exp
   created_at: timestamp_comparison_exp
   id: bigint_comparison_exp
   location: locations_bool_exp
   location_id: bigint_comparison_exp
   name: String_comparison_exp
+  prefix: String_comparison_exp
   record_regime_pause_duration: numeric_comparison_exp
   record_regime_recording_duration: numeric_comparison_exp
   records: records_bool_exp
@@ -8304,7 +8304,7 @@ enum sites_constraint {
   sites_pkey
 
   """
-  unique or primary key constraint on columns "alias"
+  unique or primary key constraint on columns "prefix"
   """
   sites_short_id_key
 }
@@ -8324,12 +8324,12 @@ input sites_inc_input {
 input type for inserting data into table "sites"
 """
 input sites_insert_input {
-  alias: String
   created_at: timestamp
   id: bigint
   location: locations_obj_rel_insert_input
   location_id: bigint
   name: String
+  prefix: String
   record_regime_pause_duration: numeric
   record_regime_recording_duration: numeric
   records: records_arr_rel_insert_input
@@ -8343,11 +8343,11 @@ input sites_insert_input {
 
 """aggregate max on columns"""
 type sites_max_fields {
-  alias: String
   created_at: timestamp
   id: bigint
   location_id: bigint
   name: String
+  prefix: String
   record_regime_pause_duration: numeric
   record_regime_recording_duration: numeric
   remarks: String
@@ -8359,11 +8359,11 @@ type sites_max_fields {
 order by max() on columns of table "sites"
 """
 input sites_max_order_by {
-  alias: order_by
   created_at: order_by
   id: order_by
   location_id: order_by
   name: order_by
+  prefix: order_by
   record_regime_pause_duration: order_by
   record_regime_recording_duration: order_by
   remarks: order_by
@@ -8373,11 +8373,11 @@ input sites_max_order_by {
 
 """aggregate min on columns"""
 type sites_min_fields {
-  alias: String
   created_at: timestamp
   id: bigint
   location_id: bigint
   name: String
+  prefix: String
   record_regime_pause_duration: numeric
   record_regime_recording_duration: numeric
   remarks: String
@@ -8389,11 +8389,11 @@ type sites_min_fields {
 order by min() on columns of table "sites"
 """
 input sites_min_order_by {
-  alias: order_by
   created_at: order_by
   id: order_by
   location_id: order_by
   name: order_by
+  prefix: order_by
   record_regime_pause_duration: order_by
   record_regime_recording_duration: order_by
   remarks: order_by
@@ -8433,12 +8433,12 @@ input sites_on_conflict {
 
 """Ordering options when selecting data from "sites"."""
 input sites_order_by {
-  alias: order_by
   created_at: order_by
   id: order_by
   location: locations_order_by
   location_id: order_by
   name: order_by
+  prefix: order_by
   record_regime_pause_duration: order_by
   record_regime_recording_duration: order_by
   records_aggregate: records_aggregate_order_by
@@ -8460,9 +8460,6 @@ select columns of table "sites"
 """
 enum sites_select_column {
   """column name"""
-  alias
-
-  """column name"""
   created_at
 
   """column name"""
@@ -8473,6 +8470,9 @@ enum sites_select_column {
 
   """column name"""
   name
+
+  """column name"""
+  prefix
 
   """column name"""
   record_regime_pause_duration
@@ -8494,11 +8494,11 @@ enum sites_select_column {
 input type for updating data in table "sites"
 """
 input sites_set_input {
-  alias: String
   created_at: timestamp
   id: bigint
   location_id: bigint
   name: String
+  prefix: String
   record_regime_pause_duration: numeric
   record_regime_recording_duration: numeric
   remarks: String
@@ -8579,11 +8579,11 @@ input sites_stream_cursor_input {
 
 """Initial value of the column from where the streaming should start"""
 input sites_stream_cursor_value_input {
-  alias: String
   created_at: timestamp
   id: bigint
   location_id: bigint
   name: String
+  prefix: String
   record_regime_pause_duration: numeric
   record_regime_recording_duration: numeric
   remarks: String
@@ -8616,9 +8616,6 @@ update columns of table "sites"
 """
 enum sites_update_column {
   """column name"""
-  alias
-
-  """column name"""
   created_at
 
   """column name"""
@@ -8629,6 +8626,9 @@ enum sites_update_column {
 
   """column name"""
   name
+
+  """column name"""
+  prefix
 
   """column name"""
   record_regime_pause_duration

@@ -32,7 +32,7 @@ fragment Set on sets {
     to
     site {
       name
-      alias
+      prefix
     }
     updated_at
     created_at

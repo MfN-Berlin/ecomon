@@ -17,7 +17,7 @@ const {
 const headers = [
   { title: "ID", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
   { title: "name", key: "name", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "alias", key: "alias", align: "end", search: { operator: "_like", type: "text" } },
+  { title: "prefix", key: "prefix", align: "end", search: { operator: "_like", type: "text" } },
   {
     title: "record_regime_pause_duration",
     key: "record_regime_pause_duration",

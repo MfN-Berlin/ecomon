@@ -286,7 +286,7 @@ CREATE TABLE public.sites (
     remarks text NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone,
-    alias text NOT NULL
+    prefix text NOT NULL
 );
 CREATE SEQUENCE public.sites_id_seq
     START WITH 1
@@ -359,7 +359,7 @@ ALTER TABLE ONLY public.sites
 ALTER TABLE ONLY public.sites
     ADD CONSTRAINT sites_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.sites
-    ADD CONSTRAINT sites_short_id_key UNIQUE (alias);
+    ADD CONSTRAINT sites_short_id_key UNIQUE (prefix);
 CREATE INDEX created_at_index ON public.jobs USING btree (created_at);
 CREATE UNIQUE INDEX id_unique ON public.jobs USING btree (id);
 CREATE INDEX idx_model_id ON public.model_inference_results USING btree (model_id);
