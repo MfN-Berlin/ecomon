@@ -1,3 +1,27 @@
 table:
   name: model_inference_results
   schema: public
+object_relationships:
+  - name: label
+    using:
+      foreign_key_constraint_on: label_id
+  - name: model
+    using:
+      foreign_key_constraint_on: model_id
+  - name: record
+    using:
+      foreign_key_constraint_on: record_id
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - record_id
+        - label_id
+        - model_id
+        - end_time
+        - start_time
+        - confidence
+      filter: {}
+      allow_aggregations: true
+    comment: ""
