@@ -80,6 +80,8 @@ services:
       - HOST_BASE_DATA_DIRECTORY=${BASE_DATA_DIRECTORY}
       - HOST_TMP_DIR=${TMP_DIR}
       - USE_GPU=${USE_GPU}
+      - DB_WORKER_CONCURRENCY=${DB_WORKER_CONCURRENCY}
+      - INF_WORKER_CONCURRENCY=${INF_WORKER_CONCURRENCY}
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
       - ${TMP_DIR}:/tmp
@@ -156,7 +158,6 @@ services:
       - ecomon
 volumes:
   ecomon_data:
-
 
 networks:
   ecomon:
