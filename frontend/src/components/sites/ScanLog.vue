@@ -24,8 +24,8 @@ watch(open, (val) => {
 </script>
 
 <template>
-  <v-btn v-bind="$attrs" prepend-icon="mdi-eye"
-    >Scan Log
+  <v-btn v-bind="$attrs" prepend-icon="mdi-eye">
+    Scan Log
     <v-dialog v-model="open" width="auto" max-width="800px" class="h-75" activator="parent">
       <v-card class="h-75">
         <v-toolbar color="primary" class="px-4">
