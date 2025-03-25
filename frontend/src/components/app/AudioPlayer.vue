@@ -4,7 +4,7 @@ import { useAVBars } from "vue-audio-visual";
 const store = useAudioPlayerStore();
 const player = ref<HTMLAudioElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
-const container = ref<HTMLElement | null>;
+const container = ref<HTMLElement | null>(null);
 const { playing, currentTime, duration, volume } = useMediaControls(player);
 watch(playing, (value) => {
   console.log("Audioplayer", value);
