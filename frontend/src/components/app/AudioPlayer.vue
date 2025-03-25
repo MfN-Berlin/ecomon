@@ -5,7 +5,11 @@ const store = useAudioPlayerStore();
 const player = ref<HTMLAudioElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const container = ref<HTMLElement | null>;
-
+const { playing, currentTime, duration, volume } = useMediaControls(player);
+watch(playing, (value) => {
+  console.log("Audioplayer", value);
+  store.playing = value;
+});
 watch(
   () => store.visible,
   (value) => {

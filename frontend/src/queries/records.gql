@@ -1,5 +1,6 @@
 fragment Record on records {
   id
+  site_id
   filepath
   filename
   duration
@@ -7,6 +8,8 @@ fragment Record on records {
   mime_type
   record_datetime
   sample_rate
+  errors
+  created_at
 }
 
 query getRecordById($id: bigint!) {

@@ -16,3 +16,11 @@ export const enum QUERY_KEYS {
   siteReportsRecordsHeatmap = "siteReportsRecordsHeatmap",
   siteFirstLastRecordDate = "siteFirstLastRecordDate"
 }
+
+export const enum RECORD_ERRORS {
+  FILE_READ_ERROR = "file_read_error",
+  MISSING_FILE_PREFIX = "missing_file_prefix",
+  RECORD_DATETIME_FORMAT = "record_datetime_format",
+  DURATION_MISSMATCH = "duration_missmatch",
+  SAMPLERATE_MISSMATCH = "samplerate_missmatch"
+}

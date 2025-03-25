@@ -30,7 +30,6 @@ const headers = [
 const source = ref<string | undefined>(undefined);
 function playAudio(filepath: string) {
   const url = `${config.public.API_BASE_URL}/static/files/${filepath}`;
-
   store.play(url);
 }
 </script>
@@ -54,9 +53,11 @@ function playAudio(filepath: string) {
       </template>
       <template #item.actions="{ item }: { item: Record }">
         <v-toolbar density="compact" color="surface">
-          <v-btn icon variant="text" size="small" @click="playAudio(item.filepath)">
-            <v-icon>mdi-play</v-icon>
-          </v-btn>
+          <common-play-button
+            :src="`${config.public.API_BASE_URL}/static/files/${item.filepath}`"
+            variant="text"
+            size="small"
+          />
           <nuxt-link :to="`/records/${item.id}`">
             <v-btn icon variant="text" size="small">
               <v-icon>mdi-pen</v-icon>

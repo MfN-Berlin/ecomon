@@ -101,7 +101,7 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                 if not file_path.name.startswith(site.alias):
                     errors.append(
                         {
-                            "type": "filename_format",
+                            "type": f"{RecordErrorsEnum.MISSING_FILE_PREFIX.value}",
                             "message": f"Filename must start with {site.alias}",
                         }
                     )
@@ -112,7 +112,7 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                 except Exception as e:
                     errors.append(
                         {
-                            "type": RecordErrorsEnum.RECORD_DATETIME_FORMAT.value,
+                            "type": f"{RecordErrorsEnum.RECORD_DATETIME_FORMAT.value}",
                             "message": f"Error parsing record datetime: {str(e)}",
                         }
                     )
@@ -128,7 +128,7 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                         if sample_rate != site.sample_rate:
                             errors.append(
                                 {
-                                    "type": RecordErrorsEnum.SAMPLERATE_MISSMATCH.value,
+                                    "type": f"{RecordErrorsEnum.SAMPLERATE_MISSMATCH.value}",
                                     "message": f"Sample rate mismatch: {sample_rate} != {site.sample_rate}",
                                 }
                             )
@@ -141,7 +141,7 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                             errors.append(
                                 {
                                     "type": RecordErrorsEnum.DURATION_MISSMATCH.value,
-                                    "message": f"Duration mismatch: {duration} != {site.record_regime_recording_duration}",
+                                    "message": f"Duration mismatch: {duration} != {site.record_regime_recording_duration} ",
                                 }
                             )
                 except Exception as e:

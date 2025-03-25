@@ -5,7 +5,8 @@ const {
   cancelLabel = "cancel",
   okLabel = "submit",
   created_at = "",
-  updated_at = ""
+  updated_at = "",
+  hideActions = false
 } = defineProps<{
   loading: boolean;
   dirty: boolean;
@@ -13,6 +14,7 @@ const {
   okLabel: string;
   created_at?: string;
   updated_at?: string;
+  hideActions?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -22,6 +24,7 @@ const emit = defineEmits<{
 
 <template>
   <v-form
+    v-bind="$attrs"
     :disabled="loading"
     @submit.prevent="
       () => {
@@ -33,7 +36,7 @@ const emit = defineEmits<{
       <v-card-text>
         <slot></slot>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions v-if="!hideActions">
         <v-spacer></v-spacer>
         <v-btn :disabled="loading" @click="emit('reset')"> {{ cancelLabel }} </v-btn>
         <v-btn class="me-4" type="submit" color="primary" variant="tonal" :disabled="!dirty || loading">
