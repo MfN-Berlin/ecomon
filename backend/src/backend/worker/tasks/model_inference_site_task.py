@@ -193,7 +193,7 @@ def model_inference_site_task(
             for _, row in df.iterrows():
                 confidence = row["confidence"]
                 # if confidence is 0 or below confidence resolution (0.0001)
-                if confidence <= 0.0001:
+                if confidence < 0.01:
                     logger.warning(
                         f"Skipping record {row['filename']} with confidence {confidence}"
                     )

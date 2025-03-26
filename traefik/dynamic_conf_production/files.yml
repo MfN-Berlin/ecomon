@@ -3,7 +3,7 @@ http:
     files:
       entryPoints:
         - web
-      rule: host(`{{env "DOMAIN"}}`) && PathPrefix(`{{env "SUB_PATH"}}/static/files`)
+      rule: host(`{{env "DOMAIN"}}`) && (PathPrefix(`{{env "SUB_PATH"}}/static/files`) || PathPrefix(`{{env "SUB_PATH"}}/files`))
       service: files
       middlewares:
         - strip-ecomon

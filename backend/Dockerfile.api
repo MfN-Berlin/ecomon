@@ -11,9 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     wget \
     ca-certificates \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry (optional — if you’re using Poetry for your dependencies)
+# Install Poetry (optional — if you're using Poetry for your dependencies)
 RUN pip install poetry
 
 # Configure Poetry to install dependencies into the system environment

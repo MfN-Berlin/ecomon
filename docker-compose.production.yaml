@@ -58,6 +58,8 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - TMP_DIR=/tmp
+      - HOST_BASE_DATA_DIRECTORY=${BASE_DATA_DIRECTORY}
+      - HOST_TMP_DIR=${TMP_DIR}
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
       - ${TMP_DIR}:/tmp
@@ -117,7 +119,7 @@ services:
       HASURA_ADMIN_SECRET: ${HASURA_ADMIN_SECRET}
       APPLY_METADATA: "true"
       APPLY_MIGRATIONS: "true"
-      APPLY_SEEDS: "true"
+      APPLY_SEEDS: "false"
     networks:
       - ecomon
     volumes:
@@ -162,6 +164,7 @@ services:
 volumes:
   ecomon_data:
   redis_data:
+
 
 networks:
   ecomon:
