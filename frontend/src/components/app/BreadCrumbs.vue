@@ -1,7 +1,4 @@
 <script setup lang="ts">
-const props = defineProps<{
-  bgColor?: string;
-}>();
 type BreadcrumbItem = {
   text: string;
   disabled?: boolean;
@@ -36,7 +33,7 @@ router.afterEach((to) => {
 });
 </script>
 <template>
-  <v-breadcrumbs :bg-color="props.bgColor" density="compact">
+  <v-breadcrumbs density="compact" v-bind="$attrs">
     <template v-slot:prepend>
       <v-icon icon="mdi-home" size="small"></v-icon>
     </template>

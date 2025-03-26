@@ -16,15 +16,13 @@ onMounted(() => {
     <AppToastProvider />
     <NuxtLayout>
       <NuxtLoadingIndicator />
-      <v-main class="d-flex flex-column" style="height: 100vh">
-        <app-bread-crumbs bg-color="surface"></app-bread-crumbs>
-
-        <div class="flex-grow-1 left-0 right-0 min-h-0 overflow-y-auto">
+      <v-main class="d-flex flex-column">
+        <div class="flex-grow-1 left-0 right-0 min-h-0">
           <NuxtPage></NuxtPage>
         </div>
 
-        <app-audio-player />
         <app-dialog />
+        <app-audio-player class="position-sticky bottom-0" />
       </v-main>
     </NuxtLayout>
   </v-app>
