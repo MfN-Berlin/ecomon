@@ -57,7 +57,7 @@ const headers = [
     <template #item.actions="{ item }: { item: ModelInferenceResult }">
       <v-toolbar density="compact" color="surface">
         <app-play-button
-          :src="`${config.public.API_BASE_URL}/files/records/${item.record_id}/inference-result/${item.id}/flac`"
+          :src="`${config.public.API_BASE_URL}/files/records/${item.record_id}/inference-result/${item.id}/flac?padding_ms=5000`"
           variant="text"
           size="small"
         />

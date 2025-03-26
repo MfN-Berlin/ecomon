@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response, Query
 from fastapi.responses import StreamingResponse
 import os
 import io
+import re
 from pydub import AudioSegment
 from enum import Enum
 
@@ -36,12 +37,19 @@ class TargetFormat(str, Enum):
 async def get_record_inference_result(
     record_id: int,
     result_id: int,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     target_format: TargetFormat = TargetFormat.RAW,
+    padding_ms: int = Query(
+        0,
+        ge=0,
+        description="Padding in milliseconds to include before and after the snippet",
+    ),
 ):
     """
     Retrieve an audio snippet from a record based on the exact start and end times
-    of an inference result, with an optional format transformation.
+    of an inference result, with an optional format transformation and support for
+    HTTP Range requests to allow seeking.
 
     The endpoint supports an optional path parameter 'target_format' which can be:
       - "raw": serve the snippet in its original format.
@@ -49,11 +57,13 @@ async def get_record_inference_result(
       - "wav": convert the snippet to WAV.
       - "flac": convert the snippet to FLAC (a lossless format).
 
-    The audio file is loaded from disk using its stored filepath, trimmed (with optional padding),
-    and then exported (optionally converting its format). The response headers use the media type
-    and filename read from the record—updated if a conversion takes place.
+    Additionally, if a Range header is provided in the request,
+    a partial content (206) response is sent with the appropriate Content-Range.
+
+    Query Parameters:
+      - padding_ms: Padding around the snippet in milliseconds (default is 5000ms).
     """
-    # Query the record entry
+    # Query the record entry.
     result = await db.execute(select(Records).filter(Records.id == record_id))
     record = result.scalars().first()
     if not record:
@@ -61,7 +71,7 @@ async def get_record_inference_result(
             status_code=status.HTTP_404_NOT_FOUND, detail="Record not found"
         )
 
-    # Query the inference result, ensuring it belongs to this record
+    # Query the inference result, ensuring it belongs to this record.
     result = await db.execute(
         select(ModelInferenceResults).filter(
             ModelInferenceResults.id == result_id,
@@ -108,9 +118,8 @@ async def get_record_inference_result(
         )
 
     # (Optional) Add padding (in milliseconds) around the snippet.
-    padding = 5000
     snippet_audio = audio[
-        max(0, start_ms - padding) : min(len(audio), end_ms + padding)
+        max(0, start_ms - padding_ms) : min(len(audio), end_ms + padding_ms)
     ]
 
     # Determine if a conversion is requested based on the TargetFormat type.
@@ -151,5 +160,47 @@ async def get_record_inference_result(
     base_filename = record.filename.rsplit(".", 1)[0]
     final_filename = f"{base_filename}_{inference_result.start_time}_{inference_result.end_time}.{file_extension}"
 
-    headers = {"Content-Disposition": f"attachment; filename={final_filename}"}
-    return StreamingResponse(snippet_buffer, media_type=media_type, headers=headers)
+    # Get the full content from the buffer.
+    content = snippet_buffer.getvalue()
+    file_size = len(content)
+
+    # Check for a Range header to support partial content for seeking.
+    range_header = request.headers.get("range")
+    if range_header:
+        range_match = re.search(r"bytes=(\d+)-(\d*)", range_header)
+        if range_match:
+            start = int(range_match.group(1))
+            end_str = range_match.group(2)
+            end = int(end_str) if end_str != "" else file_size - 1
+
+            # Ensure the range is satisfiable.
+            if start >= file_size:
+                raise HTTPException(
+                    status_code=416, detail="Requested Range Not Satisfiable"
+                )
+            if end >= file_size:
+                end = file_size - 1
+
+            partial_content = content[start : end + 1]
+            partial_headers = {
+                "Content-Disposition": f"attachment; filename={final_filename}",
+                "Content-Range": f"bytes {start}-{end}/{file_size}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(len(partial_content)),
+            }
+            return Response(
+                content=partial_content,
+                status_code=206,
+                media_type=media_type,
+                headers=partial_headers,
+            )
+
+    # If no Range header is provided, send the full content.
+    full_headers = {
+        "Content-Disposition": f"attachment; filename={final_filename}",
+        "Accept-Ranges": "bytes",
+        "Content-Length": str(file_size),
+    }
+    return StreamingResponse(
+        io.BytesIO(content), media_type=media_type, headers=full_headers
+    )
