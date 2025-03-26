@@ -5,6 +5,7 @@ const props = defineProps<{
   src: string;
 }>();
 const isPlaying = computed(() => audioPlayerStore.playing && audioPlayerStore.getSrc() === props.src);
+const isLoading = computed(() => audioPlayerStore.seeking && audioPlayerStore.getSrc() === props.src);
 const audioPlayerStore = useAudioPlayerStore();
 
 function play() {
@@ -17,5 +18,12 @@ function play() {
 </script>
 
 <template>
-  <v-btn :icon="isPlaying ? 'mdi-pause' : 'mdi-play'" v-bind="$attrs" color="primary" @click="play"> </v-btn>
+  <v-btn
+    v-bind="$attrs"
+    :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
+    :loading="isLoading"
+    color="primary"
+    @click="play"
+  >
+  </v-btn>
 </template>

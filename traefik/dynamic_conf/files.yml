@@ -3,7 +3,7 @@ http:
     files:
       entryPoints:
         - web
-      rule: host(`localhost`) && PathPrefix(`/ecomon/static/files`)
+      rule: host(`localhost`) && (PathPrefix(`/ecomon/static`) || PathPrefix(`/ecomon/files`))
       service: files
       middlewares:
         - simple-auth

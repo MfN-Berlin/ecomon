@@ -30,7 +30,7 @@ const {
 const config = useRuntimeConfig();
 const headers = [
   { title: "", key: "actions", align: "end", sortable: false, search: false },
-
+  { title: "ID", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
   { title: "Model", key: "model.name", align: "end", search: { operator: "_eq", type: "number" } },
   { title: "Label", key: "label.name", align: "end", search: { operator: "_eq", type: "text" } },
   { title: "Start time", key: "start_time", align: "end", search: { operator: "_eq", type: "number" } },
@@ -57,7 +57,7 @@ const headers = [
     <template #item.actions="{ item }: { item: ModelInferenceResult }">
       <v-toolbar density="compact" color="surface">
         <app-play-button
-          :src="`${config.public.API_BASE_URL}/static/files/${item.filepath}`"
+          :src="`${config.public.API_BASE_URL}/files/records/${item.record_id}/inference-result/${item.id}`"
           variant="text"
           size="small"
         />

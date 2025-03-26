@@ -4,12 +4,14 @@ type AudioPlayerState = {
   src: string | undefined;
   visible: boolean;
   playing: boolean;
+  seeking: boolean;
 };
 export const useAudioPlayerStore = defineStore("audioplayer", {
   state: (): AudioPlayerState => ({
     src: undefined,
     visible: false,
-    playing: false
+    playing: false,
+    seeking: false
   }),
   actions: {
     play(src: string) {

@@ -25,6 +25,7 @@ redis = "^5.2.1"
 soundfile = "^0.13.1"
 gevent = "^24.11.1"
 pandas = "^2.2.3"
+pydub = "^0.25.1"
 
 
 [tool.poetry.group.dev.dependencies]

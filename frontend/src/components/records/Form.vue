@@ -68,6 +68,7 @@ const propsUpdateForm = () => {
     :created_at="data?.created_at"
     :updated_at="data?.updated_at"
     :hideActions="true"
+    readonly
     @submit="submit"
     @reset="handleReset"
   >
