@@ -116,3 +116,14 @@ mutation inferenceSiteTimespan(
     jobId
   }
 }
+
+query getModelLabels($modelId: Int!) {
+  data: model_labels(where: { model_id: { _eq: $modelId } }, order_by: { label: { name: asc } }) {
+    label {
+      name
+      german
+      english
+      id
+    }
+  }
+}
