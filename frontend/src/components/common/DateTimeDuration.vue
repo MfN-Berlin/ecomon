@@ -1,10 +1,3 @@
-<template>
-  <span :class="`${sizeMap[props.size]}`">
-    <v-icon v-if="props.icon" :icon="props.icon" :size="props.size" class="mr-1"></v-icon>
-    <time :datetime="`${startTime.toISOString()}/${endTime.toISOString()}`"> {{ formattedDuration }} </time>
-  </span>
-</template>
-
 <script lang="ts" setup>
 type DateTimeTextProps = {
   start: string;
@@ -86,3 +79,9 @@ const formattedDuration = computed(() => {
   }
 });
 </script>
+<template>
+  <span :class="`${sizeMap[props.size]}`">
+    <v-icon v-if="props.icon" :icon="props.icon" :size="props.size" class="mr-1"></v-icon>
+    <time :datetime="`${startTime.toISOString()}/${endTime.toISOString()}`"> {{ formattedDuration }} </time>
+  </span>
+</template>

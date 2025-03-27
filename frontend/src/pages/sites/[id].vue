@@ -34,7 +34,7 @@ const { mutate, isPending } = useSiteUpdate();
         ></sites-form>
 
         <sites-model-site-controls class="mt-4" :siteId="id" />
-        <sites-create-voucher class="mt-4" :siteId="id" :siteName="data.name" />
+        <sites-create-voucher v-if="data" class="mt-4" :siteId="id" :siteName="data.name" />
       </v-col>
       <v-col cols="12" md="6">
         <sites-reports v-if="data" :site="data" />
