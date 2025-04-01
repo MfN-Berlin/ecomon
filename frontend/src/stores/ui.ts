@@ -16,6 +16,9 @@ export const useUiStore = defineStore("ui", {
     },
     toggleDarkMode() {
       this.darkMode = !this.darkMode;
+    },
+    setDarkMode(darkMode: boolean) {
+      this.darkMode = darkMode;
     }
   }
 });
