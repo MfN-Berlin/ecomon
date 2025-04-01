@@ -77,7 +77,11 @@ const drawerVisible = computed({
         </template>
       </nuxt-link>
     </v-list>
-    <template v-slot:append> </template>
+    <v-divider></v-divider>
+
+    <template v-slot:append>
+      <app-dark-mode-toggle class="ml-4 mb-2" />
+    </template>
   </v-navigation-drawer>
 </template>
 

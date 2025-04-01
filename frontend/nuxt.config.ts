@@ -55,16 +55,19 @@ export default defineNuxtConfig({
           mfnLight: {
             dark: false,
             colors: {
-              background: "#f0f0f0",
-              surface: "#FFFFFF",
               primary: "#043b29", //  '#91bd0d',
               "primary-darken-1": "#003600", // '#7da30b',
               secondary: "#79d827", //  '#174364',
-              "secondary-darken-1": "#836500", // '#008786',
-              error: "#B00020",
-              info: "#2196F3",
-              success: "#4CAF50",
-              warning: "#FB8C00"
+              "secondary-darken-1": "#836500" // '#008786',
+            }
+          },
+          mfnDark: {
+            dark: true,
+            colors: {
+              primary: "#0fad7c", // Lighter green for better visibility in dark mode
+              "primary-darken-1": "#0a8c64", // Adjusted primary darken
+              secondary: "#8aea3e", // Brighter secondary for dark mode
+              "secondary-darken-1": "#c9a700" // Brighter gold/yellow for dark mode
             }
           }
         }

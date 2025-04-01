@@ -1,0 +1,11 @@
+---
+description: 
+globs: 
+---
+
+# Rules for the Frontend 
+
+- Use Vuetify as component library
+- Prefer existing components over creating new one
+- Use vue composition api and setup script tag 
+- Always use Typescripts

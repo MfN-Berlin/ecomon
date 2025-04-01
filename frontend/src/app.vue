@@ -9,6 +9,16 @@ const display = useDisplay();
 onMounted(() => {
   uiStore.setDrawerVisibility(display.lgAndUp.value);
 });
+
+const theme = useTheme();
+
+watch(
+  () => uiStore.darkMode,
+  (value) => {
+    console.log("darkMode", value);
+    theme.global.name.value = value ? "mfnDark" : "mfnLight";
+  }
+);
 </script>
 
 <template>
