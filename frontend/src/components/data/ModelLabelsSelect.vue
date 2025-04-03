@@ -70,6 +70,10 @@ watch(search, () => {
     />
   </div>
   <div class="d-flex flex-wrap">
+    <v-chip v-if="selectAll" class="ma-1" closable @click:close="selectAll = false"
+      >All labels selected</v-chip
+    >
+
     <v-chip
       v-for="label in selectedLabels"
       :key="label.label.id"
@@ -120,7 +124,7 @@ watch(search, () => {
             @click="toggle"
           >
             <template #append>
-              <v-checkbox :model-value="isSelected" density="compact"></v-checkbox>
+              <v-checkbox :model-value="isSelected" :disabled="selectAll" density="compact"></v-checkbox>
             </template>
           </v-list-item>
         </v-item>
