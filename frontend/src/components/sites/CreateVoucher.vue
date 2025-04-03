@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Label } from "@/composables/api/useModelLabelsList";
+
 const props = defineProps<{
   siteId: number;
   siteName: string;
@@ -8,7 +10,8 @@ const open = ref(false);
 const selectedStartDateTime = ref<Date>(new Date());
 const selectedEndDateTime = ref<Date>(new Date());
 const selectedModelId = ref<number | null>(null);
-const selectedlabels = ref<[number] | null>(null);
+const selectedlabels = ref<Label[]>([]);
+const selectedAllLabels = ref<boolean>(false);
 </script>
 
 <template>
@@ -32,7 +35,11 @@ const selectedlabels = ref<[number] | null>(null);
               />
             </v-col>
             <v-col cols="12" md="6">
-              <data-model-labels-select v-model="selectedlabels" :model-id="selectedModelId" />
+              <data-model-labels-select
+                v-model:selected-labels="selectedlabels"
+                v-model:select-all="selectedAllLabels"
+                :model-id="selectedModelId"
+              />
             </v-col>
           </v-row>
         </v-card-text>

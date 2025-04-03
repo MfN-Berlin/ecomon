@@ -111,7 +111,7 @@ const isAlreadyAdded = computed(() => {
             <v-list-item-title @click="handleClick(item.path)">{{ item.name }}</v-list-item-title>
             <template #append>
               <v-item v-slot="{ isSelected, toggle }">
-                <v-checkbox-btn :value="isSelected" density="compact" @click="toggle"></v-checkbox-btn>
+                <v-checkbox :model-value="isSelected" density="compact" @click="toggle"></v-checkbox>
               </v-item>
             </template>
           </v-list-item>

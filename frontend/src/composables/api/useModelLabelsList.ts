@@ -1,11 +1,10 @@
-import { ref, computed, watch, readonly } from "vue";
-
-import { useInfiniteQuery, useQueryClient } from "@tanstack/vue-query";
+import type { GetModelLabelsListQuery } from "#gql";
 
 type Options = {
   itemsPerPage?: number;
   defaultSearchTerm: string;
 };
+export type Label = GetModelLabelsListQuery["data"][0];
 
 export default function useModelLabelsList(options?: Options) {
   const itemsPerPage = options?.itemsPerPage || 10;
@@ -76,8 +75,7 @@ export default function useModelLabelsList(options?: Options) {
     isFetching,
     isLoading,
     isError,
-    hasNextPage,
-    refetch
+    hasNextPage
   } = useInfiniteQuery({
     queryKey,
     queryFn: queryFn,

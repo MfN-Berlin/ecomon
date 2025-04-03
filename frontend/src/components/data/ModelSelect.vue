@@ -17,6 +17,7 @@ onMounted(async () => {
     item-title="name"
     item-value="id"
     label="Model"
+    density="compact"
     :loading="modelListLoading"
   />
 </template>

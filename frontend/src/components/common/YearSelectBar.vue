@@ -2,6 +2,7 @@
 const props = defineProps<{
   startDate?: Date | null;
   endDate?: Date | null;
+  density?: "compact" | "default" | "comfortable";
 }>();
 const emit = defineEmits<{
   (e: "select", year: number): void;
@@ -32,6 +33,7 @@ const years = computed(() => {
           <v-btn
             v-bind="tooltipProps"
             :color="isSelected ? 'secondary' : undefined"
+            :density="props.density"
             class="ma-1"
             @click="
               (event: any) => {

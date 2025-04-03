@@ -2,6 +2,7 @@
 const props = defineProps<{
   rangeStartDateTime: Date;
   rangeEndDateTime: Date;
+  density?: "compact" | "default" | "comfortable";
 }>();
 
 const selectedStartDateTime = defineModel<Date>("startDateTime");
@@ -17,6 +18,7 @@ function selectYear(year: number) {
 <template>
   <CommonYearSelectBar
     class="mb-4"
+    :density="props.density"
     :start-date="props.rangeStartDateTime"
     :end-date="props.rangeEndDateTime"
     @select="selectYear"
@@ -25,6 +27,7 @@ function selectYear(year: number) {
   <CommonDateTimePicker
     v-model="selectedStartDateTime"
     icon="mdi-calendar-start"
+    :density="props.density"
     prepend-inner-icon="mdi-calendar-start"
     dialog-title="Select Start Timestamp"
     label="Start Timestamp"
@@ -32,6 +35,7 @@ function selectYear(year: number) {
 
   <CommonDateTimePicker
     v-model="selectedEndDateTime"
+    :density="props.density"
     icon="mdi-calendar-end"
     prepend-inner-icon="mdi-calendar-end"
     dialog-title="Select End Timestamp"

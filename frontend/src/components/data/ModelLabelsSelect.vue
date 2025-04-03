@@ -2,13 +2,16 @@
 import { onMounted, watch, ref } from "vue";
 
 import useModelLabelsList from "@/composables/api/useModelLabelsList";
+import type { Label } from "@/composables/api/useModelLabelsList";
 
 const props = defineProps<{
   modelId?: number | null;
 }>();
 
 type DoneType = ((state: "ok" | "empty" | "error") => void) | null;
-const selectedLabels = defineModel<[number] | null>();
+const selectedLabels = defineModel<Label[]>("selectedLabels", { default: [] });
+
+const selectAll = defineModel<boolean>("selectAll", { default: false });
 const setInfiniteScrollState = ref<DoneType>(null);
 watch(
   () => props.modelId,
@@ -17,8 +20,7 @@ watch(
   }
 );
 
-const { labels, isFetching, fetchNextPage, isFetchingNextPage, hasNextPage, search, setModelId } =
-  useModelLabelsList();
+const { labels, fetchNextPage, search, setModelId } = useModelLabelsList();
 
 // Set the modelId when component mounts and when it changes
 onMounted(() => {
@@ -50,15 +52,42 @@ watch(search, () => {
 </script>
 
 <template>
-  <v-toolbar min-width="200">
-    <v-text-field v-model="search" prepend-inner-icon="mdi-magnify" density="compact" />
-  </v-toolbar>
+  <div class="d-flex flex-row">
+    <v-text-field
+      v-model="search"
+      class="flex-grow-1 mr-4"
+      varian="solo"
+      prepend-inner-icon="mdi-magnify"
+      density="compact"
+    />
+
+    <v-switch
+      v-model="selectAll"
+      class="flex-grow-0"
+      color="secondary"
+      density="compact"
+      label="Select All"
+    />
+  </div>
+  <div class="d-flex flex-wrap">
+    <v-chip
+      v-for="label in selectedLabels"
+      :key="label.label.id"
+      class="ma-1"
+      closable
+      :disabled="selectAll"
+      @click:close="selectedLabels = selectedLabels.filter((l) => l !== label)"
+    >
+      {{ label.label.name }}
+    </v-chip>
+  </div>
   <v-list>
     <v-list-item v-if="props.modelId === null || props.modelId === undefined">
       <v-list-item-title>Select a model</v-list-item-title>
     </v-list-item>
+
     <v-infinite-scroll
-      :height="300"
+      :height="400"
       @load="
         async ({ done, side }) => {
           setInfiniteScrollState = done;
@@ -77,13 +106,25 @@ watch(search, () => {
         }
       "
     >
-      <v-list-item
-        v-for="label in labels"
-        :key="label.id"
-        :title="label.label.name"
-        :subtitle="`${label.label.english} (${label.label.german})`"
-      >
-      </v-list-item>
+      <v-item-group v-model="selectedLabels" multiple>
+        <v-item
+          v-for="label in labels"
+          v-slot="{ isSelected, toggle, selectedClass }"
+          :key="label.label.id"
+          :value="label"
+        >
+          <v-list-item
+            :class="'cursor-pointer' + '' + selectedClass"
+            :title="label.label.name"
+            :subtitle="`${label.label.english} (${label.label.german}) ${isSelected}`"
+            @click="toggle"
+          >
+            <template #append>
+              <v-checkbox :model-value="isSelected" density="compact"></v-checkbox>
+            </template>
+          </v-list-item>
+        </v-item>
+      </v-item-group>
       <template #empty>
         <v-divider></v-divider>
       </template>
