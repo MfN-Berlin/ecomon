@@ -127,3 +127,27 @@ query getModelLabels($modelId: Int!) {
     }
   }
 }
+
+query getModelLabelsList($modelId: Int!, $search: String!, $limit: Int!, $offset: Int!) {
+  data: model_labels(
+    where: {
+      model_id: { _eq: $modelId }
+      _or: [
+        { label: { name: { _ilike: $search } } }
+        { label: { german: { _ilike: $search } } }
+        { label: { english: { _ilike: $search } } }
+      ]
+    }
+    limit: $limit
+    offset: $offset
+    order_by: { label: { name: asc } }
+  ) {
+    label {
+      id
+      name
+      german
+      english
+    }
+    id
+  }
+}
