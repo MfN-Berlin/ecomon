@@ -9,6 +9,7 @@ from backend.api.routers.sets import router as sets_router
 from backend.api.routers.jobs import router as jobs_router
 from backend.api.routers.models import router as models_router
 from backend.api.routers.files import router as files_router
+from backend.api.routers.samples import router as samples_router
 from backend.api.database import engine
 from backend.api.settings import ApiSettings
 from backend.api.logger_config import get_log_config
@@ -47,6 +48,7 @@ app.include_router(sets_router)
 app.include_router(jobs_router)
 app.include_router(models_router)
 app.include_router(files_router)
+app.include_router(samples_router)
 
 
 @app.on_event("startup")

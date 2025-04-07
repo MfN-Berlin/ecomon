@@ -44,6 +44,41 @@ actions:
         version: 2
     permissions:
       - role: user
+  - name: createVoucherSamples
+    definition:
+      kind: synchronous
+      handler: '{{HASURA_WEBHOOKS_BASE_URL}}'
+      forward_client_headers: true
+      request_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "site_id": {{$body.input.createVoucherRequestInput?['siteId']}},
+              "model_id": {{$body.input.createVoucherRequestInput?['modelId']}},
+              "label_ids": {{$body.input.createVoucherRequestInput?['labelIds']}},
+              "sample_count": {{$body.input.createVoucherRequestInput?['sampleCount']}},
+              "start_datetime": {{$body.input.createVoucherRequestInput?['startDatetime']}},
+              "end_datetime": {{$body.input.createVoucherRequestInput?['endDatetime']}},
+              "audio_padding_ms": {{$body.input.createVoucherRequestInput?['audioPaddingMs']}},
+              "high_pass_filter_frequency_hz": {{$body.input.createVoucherRequestInput?['highPassFilterFrequencyHz']}}
+            }
+        method: POST
+        query_params: {}
+        template_engine: Kriti
+        url: '{{$base_url}}/samples/create-voucher'
+        version: 2
+      response_transform:
+        body:
+          action: transform
+          template: |-
+            {
+              "jobId": {{$body?['job_id']}}
+            }
+        template_engine: Kriti
+        version: 2
+    permissions:
+      - role: user
   - name: inferenceSiteTimespan
     definition:
       kind: synchronous
@@ -158,6 +193,7 @@ custom_types:
     - name: SiteDirectoriesScanRequestInput
     - name: SiteDirectoryScanRequestInput
     - name: InferenceSiteRequestInput
+    - name: CreateVoucherRequestInput
   objects:
     - name: DirectoryInfo
     - name: ListDirectoriesResponse
@@ -167,5 +203,6 @@ custom_types:
     - name: SiteDirectoriesScanResponse
     - name: SiteDirectoryScanResponse
     - name: InferenceSiteResponse
+    - name: JobActionResponse
   scalars:
     - name: JSON

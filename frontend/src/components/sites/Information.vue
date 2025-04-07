@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { GetSiteByIdQuery } from "#gql";
 
-
 const { data } = defineProps<{
   data: SiteInformationProps;
 }>();

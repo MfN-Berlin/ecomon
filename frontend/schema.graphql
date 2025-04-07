@@ -38,6 +38,17 @@ input CreateDataReportRequestInput {
   siteId: Int!
 }
 
+input CreateVoucherRequestInput {
+  audioPaddingMs: Int!
+  endDatetime: String!
+  highPassFilterFrequencyHz: Int!
+  labelIds: [Int]!
+  modelId: Int!
+  sampleCount: Int!
+  siteId: Int!
+  startDatetime: String!
+}
+
 type DirectoryInfo {
   name: String!
   path: String!
@@ -82,6 +93,10 @@ input Int_comparison_exp {
   _lte: Int
   _neq: Int
   _nin: [Int!]
+}
+
+type JobActionResponse {
+  jobId: Int!
 }
 
 type SiteDataReportResponse {
@@ -3250,6 +3265,7 @@ type mutation_root {
   """Cancels a job by ID."""
   cancelJobById(jobId: Int!): CancelJobResponse
   createSiteDataReport(createDataReportRequestInput: CreateDataReportRequestInput!): SiteDataReportResponse
+  createVoucherSamples(createVoucherRequestInput: CreateVoucherRequestInput!): JobActionResponse
 
   """
   delete data from the table: "events"

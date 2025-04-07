@@ -4,3 +4,29 @@ query listDataDirectories($subpath: String = "") {
     path
   }
 }
+
+mutation createVoucherSamples(
+  $modelId: Int!
+  $siteId: Int!
+  $labelIds: [Int]!
+  $sampleCount: Int!
+  $startDatetime: String!
+  $endDatetime: String!
+  $audioPaddingMs: Int!
+  $highPassFilterFrequencyHz: Int!
+) {
+  data: createVoucherSamples(
+    createVoucherRequestInput: {
+      modelId: $modelId
+      siteId: $siteId
+      labelIds: $labelIds
+      sampleCount: $sampleCount
+      startDatetime: $startDatetime
+      endDatetime: $endDatetime
+      audioPaddingMs: $audioPaddingMs
+      highPassFilterFrequencyHz: $highPassFilterFrequencyHz
+    }
+  ) {
+    jobId
+  }
+}

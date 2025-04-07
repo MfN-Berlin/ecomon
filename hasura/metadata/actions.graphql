@@ -11,6 +11,12 @@ type Mutation {
 }
 
 type Mutation {
+  createVoucherSamples(
+    createVoucherRequestInput: CreateVoucherRequestInput!
+  ): JobActionResponse
+}
+
+type Mutation {
   inferenceSiteTimespan(
     inferenceSiteRequestInput: InferenceSiteRequestInput!
   ): InferenceSiteResponse
@@ -54,6 +60,17 @@ input InferenceSiteRequestInput {
   startDatetime: String!
 }
 
+input CreateVoucherRequestInput {
+  audioPaddingMs: Int!
+  endDatetime: String!
+  highPassFilterFrequencyHz: Int!
+  labelIds: [Int]!
+  modelId: Int!
+  sampleCount: Int!
+  siteId: Int!
+  startDatetime: String!
+}
+
 type DirectoryInfo {
   name: String!
   path: String!
@@ -86,6 +103,10 @@ type SiteDirectoryScanResponse {
 }
 
 type InferenceSiteResponse {
+  jobId: Int!
+}
+
+type JobActionResponse {
   jobId: Int!
 }
 

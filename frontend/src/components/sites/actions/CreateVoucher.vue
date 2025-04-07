@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Label } from "@/composables/api/useModelLabelsList";
 
-defineProps<{
+const props = defineProps<{
   siteId: number;
   siteName: string;
 }>();
@@ -24,8 +24,20 @@ const selectedApplyFilter = ref<boolean>(defaults.applyFilter);
 const selectedSamplePerSpecies = ref<number>(defaults.samplePerSpecies);
 const selectedFilterFrequency = ref<number>(defaults.filterFrequency);
 
+const { $dayjs } = useNuxtApp();
+const { mutate, isPending: createVoucherSamplesPending } = useCreateVoucherSamples();
+
 function createVoucher() {
-  console.log("createVoucher");
+  mutate({
+    modelId: selectedModelId.value!,
+    siteId: props.siteId,
+    labelIds: selectedLabels.value.map((label) => label.id),
+    sampleCount: selectedSamplePerSpecies.value,
+    startDatetime: $dayjs(selectedStartDateTime.value).local().toISOString(),
+    endDatetime: $dayjs(selectedEndDateTime.value).local().toISOString(),
+    audioPaddingMs: selectedPadding.value,
+    highPassFilterFrequencyHz: selectedFilterFrequency.value
+  });
 }
 function reset() {
   console.log("reset");
@@ -90,6 +102,7 @@ onMounted(() => {
           <v-btn @click="open = false">Close</v-btn>
           <v-btn
             color="primary"
+            :loading="createVoucherSamplesPending"
             :disabled="
               !((selectedModelId !== null || selectedModelId !== undefined) && selectedLabels.length > 0)
             "

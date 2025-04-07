@@ -5,7 +5,8 @@ from backend.api.services.directory_service import DirectoryService
 from backend.api.models.directory import DirectoryInfo
 from backend.api.models.models import (
     InferenceSiteRequest,
-    InferenceSiteResponse,
+    JobActionResponse,
+    CreateVoucherRequest,
 )
 from backend.api.services.job_service import JobService
 from backend.api.services.site_service import SiteService
@@ -27,7 +28,7 @@ directory_service = DirectoryService(ApiSettings())
 ###
 
 
-@router.post("/inference-site-timespan", response_model=InferenceSiteResponse)
+@router.post("/inference-site-timespan", response_model=JobActionResponse)
 async def analyse_site_timespan(
     payload: InferenceSiteRequest, db: AsyncSession = Depends(get_db)
 ):

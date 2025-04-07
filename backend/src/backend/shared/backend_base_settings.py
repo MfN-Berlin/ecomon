@@ -10,6 +10,7 @@ class BackendBaseSettings(BaseSettings):
     db_port: str
     db_name: str
     base_data_directory: str = "/data"
+    results_directory: str = "/results"
     log_level: str = "INFO"
     debug: bool = False
 
