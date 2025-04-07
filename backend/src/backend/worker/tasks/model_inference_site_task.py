@@ -167,7 +167,7 @@ def model_inference_site_task(
                     if model.additional_docker_arguments
                     else []
                 ),
-                "models",
+                "ghcr.io/mfn-berlin/birdid-model-zoo:latest",
                 *(
                     [model.additional_model_arguments]
                     if model.additional_model_arguments

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Label } from "@/composables/api/useModelLabelsList";
 
-const props = defineProps<{
+defineProps<{
   siteId: number;
   siteName: string;
 }>();
