@@ -5,6 +5,13 @@ const props = defineProps<{
   siteId: number;
   siteName: string;
 }>();
+
+const defaults = {
+  padding: 5,
+  filterFrequency: 100,
+  applyFilter: true,
+  samplePerSpecies: 10
+};
 const open = ref(false);
 
 const selectedStartDateTime = ref<Date>(new Date());
@@ -12,6 +19,25 @@ const selectedEndDateTime = ref<Date>(new Date());
 const selectedModelId = ref<number | null>(null);
 const selectedlabels = ref<Label[]>([]);
 const selectedAllLabels = ref<boolean>(false);
+const selectedPadding = ref<number>(defaults.padding);
+const selectedApplyFilter = ref<boolean>(defaults.applyFilter);
+const selectedSamplePerSpecies = ref<number>(defaults.samplePerSpecies);
+const selectedFilterFrequency = ref<number>(defaults.filterFrequency);
+
+function createVoucher() {
+  console.log("createVoucher");
+}
+function reset() {
+  console.log("reset");
+  selectedPadding.value = defaults.padding;
+  selectedApplyFilter.value = defaults.applyFilter;
+  selectedSamplePerSpecies.value = defaults.samplePerSpecies;
+  selectedFilterFrequency.value = defaults.filterFrequency;
+}
+
+onMounted(() => {
+  reset();
+});
 </script>
 
 <template>
@@ -33,6 +59,23 @@ const selectedAllLabels = ref<boolean>(false);
                 v-model:end-date-time="selectedEndDateTime"
                 :site-id="siteId"
               />
+              <common-audio-sample-options
+                v-model:padding="selectedPadding"
+                v-model:filter-frequency="selectedFilterFrequency"
+                v-model:apply-filter="selectedApplyFilter"
+                variant="outlined"
+              />
+
+              <v-number-input
+                v-model="selectedSamplePerSpecies"
+                class="mt-4"
+                reverse
+                controlVariant="stacked"
+                label="Sample per Species"
+                density="compact"
+                :hideInput="false"
+                :inset="false"
+              ></v-number-input>
             </v-col>
             <v-col cols="12" md="6">
               <data-model-labels-select
@@ -45,6 +88,7 @@ const selectedAllLabels = ref<boolean>(false);
         </v-card-text>
         <v-card-actions>
           <v-btn @click="open = false">Close</v-btn>
+          <v-btn color="primary" @click="createVoucher">Create Voucher</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

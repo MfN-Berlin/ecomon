@@ -151,3 +151,9 @@ query getModelLabelsList($modelId: Int!, $search: String!, $limit: Int!, $offset
     id
   }
 }
+
+query doesModelLabelExist($modelId: Int!, $labelId: Int!) {
+  data: model_labels(where: { label_id: { _eq: $labelId }, model_id: { _eq: $modelId } }) {
+    id
+  }
+}

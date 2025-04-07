@@ -34,11 +34,20 @@ function resetInfititeScrollState() {
     setInfiniteScrollState.value("ok");
   }
 }
-
+const { checkModelLabels, loading: checkModelLabelsLoading } = useCheckModelLabels();
 watch(
   () => props.modelId,
-  (newId) => {
-    console.log("Model ID prop changed:", newId);
+  async (newId) => {
+    if (newId !== null && newId !== undefined) {
+      // Model ID changed, check if the selected labels exist in the model
+      const result = await checkModelLabels(
+        newId,
+        selectedLabels.value.map((l) => l.id)
+      );
+      const filteredLabels = selectedLabels.value.filter((l, index) => result[index]);
+      selectedLabels.value = filteredLabels;
+    }
+    // Model ID changed, set the modelId and reset the infinite scroll state
     if (newId !== null && newId !== undefined) {
       setModelId(newId);
       resetInfititeScrollState();
@@ -73,16 +82,16 @@ watch(search, () => {
     <v-chip v-if="selectAll" class="ma-1" closable @click:close="selectAll = false"
       >All labels selected</v-chip
     >
-
     <v-chip
       v-for="label in selectedLabels"
-      :key="label.label.id"
+      :key="label.id"
       class="ma-1"
       closable
-      :disabled="selectAll"
+      :disabled="selectAll || checkModelLabelsLoading"
+      :loading="checkModelLabelsLoading"
       @click:close="selectedLabels = selectedLabels.filter((l) => l !== label)"
     >
-      {{ label.label.name }}
+      {{ label.name }}
     </v-chip>
   </div>
   <v-list>
@@ -112,15 +121,15 @@ watch(search, () => {
     >
       <v-item-group v-model="selectedLabels" multiple>
         <v-item
-          v-for="label in labels"
+          v-for="label in labels.map((l) => l.label)"
           v-slot="{ isSelected, toggle, selectedClass }"
-          :key="label.label.id"
+          :key="label.id"
           :value="label"
         >
           <v-list-item
             :class="'cursor-pointer' + '' + selectedClass"
-            :title="label.label.name"
-            :subtitle="`${label.label.english} (${label.label.german}) ${isSelected}`"
+            :title="label.name"
+            :subtitle="`${label.english} (${label.german}) ${isSelected}`"
             @click="toggle"
           >
             <template #append>

@@ -4,7 +4,7 @@ type Options = {
   itemsPerPage?: number;
   defaultSearchTerm: string;
 };
-export type Label = GetModelLabelsListQuery["data"][0];
+export type Label = GetModelLabelsListQuery["data"][0]["label"];
 
 export default function useModelLabelsList(options?: Options) {
   const itemsPerPage = options?.itemsPerPage || 10;
@@ -16,7 +16,7 @@ export default function useModelLabelsList(options?: Options) {
   async function queryFn({ pageParam = 0 }: { pageParam?: number }) {
     console.log("useModelLabelsList queryFn: ", pageParam);
 
-    if (!modelId.value) {
+    if (modelId.value === null || modelId.value === undefined) {
       return {
         data: [],
         nextCursor: undefined
