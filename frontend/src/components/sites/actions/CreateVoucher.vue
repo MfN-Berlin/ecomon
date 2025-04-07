@@ -17,7 +17,7 @@ const open = ref(false);
 const selectedStartDateTime = ref<Date>(new Date());
 const selectedEndDateTime = ref<Date>(new Date());
 const selectedModelId = ref<number | null>(null);
-const selectedlabels = ref<Label[]>([]);
+const selectedLabels = ref<Label[]>([]);
 const selectedAllLabels = ref<boolean>(false);
 const selectedPadding = ref<number>(defaults.padding);
 const selectedApplyFilter = ref<boolean>(defaults.applyFilter);
@@ -79,7 +79,7 @@ onMounted(() => {
             </v-col>
             <v-col cols="12" md="6">
               <data-model-labels-select
-                v-model:selected-labels="selectedlabels"
+                v-model:selected-labels="selectedLabels"
                 v-model:select-all="selectedAllLabels"
                 :model-id="selectedModelId"
               />
@@ -88,7 +88,14 @@ onMounted(() => {
         </v-card-text>
         <v-card-actions>
           <v-btn @click="open = false">Close</v-btn>
-          <v-btn color="primary" @click="createVoucher">Create Voucher</v-btn>
+          <v-btn
+            color="primary"
+            :disabled="
+              !((selectedModelId !== null || selectedModelId !== undefined) && selectedLabels.length > 0)
+            "
+            @click="createVoucher"
+            >Create Voucher</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
