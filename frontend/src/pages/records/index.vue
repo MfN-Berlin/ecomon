@@ -42,7 +42,7 @@ const headers = [
       item-value="name"
     >
       <template v-slot:thead>
-        <BaseTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
+        <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
       </template>
       <template #item.actions="{ item }: { item: Record }">
         <v-toolbar density="compact" color="surface">

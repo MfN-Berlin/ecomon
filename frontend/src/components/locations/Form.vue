@@ -79,7 +79,12 @@ const markers = computed(() => {
     @reset="handleReset"
   >
     <BaseMap :markers="markers" />
-    <v-text-field v-model="name" :error-messages="nameError" label="Name" density="compact"></v-text-field>
+    <v-text-field
+      v-model="name"
+      :error-messages="nameError"
+      label="Location Name"
+      density="compact"
+    ></v-text-field>
     <v-textarea
       v-model="remarks"
       :error-messages="remarksError"

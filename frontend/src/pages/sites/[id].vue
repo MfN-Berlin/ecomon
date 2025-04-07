@@ -9,6 +9,11 @@ const { mutate, isPending } = useSiteUpdate();
 </script>
 <template>
   <v-container>
+    <v-row class="position-sticky">
+      <v-col cols="12">
+        <sites-actions :site-id="id" :site-name="data?.name ?? ''" />
+      </v-col>
+    </v-row>
     <v-row>
       <v-col cols="12" md="6">
         <sites-form

@@ -52,7 +52,7 @@ const headers = [
     item-value="id"
   >
     <template v-slot:thead>
-      <BaseTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
+      <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
     </template>
     <template #item.actions="{ item }: { item: ModelInferenceResult }">
       <v-toolbar density="compact" color="surface">

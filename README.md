@@ -29,6 +29,21 @@ This platform to analyze the audio monitoring data project.
 
 ![Architekture](./docs/architekture.png)
 
+### Celery Worker
+
+In the current setup are two worker quues.
+
+1. **db_worker_queue** One for Data aggreation jobs like importing folders to sites and generating vouchers
+2. **inference_queue** One for all inference jobs
+   The amount of worker threads can be set independently
+
+### Inferencing
+
+Inferencing is done with the help of [BirdID-Model-Zoo](https://github.com/MfN-Berlin/BirdID-Model-Zoo).
+Every inference Worker will start a BirdID-Model-Zoo container and this instance will
+start the selected Model Container with the selected Parameter. The BirdID-Model-Zoo
+will collect the results and transform them to the Ecomon format.
+
 ## Development
 
 For local Development you need docker, nodejs, poetry, python3.10 installed on your machine.
@@ -40,12 +55,13 @@ For local Development you need docker, nodejs, poetry, python3.10 installed on y
 3. Change directory to backend and install dependencies with `poetry install --with dev`
 4. copy env-default to .env and change the variables to your own
 5. Update labels from csv with `poetry run update-labels-csv`
-6. Run the app with `./dev-api.sh`
-7. Run the worker with `./dev-worker.sh`
-8. Change directory to frontend and install dependencies with `npm install`
-9. copy env-default to .env and change the variables to your own
-10. Run the frontend with `npm start`
-11. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql endpoint
+6. Run the backend with `./dev
+7. Change directory to frontend and install dependencies with `npm install`
+8. copy env-default to .env and change the variables to your own
+9. Run the frontend with `npm start`
+10. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql
+    endpoint
+11. If you want to do changes on Hasura Metadata or DatabaseSchema you can start `hasura console` in the hasura folder to oben the console in live editing mode
 
 ### Production
 
@@ -60,15 +76,13 @@ docker ps | grep api
 # d150cb190c58   akwamo-webservice-next-api     ...
 # attach shell to container
 docker exec -it d150cb190c58 /bin/bash
-# run download-labels and update-labels
-poetry run download-labels && poetry run update-labels
 # exit container
 exit
 ```
 
 **_ Prepare Inference Models _**
 
-1. Download the model which are needed for the inference to the infercen host
+1. Download the model which are needed for the inference to the inferecen host
 
 ```bash
 # download the model
