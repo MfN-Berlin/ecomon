@@ -12,24 +12,34 @@ def wait_for_lock_and_create_report(
 ):
     lock_acquired = False
     while not lock_acquired:
-        with get_site_data_report_lock(site_id) as acquired:
-            if acquired:
-                lock_acquired = True
-                logger.info(f"Lock acquired for site {site_id}")
-                if not JobService.does_other_site_job_exists(
-                    session,
-                    request_id,
-                    [
-                        task_topic.SCAN_DIRECTORIES.value,
-                        task_topic.CREATE_SITE_DATA_REPORT.value,
-                    ],
-                    site_id,
-                ):
-                    logger.info(
-                        f"No More tasks are still running for site {site_id}, start create report task"
-                    )
-                    TaskCreator.create_site_data_report_task(session, site_id)
-
-            else:
-                logger.info(f"Waiting for lock to be released for site {site_id}")
-                sleep(0.5)
+        try:
+            with get_site_data_report_lock(site_id) as acquired:
+                if acquired:
+                    lock_acquired = True
+                    logger.info(f"Lock acquired for site {site_id}")
+                    try:
+                        if not JobService.does_other_site_job_exists(
+                            session,
+                            request_id,
+                            [
+                                task_topic.SCAN_DIRECTORIES.value,
+                                task_topic.CREATE_SITE_DATA_REPORT.value,
+                            ],
+                            site_id,
+                        ):
+                            logger.info(
+                                f"No More tasks are still running for site {site_id}, start create report task"
+                            )
+                            TaskCreator.create_site_data_report_task(session, site_id)
+                    except Exception as e:
+                        # Log the error but ensure the lock is released by letting the context manager exit
+                        logger.error(f"Error while processing site {site_id}: {str(e)}")
+                        raise  # Re-raise the exception after logging
+                else:
+                    logger.info(f"Waiting for lock to be released for site {site_id}")
+                    sleep(0.5)
+        except Exception as e:
+            # Handle any exceptions that might occur with the lock itself
+            logger.error(f"Error with lock for site {site_id}: {str(e)}")
+            # Wait a bit before retrying to avoid tight loop in case of persistent errors
+            sleep(1)

@@ -52,14 +52,14 @@ def create_site_data_report_task(self, site_id: int):
             corrupted_files_array,
         ) = calc_basic_report_data(site_id, session)
 
-        duration_histogram = calc_duration_histogram(session)
+        duration_histogram = calc_duration_histogram(session, site_id)
 
         daily_histogram = calc_daily_historgram(
-            session, first_record_date, last_record_date
+            session, first_record_date, last_record_date, site_id
         )
 
         monthly_histogram = calc_monthly_histogram(
-            session, first_record_date, last_record_date
+            session, first_record_date, last_record_date, site_id
         )
 
         # Create expected record array using recording regime
@@ -97,7 +97,7 @@ def create_site_data_report_task(self, site_id: int):
     }
 
 
-def calc_monthly_histogram(session, first_record_date, last_record_date):
+def calc_monthly_histogram(session, first_record_date, last_record_date, site_id):
     # Get the earliest and latest record datetime from the records.
     first_record_date = first_record_date
     last_record_date = last_record_date
@@ -136,6 +136,7 @@ def calc_monthly_histogram(session, first_record_date, last_record_date):
             func.to_char(Records.record_datetime, "MM/YYYY").label("date"),
             func.count().label("count"),
         )
+        .filter(Records.site_id == site_id)
         .group_by("date")
         .order_by("date")
         .all()
@@ -151,7 +152,7 @@ def calc_monthly_histogram(session, first_record_date, last_record_date):
     return {"dates": dates, "counts": counts}
 
 
-def calc_daily_historgram(session, first_record_date, last_record_date):
+def calc_daily_historgram(session, first_record_date, last_record_date, site_id):
     # If there are no records, return empty data.
     if first_record_date is None or last_record_date is None:
         return {"dates": [], "counts": []}
@@ -174,6 +175,7 @@ def calc_daily_historgram(session, first_record_date, last_record_date):
             func.to_char(Records.record_datetime, "DD/MM/YYYY").label("date"),
             func.count().label("count"),
         )
+        .filter(Records.site_id == site_id)
         .filter(
             Records.record_datetime >= start_date, Records.record_datetime <= end_date
         )
@@ -192,7 +194,7 @@ def calc_daily_historgram(session, first_record_date, last_record_date):
     return {"dates": dates, "counts": counts}
 
 
-def calc_duration_histogram(session):
+def calc_duration_histogram(session, site_id):
     """
     Calculates a histogram of duration grouped by year.
 
@@ -213,6 +215,7 @@ def calc_duration_histogram(session):
             func.floor(Records.duration).label("duration_range"),
             func.count().label("count"),
         )
+        .filter(Records.site_id == site_id)
         .group_by("year", func.floor(Records.duration))
         .order_by("year", func.floor(Records.duration))
         .all()
