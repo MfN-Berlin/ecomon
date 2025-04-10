@@ -257,8 +257,8 @@ class Sites(Base):
             name="sites_location_id_fkey",
         ),
         PrimaryKeyConstraint("id", name="sites_pkey"),
-        UniqueConstraint("prefix", name="sites_short_id_key"),
         UniqueConstraint("name", name="sites_name_key"),
+        UniqueConstraint("prefix", name="sites_short_id_key"),
     )
 
     id = mapped_column(BigInteger)

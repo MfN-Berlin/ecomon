@@ -36,6 +36,10 @@ const items = computed(() => [
     value: report && report.value ? report?.value?.corrupted_files?.length : "N/A"
   }
 ]);
+
+const reportDateString = computed(() => (report && report.value ? report?.value?.created_at : "N/A"));
+
+const corruptedFiles = computed(() => (report && report.value ? report?.value?.corrupted_files : []));
 </script>
 
 <template>
@@ -50,6 +54,15 @@ const items = computed(() => [
           variant="outlined"
           disabled
           :model-value="item.value"
+        />
+      </v-col>
+      <v-col class="px-2" cols="6" md="4">
+        <sites-reports-corrupted-error-list
+          v-if="report"
+          class="w-100"
+          variant="tonal"
+          :report-date-string="reportDateString"
+          :corrupted-files="corruptedFiles"
         />
       </v-col>
     </v-row>

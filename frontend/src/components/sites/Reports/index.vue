@@ -58,7 +58,11 @@ watch(
       </v-tooltip>
     </v-toolbar>
 
-    <sites-reports-basic-data v-if="selectedReportId" :reportId="selectedReportId" />
+    <sites-reports-basic-data
+      v-if="selectedReportId"
+      :reportId="selectedReportId"
+      :report-date-string="reports.find((report) => report.id === selectedReportId)?.created_at ?? ''"
+    />
     <sites-reports-visual-data v-if="selectedReportId" :reportId="selectedReportId" :site="site" />
     <div v-else>
       <v-skeleton-loader type="table-row" />
