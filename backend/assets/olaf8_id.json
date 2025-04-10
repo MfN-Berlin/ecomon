@@ -1,0 +1,978 @@
+[
+	{
+		"latin_name" : "Accipiter gentilis",
+		"olaf8_id" : "AVACACGE"
+	},
+	{
+		"latin_name" : "Accipiter nisus",
+		"olaf8_id" : "AVACACNI"
+	},
+	{
+		"latin_name" : "Acrocephalus arundinaceus",
+		"olaf8_id" : "AVAOACAR"
+	},
+	{
+		"latin_name" : "Acrocephalus melanopogon",
+		"olaf8_id" : "AVAOACME"
+	},
+	{
+		"latin_name" : "Acrocephalus paludicola",
+		"olaf8_id" : "AVAOACPD"
+	},
+	{
+		"latin_name" : "Acrocephalus palustris",
+		"olaf8_id" : "AVAOACPA"
+	},
+	{
+		"latin_name" : "Acrocephalus schoenobaenus",
+		"olaf8_id" : "AVAOACSB"
+	},
+	{
+		"latin_name" : "Acrocephalus scirpaceus",
+		"olaf8_id" : "AVAOACSC"
+	},
+	{
+		"latin_name" : "Actitis hypoleucos",
+		"olaf8_id" : "AVSCACHY"
+	},
+	{
+		"latin_name" : "Aegithalos caudatus",
+		"olaf8_id" : "AVAEAECA"
+	},
+	{
+		"latin_name" : "Aegolius funereus",
+		"olaf8_id" : "AVSTAEFU"
+	},
+	{
+		"latin_name" : "Alauda arvensis",
+		"olaf8_id" : "AVAUALAR"
+	},
+	{
+		"latin_name" : "Alcedo atthis",
+		"olaf8_id" : "AVALALAT"
+	},
+	{
+		"latin_name" : "Alectoris rufa",
+		"olaf8_id" : null
+	},
+	{
+		"latin_name" : "Alopochen aegyptiaca",
+		"olaf8_id" : "AVANALAE"
+	},
+	{
+		"latin_name" : "Anas acuta",
+		"olaf8_id" : "AVANANAC"
+	},
+	{
+		"latin_name" : "Anas platyrhynchos",
+		"olaf8_id" : "AVANANPL"
+	},
+	{
+		"latin_name" : "Anser albifrons",
+		"olaf8_id" : "AVANARAL"
+	},
+	{
+		"latin_name" : "Anser anser",
+		"olaf8_id" : "AVANARAN"
+	},
+	{
+		"latin_name" : "Anser fabalis",
+		"olaf8_id" : "AVANARFA"
+	},
+	{
+		"latin_name" : "Anser serrirostris",
+		"olaf8_id" : "AVANARSE"
+	},
+	{
+		"latin_name" : "Anthus campestris",
+		"olaf8_id" : "AVMTANCA"
+	},
+	{
+		"latin_name" : "Anthus cervinus",
+		"olaf8_id" : "AVMTANCE"
+	},
+	{
+		"latin_name" : "Anthus petrosus",
+		"olaf8_id" : "AVMTANPE"
+	},
+	{
+		"latin_name" : "Anthus pratensis",
+		"olaf8_id" : "AVMTANPR"
+	},
+	{
+		"latin_name" : "Anthus spinoletta",
+		"olaf8_id" : "AVMTANSP"
+	},
+	{
+		"latin_name" : "Anthus trivialis",
+		"olaf8_id" : "AVMTANTR"
+	},
+	{
+		"latin_name" : "Apus apus",
+		"olaf8_id" : "AVAPAPAP"
+	},
+	{
+		"latin_name" : "Ardea cinerea",
+		"olaf8_id" : "AVARARCI"
+	},
+	{
+		"latin_name" : "Arenaria interpres",
+		"olaf8_id" : "AVSCARIN"
+	},
+	{
+		"latin_name" : "Asio otus",
+		"olaf8_id" : "AVSTASOT"
+	},
+	{
+		"latin_name" : "Athene noctua",
+		"olaf8_id" : "AVSTATNO"
+	},
+	{
+		"latin_name" : "Aythya ferina",
+		"olaf8_id" : "AVANAYFE"
+	},
+	{
+		"latin_name" : "Aythya fuligula",
+		"olaf8_id" : "AVANAYFU"
+	},
+	{
+		"latin_name" : "Botaurus stellaris",
+		"olaf8_id" : "AVARBOST"
+	},
+	{
+		"latin_name" : "Branta canadensis",
+		"olaf8_id" : "AVANBRCA"
+	},
+	{
+		"latin_name" : "Branta leucopsis",
+		"olaf8_id" : "AVANBRLE"
+	},
+	{
+		"latin_name" : "Bubo bubo",
+		"olaf8_id" : "AVSTBUBU"
+	},
+	{
+		"latin_name" : "Bubo scandiacus",
+		"olaf8_id" : "AVSTBUSC"
+	},
+	{
+		"latin_name" : "Bucephala clangula",
+		"olaf8_id" : "AVANBUCL"
+	},
+	{
+		"latin_name" : "Buteo buteo",
+		"olaf8_id" : "AVACBUBU"
+	},
+	{
+		"latin_name" : "Calandrella brachydactyla",
+		"olaf8_id" : "AVAUCABR"
+	},
+	{
+		"latin_name" : "Calcarius lapponicus",
+		"olaf8_id" : "AVCLCALA"
+	},
+	{
+		"latin_name" : "Calidris alpina",
+		"olaf8_id" : "AVSCCAAP"
+	},
+	{
+		"latin_name" : "Calidris canutus",
+		"olaf8_id" : "AVSCCACA"
+	},
+	{
+		"latin_name" : "Calidris ferruginea",
+		"olaf8_id" : "AVSCCAFE"
+	},
+	{
+		"latin_name" : "Caprimulgus europaeus",
+		"olaf8_id" : "AVCACAEU"
+	},
+	{
+		"latin_name" : "Carduelis carduelis",
+		"olaf8_id" : "AVFRCACA"
+	},
+	{
+		"latin_name" : "Carduelis citrinella",
+		"olaf8_id" : "AVFRCACI"
+	},
+	{
+		"latin_name" : "Carpodacus erythrinus",
+		"olaf8_id" : "AVFRCPER"
+	},
+	{
+		"latin_name" : "Certhia brachydactyla",
+		"olaf8_id" : "AVCECEBR"
+	},
+	{
+		"latin_name" : "Certhia familiaris",
+		"olaf8_id" : "AVCECEFA"
+	},
+	{
+		"latin_name" : "Cettia cetti",
+		"olaf8_id" : "AVCECECE"
+	},
+	{
+		"latin_name" : "Charadrius alexandrinus",
+		"olaf8_id" : "AVCHCHAL"
+	},
+	{
+		"latin_name" : "Charadrius dubius",
+		"olaf8_id" : "AVCHCHDU"
+	},
+	{
+		"latin_name" : "Charadrius hiaticula",
+		"olaf8_id" : "AVCHCHHI"
+	},
+	{
+		"latin_name" : "Charadrius morinellus",
+		"olaf8_id" : "AVCHCHMN"
+	},
+	{
+		"latin_name" : "Chlidonias hybrida",
+		"olaf8_id" : "AVLACLHY"
+	},
+	{
+		"latin_name" : "Chlidonias leucopterus",
+		"olaf8_id" : "AVLACLLE"
+	},
+	{
+		"latin_name" : "Chlidonias niger",
+		"olaf8_id" : "AVLACLNI"
+	},
+	{
+		"latin_name" : "Chloris chloris",
+		"olaf8_id" : "AVFRCHCH"
+	},
+	{
+		"latin_name" : "Chroicocephalus ridibundus",
+		"olaf8_id" : "AVLACHRI"
+	},
+	{
+		"latin_name" : "Circus aeruginosus",
+		"olaf8_id" : "AVACCIAE"
+	},
+	{
+		"latin_name" : "Cisticola juncidis",
+		"olaf8_id" : "AVCICIJU"
+	},
+	{
+		"latin_name" : "Clamator glandarius",
+		"olaf8_id" : "AVCUCLGL"
+	},
+	{
+		"latin_name" : "Clangula hyemalis",
+		"olaf8_id" : "AVANCLHY"
+	},
+	{
+		"latin_name" : "Coccothraustes coccothraustes",
+		"olaf8_id" : "AVFRCOCO"
+	},
+	{
+		"latin_name" : "Coloeus monedula",
+		"olaf8_id" : "AVCVCEMO"
+	},
+	{
+		"latin_name" : "Columba oenas",
+		"olaf8_id" : "AVCOCOOE"
+	},
+	{
+		"latin_name" : "Columba palumbus",
+		"olaf8_id" : "AVCOCOPA"
+	},
+	{
+		"latin_name" : "Corvus corax",
+		"olaf8_id" : "AVCVCOCO"
+	},
+	{
+		"latin_name" : "Corvus cornix",
+		"olaf8_id" : "AVCVCOCX"
+	},
+	{
+		"latin_name" : "Corvus corone",
+		"olaf8_id" : "AVCVCOCE"
+	},
+	{
+		"latin_name" : "Corvus frugilegus",
+		"olaf8_id" : "AVCVCOFR"
+	},
+	{
+		"latin_name" : "Coturnix coturnix",
+		"olaf8_id" : "AVPHCOCO"
+	},
+	{
+		"latin_name" : "Crex crex",
+		"olaf8_id" : "AVRACRCR"
+	},
+	{
+		"latin_name" : "Cuculus canorus",
+		"olaf8_id" : "AVCUCUCA"
+	},
+	{
+		"latin_name" : "Cyanistes caeruleus",
+		"olaf8_id" : "AVPDCYCA"
+	},
+	{
+		"latin_name" : "Cygnus columbianus",
+		"olaf8_id" : "AVANCYCO"
+	},
+	{
+		"latin_name" : "Cygnus cygnus",
+		"olaf8_id" : "AVANCYCY"
+	},
+	{
+		"latin_name" : "Cygnus olor",
+		"olaf8_id" : "AVANCYOL"
+	},
+	{
+		"latin_name" : "Delichon urbicum",
+		"olaf8_id" : "AVHIDEUR"
+	},
+	{
+		"latin_name" : "Dendrocopos major",
+		"olaf8_id" : "AVPIDEMA"
+	},
+	{
+		"latin_name" : "Dryocopus martius",
+		"olaf8_id" : "AVPIDRMA"
+	},
+	{
+		"latin_name" : "Emberiza aureola",
+		"olaf8_id" : "AVEMEMAU"
+	},
+	{
+		"latin_name" : "Emberiza calandra",
+		"olaf8_id" : "AVEMEMCA"
+	},
+	{
+		"latin_name" : "Emberiza cia",
+		"olaf8_id" : "AVEMEMCI"
+	},
+	{
+		"latin_name" : "Emberiza cirlus",
+		"olaf8_id" : "AVEMEMCR"
+	},
+	{
+		"latin_name" : "Emberiza citrinella",
+		"olaf8_id" : "AVEMEMCT"
+	},
+	{
+		"latin_name" : "Emberiza hortulana",
+		"olaf8_id" : "AVEMEMHO"
+	},
+	{
+		"latin_name" : "Emberiza melanocephala",
+		"olaf8_id" : "AVEMEMME"
+	},
+	{
+		"latin_name" : "Emberiza pusilla",
+		"olaf8_id" : "AVEMEMPU"
+	},
+	{
+		"latin_name" : "Emberiza rustica",
+		"olaf8_id" : "AVEMEMRU"
+	},
+	{
+		"latin_name" : "Emberiza schoeniclus",
+		"olaf8_id" : "AVEMEMSC"
+	},
+	{
+		"latin_name" : "Erithacus rubecula",
+		"olaf8_id" : "AVMUERRU"
+	},
+	{
+		"latin_name" : "Falco peregrinus",
+		"olaf8_id" : "AVFAFAPE"
+	},
+	{
+		"latin_name" : "Falco subbuteo",
+		"olaf8_id" : "AVFAFASU"
+	},
+	{
+		"latin_name" : "Falco tinnunculus",
+		"olaf8_id" : "AVFAFATI"
+	},
+	{
+		"latin_name" : "Ficedula albicollis",
+		"olaf8_id" : "AVMUFIAB"
+	},
+	{
+		"latin_name" : "Ficedula hypoleuca",
+		"olaf8_id" : "AVMUFIHY"
+	},
+	{
+		"latin_name" : "Ficedula parva",
+		"olaf8_id" : "AVMUFIPA"
+	},
+	{
+		"latin_name" : "Fringilla coelebs",
+		"olaf8_id" : "AVFRFRCO"
+	},
+	{
+		"latin_name" : "Fringilla montifringilla",
+		"olaf8_id" : "AVFRFRMO"
+	},
+	{
+		"latin_name" : "Fulica atra",
+		"olaf8_id" : "AVRAFUAT"
+	},
+	{
+		"latin_name" : "Galerida cristata",
+		"olaf8_id" : "AVAUGACR"
+	},
+	{
+		"latin_name" : "Galerida theklae",
+		"olaf8_id" : null
+	},
+	{
+		"latin_name" : "Gallinago gallinago",
+		"olaf8_id" : "AVSCGAGA"
+	},
+	{
+		"latin_name" : "Gallinula chloropus",
+		"olaf8_id" : "AVRAGACH"
+	},
+	{
+		"latin_name" : "Garrulus glandarius",
+		"olaf8_id" : "AVCVGAGL"
+	},
+	{
+		"latin_name" : "Gavia arctica",
+		"olaf8_id" : "AVGVGAAR"
+	},
+	{
+		"latin_name" : "Grus grus",
+		"olaf8_id" : "AVGUGRGR"
+	},
+	{
+		"latin_name" : "Haematopus ostralegus",
+		"olaf8_id" : "AVHAHAOS"
+	},
+	{
+		"latin_name" : "Haliaeetus albicilla",
+		"olaf8_id" : "AVACHAAL"
+	},
+	{
+		"latin_name" : "Himantopus himantopus",
+		"olaf8_id" : "AVRVHIHI"
+	},
+	{
+		"latin_name" : "Hippolais icterina",
+		"olaf8_id" : "AVAOHIIC"
+	},
+	{
+		"latin_name" : "Hippolais olivetorum",
+		"olaf8_id" : null
+	},
+	{
+		"latin_name" : "Hirundo rustica",
+		"olaf8_id" : "AVHIHIRU"
+	},
+	{
+		"latin_name" : "Ixobrychus minutus",
+		"olaf8_id" : "AVARIXMI"
+	},
+	{
+		"latin_name" : "Jynx torquilla",
+		"olaf8_id" : "AVPIJYTO"
+	},
+	{
+		"latin_name" : "Lagopus muta",
+		"olaf8_id" : "AVPHLAMU"
+	},
+	{
+		"latin_name" : "Lanius collurio",
+		"olaf8_id" : "AVLNLACO"
+	},
+	{
+		"latin_name" : "Lanius excubitor",
+		"olaf8_id" : "AVLNLAEX"
+	},
+	{
+		"latin_name" : "Lanius minor",
+		"olaf8_id" : "AVLNLAMI"
+	},
+	{
+		"latin_name" : "Larus argentatus",
+		"olaf8_id" : "AVLALAAR"
+	},
+	{
+		"latin_name" : "Larus cachinnans",
+		"olaf8_id" : "AVLALACN"
+	},
+	{
+		"latin_name" : "Larus canus",
+		"olaf8_id" : "AVLALACA"
+	},
+	{
+		"latin_name" : "Larus fuscus",
+		"olaf8_id" : "AVLALAFU"
+	},
+	{
+		"latin_name" : "Larus marinus",
+		"olaf8_id" : "AVLALAMA"
+	},
+	{
+		"latin_name" : "Larus michahellis",
+		"olaf8_id" : "AVLALAMH"
+	},
+	{
+		"latin_name" : "Limosa limosa",
+		"olaf8_id" : "AVSCLILI"
+	},
+	{
+		"latin_name" : "Locustella fluviatilis",
+		"olaf8_id" : "AVLOLOFL"
+	},
+	{
+		"latin_name" : "Locustella luscinioides",
+		"olaf8_id" : "AVLOLOLU"
+	},
+	{
+		"latin_name" : "Locustella naevia",
+		"olaf8_id" : "AVLOLONA"
+	},
+	{
+		"latin_name" : "Lophophanes cristatus",
+		"olaf8_id" : "AVPDLOCR"
+	},
+	{
+		"latin_name" : "Loxia curvirostra",
+		"olaf8_id" : "AVFRLOCU"
+	},
+	{
+		"latin_name" : "Loxia leucoptera",
+		"olaf8_id" : "AVFRLOLE"
+	},
+	{
+		"latin_name" : "Loxia pytyopsittacus",
+		"olaf8_id" : "AVFRLOPY"
+	},
+	{
+		"latin_name" : "Lullula arborea",
+		"olaf8_id" : "AVAULUAR"
+	},
+	{
+		"latin_name" : "Luscinia luscinia",
+		"olaf8_id" : "AVMULULU"
+	},
+	{
+		"latin_name" : "Luscinia megarhynchos",
+		"olaf8_id" : "AVMULUME"
+	},
+	{
+		"latin_name" : "Luscinia svecica",
+		"olaf8_id" : "AVMULUSV"
+	},
+	{
+		"latin_name" : "Lyrurus tetrix",
+		"olaf8_id" : "AVPHLYTE"
+	},
+	{
+		"latin_name" : "Melanocorypha calandra",
+		"olaf8_id" : "AVAUMECA"
+	},
+	{
+		"latin_name" : "Mergus serrator",
+		"olaf8_id" : "AVANMESE"
+	},
+	{
+		"latin_name" : "Merops apiaster",
+		"olaf8_id" : "AVMPMEAP"
+	},
+	{
+		"latin_name" : "Milvus migrans",
+		"olaf8_id" : "AVACMIMI"
+	},
+	{
+		"latin_name" : "Milvus milvus",
+		"olaf8_id" : "AVACMIMV"
+	},
+	{
+		"latin_name" : "Monticola solitarius",
+		"olaf8_id" : "AVMUMOSO"
+	},
+	{
+		"latin_name" : "Motacilla alba",
+		"olaf8_id" : "AVMTMOAL"
+	},
+	{
+		"latin_name" : "Motacilla cinerea",
+		"olaf8_id" : "AVMTMOCI"
+	},
+	{
+		"latin_name" : "Motacilla flava",
+		"olaf8_id" : "AVMTMOFL"
+	},
+	{
+		"latin_name" : "Muscicapa striata",
+		"olaf8_id" : "AVMUMUST"
+	},
+	{
+		"latin_name" : "Nucifraga caryocatactes",
+		"olaf8_id" : "AVCVNUCA"
+	},
+	{
+		"latin_name" : "Numenius arquata",
+		"olaf8_id" : "AVSCNUAR"
+	},
+	{
+		"latin_name" : "Numenius phaeopus",
+		"olaf8_id" : "AVSCNUPH"
+	},
+	{
+		"latin_name" : "Oenanthe leucura",
+		"olaf8_id" : null
+	},
+	{
+		"latin_name" : "Oenanthe oenanthe",
+		"olaf8_id" : "AVMUOEOE"
+	},
+	{
+		"latin_name" : "Oriolus oriolus",
+		"olaf8_id" : "AVOROROR"
+	},
+	{
+		"latin_name" : "Otus scops",
+		"olaf8_id" : "AVSTOTSC"
+	},
+	{
+		"latin_name" : "Pandion haliaetus",
+		"olaf8_id" : "AVPAPAHA"
+	},
+	{
+		"latin_name" : "Panurus biarmicus",
+		"olaf8_id" : "AVPUPABI"
+	},
+	{
+		"latin_name" : "Parus major",
+		"olaf8_id" : "AVPDPAMA"
+	},
+	{
+		"latin_name" : "Passer domesticus",
+		"olaf8_id" : "AVPAPADO"
+	},
+	{
+		"latin_name" : "Passer hispaniolensis",
+		"olaf8_id" : null
+	},
+	{
+		"latin_name" : "Passer montanus",
+		"olaf8_id" : "AVPAPAMO"
+	},
+	{
+		"latin_name" : "Perdix perdix",
+		"olaf8_id" : "AVPHPXPE"
+	},
+	{
+		"latin_name" : "Periparus ater",
+		"olaf8_id" : "AVPDPEAT"
+	},
+	{
+		"latin_name" : "Phalacrocorax carbo",
+		"olaf8_id" : "AVPXPHCA"
+	},
+	{
+		"latin_name" : "Phasianus colchicus",
+		"olaf8_id" : "AVPHPHCO"
+	},
+	{
+		"latin_name" : "Phoenicopterus roseus",
+		"olaf8_id" : "AVPPPHRO"
+	},
+	{
+		"latin_name" : "Phoenicurus ochruros",
+		"olaf8_id" : "AVMUPHOC"
+	},
+	{
+		"latin_name" : "Phoenicurus phoenicurus",
+		"olaf8_id" : "AVMUPHPH"
+	},
+	{
+		"latin_name" : "Phylloscopus bonelli",
+		"olaf8_id" : "AVPCPHBN"
+	},
+	{
+		"latin_name" : "Phylloscopus borealis",
+		"olaf8_id" : "AVPCPHBO"
+	},
+	{
+		"latin_name" : "Phylloscopus canariensis",
+		"olaf8_id" : null
+	},
+	{
+		"latin_name" : "Phylloscopus collybita",
+		"olaf8_id" : "AVPCPHCO"
+	},
+	{
+		"latin_name" : "Phylloscopus ibericus",
+		"olaf8_id" : "AVPCPHIB"
+	},
+	{
+		"latin_name" : "Phylloscopus sibilatrix",
+		"olaf8_id" : "AVPCPHSI"
+	},
+	{
+		"latin_name" : "Phylloscopus trochiloides",
+		"olaf8_id" : "AVPCPHTD"
+	},
+	{
+		"latin_name" : "Phylloscopus trochilus",
+		"olaf8_id" : "AVPCPHTR"
+	},
+	{
+		"latin_name" : "Pica pica",
+		"olaf8_id" : "AVCVPIPI"
+	},
+	{
+		"latin_name" : "Picus canus",
+		"olaf8_id" : "AVPIPCCA"
+	},
+	{
+		"latin_name" : "Picus viridis",
+		"olaf8_id" : "AVPIPCVI"
+	},
+	{
+		"latin_name" : "Plectrophenax nivalis",
+		"olaf8_id" : "AVCLPLNI"
+	},
+	{
+		"latin_name" : "Podiceps cristatus",
+		"olaf8_id" : "AVPOPOCR"
+	},
+	{
+		"latin_name" : "Podiceps grisegena",
+		"olaf8_id" : "AVPOPOGR"
+	},
+	{
+		"latin_name" : "Podiceps nigricollis",
+		"olaf8_id" : "AVPOPONI"
+	},
+	{
+		"latin_name" : "Poecile montanus",
+		"olaf8_id" : "AVPDPOMO"
+	},
+	{
+		"latin_name" : "Poecile palustris",
+		"olaf8_id" : "AVPDPOPA"
+	},
+	{
+		"latin_name" : "Porzana parva",
+		"olaf8_id" : "AVRAPOPA"
+	},
+	{
+		"latin_name" : "Porzana porzana",
+		"olaf8_id" : "AVRAPOPO"
+	},
+	{
+		"latin_name" : "Porzana pusilla",
+		"olaf8_id" : "AVRAPOPU"
+	},
+	{
+		"latin_name" : "Prunella modularis",
+		"olaf8_id" : "AVPRPRMO"
+	},
+	{
+		"latin_name" : "Pyrrhocorax graculus",
+		"olaf8_id" : "AVCVPYGR"
+	},
+	{
+		"latin_name" : "Pyrrhocorax pyrrhocorax",
+		"olaf8_id" : "AVCVPYPY"
+	},
+	{
+		"latin_name" : "Pyrrhula pyrrhula",
+		"olaf8_id" : "AVFRPYPY"
+	},
+	{
+		"latin_name" : "Rallus aquaticus",
+		"olaf8_id" : "AVRARAAQ"
+	},
+	{
+		"latin_name" : "Recurvirostra avosetta",
+		"olaf8_id" : "AVRVREAV"
+	},
+	{
+		"latin_name" : "Regulus ignicapilla",
+		"olaf8_id" : "AVRGREIG"
+	},
+	{
+		"latin_name" : "Regulus regulus",
+		"olaf8_id" : "AVRGRERE"
+	},
+	{
+		"latin_name" : "Remiz pendulinus",
+		"olaf8_id" : "AVREREPE"
+	},
+	{
+		"latin_name" : "Riparia riparia",
+		"olaf8_id" : "AVHIRIRI"
+	},
+	{
+		"latin_name" : "Rissa tridactyla",
+		"olaf8_id" : "AVLARITR"
+	},
+	{
+		"latin_name" : "Saxicola rubetra",
+		"olaf8_id" : "AVMUSARU"
+	},
+	{
+		"latin_name" : "Saxicola rubicola",
+		"olaf8_id" : "AVMUSARC"
+	},
+	{
+		"latin_name" : "Scolopax rusticola",
+		"olaf8_id" : "AVSCSCRU"
+	},
+	{
+		"latin_name" : "Serinus serinus",
+		"olaf8_id" : "AVFRSESE"
+	},
+	{
+		"latin_name" : "Sitta europaea",
+		"olaf8_id" : "AVSISIEU"
+	},
+	{
+		"latin_name" : "Somateria mollissima",
+		"olaf8_id" : "AVANSOMO"
+	},
+	{
+		"latin_name" : "Stercorarius skua",
+		"olaf8_id" : "AVSESTSK"
+	},
+	{
+		"latin_name" : "Sterna hirundo",
+		"olaf8_id" : "AVLASTHI"
+	},
+	{
+		"latin_name" : "Sterna paradisaea",
+		"olaf8_id" : "AVLASTPA"
+	},
+	{
+		"latin_name" : "Streptopelia decaocto",
+		"olaf8_id" : "AVCOSTDE"
+	},
+	{
+		"latin_name" : "Streptopelia turtur",
+		"olaf8_id" : "AVCOSTTU"
+	},
+	{
+		"latin_name" : "Strix aluco",
+		"olaf8_id" : "AVSTSTAL"
+	},
+	{
+		"latin_name" : "Sturnus vulgaris",
+		"olaf8_id" : "AVSRSTVU"
+	},
+	{
+		"latin_name" : "Sylvia atricapilla",
+		"olaf8_id" : "AVSYSYAT"
+	},
+	{
+		"latin_name" : "Sylvia borin",
+		"olaf8_id" : "AVSYSYBO"
+	},
+	{
+		"latin_name" : "Sylvia cantillans",
+		"olaf8_id" : "AVSYSYCA"
+	},
+	{
+		"latin_name" : "Sylvia communis",
+		"olaf8_id" : "AVSYSYCO"
+	},
+	{
+		"latin_name" : "Sylvia conspicillata",
+		"olaf8_id" : "AVSYSYCS"
+	},
+	{
+		"latin_name" : "Sylvia curruca",
+		"olaf8_id" : "AVSYSYCU"
+	},
+	{
+		"latin_name" : "Sylvia melanocephala",
+		"olaf8_id" : "AVSYSYME"
+	},
+	{
+		"latin_name" : "Sylvia nisoria",
+		"olaf8_id" : "AVSYSYNI"
+	},
+	{
+		"latin_name" : "Sylvia undata",
+		"olaf8_id" : "AVSYSYUN"
+	},
+	{
+		"latin_name" : "Tachybaptus ruficollis",
+		"olaf8_id" : "AVPOTARU"
+	},
+	{
+		"latin_name" : "Tadorna tadorna",
+		"olaf8_id" : "AVANTATA"
+	},
+	{
+		"latin_name" : "Tetrao urogallus",
+		"olaf8_id" : "AVPHTOUR"
+	},
+	{
+		"latin_name" : "Tetrastes bonasia",
+		"olaf8_id" : "AVPHTSBO"
+	},
+	{
+		"latin_name" : "Thalasseus sandvicensis",
+		"olaf8_id" : "AVLATHSA"
+	},
+	{
+		"latin_name" : "Tringa erythropus",
+		"olaf8_id" : "AVSCTRER"
+	},
+	{
+		"latin_name" : "Tringa glareola",
+		"olaf8_id" : "AVSCTRGL"
+	},
+	{
+		"latin_name" : "Tringa nebularia",
+		"olaf8_id" : "AVSCTRNE"
+	},
+	{
+		"latin_name" : "Tringa ochropus",
+		"olaf8_id" : "AVSCTROC"
+	},
+	{
+		"latin_name" : "Tringa totanus",
+		"olaf8_id" : "AVSCTRTO"
+	},
+	{
+		"latin_name" : "Troglodytes troglodytes",
+		"olaf8_id" : "AVTGTRTR"
+	},
+	{
+		"latin_name" : "Turdus iliacus",
+		"olaf8_id" : "AVTUTUIL"
+	},
+	{
+		"latin_name" : "Turdus merula",
+		"olaf8_id" : "AVTUTUME"
+	},
+	{
+		"latin_name" : "Turdus philomelos",
+		"olaf8_id" : "AVTUTUPH"
+	},
+	{
+		"latin_name" : "Turdus pilaris",
+		"olaf8_id" : "AVTUTUPI"
+	},
+	{
+		"latin_name" : "Turdus viscivorus",
+		"olaf8_id" : "AVTUTUVI"
+	},
+	{
+		"latin_name" : "Tyto alba",
+		"olaf8_id" : "AVTDTYAL"
+	},
+	{
+		"latin_name" : "Upupa epops",
+		"olaf8_id" : "AVUPUPEP"
+	},
+	{
+		"latin_name" : "Vanellus vanellus",
+		"olaf8_id" : "AVCHVAVA"
+	}
+]

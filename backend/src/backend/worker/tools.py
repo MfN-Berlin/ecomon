@@ -26,3 +26,11 @@ def parse_datetime(filename_stem):
         raise ValueError(
             f"Unable to parse datetime from filename: {filename_stem}"
         ) from e
+
+
+def first_letter_to_upper_case(string):
+    return string[0].upper() + string[1:]
+
+
+def to_lower_case_with_underscores(string):
+    return string.lower().replace(" ", "_")

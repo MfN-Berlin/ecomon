@@ -35,7 +35,7 @@ function createVoucher() {
     sampleCount: selectedSamplePerSpecies.value,
     startDatetime: $dayjs(selectedStartDateTime.value).local().toISOString(),
     endDatetime: $dayjs(selectedEndDateTime.value).local().toISOString(),
-    audioPaddingMs: selectedPadding.value,
+    audioPaddingMs: selectedPadding.value * 1000,
     highPassFilterFrequencyHz: selectedFilterFrequency.value
   });
 }

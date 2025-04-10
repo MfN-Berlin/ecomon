@@ -42,7 +42,7 @@ const { mutate, isPending } = useRecordUpdate();
         />
       </v-col>
       <v-col cols="12" md="6">
-        <infrence-results-table :record-id="id"></infrence-results-table>
+        <inference-results-table :record-id="id"></inference-results-table>
       </v-col>
     </v-row>
   </v-container>

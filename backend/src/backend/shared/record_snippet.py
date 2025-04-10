@@ -112,15 +112,16 @@ def save_snippet_to_file(
     try:
         # Generate the snippet buffer using the existing function
         snippet_buffer = generate_snippet_buffer(
-            file_path=file_path,
-            target_format=target_format,
-            start_ms=start_ms,
-            end_ms=end_ms,
-            audio_padding_ms=audio_padding_ms,
-            high_pass_filter_frequency_hz=high_pass_filter_frequency_hz,
+            file_path,
+            target_format,
+            start_ms,
+            end_ms,
+            audio_padding_ms,
+            high_pass_filter_frequency_hz,
         )
 
         # Write the buffer contents to the target file
+
         with open(target_path, "wb") as f:
             f.write(snippet_buffer.getvalue())
 

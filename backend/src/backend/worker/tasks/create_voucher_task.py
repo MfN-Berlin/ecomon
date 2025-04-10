@@ -11,7 +11,7 @@ import uuid
 from sqlalchemy import func, desc, text
 from sqlalchemy.dialects.postgresql import JSONB
 import json
-
+from backend.shared.excel import write_execl_file
 from backend.worker.app import app
 from backend.shared.models.db.models import (
     Records,
@@ -26,6 +26,7 @@ from backend.worker.database import db_session
 from backend.worker.tasks.base_task import BaseTask
 from backend.shared.consts import task_topic
 from backend.shared.record_snippet import SupportedFormat, save_snippet_to_file
+from backend.worker.tools import to_lower_case_with_underscores
 
 logger = get_task_logger(__name__)
 settings = WorkerSettings()
@@ -77,6 +78,7 @@ def create_voucher_task(
 
         # Process each label
         total_labels = len(label_ids)
+        results_dir = Path(settings.results_directory) / f"voucher_{job_id}"
         for idx, label_id in enumerate(label_ids):
             label = session.query(Labels).filter(Labels.id == label_id).first()
             if not label:
@@ -111,10 +113,11 @@ def create_voucher_task(
             )
 
             # Create a directory for this label
-            label_dir = tmp_dir / label.name
+            label_dir = tmp_dir / to_lower_case_with_underscores(label.name)
             os.makedirs(label_dir, exist_ok=True)
 
             # Process each sample
+            rows = []
             for sample in samples:
                 (
                     filepath,
@@ -140,35 +143,34 @@ def create_voucher_task(
                     Path(settings.base_data_directory) / filepath,
                     str(out_filepath),
                     SupportedFormat.WAV,
-                    start_time,
-                    end_time,
+                    start_time * 1000,
+                    end_time * 1000,
                     audio_padding_ms,
-                    high_pass_filter_frequency_hz,
+                    0,
+                )
+                rows.append(
+                    create_result_file_row(
+                        label.name,
+                        filename,
+                        record_datetime,
+                        start_time,
+                        end_time,
+                        duration,
+                        0,
+                        confidence,
+                        audio_padding_ms,
+                    )
                 )
 
-                # # Create metadata file
-                # with open(label_dir / f"{stem}_metadata.json", "w") as f:
-                #     json.dump(
-                #         {
-                #             "label": label.name,
-                #             "filename": filename,
-                #             "record_datetime": record_datetime.isoformat(),
-                #             "start_time": start_time,
-                #             "end_time": end_time,
-                #             "duration": duration,
-                #             "confidence": confidence,
-                #             "audio_padding": audio_padding,
-                #         },
-                #         f,
-                #         indent=2,
-                #     )
-
             # Update progress
+            result_file_path = (
+                label_dir / f"{to_lower_case_with_underscores(label.name)}.xlsx"
+            )
+            create_result_file(result_file_path, rows)
             progress = int(((idx + 1) / total_labels) * 100)
             JobService.update_job_progress(session, job_id, progress)
             session.commit()
 
-        results_dir = Path(settings.results_directory) / f"voucher_{job_id}"
         result_filename = (
             f"voucher_{site.prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
         )
@@ -203,6 +205,7 @@ def create_voucher_task(
         # Clean up temporary directory if it exists
         if "tmp_dir" in locals() and os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir)
+            shutil.rmtree(results_dir)
         raise e
 
 
@@ -217,4 +220,52 @@ def create_zip_archive(source_dir, output_path):
     """Create a zip archive from a directory"""
     shutil.make_archive(
         os.path.splitext(output_path)[0], "zip", source_dir  # Remove .zip extension
+    )
+
+
+def create_result_file_row(
+    label_name: str,
+    filename: str,
+    record_datetime: datetime,
+    start_time: float,
+    end_time: float,
+    duration: float,
+    channel: int,
+    confidence: float,
+    audio_padding: float,
+):
+    return {
+        "species": label_name,
+        "filename": filename,
+        "record_datetime": record_datetime,
+        "start_time": start_time,
+        "end_time": end_time,
+        "duration": duration,
+        "channel": channel,
+        "confidence": confidence,
+        "audio_padding": audio_padding / 1000,
+    }
+
+
+def create_result_file(filepath: str, rows: list[dict]):
+    header = [
+        ("Channel", "channel"),
+        ("Begin Time (s)", "start_time"),
+        ("End Time (s)", "end_time"),
+        ("Delta Time (s)", "audio_padding"),
+        ("Snippet", "filename"),
+        ("PredictionClass", "species"),
+        ("SpeciesCode", "species"),
+        ("Confidence (p) ", "confidence"),
+        ("ManualValidation", None),
+        ("VocalizationTypeCode", None),
+        ("Note", None),
+    ]
+
+    write_execl_file(
+        os.path.join(
+            filepath,
+        ),
+        rows,
+        header,
     )
