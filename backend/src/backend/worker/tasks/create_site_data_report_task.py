@@ -69,7 +69,6 @@ def create_site_data_report_task(self, site_id: int):
             first_record_date.replace(month=1, day=1) if first_record_date else None,
             last_record_date.replace(month=12, day=31) if last_record_date else None,
         )
-
         # Add the new instance to the session
         # Create a new SiteReports instance
         new_site_report = SiteReports(
@@ -258,16 +257,17 @@ def calc_basic_report_data(site_id, session):
     if record_duration is None:
         record_duration = 0
     corrupted_files = (
-        session.query(
-            func.jsonb_build_object("id", Records.id, "errors", Records.errors)
-        )
+        session.query(Records.id, Records.filename, Records.errors)
         .filter(Records.site_id == site_id)
-        .filter(Records.errors != None)
+        .filter(Records.errors.is_not(None))
+        .filter(Records.errors != "null")  # jsonb issues store null as jsonb null
         .all()
     )
 
-    corrupted_files_array = [file[0] for file in corrupted_files]
-
+    corrupted_files_array = [
+        {"id": file.id, "filename": file.filename, "errors": file.errors}
+        for file in corrupted_files
+    ]
     return (
         first_record.record_datetime.date() if first_record else None,
         last_record.record_datetime.date() if last_record else None,

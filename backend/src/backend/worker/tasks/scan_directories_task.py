@@ -79,14 +79,13 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
             if file_path.suffix.lower() not in settings.audio_extensions_list:
                 processed_files += 1
                 continue
-            exists = False
+            exists = None
             try:
                 # Simplified exists check
                 exists = (
-                    session.query(Records.id)
+                    session.query(Records.id, Records.errors)
                     .filter_by(filename=str(file_path.name))
                     .first()
-                    is not None
                 )
                 file_path_relative_to_base_data_directory = file_path.relative_to(
                     settings.base_data_directory
@@ -94,8 +93,8 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
             except Exception as e:
                 logger.error(f"Error checking file existence: {str(e)}")
                 raise e
-
-            if not exists:
+            logger.info(f"Exists: {exists}")
+            if exists is None or exists.errors is not None:
                 errors = []
                 # Validate filename prefix
                 if not file_path.name.startswith(site.prefix):
@@ -163,8 +162,12 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                     mime_type=f"audio/{file_path.suffix[1:].lower()}",
                     errors=errors if len(errors) > 0 else None,
                 )
-
-                session.add(record)
+                if exists is not None:
+                    record.id = exists.id
+                    logger.info(f"Updating record: {record}")
+                    session.merge(record)
+                else:
+                    session.add(record)
                 current_batch += 1
                 added_records += 1
 
