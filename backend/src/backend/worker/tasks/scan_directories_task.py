@@ -131,11 +131,14 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                                     "message": f"Sample rate mismatch: {sample_rate} != {site.sample_rate}",
                                 }
                             )
-                        if (  # sometimes the duration is off by a fraction off 1/sample_rate
-                            duration + (1 / site.sample_rate)
-                            < site.record_regime_recording_duration
-                            or duration - (1 / site.sample_rate)
-                            > site.record_regime_recording_duration
+                        if duration + (  # sometimes the duration is off by a fraction off 1/sample_rate
+                            1 / float(site.sample_rate)
+                        ) < float(
+                            site.record_regime_recording_duration
+                        ) or duration - (
+                            1 / float(site.sample_rate)
+                        ) > float(
+                            site.record_regime_recording_duration
                         ):
                             errors.append(
                                 {

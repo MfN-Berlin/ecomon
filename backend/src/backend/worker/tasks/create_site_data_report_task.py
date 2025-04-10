@@ -37,7 +37,7 @@ logger.setLevel(settings.log_level)
 def create_site_data_report_task(self, site_id: int):
     job_id = self.request.id
     session = db_session()
-
+    time.sleep(20)
     try:
         JobService.set_job_running(session, job_id)
         session.commit()

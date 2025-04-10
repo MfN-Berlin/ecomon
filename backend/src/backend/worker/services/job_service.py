@@ -175,7 +175,9 @@ class JobService:
         query = session.query(Jobs).filter(
             Jobs.topic.in_(topics),
             cast(Jobs.metadata_, JSONB)["site_id"] == str(site_id),
-            Jobs.status.notin_([JobStatus.DONE.value, JobStatus.FAILED.value]),
+            Jobs.status.notin_(
+                [JobStatus.DONE.value, JobStatus.FAILED.value, JobStatus.CANCELED.value]
+            ),
             Jobs.id != own_task_id,
         )
         exists_query = session.query(query.exists()).scalar()

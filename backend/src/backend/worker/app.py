@@ -26,6 +26,7 @@ app = Celery(
         "backend.worker.tasks.create_site_data_report_task",
         "backend.worker.tasks.model_inference_site_task",
         "backend.worker.tasks.create_voucher_task",
+        "backend.worker.tasks.check_site_record_errors_task",
     ],
     task_queues=(
         Queue(

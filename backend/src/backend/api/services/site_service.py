@@ -1,11 +1,16 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from backend.shared.models.db.models import SiteDirectories
+from backend.shared.models.db.models import SiteDirectories, Sites
 
 
 class SiteService:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def get_site(self, site_id: int) -> Sites:
+        async with self.db.begin():
+            result = await self.db.execute(select(Sites).filter(Sites.id == site_id))
+            return result.scalar_one_or_none()
 
     async def are_all_directories_part_of_site(
         self, site_id: int, directories: list[str]

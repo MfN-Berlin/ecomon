@@ -35,3 +35,7 @@ class SiteDirectoryScanRequest(BaseModel):
 
 class SiteDirectoryScanResponse(BaseModel):
     job_id: int
+
+
+class SiteMetadataChangeRequest(BaseModel):
+    site_id: int

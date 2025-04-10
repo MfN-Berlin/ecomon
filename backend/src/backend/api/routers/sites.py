@@ -11,6 +11,7 @@ from backend.api.models.site import (
     SiteDataReportResponse,
     SiteDirectoryScanRequest,
     SiteDirectoryScanResponse,
+    SiteMetadataChangeRequest,
 )
 from backend.api.services.job_service import JobService
 from backend.api.services.site_service import SiteService
@@ -22,10 +23,23 @@ from backend.worker.tasks.scan_directories_task import scan_directories_task
 from backend.worker.tasks.delete_records_from_site_task import (
     delete_records_from_site_task,
 )
+from backend.worker.tasks.check_site_record_errors_task import (
+    check_site_record_errors_task,
+)
 
 from backend.api.database import get_db
 from celery.result import AsyncResult
 from backend.shared.consts import task_topic
+
+import logging
+from logging.config import dictConfig
+from backend.api.logger_config import get_log_config
+
+# # Configure logging using the shared configuration
+dictConfig(get_log_config(timestamp=True))
+
+# # Get logger instance
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sites", tags=["sites"])
 directory_service = DirectoryService(ApiSettings())
@@ -145,3 +159,28 @@ async def list_data_directories(
 ) -> List[DirectoryInfo]:
     response = await directory_service.list_directories(subpath)
     return response
+
+
+@router.post("/records-relevant-data-changed")
+async def records_relevant_data_changed(
+    payload: SiteMetadataChangeRequest, db: AsyncSession = Depends(get_db)
+):
+    site = await SiteService(db).get_site(payload.site_id)
+    if not site:
+        raise HTTPException(status_code=404, detail="Site not found")
+
+    job_service = JobService(db)
+    job_id = await job_service.create_job(
+        f"{task_topic.CHECK_SITE_RECORD_ERRORS.value}",
+        metadata={
+            "site_id": payload.site_id,
+        },
+    )
+    celery_task_id = str(job_id)
+
+    check_site_record_errors_task.apply_async(
+        task_id=celery_task_id,
+        kwargs={"site_id": payload.site_id},
+    )
+    logger.info(f"check_site_record_errors_task.apply_async: {job_id}")
+    return {"job_id": job_id}

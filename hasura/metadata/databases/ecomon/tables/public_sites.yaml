@@ -78,3 +78,32 @@ update_permissions:
       filter: {}
       check: null
     comment: ""
+event_triggers:
+  - name: site_record_relevant_data_changed
+    definition:
+      enable_manual: false
+      update:
+        columns:
+          - sample_rate
+          - record_regime_pause_duration
+          - prefix
+    retry_conf:
+      interval_sec: 10
+      num_retries: 0
+      timeout_sec: 60
+    webhook: '{{HASURA_WEBHOOKS_BASE_URL}}'
+    request_transform:
+      body:
+        action: transform
+        template: |-
+          {
+            "site_id": {{$body.event.data.new.id}},
+            "sample_rate": {{$body.event.data.new.sample_rate}},
+            "record_regime_recording_duration": {{$body.event.data.new.record_regime_recording_duration}},
+            "prefix": {{$body.event.data.new.prefix}}
+          }
+      method: POST
+      query_params: {}
+      template_engine: Kriti
+      url: '{{$base_url}}/sites/records-relevant-data-changed'
+      version: 2

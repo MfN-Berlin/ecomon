@@ -20,7 +20,7 @@ class TaskCreator:
 
         celery_task_id = str(job_id)
 
-        task = create_site_data_report_task.apply(
+        task = create_site_data_report_task.apply_async(
             task_id=celery_task_id + "",  # so Celery task_id and DB job_id match
             kwargs={
                 "site_id": site_id,
