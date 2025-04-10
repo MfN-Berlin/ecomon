@@ -24,4 +24,4 @@ def distributed_lock(lock_name, timeout=10):
 
 
 def get_site_data_report_lock(site_id: int):
-    return redis_client.lock(f"create_site_data_report_lock_{site_id}", timeout=10)
+    return redis_client.lock(f"create_site_data_report_lock_{site_id}", timeout=1200)
