@@ -16,7 +16,7 @@ export default function useCreateFilter<TData, TVariables extends FilterVariable
 }) {
   const { onError, throwErrorIfNoData } = useErrorHandling({});
 
-  return function useLocationFilter({ itemsPerPage = 20, searchTerm = "" }) {
+  return function useLocationFilter({ itemsPerPage = 30, searchTerm = "" }) {
     const route = useRoute();
 
     const _itemsPerPage = ref(itemsPerPage);
@@ -32,10 +32,13 @@ export default function useCreateFilter<TData, TVariables extends FilterVariable
       } as TVariables;
 
       const res = await filterQueryFn(variables);
-      console.log("queryFilterFn", res);
+      const hasMore = res.data.length > _itemsPerPage.value;
 
       throwErrorIfNoData(res.data, 500, `Error fetching ${baseQueryKey} filter`);
-      return { data: res.data, nextCursor: pageParam + _itemsPerPage.value };
+      return {
+        data: res.data.slice(0, _itemsPerPage.value),
+        nextCursor: hasMore ? pageParam + _itemsPerPage.value : undefined
+      };
     }
 
     const {
@@ -49,7 +52,7 @@ export default function useCreateFilter<TData, TVariables extends FilterVariable
     } = useInfiniteQuery({
       queryKey: [baseQueryKey, "filter", route.params.filter],
       queryFn: queryFn,
-      getNextPageParam: (lastPage) => (lastPage && lastPage.nextCursor) || _itemsPerPage.value,
+      getNextPageParam: (lastPage) => lastPage && lastPage.nextCursor,
       initialPageParam: 0
     });
 

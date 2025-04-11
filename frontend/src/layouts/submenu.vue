@@ -31,7 +31,7 @@ const rootPath = computed(() => {
   } else if (route.path.startsWith("/sets")) {
     return "/sets";
   }
-  console.log("Unknown path", route.path);
+
   return "";
 });
 const name = computed(() => {

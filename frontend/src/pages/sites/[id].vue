@@ -6,6 +6,11 @@ const id = computed(() => parseInt(router.currentRoute.value.params.id as string
 
 const { data, isFetching } = useSiteGet(id.value);
 const { mutate, isPending } = useSiteUpdate();
+const { mutate: deleteMutate, isPending: deletePending } = useSiteDelete();
+const deleteAction = useActionAndRoute({
+  action: () => deleteMutate({ id: id.value }),
+  gotoUrl: "/sites"
+});
 </script>
 <template>
   <v-container>
@@ -31,11 +36,14 @@ const { mutate, isPending } = useSiteUpdate();
             created_at: data?.created_at,
             updated_at: data?.updated_at
           }"
+          :show-delete-button="true"
+          :delete-button-loading="deletePending"
           @submit="
             (data) => {
               mutate(data);
             }
           "
+          @delete="deleteAction"
         ></sites-form>
 
         <sites-model-site-controls class="mt-4" :siteId="id" />

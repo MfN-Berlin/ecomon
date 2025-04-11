@@ -6,7 +6,12 @@ const {
   okLabel = "submit",
   created_at = "",
   updated_at = "",
-  hideActions = false
+  hideActions = false,
+  showDeleteButton = false,
+  deleteButtonLabel = "Delete",
+  deleteButtonDialogTitle = "Delete item",
+  deleteButtonDialogMessage = "Are you sure you want to delete this item?",
+  deleteButtonLoading = false
 } = defineProps<{
   loading: boolean;
   dirty: boolean;
@@ -15,11 +20,18 @@ const {
   created_at?: string;
   updated_at?: string;
   hideActions?: boolean;
+  showDeleteButton?: boolean;
+  deleteButtonLabel?: string;
+  deleteButtonDialogTitle?: string;
+  deleteButtonDialogMessage?: string;
+  deleteButtonLoading?: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: "submit" | "reset"): void;
+  (e: "submit" | "reset" | "delete"): void;
 }>();
+
+const dialogStore = useDialogStore();
 </script>
 
 <template>
@@ -37,9 +49,27 @@ const emit = defineEmits<{
         <slot></slot>
       </v-card-text>
       <v-card-actions v-if="!hideActions">
+        <v-btn
+          v-if="showDeleteButton"
+          :loading="deleteButtonLoading"
+          prepend-icon="mdi-delete"
+          @click="
+            dialogStore.openDialog(deleteButtonDialogTitle, deleteButtonDialogMessage, () => {
+              emit('delete');
+            })
+          "
+        >
+          {{ deleteButtonLabel }}
+        </v-btn>
         <v-spacer></v-spacer>
-        <v-btn :disabled="loading" @click="emit('reset')"> {{ cancelLabel }} </v-btn>
-        <v-btn class="me-4" type="submit" color="primary" variant="tonal" :disabled="!dirty || loading">
+        <v-btn prepend-icon="mdi-close" :disabled="loading" @click="emit('reset')"> {{ cancelLabel }} </v-btn>
+        <v-btn
+          prepend-icon="mdi-check"
+          type="submit"
+          color="primary"
+          variant="tonal"
+          :disabled="!dirty || loading"
+        >
           {{ okLabel }}
         </v-btn>
       </v-card-actions>

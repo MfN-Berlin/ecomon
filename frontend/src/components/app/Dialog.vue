@@ -12,7 +12,7 @@ async function handleConfirm() {
 <template>
   <v-dialog v-model="store.visible" :persistent="store.options.persistent" width="400">
     <v-card>
-      <v-toolbar color="primary" class="px-4">
+      <v-toolbar color="primary" class="px-4" density="compact">
         <v-icon :icon="store.options.icon"></v-icon>
         <v-toolbar-title>{{ store.title }}</v-toolbar-title>
       </v-toolbar>
@@ -22,10 +22,16 @@ async function handleConfirm() {
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="secondary" variant="text" :disabled="pending" @click="store.onCancel">
+        <v-btn
+          color="secondary"
+          variant="text"
+          prepend-icon="mdi-close"
+          :disabled="pending"
+          @click="store.onCancel"
+        >
           {{ store.options.cancelLabel }}
         </v-btn>
-        <v-btn color="error" variant="flat" autofocus @click="handleConfirm">
+        <v-btn color="error" variant="flat" prepend-icon="mdi-check" autofocus @click="handleConfirm">
           {{ store.options.okLabel }}
         </v-btn>
       </v-card-actions>

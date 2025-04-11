@@ -5,10 +5,18 @@ import { useField, useForm, useIsFormDirty } from "vee-validate";
 import schema, { type Site } from "./schema";
 import type { FormProps, WithId } from "@/utils/generic-types";
 
-const { data, cancelLabel = "cancel", okLabel = "submit", loading = false } = defineProps<FormProps<Site>>();
+const {
+  data,
+  cancelLabel = "cancel",
+  okLabel = "submit",
+  loading = false,
+  showDeleteButton = false,
+  deleteButtonLoading = false
+} = defineProps<FormProps<Site>>();
 const emit = defineEmits<{
   (e: "submit", payload: WithId<Site>): void;
   (e: "reset"): void;
+  (e: "delete"): void;
 }>();
 const { handleSubmit, handleReset, resetForm } = useForm({
   validationSchema: schema
@@ -77,6 +85,10 @@ const markers = computed(() => {
     :dirty="dirty"
     :cancelLabel="cancelLabel"
     :okLabel="okLabel"
+    :showDeleteButton="showDeleteButton"
+    :deleteButtonDialogTitle="`Delete ${data?.name}?`"
+    :deleteButtonDialogMessage="`Are you sure you want to delete ${data?.name}?`"
+    :deleteButtonLoading="deleteButtonLoading"
     :created_at="data?.created_at"
     :updated_at="data?.updated_at"
     @submit="
@@ -85,6 +97,7 @@ const markers = computed(() => {
       }
     "
     @reset="handleReset"
+    @delete="emit('delete')"
   >
     <BaseMap :markers="markers" height="200px" />
     <v-text-field v-model="name" :error-messages="nameError" label="Name" density="compact"></v-text-field>

@@ -78,6 +78,11 @@ update_permissions:
       filter: {}
       check: null
     comment: ""
+delete_permissions:
+  - role: user
+    permission:
+      filter: {}
+    comment: ""
 event_triggers:
   - name: site_record_relevant_data_changed
     definition:

@@ -13,4 +13,6 @@ export type FormProps<T> = {
   cancelLabel?: string;
   okLabel?: string;
   loading?: boolean;
+  showDeleteButton?: boolean;
+  deleteButtonLoading?: boolean;
 };
