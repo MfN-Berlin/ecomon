@@ -16,7 +16,6 @@ const {
 const emit = defineEmits<{
   (e: "submit", payload: WithId<Site>): void;
   (e: "reset"): void;
-  (e: "delete"): void;
 }>();
 const { handleSubmit, handleReset, resetForm } = useForm({
   validationSchema: schema
@@ -97,7 +96,6 @@ const markers = computed(() => {
       }
     "
     @reset="handleReset"
-    @delete="emit('delete')"
   >
     <BaseMap :markers="markers" height="200px" />
     <v-text-field v-model="name" :error-messages="nameError" label="Name" density="compact"></v-text-field>

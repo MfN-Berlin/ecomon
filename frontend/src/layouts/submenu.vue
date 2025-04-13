@@ -2,7 +2,7 @@
 const locations = useLocationFilter({});
 const models = useModelFilter({});
 const sites = useSiteFilter({});
-const sets = useSetsFilter({});
+
 const route = useRoute();
 
 const active = computed(() => {
@@ -12,8 +12,6 @@ const active = computed(() => {
     return models;
   } else if (route.path.startsWith("/sites")) {
     return sites;
-  } else if (route.path.startsWith("/sets")) {
-    return sets;
   }
   return null;
 });
@@ -28,8 +26,6 @@ const rootPath = computed(() => {
     return "/models";
   } else if (route.path.startsWith("/sites")) {
     return "/sites";
-  } else if (route.path.startsWith("/sets")) {
-    return "/sets";
   }
 
   return "";

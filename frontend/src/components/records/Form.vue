@@ -4,11 +4,19 @@ import { useField, useForm, useIsFormDirty } from "vee-validate";
 import schema, { type Model } from "./schema";
 import type { FormProps, WithId } from "@/utils/generic-types";
 
-const { data, cancelLabel = "cancel", okLabel = "submit", loading = false } = defineProps<FormProps<Model>>();
+const {
+  data,
+  cancelLabel = "cancel",
+  okLabel = "submit",
+  loading = false,
+  showDeleteButton = false,
+  deleteButtonLoading = false
+} = defineProps<FormProps<Model>>();
 
 const emit = defineEmits<{
   (e: "submit", payload: WithId<Model>): void;
   (e: "reset"): void;
+  (e: "delete"): void;
 }>();
 const { handleSubmit, handleReset, resetForm } = useForm({
   validationSchema: schema
@@ -68,9 +76,13 @@ const propsUpdateForm = () => {
     :created_at="data?.created_at"
     :updated_at="data?.updated_at"
     :hideActions="true"
-    readonly
+    :showDeleteButton="showDeleteButton"
+    :deleteButtonLoading="deleteButtonLoading"
+    :deleteButtonDialogTitle="`Delete Record: ${data?.filename}?`"
+    :deleteButtonDialogMessage="`Are you sure you want to delete record ${data?.filename}?`"
     @submit="submit"
     @reset="handleReset"
+    @delete="emit('delete')"
   >
     <v-text-field
       v-model="site_id"

@@ -55,6 +55,7 @@ const dialogStore = useDialogStore();
           prepend-icon="mdi-delete"
           @click="
             dialogStore.openDialog(deleteButtonDialogTitle, deleteButtonDialogMessage, () => {
+              console.log('delete Dialog returns');
               emit('delete');
             })
           "

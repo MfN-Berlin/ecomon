@@ -10,6 +10,10 @@ fragment Record on records {
   sample_rate
   errors
   created_at
+  site {
+    id
+    name
+  }
 }
 
 query getRecordById($id: bigint!) {

@@ -1,15 +1,11 @@
 import os
+import subprocess
 import shutil
 import time
 import pandas
 from sqlalchemy import func
-from sqlalchemy.orm import selectinload
-from backend.worker.tasks.utils.site_tasks import wait_for_lock_and_create_report
-import soundfile as sf
-from pathlib import Path
 from datetime import datetime
 from celery.utils.log import get_task_logger
-from celery import states
 from collections import namedtuple
 from backend.worker.app import app
 from backend.shared.models.db.models import (
@@ -152,22 +148,19 @@ def model_inference_site_task(
                 f"-v {settings.host_base_data_directory}:/data",
             ]
             # Build command as array for better readability and spacing control
+            logger.info(f"settings.use_gpu: {settings.use_gpu}")
             command_parts = [
                 "docker run",
                 "-v /var/run/docker.sock:/var/run/docker.sock",  # needed for docker in docker
                 "--rm",  # remove the container after running
                 *docker_volumes,
                 *(
-                    [f"--gpus {settings.use_gpu}"]
-                    if settings.use_gpu.lower() != "none"
-                    else []
-                ),  # gpu
-                *(
                     [model.additional_docker_arguments]  # additional docker arguments
                     if model.additional_docker_arguments
                     else []
                 ),
                 "ghcr.io/mfn-berlin/birdid-model-zoo:latest",
+                # "model", # for local testing
                 *(
                     [model.additional_model_arguments]
                     if model.additional_model_arguments
@@ -180,13 +173,29 @@ def model_inference_site_task(
                 "--removeTemporaryResultFile",
                 f"-chown {uid}:{gid}",
                 "--f pkl",
+                *(
+                    [f"--gpuIx {settings.use_gpu}"]
+                    if settings.use_gpu.lower() != "none"
+                    else []
+                ),  # gpu
                 "-on output",
             ]
 
             command = " ".join(command_parts)
 
             logger.info(f"Running command: {command}")
-            os.system(command)
+
+            try:
+                process = subprocess.run(
+                    command, shell=True, check=True, capture_output=True, text=True
+                )
+                logger.info(f"Command output: {process.stdout}")
+                if process.stderr:
+                    logger.warning(f"Command stderr: {process.stderr}")
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Command failed with exit code {e.returncode}")
+                logger.error(f"Command stderr: {e.stderr}")
+                raise Exception(f"Docker command failed: {e.stderr}")
 
             # read the output.pkl file and add the results to the database
             df = pandas.read_pickle(os.path.join(job_temp_dir, "output.pkl"))

@@ -5,6 +5,10 @@ const id = computed(() => parseInt(router.currentRoute.value.params.id as string
 
 const { data, isFetching } = useRecordGet(id);
 const { mutate, isPending } = useRecordUpdate();
+const deleteAction = useActionAndRoute({
+  action: () => deleteMutate({ id: id.value }),
+  gotoUrl: "/records"
+});
 </script>
 <template>
   <v-container class="">
@@ -24,8 +28,10 @@ const { mutate, isPending } = useRecordUpdate();
             sample_rate: data?.sample_rate,
             mime_type: data?.mime_type,
             errors: data?.errors,
-            created_at: data?.created_at
+            created_at: data?.created_at,
+            updated_at: data?.updated_at
           }"
+          @delete="deleteAction"
           @submit="
             (data) => {
               const payload = { ...data };

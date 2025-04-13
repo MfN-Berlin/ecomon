@@ -15,7 +15,6 @@ const theme = useTheme();
 watch(
   () => uiStore.darkMode,
   (value) => {
-    console.log("darkMode", value);
     theme.global.name.value = value ? "mfnDark" : "mfnLight";
   }
 );

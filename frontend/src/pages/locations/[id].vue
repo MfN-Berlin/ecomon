@@ -6,6 +6,11 @@ const id = computed(() => parseInt(router.currentRoute.value.params.id as string
 
 const { data, isFetching } = useLocationGet(id.value);
 const { mutate, isPending } = useLocationUpdate();
+const { mutate: deleteMutate, isPending: deletePending } = useLocationDelete();
+const deleteAction = useActionAndRoute({
+  action: () => deleteMutate({ id: id.value }),
+  gotoUrl: "/locations"
+});
 </script>
 <template>
   <v-container>
@@ -21,6 +26,11 @@ const { mutate, isPending } = useLocationUpdate();
         created_at: data?.created_at,
         updated_at: data?.updated_at
       }"
+      :show-delete-button="true"
+      :delete-button-dialog-title="`Delete Location: ${data?.name}?`"
+      :delete-button-dialog-message="`Are you sure you want to delete location ${data?.name}?`"
+      :delete-button-loading="deletePending"
+      @delete="deleteAction"
       @submit="
         (data) => {
           mutate(data);

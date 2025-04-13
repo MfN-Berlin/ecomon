@@ -8,7 +8,9 @@ const {
   data,
   cancelLabel = "cancel",
   okLabel = "submit",
-  loading = false
+  loading = false,
+  showDeleteButton = false,
+  deleteButtonLoading = false
 } = defineProps<FormProps<Location>>();
 const emit = defineEmits<{
   (e: "submit", payload: WithId<Location>): void;
@@ -75,6 +77,8 @@ const markers = computed(() => {
     :okLabel="okLabel"
     :created_at="data?.created_at"
     :updated_at="data?.updated_at"
+    :showDeleteButton="showDeleteButton"
+    :deleteButtonLoading="deleteButtonLoading"
     @submit="submit"
     @reset="handleReset"
   >

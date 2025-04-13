@@ -24,7 +24,9 @@ const headers = [
   { title: "channels", key: "channels", align: "end", search: { operator: "_like", type: "text" } },
   { title: "mime_type", key: "mime_type", align: "end", search: { operator: "_like", type: "text" } },
   { title: "record_datetime", key: "record_datetime", align: "end", search: false },
-  { title: "sample_rate", key: "sample_rate", align: "end", search: { operator: "_eq", type: "number" } }
+  { title: "sample_rate", key: "sample_rate", align: "end", search: { operator: "_eq", type: "number" } },
+  { title: "site", key: "site.name", align: "end", search: { operator: "_like", type: "text" } },
+  { title: "site_id", key: "site.id", align: "end", search: { operator: "_eq", type: "number" } }
 ] as const;
 </script>
 

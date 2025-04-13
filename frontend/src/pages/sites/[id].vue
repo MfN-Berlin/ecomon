@@ -8,7 +8,10 @@ const { data, isFetching } = useSiteGet(id.value);
 const { mutate, isPending } = useSiteUpdate();
 const { mutate: deleteMutate, isPending: deletePending } = useSiteDelete();
 const deleteAction = useActionAndRoute({
-  action: () => deleteMutate({ id: id.value }),
+  action: () => {
+    console.log("deleting site", id.value);
+    deleteMutate({ id: id.value });
+  },
   gotoUrl: "/sites"
 });
 </script>
@@ -43,7 +46,12 @@ const deleteAction = useActionAndRoute({
               mutate(data);
             }
           "
-          @delete="deleteAction"
+          @delete="
+            () => {
+              console.log('deleting site fomr event', id);
+              deleteAction();
+            }
+          "
         ></sites-form>
 
         <sites-model-site-controls class="mt-4" :siteId="id" />
