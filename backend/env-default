@@ -10,3 +10,5 @@ HOST_BASE_DATA_DIRECTORY=/your-^data-folder
 TMP_DIR=/your-temp-folder
 HOST_TMP_DIR=/your-temp-folder
 USE_GPU=None
+DB_WORKER_CONCURRENCY=2
+INF_WORKER_CONCURRENCY=1

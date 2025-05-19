@@ -52,16 +52,17 @@ For local Development you need docker, nodejs, poetry, python3.10 installed on y
 
 1. Clone the repository
 2. Start docker containers with `docker compose up -d` (this will start postgres, redis, hasura, traefik)
-3. Change directory to backend and install dependencies with `poetry install --with dev`
-4. copy env-default to .env and change the variables to your own
-5. Update labels from csv with `poetry run update-labels-csv`
-6. Run the backend with `./dev
-7. Change directory to frontend and install dependencies with `npm install`
-8. copy env-default to .env and change the variables to your own
-9. Run the frontend with `npm start`
-10. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql
+3. Creat a python environment with python3.11 and poetry
+4. Change directory to backend and install dependencies with `poetry install --with dev`
+5. copy env-default to .env and change the variables to your own
+6. Update labels from csv with `poetry run update-labels`
+7. Run the backend with `./dev
+8. Change directory to frontend and install dependencies with `npm install`
+9. copy env-default to .env and change the variables to your own
+10. Run the frontend with `npm start`
+11. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql
     endpoint
-11. If you want to do changes on Hasura Metadata or DatabaseSchema you can start `hasura console` in the hasura folder to oben the console in live editing mode
+12. If you want to do changes on Hasura Metadata or DatabaseSchema you can start `hasura console` in the hasura folder to oben the console in live editing mode
 
 ### Production
 
