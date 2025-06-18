@@ -67,7 +67,7 @@ class AudioFileValidator:
             Tuple[List[Dict[str, str]], Optional[Tuple[float, str, int]]]: Errors and (duration, channels, sample rate) or None if validation fails.
         """
         errors = []
-        duration = channels = sample_rate = None
+        duration = channels = sample_rate = 0
 
         # Validate filename prefix
         if not file_path.name.startswith(self.site.prefix):
@@ -281,16 +281,20 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                     "added_records": added_records,
                 }
 
-            errors, audio_props = validator.validate_and_get_props(file_path)
-            record = record_manager.create_record(file_path, errors, audio_props)
+            try:
+                errors, audio_props = validator.validate_and_get_props(file_path)
+                record = record_manager.create_record(file_path, errors, audio_props)
 
-            if record:
-                if record_manager.record_exists(file_path.name) is not None:
-                    logger.info(f"Updating record: {record}")
-                    session.merge(record)
-                else:
-                    session.add(record)
-                added_records += 1
+                if record:
+                    if record_manager.record_exists(file_path.name) is not None:
+                        logger.info(f"Updating record: {record}")
+                        session.merge(record)
+                    else:
+                        session.add(record)
+                    added_records += 1
+
+            except Exception as e:
+                logger.error(f"Error processing file {file_path}: {e}")
 
             processed_files += 1
 
