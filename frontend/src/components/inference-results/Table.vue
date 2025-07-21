@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import type { ModelInferenceResult } from "#gql/default";
+import { watch } from "vue";
 
 const props = defineProps<{
   recordId: number;
 }>();
 
+const emit = defineEmits(["update:results"]);
+
 const baseSearch = computed(() => ({
-  record_id: {
-    _eq: props.recordId
-  }
+  record_id: { _eq: props.recordId },
+  confidence: { _gte: 0.7 }
 }));
 
 const {
@@ -23,9 +25,20 @@ const {
 } = useRecordModelInferenceResultsPagniated({
   startValues: {
     search: baseSearch.value,
-    sortBy: [{ key: "confidence", order: "desc" }]
+    sortBy: [{ key: "start_time", order: "asc" }],
+//    itemsPerPage: 100 
   }
 });
+
+// Filter items with confidence >= 0.7 for display and emit
+//const filteredItems = computed(() =>
+//  (items.value || []).filter(r => Number(r.confidence) >= 0.0)
+//);
+// const filteredItems = computed(() => items.value || []);
+watch(items, (val) => { console.log("items", val); });
+watch(items, (val) => {
+  emit("update:results", val);
+}, { immediate: true });
 
 const config = useRuntimeConfig();
 const headers = [
@@ -37,6 +50,7 @@ const headers = [
   { title: "End time", key: "end_time", align: "end", search: { operator: "_eq", type: "number" } },
   { title: "Confidence", key: "confidence", align: "end", search: { operator: "_eq", type: "number" } }
 ] as const;
+
 </script>
 
 <template>

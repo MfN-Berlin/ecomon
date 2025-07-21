@@ -17,16 +17,24 @@ const {
 const config = useRuntimeConfig();
 const headers = [
   { title: "", key: "actions", align: "end", sortable: false, search: false },
-  { title: "ID", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "filename", key: "filename", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "filepath", key: "filepath", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "duration", key: "duration", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "channels", key: "channels", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "mime_type", key: "mime_type", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "record_datetime", key: "record_datetime", align: "end", search: false },
-  { title: "sample_rate", key: "sample_rate", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "site", key: "site.name", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "site_id", key: "site.id", align: "end", search: { operator: "_eq", type: "number" } }
+  { title: "Record Id", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
+  // search works on this object, because it exists in the record table (as site_id next to the nested object site {id ...})
+  { title: "Site Id", key: "site_id", align: "end", search: { operator: "_eq", type: "number" } },
+  // search is not possible on this field because it is a nested object
+  //  { title: "site", key: "site.name", align: "end", search: { operator: "_like", type: "text" } },
+  { title: "", key: "site.name", align: "end", sortable: false, search: false },
+  // commented out as filepath also includes filename
+  // { title: "filename", key: "filename", align: "end", search: { operator: "_like", type: "text" } },
+  { title: "Date & Time", key: "record_datetime", align: "start", search: false }, // changed alignment to start for better readability
+  // { title: "Record Type", key: "record_type", align: "end", search: { operator: "_like", type: "text" } },
+  // { title: "Record Status", key: "record_status", align: "end", search: { operator: "_like", type: "text" } },
+  { title: "File Path", key: "filepath", align: "start", search: { operator: "_like", type: "text" } },  // changed alignment to start for better readability
+  // { title: "File Size", key: "file_size", align: "end", search: { operator: "_eq", type: "number" } },
+  // { title: "File Type", key: "file_type", align: "end", search: { operator: "_like", type: "text" } },
+  // { title: "Duration", key: "duration", align: "end", search: { operator: "_eq", type: "number" } },
+  // { title: "Channels", key: "channels", align: "end", search: { operator: "_like", type: "text" } },
+  // { title: "Mime Type", key: "mime_type", align: "end", search: { operator: "_like", type: "text" } },
+  // { title: "Sample Rate", key: "sample_rate", align: "end", search: { operator: "_eq", type: "number" } },
 ] as const;
 </script>
 
@@ -48,16 +56,16 @@ const headers = [
       </template>
       <template #item.actions="{ item }: { item: Record }">
         <v-toolbar density="compact" color="surface">
-          <app-play-button
-            :src="`${config.public.API_BASE_URL}/static/files/${item.filepath}`"
-            variant="text"
-            size="small"
-          />
-          <nuxt-link :to="`/records/${item.id}`">
-            <v-btn icon variant="text" size="small">
-              <v-icon>mdi-pen</v-icon>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              :href="`/records/${item.id}`"
+              target="_blank"
+              rel="noopener"
+            >
+              <v-icon>mdi-open-in-new</v-icon>
             </v-btn>
-          </nuxt-link>
         </v-toolbar>
       </template>
     </v-data-table-server>
