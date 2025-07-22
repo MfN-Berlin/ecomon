@@ -10,8 +10,8 @@ const deleteAction = useActionAndRoute({
   gotoUrl: "/records"
 });
 
-import { ref } from "vue";
 import { saveAs } from "file-saver";
+import { ref, computed } from "vue";
 
 // Store inference results from child
 const inferenceResults = ref<any[]>([]);
@@ -21,26 +21,25 @@ function handleInferenceResults(results: any[]) {
   inferenceResults.value = results;
 };
 
-console.log(inferenceResults);
-
 // Download inference results as CSV
 function downloadInferenceCsv() {
   if (!inferenceResults.value.length) return;
-  const keys = Object.keys(inferenceResults.value[0]);
+  const keys = ["filepath", "datetime", "start_time", "end_time", "model", "label", "confidence"];
   const csvRows = [
     keys.join(","),
     ...inferenceResults.value.map(row => {
       const modelName = row.model?.name || ""; // Access model.name
       const labelName = row.label?.name || ""; // Access label.name
+      const filePath = data.value?.filepath || "";
+      const recordDateTime = data.value?.record_datetime || "";
 
       return [
-        `"${String(row.id ?? "")}"`,
-        `"${String(row.model_id ?? "")}"`,
-        `"${String(modelName)}"` ,
-        `"${String(row.record_id ?? "")}"`,
-        `"${String(labelName)}"`,
+        `"${String(filePath)}"`,
+        `"${String(recordDateTime)}"`,
         `"${String(row.start_time ?? "")}"`,
         `"${String(row.end_time ?? "")}"`,
+        `"${String(modelName)}"` ,
+        `"${String(labelName)}"`,
         `"${String(row.confidence ?? "")}"`
       ].join(",");
     })
@@ -48,7 +47,6 @@ function downloadInferenceCsv() {
   const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
   saveAs(blob, `inference_results_${id.value}.csv`);
 }
-
 // Download record data as CSV (optional, for completeness)
 function downloadRecordCsv() {
   if (!data.value) return;
@@ -62,10 +60,6 @@ function downloadRecordCsv() {
   saveAs(blob, `record_${record.id}.csv`);
 }
 
-import { ref, watch, onMounted } from "vue";
-const props = defineProps<{ recordId: number; confidence: number; }>();
-
-const results = ref<any[]>([]);
 const confidence = 0.7; // Set your confidence threshold
 
 </script>
