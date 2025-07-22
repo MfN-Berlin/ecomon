@@ -39,12 +39,13 @@ watch(items, (val) => {
 const config = useRuntimeConfig();
 const headers = [
   { title: "", key: "actions", align: "end", sortable: false, search: false },
-  { title: "ID", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "Model", key: "model.name", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "Label", key: "label.name", align: "end", search: { operator: "_eq", type: "text" } },
-  { title: "Start time", key: "start_time", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "End time", key: "end_time", align: "end", search: { operator: "_eq", type: "number" } },
-  { title: "Confidence", key: "confidence", align: "end", search: { operator: "_eq", type: "number" } }
+//  { title: "ID", key: "id", align: "end", sortable: false, search: false },
+  { title: "Model ID", key: "model_id", align: "end", sortable: true, search: false  },
+  { title: "(Model)", key: "model.name", align: "end", sortable: false, search: false },
+  { title: "Label", key: "label.name", align: "end", sortable: false, search: false },
+  { title: "Start time", key: "start_time", align: "end", sortable: true, search: false },
+  { title: "End time", key: "end_time", align: "end", sortable: true, search: false },
+  { title: "Confidence", key: "confidence", align: "end", sortable: true, search: false }
 ] as const;
 
 </script>

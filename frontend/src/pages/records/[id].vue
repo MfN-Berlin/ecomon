@@ -58,7 +58,7 @@ const confidence = 0.7; // Set your confidence threshold
 <template>
   <v-container>
     <v-row>
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="5">
         <records-form
           v-if="data"
           :loading="isFetching || isPending"
@@ -76,6 +76,7 @@ const confidence = 0.7; // Set your confidence threshold
             created_at: data?.created_at,
             updated_at: data?.updated_at
           }"
+          :readonly="true"
           @delete="deleteAction"
           @submit="
             (data) => {
@@ -92,7 +93,7 @@ const confidence = 0.7; // Set your confidence threshold
           max-width="800"
         />
       </v-col>
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="7">
         <v-btn
           class="mb-2"
           color="primary"

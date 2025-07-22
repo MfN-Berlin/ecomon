@@ -13,16 +13,15 @@ const {
   handleReset,
   handleSearch
 } = useRecordsPagniated();
-
+console.log(items);
 const config = useRuntimeConfig();
 const headers = [
   //{ title: "", key: "actions", align: "end", sortable: false, search: false },
-  { title: "Record Id", key: "id", align: "end", search: false },
+  // { title: "Record Id", key: "id", align: "end", search: false },
   // search works on this object, because it exists in the record table (as site_id next to the nested object site {id ...})
-  { title: "Site Id", key: "site_id", align: "end", search: { operator: "_eq", type: "number" } },
+  { title: "Site Id", key: "site_id", align: "start", sortable: true, search: false},
   // search is not possible on this field because it is a nested object
-  //  { title: "site", key: "site.name", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "", key: "site.name", align: "end", sortable: false, search: false },
+  { title: "(Site)", key: "site.name", align: "start", sortable: false, search: false },
   // commented out as filepath also includes filename
   // { title: "filename", key: "filename", align: "end", search: { operator: "_like", type: "text" } },
   { title: "Date & Time", key: "record_datetime", align: "start", search: false }, // changed alignment to start for better readability
@@ -40,13 +39,29 @@ const headers = [
 function goToItem(id) {
   window.open(`/records/${id}`, '_blank')
 }
+function getNested(obj, key) {
+  return key.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
+}
 </script>
+
 <style scoped>
 tr:hover {
   background-color: #f0f8ff;
   cursor: pointer;
 }
+/* Style for sortable headers */
+.v-data-table-header__sortable {
+  background-color: #f0f0f0; /* Light grey background */
+  font-weight: 800!important; /* Bold text */
+  cursor: pointer; /* Change cursor to pointer */
+}
+
+/* Optional: Style for the sort icon */
+.v-data-table-header__sort-icon {
+  color: #333; /* Dark grey sort icon */
+}
 </style>
+
 <template>
   <v-container>
     <!-- <audio controls autoplay :src="source"></audio> -->
@@ -66,7 +81,8 @@ tr:hover {
       <template #item="{ item }">
         <tr @click="goToItem(item.id)" style="cursor: pointer;">
           <td v-for="header in headers" :key="header.key">
-            {{ item[header.key] }}
+            <!--{{ item[header.key] }}-->
+            {{ getNested(item, header.key) }}
           </td>
         </tr>
       </template>
