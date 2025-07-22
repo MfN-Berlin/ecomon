@@ -4,13 +4,14 @@ import { watch } from "vue";
 
 const props = defineProps<{
   recordId: number;
+  confidence: number;
 }>();
-
 const emit = defineEmits(["update:results"]);
 
+// Filter items with confidence >= 0.7
 const baseSearch = computed(() => ({
   record_id: { _eq: props.recordId },
-  confidence: { _gte: 0.7 }
+  confidence: { _gte: props.confidence }
 }));
 
 const {
@@ -26,15 +27,10 @@ const {
   startValues: {
     search: baseSearch.value,
     sortBy: [{ key: "start_time", order: "asc" }],
-//    itemsPerPage: 100 
+    itemsPerPage: 100 
   }
 });
 
-// Filter items with confidence >= 0.7 for display and emit
-//const filteredItems = computed(() =>
-//  (items.value || []).filter(r => Number(r.confidence) >= 0.0)
-//);
-// const filteredItems = computed(() => items.value || []);
 watch(items, (val) => { console.log("items", val); });
 watch(items, (val) => {
   emit("update:results", val);
@@ -64,6 +60,7 @@ const headers = [
     :items-length="totalItems"
     :loading="loading"
     item-value="id"
+    :recordId="props.recordId"
   >
     <template v-slot:thead>
       <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />

@@ -18,7 +18,6 @@ const inferenceResults = ref<any[]>([]);
 
 // Handler for results emitted from inference-results-table
 function handleInferenceResults(results: any[]) {
-  console.log("Received results from table:", results);
   inferenceResults.value = results;
 };
 
@@ -50,11 +49,10 @@ function downloadRecordCsv() {
 }
 
 import { ref, watch, onMounted } from "vue";
-const props = defineProps<{ recordId: number }>();
-const emit = defineEmits(["update:results"]);
+const props = defineProps<{ recordId: number; confidence: number; }>();
 
 const results = ref<any[]>([]);
-
+const confidence = 0.7; // Set your confidence threshold
 
 </script>
 <template>
@@ -102,11 +100,12 @@ const results = ref<any[]>([]);
           @click="downloadInferenceCsv"
           :disabled="!inferenceResults.length"
         >
-          Download Inference Results as CSV
+          Download Inference Results >= {{confidence}}
         </v-btn>
         <inference-results-table
           :record-id="id"
           @update:results="handleInferenceResults"
+          :confidence="confidence"
         />
       </v-col>
     </v-row>

@@ -16,8 +16,8 @@ const {
 
 const config = useRuntimeConfig();
 const headers = [
-  { title: "", key: "actions", align: "end", sortable: false, search: false },
-  { title: "Record Id", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
+  //{ title: "", key: "actions", align: "end", sortable: false, search: false },
+  { title: "Record Id", key: "id", align: "end", search: false },
   // search works on this object, because it exists in the record table (as site_id next to the nested object site {id ...})
   { title: "Site Id", key: "site_id", align: "end", search: { operator: "_eq", type: "number" } },
   // search is not possible on this field because it is a nested object
@@ -36,8 +36,17 @@ const headers = [
   // { title: "Mime Type", key: "mime_type", align: "end", search: { operator: "_like", type: "text" } },
   // { title: "Sample Rate", key: "sample_rate", align: "end", search: { operator: "_eq", type: "number" } },
 ] as const;
-</script>
 
+function goToItem(id) {
+  window.open(`/records/${id}`, '_blank')
+}
+</script>
+<style scoped>
+tr:hover {
+  background-color: #f0f8ff;
+  cursor: pointer;
+}
+</style>
 <template>
   <v-container>
     <!-- <audio controls autoplay :src="source"></audio> -->
@@ -54,19 +63,12 @@ const headers = [
       <template v-slot:thead>
         <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
       </template>
-      <template #item.actions="{ item }: { item: Record }">
-        <v-toolbar density="compact" color="surface">
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              :href="`/records/${item.id}`"
-              target="_blank"
-              rel="noopener"
-            >
-              <v-icon>mdi-open-in-new</v-icon>
-            </v-btn>
-        </v-toolbar>
+      <template #item="{ item }">
+        <tr @click="goToItem(item.id)" style="cursor: pointer;">
+          <td v-for="header in headers" :key="header.key">
+            {{ item[header.key] }}
+          </td>
+        </tr>
       </template>
     </v-data-table-server>
   </v-container>
