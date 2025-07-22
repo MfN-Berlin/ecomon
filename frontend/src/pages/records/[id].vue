@@ -21,15 +21,29 @@ function handleInferenceResults(results: any[]) {
   inferenceResults.value = results;
 };
 
+console.log(inferenceResults);
+
 // Download inference results as CSV
 function downloadInferenceCsv() {
   if (!inferenceResults.value.length) return;
   const keys = Object.keys(inferenceResults.value[0]);
   const csvRows = [
     keys.join(","),
-    ...inferenceResults.value.map(row =>
-      keys.map(k => `"${String(row[k] ?? "")}"`).join(",")
-    )
+    ...inferenceResults.value.map(row => {
+      const modelName = row.model?.name || ""; // Access model.name
+      const labelName = row.label?.name || ""; // Access label.name
+
+      return [
+        `"${String(row.id ?? "")}"`,
+        `"${String(row.model_id ?? "")}"`,
+        `"${String(modelName)}"` ,
+        `"${String(row.record_id ?? "")}"`,
+        `"${String(labelName)}"`,
+        `"${String(row.start_time ?? "")}"`,
+        `"${String(row.end_time ?? "")}"`,
+        `"${String(row.confidence ?? "")}"`
+      ].join(",");
+    })
   ];
   const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
   saveAs(blob, `inference_results_${id.value}.csv`);
