@@ -37,7 +37,7 @@ const headers = [
 ] as const;
 
 function goToItem(id) {
-  window.open(`/records/${id}`, '_blank')
+  window.open(`records/${id}`, '_blank')
 }
 function getNested(obj, key) {
   return key.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
