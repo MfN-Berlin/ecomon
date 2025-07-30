@@ -66,6 +66,11 @@ function skipAllSyncs() {
     });
   });
 }
+
+const sortedData = computed(() => {
+  if (!data) return [];
+  return [...data].sort((a, b) => a.directory.localeCompare(b.directory));
+});
 </script>
 
 <template>
@@ -131,7 +136,7 @@ function skipAllSyncs() {
         </v-tooltip>
       </v-toolbar>
       <v-list-subheader> DATA DIRECTORIES </v-list-subheader>
-      <v-list-item v-for="(item, i) in data" :key="i">
+      <v-list-item v-for="(item, i) in sortedData" :key="i">
         <v-list-item-title>{{ item.directory }}</v-list-item-title>
         <template #prepend>
           <v-icon>mdi-folder</v-icon>

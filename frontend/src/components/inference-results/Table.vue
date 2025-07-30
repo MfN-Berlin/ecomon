@@ -42,7 +42,7 @@ const headers = [
 //  { title: "ID", key: "id", align: "end", sortable: false, search: false },
   { title: "Start time", key: "start_time", align: "end", sortable: true, search: false },
   { title: "End time", key: "end_time", align: "end", sortable: true, search: false },
-  { title: "Model ID", key: "model_id", align: "end", sortable: true, search: false  },
+  { title: "Model ID", key: "model_id", align: "end", sortable: true, search:false  },
   { title: "(Model)", key: "model.name", align: "end", sortable: false, search: false },
   { title: "(Label)", key: "label.name", align: "end", sortable: false, search: false },
   { title: "Confidence", key: "confidence", align: "end", sortable: true, search: false }

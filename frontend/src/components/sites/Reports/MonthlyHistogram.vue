@@ -82,6 +82,7 @@ defineExpose({
       x-axis-label="Date"
       y-axis-label="Count"
       :loading="isLoading"
+      :hide-hover="true"
     />
   </v-container>
 </template>

@@ -25,6 +25,7 @@ const props = defineProps<{
   zmin?: number;
   zmax?: number;
   colorBar?: ColorBar;
+  hideHover?: boolean; 
 }>();
 
 const plotlyData = computed(() => {
@@ -40,8 +41,9 @@ const plotlyData = computed(() => {
     colorscale: props.colorScale ?? "Viridis",
     zmin: props.zmin,
     zmax: props.zmax,
-    colorbar: props.colorBar
-    // hoverongaps: false
+    colorbar: props.colorBar,
+    // hoverongaps: false,
+    hoverInfo: 'none'
   };
 
   return [heatmapTrace];
@@ -60,19 +62,30 @@ function transposeFunction(mat: number[][]) {
   return trans;
 }
 
-const layout = computed(() => ({
-  title: props.title,
-  xaxis: {
-    title: props.xAxisLabel
-  },
-  yaxis: {
-    title: props.yAxisLabel
+const layout = computed(() => {
+  const baseLayout = {
+    title: props.title,
+    xaxis: {
+      title: props.xAxisLabel
+    },
+    yaxis: {
+      title: props.yAxisLabel
+    }
+  };
+
+  if (props.hideHover) {
+    return {
+      ...baseLayout,
+      hovermode: false
+    };
   }
-}));
+
+  return baseLayout;
+});
 </script>
 
 <template>
   <v-container class="pa-1 pt-4">
-    <base-plotly :data="plotlyData" :layout="layout" :loading="loading" />
+    <base-plotly :data="plotlyData" :layout="layout" :loading="loading" :hideHover="props.hideHover"/>
   </v-container>
 </template>

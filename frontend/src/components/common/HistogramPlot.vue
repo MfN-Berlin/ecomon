@@ -14,6 +14,7 @@ const props = defineProps<{
   yAxisLabel: string;
   maxY?: number;
   loading?: boolean;
+  hideHover?: boolean;
 }>();
 
 const x = computed(() => props.data?.x ?? []);
@@ -34,46 +35,42 @@ const plotlyData = computed(() => {
     // to show the original count using the text property)
 
     text: x.value,
-    textposition: "auto"
+    textposition: "auto",
+    hoverInfo: 'none'
   };
 
   return [trace];
 });
 
 const layout = computed(() => {
-  if (!props.data) {
+  const baseLayout = {
+    title: props.title,
+    xaxis: {
+      title: props.xAxisLabel
+    },
+    yaxis: {
+      title: props.yAxisLabel
+    }
+  };
+
+  if (props.hideHover) {
     return {
-      title: props.title,
-      xaxis: { title: props.xAxisLabel },
-      yaxis: { title: props.yAxisLabel }
+      ...baseLayout,
+      hovermode: false
     };
   }
 
-  const maxCount = Math.max(...y.value);
-  const maxIndex = y.value.findIndex((count) => count === maxCount);
-
-  return {
-    title: props.title,
-    xaxis: { title: props.xAxisLabel },
-    yaxis: { title: props.yAxisLabel },
-    // If you normalize the bar heights, you might want to set y: 1 here.
-    annotations: [
-      {
-        x: x.value[maxIndex],
-        y: maxCount, // Use "1" here if using normalization instead
-        text: `Max: ${maxCount}`,
-        showarrow: true,
-        arrowhead: 7,
-        ax: 0,
-        ay: -30
-      }
-    ]
-  };
+  return baseLayout;
 });
 </script>
 
 <template>
   <v-container class="pa-1 pt-4">
-    <base-plotly :data="plotlyData" :layout="layout" :loading="loading" />
+    <base-plotly 
+      :data="plotlyData" 
+      :layout="layout" 
+      :loading="loading" 
+      :hideHover="props.hideHover"
+      />
   </v-container>
 </template>
