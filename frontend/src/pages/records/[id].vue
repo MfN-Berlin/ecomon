@@ -60,7 +60,7 @@ function downloadRecordCsv() {
   saveAs(blob, `record_${record.id}.csv`);
 }
 
-const confidence = 0.7; // Set your confidence threshold
+const confidence = 0.5; // Set your confidence threshold
 
 </script>
 <template>
