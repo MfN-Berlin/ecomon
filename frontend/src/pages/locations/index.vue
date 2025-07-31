@@ -51,6 +51,7 @@ const markers = computed(() => {
     >
       <template v-slot:thead>
         <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
-      </template> </v-data-table-server
+      </template> 
+    </v-data-table-server
   ></v-container>
 </template>

@@ -17,8 +17,8 @@ const active = computed(() => {
 });
 
 const data = computed(() => (active.value ? active.value.data.value : []));
-
 const loading = computed(() => (active.value ? active.value.isFetching.value : false));
+
 const rootPath = computed(() => {
   if (route.path.startsWith("/locations")) {
     return "/locations";
@@ -27,19 +27,23 @@ const rootPath = computed(() => {
   } else if (route.path.startsWith("/sites")) {
     return "/sites";
   }
-
   return "";
 });
+
 const name = computed(() => {
   return rootPath.value.slice(1, -1);
 });
+
 function fetch() {
   active.value?.fetchNextPage();
 }
+
 function onSearchTermChanged(searchTerm: string) {
-  active.value?.onSearchTermChanged(searchTerm);
+  // Server-side search handled by the active composable
+  active.value?.onSearchTermChanged?.(searchTerm);
 }
 </script>
+
 <template>
   <app-sub-navbar-layout>
     <template #sub-nav-bar>

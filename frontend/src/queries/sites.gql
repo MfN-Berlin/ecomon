@@ -34,10 +34,10 @@ fragment SiteList on sites {
 
 query filterSite($search: String = "", $limit: Int = 10, $offset: Int = 10) {
   data: sites(
-    order_by: { name: asc }
+    order_by: { prefix: asc }
     limit: $limit
     offset: $offset
-    where: { _or: { name: { _like: $search }, remarks: { _like: $search } } }
+    where: { _or: { prefix: { _like: $search }, remarks: { _like: $search } } }
   ) {
     ...SiteList
   }
