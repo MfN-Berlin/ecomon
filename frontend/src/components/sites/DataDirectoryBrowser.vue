@@ -23,6 +23,7 @@ const isRoot = computed(() => !params.value.subpath);
 const breadcrumbs = computed(() => ["data", ...params.value.subpath.split("/").filter(Boolean)]);
 const directorySelection = ref<number[]>([]);
 
+// Name of directories with bat recordings end with U (ultrasonic) and following letters
 // Directories ending with these letters are restricted from selection
 const restrictedLetters = ["U", "V", "W", "X", "Y", "Z"];
 
@@ -92,10 +93,15 @@ function handleMultiSelect() {
 </script>
 
 <template>
+  <!-- Main card container for directory browser -->
   <v-card height="400">
+    <!-- Header toolbar -->
     <v-toolbar title="Select Directory" color="primary" />
+    
     <v-card-text class="pa-0">
+      <!-- Navigation breadcrumbs and clear selection button -->
       <div class="d-flex justify-space-between">
+        <!-- Breadcrumb navigation -->
         <v-breadcrumbs :items="breadcrumbs" class="px-4">
           <template #title="{ item, index }">
             <span
@@ -107,13 +113,21 @@ function handleMultiSelect() {
             </span>
           </template>
         </v-breadcrumbs>
+        
+        <!-- Clear selection button (only visible when items are selected) -->
         <v-btn-group variant="text" divided>
           <v-btn v-if="directorySelection.length" class="mr-2" icon="mdi-playlist-remove" @click="directorySelection = []" />
         </v-btn-group>
       </div>
+      
+      <!-- Directory selection group for multiple selections -->
       <v-item-group v-model="directorySelection" multiple>
+        <!-- Scrollable directory list -->
         <v-list class="directory-list" height="250" style="overflow-y: auto">
+          <!-- Loading skeleton while data is pending -->
           <v-skeleton-loader v-if="isPending" type="list-item-three-line" />
+          
+          <!-- "Go up" button (only shown when not at root) -->
           <v-list-item v-if="!isRoot && !isPending" style="cursor: pointer" density="compact" @click="goUp">
             <template #prepend>
               <v-icon>mdi-arrow-up</v-icon>
@@ -121,6 +135,7 @@ function handleMultiSelect() {
             <v-list-item-title>..</v-list-item-title>
           </v-list-item>
 
+          <!-- Directory items -->
           <v-list-item
             v-for="item in sortedData"
             :key="item.path"
@@ -128,15 +143,20 @@ function handleMultiSelect() {
             density="compact"
             :disabled="isDisabled(item)"
           >
+            <!-- Folder icon -->
             <template #prepend>
               <v-icon>mdi-folder</v-icon>
             </template>
+            
+            <!-- Directory name (clickable if not restricted) -->
             <v-list-item-title
               :class="{ 'text-disabled': endsWithRestrictedLetter(item.name) }"
               @click="!endsWithRestrictedLetter(item.name) ? handleClick(item.path) : null"
             >
               {{ item.name }}
             </v-list-item-title>
+            
+            <!-- Selection checkbox -->
             <template #append>
               <v-item v-slot="{ isSelected, toggle }">
                 <v-checkbox :model-value="isSelected" density="compact" @click="toggle" />
@@ -146,19 +166,24 @@ function handleMultiSelect() {
         </v-list>
       </v-item-group>
     </v-card-text>
+    
+    <!-- Action buttons -->
     <v-card-actions>
+      <!-- Cancel button -->
       <v-btn @click="emit('cancel')">Cancel</v-btn>
       <v-spacer />
+      
+      <!-- Dynamic select button -->
       <v-btn
         color="primary"
         @click="directorySelection.length === 1 ? handleSelect() : handleMultiSelect()"
         :disabled="directorySelection.length === 0"
       >
-      {{ 
-        directorySelection.length === 0 ? "Select This Directory" : directorySelection.length === 1
-        ? "Select This Directory" 
-        : `Select These ${directorySelection.length} Directories` 
-      }}
+        {{ 
+          directorySelection.length === 0 ? "Select This Directory" : directorySelection.length === 1
+          ? "Select This Directory" 
+          : `Select These ${directorySelection.length} Directories` 
+        }}
       </v-btn>
     </v-card-actions>
   </v-card>
