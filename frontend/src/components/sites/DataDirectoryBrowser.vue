@@ -1,39 +1,65 @@
 <script setup lang="ts">
+/**
+ * Component events for directory selection and cancellation
+ */
 const emit = defineEmits<{
   (e: "select", path: string[]): void;
   (e: "cancel"): void;
 }>();
+
+/**
+ * Component props
+ */
 const props = defineProps<{
-  directories: string[];
+  directories: string[]; // Already selected directories to prevent duplicates
 }>();
 
+// Current navigation state
 const params = ref({ subpath: "" });
 const { data, isPending } = useSiteListDataDirectories(params);
 
+// Computed properties for UI state
 const isRoot = computed(() => !params.value.subpath);
 const breadcrumbs = computed(() => ["data", ...params.value.subpath.split("/").filter(Boolean)]);
 const directorySelection = ref<number[]>([]);
+
+// Directories ending with these letters are restricted from selection
 const restrictedLetters = ["U", "V", "W", "X", "Y", "Z"];
 
+/**
+ * Sorts directories alphabetically by name
+ */
 const sortedData = computed(() => {
   if (!data?.value) return [];
   return [...(data.value ?? [])].sort((a, b) => a.name.localeCompare(b.name));
 });
 
+/**
+ * Checks if directory name ends with restricted letter
+ */
 const endsWithRestrictedLetter = (name: string) => {
   const lastChar = name.slice(-1).toUpperCase();
   return restrictedLetters.includes(lastChar);
 };
 
+/**
+ * Determines if directory item should be disabled
+ */
 const isDisabled = (item: any) => {
   return props.directories.includes(item?.path) || endsWithRestrictedLetter(item.name);
 };
 
+/**
+ * Navigates into selected directory
+ */
 function handleClick(path: string) {
   params.value.subpath = path;
   directorySelection.value = [];
 }
 
+/**
+ * Navigates up one level in directory tree
+ */
 function goUp() {
   const parts = params.value.subpath.split("/").filter(Boolean);
   parts.pop();
@@ -41,15 +67,24 @@ function goUp() {
   directorySelection.value = [];
 }
 
+/**
+ * Handles breadcrumb navigation
+ */
 function handleBreadcrumbClick(index: number) {
   params.value.subpath = index === 0 ? "" : params.value.subpath.split("/").filter(Boolean).slice(0, index).join("/");
   directorySelection.value = [];
 }
 
+/**
+ * Emits selection of current directory
+ */
 function handleSelect() {
   emit("select", [params.value.subpath]);
 }
 
+/**
+ * Emits selection of multiple directories
+ */
 function handleMultiSelect() {
   if (!data?.value) return;
   emit("select", directorySelection.value.map((dirIndex) => data.value![dirIndex]!.path));
