@@ -39,7 +39,7 @@ const drawerVisible = computed({
 // Watch for changes in the drawerVisible property and update the store
 </script>
 <template>
-  <v-navigation-drawer v-model="drawerVisible" :width="220">
+  <v-navigation-drawer v-model="drawerVisible" :width="230">
     <v-sheet class="px-8 py-2">
       <v-img cover src="/logo.png"></v-img>
     </v-sheet>

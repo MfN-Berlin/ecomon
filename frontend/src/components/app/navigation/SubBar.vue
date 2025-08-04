@@ -112,24 +112,15 @@ onMounted(() => {
         <template #content>
           <!-- Navigation list -->
           <v-list color="primary" density="compact" nav>
-
-            <!-- Sites page: List item with tooltip showing full name -->
+            <!-- Sites page: List item showing prefix and name -->
             <template v-if="rootPath === '/sites'">
-            <v-tooltip 
-              v-for="item in sortedData"
-              :key="item.id"
-              :text="item.name"
-              location="right"
-            >
-              <template v-slot:activator="{ props: tooltipProps }">
-                <v-list-item
-                  :to="`${rootPath}/${item.id}`"
-                  link
-                  :title="getItemTitle(item)"
-                  v-bind="tooltipProps"
-                ></v-list-item>
-              </template>
-            </v-tooltip>
+              <v-list-item
+                v-for="item in sortedData"
+                :key="item.id"
+                :to="`${rootPath}/${item.id}`"
+                link
+                :title="`${item.prefix || item.name}, ${item.name}`"
+              ></v-list-item>
             </template>
 
             <!-- Other pages: List item without tooltip -->

@@ -8,7 +8,7 @@ function toggleDrawer() {
 }
 </script>
 <template>
-  <v-app-bar color="primary" density="compact">
+  <v-app-bar color="primary" density="compact" style="z-index: 1000">
     <template v-slot:prepend>
       <v-app-bar-nav-icon @click="toggleDrawer()"></v-app-bar-nav-icon>
     </template>
