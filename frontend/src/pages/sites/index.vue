@@ -20,6 +20,8 @@ Site index page component.
   Additional Notes:
     • Be sure to document any custom methods and lifecycle hooks inside their respective sections for clearer maintainability.
     • Review and update the inline comments as the component evolves to keep the documentation accurate.
+
+    @see: components/app/navigation/SubBar.vue for a reusable navigation sub-bar component.
 -->
 <script setup lang="ts">
 import type { GetSitesPagniatedQuery } from "#gql";

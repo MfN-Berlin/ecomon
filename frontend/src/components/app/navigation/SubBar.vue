@@ -1,3 +1,8 @@
+<!--
+  SubBar.vue
+  Navigation component for displaying a list of items with search and infinite scroll functionality.
+  Supports different root paths (e.g., '/sites', '/locations') with specific sorting and display logic.
+-->
 <script setup lang="ts">
 /**
  * Represents an item in the navigation list
@@ -107,13 +112,36 @@ onMounted(() => {
         <template #content>
           <!-- Navigation list -->
           <v-list color="primary" density="compact" nav>
-            <v-list-item
+
+            <!-- Sites page: List item with tooltip showing full name -->
+            <template v-if="rootPath === '/sites'">
+            <v-tooltip 
               v-for="item in sortedData"
               :key="item.id"
-              :to="`${rootPath}/${item.id}`"
-              link
-              :title="getItemTitle(item)"
-            ></v-list-item>
+              :text="item.name"
+              location="right"
+            >
+              <template v-slot:activator="{ props: tooltipProps }">
+                <v-list-item
+                  :to="`${rootPath}/${item.id}`"
+                  link
+                  :title="getItemTitle(item)"
+                  v-bind="tooltipProps"
+                ></v-list-item>
+              </template>
+            </v-tooltip>
+            </template>
+
+            <!-- Other pages: List item without tooltip -->
+            <template v-else>
+              <v-list-item
+                v-for="item in sortedData"
+                :key="item.id"
+                :to="`${rootPath}/${item.id}`"
+                link
+                :title="getItemTitle(item)"
+              ></v-list-item>
+            </template>
           </v-list>
         </template>
         
