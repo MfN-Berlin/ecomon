@@ -18,10 +18,22 @@ export default function useCreateFilter<TData, TVariables extends FilterVariable
 
   return function useLocationFilter({ itemsPerPage = 30, searchTerm = "" }) {
     const route = useRoute();
-
     const _itemsPerPage = ref(itemsPerPage);
     const _searchTerm = ref(searchTerm);
     const queryClient = useQueryClient();
+
+    // Watch the 'search' query parameter in the URL.
+    // This ensures the data filter is always in sync with the URL.
+    watch(
+      () => route.query.search,
+      (newSearch) => {
+        const newSearchValue = (newSearch as string) || "";
+        if (_searchTerm.value !== newSearchValue) {
+          _searchTerm.value = newSearchValue;
+        }
+      },
+      { immediate: true } // Run the watcher immediately on component setup
+    );
 
     async function queryFn({ pageParam = 0 }: { pageParam?: number }) {
       // Explicitly cast the object to TVariables
@@ -33,7 +45,12 @@ export default function useCreateFilter<TData, TVariables extends FilterVariable
 
       const res = await filterQueryFn(variables);
       const hasMore = res.data.length > _itemsPerPage.value;
-
+      console.log(`Fetching ${baseQueryKey} filter`, {
+        search: `%${_searchTerm.value}%`,
+        limit: _itemsPerPage.value,
+        offset: pageParam,
+        hasMore
+      });
       throwErrorIfNoData(res.data, 500, `Error fetching ${baseQueryKey} filter`);
       return {
         data: res.data.slice(0, _itemsPerPage.value),
@@ -50,7 +67,7 @@ export default function useCreateFilter<TData, TVariables extends FilterVariable
       isLoading,
       isError
     } = useInfiniteQuery({
-      queryKey: [baseQueryKey, "filter", route.params.filter],
+      queryKey: [baseQueryKey, "filter", route.params.filter, _searchTerm],
       queryFn: queryFn,
       getNextPageParam: (lastPage) => lastPage && lastPage.nextCursor,
       initialPageParam: 0

@@ -81,7 +81,7 @@ onMounted(() => {
   <v-container class="pa-0 h-100 d-flex flex-nowrap flex-column">
     <!-- Top toolbar with search and create button -->
     <v-toolbar flat density="compact" class="px-2" color="surface">
-      <!-- Search input field -->
+      <!-- Search input field will now take up the available space -->
       <v-text-field
         v-model="search"
         density="compact"
@@ -91,18 +91,19 @@ onMounted(() => {
         single-line
         variant="underlined"
       ></v-text-field>
-      <v-spacer></v-spacer>
 
-      <!-- Create new item button -->
-      <NuxtLink :to="`${rootPath}/create`">
-        <v-tooltip :text="`Create new ${name}`" location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-btn icon density="compact" color="primary" v-bind="props" variant="tonal">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-      </NuxtLink>
+      <!-- The button is moved to the 'append' slot -->
+      <template v-slot:append>
+        <NuxtLink :to="`${rootPath}/create`">
+          <v-tooltip :text="`Create new ${name}`" location="bottom">
+            <template v-slot:activator="{ props }">
+              <v-btn icon density="compact" color="primary" v-bind="props" variant="tonal">
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </NuxtLink>
+      </template>
     </v-toolbar>
 
     <!-- Scrollable content area -->
@@ -117,7 +118,7 @@ onMounted(() => {
               <v-list-item
                 v-for="item in sortedData"
                 :key="item.id"
-                :to="`${rootPath}/${item.id}`"
+                :to="`${rootPath}/${item.id}${searchTerm ? `?search=${searchTerm}` : ''}`"
                 link
                 :title="`${item.prefix || item.name}, ${item.name}`"
               ></v-list-item>
@@ -128,7 +129,7 @@ onMounted(() => {
               <v-list-item
                 v-for="item in sortedData"
                 :key="item.id"
-                :to="`${rootPath}/${item.id}`"
+                :to="`${rootPath}/${item.id}${searchTerm ? `?search=${searchTerm}` : ''}`"
                 link
                 :title="getItemTitle(item)"
               ></v-list-item>
