@@ -39,16 +39,20 @@ type PagniatedResponse<T> = {
 
 export default function useCreateFilter<TItem, TData extends PagniatedResponse<TItem>>({
   baseQueryKey,
-  pagniatedQueryFn
+  pagniatedQueryFn,
+  defaultOptions = { itemsPerPage: 100 }
 }: {
   baseQueryKey: string;
   pagniatedQueryFn: (variables: PagniatedVariables) => Promise<TData>;
+  defaultOptions?: PaginatedOptions; // Define the type for defaultOptions
 }) {
   // const { onError, throwErrorIfNoData } = useErrorHandling({});
 
-  return function usePagniated({ startValues }: { startValues?: StartValues } = {}) {
+  return function usePagniated(
+    { startValues }: { startValues?: StartValues } = {},
+  ) {
     const page = ref(startValues?.page ?? 1);
-    const itemsPerPage = ref(startValues?.itemsPerPage ?? 10);
+    const itemsPerPage = ref(startValues?.itemsPerPage ?? 100);
     const offset = computed(() => (page.value - 1) * itemsPerPage.value);
     const limit = computed(() => itemsPerPage.value);
 
