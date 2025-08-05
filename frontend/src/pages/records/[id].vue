@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: "default" });
+definePageMeta({ layout: "full-width" });
 const router = useRouter();
 const id = computed(() => parseInt(router.currentRoute.value.params.id as string));
 

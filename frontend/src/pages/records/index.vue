@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Record } from "#gql/default";
 
-definePageMeta({ layout: "default" });
+definePageMeta({ layout: "full-width" });
 
 const {
   page,
@@ -13,7 +13,7 @@ const {
   handleReset,
   handleSearch
 } = useRecordsPagniated();
-console.log(items);
+
 const config = useRuntimeConfig();
 const headers = [
   //{ title: "", key: "actions", align: "end", sortable: false, search: false },
@@ -63,7 +63,7 @@ tr:hover {
 </style>
 
 <template>
-  <v-container>
+  <v-container fluid>
     <!-- <audio controls autoplay :src="source"></audio> -->
     <v-data-table-server
       v-model:items-per-page="itemsPerPage"
