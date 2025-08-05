@@ -9,7 +9,7 @@ fragment Job on jobs {
   updated_at
   created_at
 }
-query getJobsPagniated(
+query getJobsPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [jobs_order_by!] = { id: desc }

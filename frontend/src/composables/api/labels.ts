@@ -1,4 +1,4 @@
-export const useLabelsPagniated = useCreatePagniated({
+export const useLabelsPaginated = useCreatePaginated({
   baseQueryKey: QUERY_KEYS.labels,
-  pagniatedQueryFn: GqlGetLabelsPagniated
+  paginatedQueryFn: GqlGetLabelsPaginated
 });

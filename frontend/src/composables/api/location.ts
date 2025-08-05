@@ -9,7 +9,7 @@ export const useLocationUpdate = useCreateMutation(QUERY_KEYS.locations, GqlUpda
 export const useLocationInsert = useCreateMutation(QUERY_KEYS.locations, GqlInsertLocation);
 export const useLocationDelete = useCreateMutation(QUERY_KEYS.locations, GqlDeleteLocation);
 
-export const useLocationPagniated = useCreatePagniated({
+export const useLocationPaginated = useCreatePaginated({
   baseQueryKey: QUERY_KEYS.locations,
-  pagniatedQueryFn: GqlGetLocationsPagniated
+  paginatedQueryFn: GqlGetLocationsPaginated
 });

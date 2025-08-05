@@ -7,7 +7,7 @@ fragment Label on labels {
   class
   order
 }
-query getLabelsPagniated(
+query getLabelsPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [labels_order_by!] = { id: desc }

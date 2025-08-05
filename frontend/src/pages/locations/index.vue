@@ -12,7 +12,7 @@ const {
   isLoading: loading,
   handleReset,
   handleSearch
-} = useLocationPagniated();
+} = useLocationPaginated();
 
 const headers = [
   { title: "ID", key: "id", align: "end", search: { operator: "_eq", type: "number" } },

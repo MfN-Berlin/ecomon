@@ -12,7 +12,7 @@ const {
   isLoading: loading,
   handleReset,
   handleSearch
-} = useRecordsPagniated();
+} = useRecordsPaginated();
 
 const config = useRuntimeConfig();
 const headers = [
@@ -24,7 +24,10 @@ const headers = [
   { title: "(Site)", key: "site.name", align: "start", sortable: false, search: false },
   // commented out as filepath also includes filename
   // { title: "filename", key: "filename", align: "end", search: { operator: "_like", type: "text" } },
+
+  // { title: "Date & Time", key: "record_datetime", align: "start", search: { operator: "_gte", type: "datetime" } }, // changed alignment to start for better readability
   { title: "Date & Time", key: "record_datetime", align: "start", search: false }, // changed alignment to start for better readability
+
   // { title: "Record Type", key: "record_type", align: "end", search: { operator: "_like", type: "text" } },
   // { title: "Record Status", key: "record_status", align: "end", search: { operator: "_like", type: "text" } },
   { title: "File Path", key: "filepath", align: "start", search: { operator: "_like", type: "text" } },  // changed alignment to start for better readability
@@ -60,6 +63,13 @@ tr:hover {
 .v-data-table-header__sort-icon {
   color: #333; /* Dark grey sort icon */
 }
+/*
+  This CSS targets the "Items per page" dropdown in the data table's
+  footer and gives it a minimum width to prevent text truncation.
+*/
+:deep(.v-data-table-footer__items-per-page .v-select) {
+  min-width: 100px;
+}
 </style>
 
 <template>
@@ -75,6 +85,17 @@ tr:hover {
       :loading="loading"
       item-value="name"
     >
+      <!-- Add a top pagination component -->
+      <template v-slot:top>
+        <v-data-table-footer
+          v-model:items-per-page="itemsPerPage"
+          v-model:page="page"
+          :items-length="totalItems"
+          :page-count="Math.ceil(totalItems / itemsPerPage)"
+          show-current-page
+        />
+      </template>
+
       <template v-slot:thead>
         <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
       </template>

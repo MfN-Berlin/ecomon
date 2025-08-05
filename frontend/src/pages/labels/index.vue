@@ -10,7 +10,7 @@ const {
   isLoading: loading,
   handleReset,
   handleSearch
-} = useLabelsPagniated();
+} = useLabelsPaginated();
 
 const headers = [
   { title: "ID", key: "id", align: "end", search: { operator: "_eq", type: "number" }, width: 100 },

@@ -83,7 +83,7 @@ mutation deleteModel($id: Int!) {
   }
 }
 
-query getModelsPagniated(
+query getModelsPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [models_order_by!] = {}

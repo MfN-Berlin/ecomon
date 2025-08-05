@@ -3,14 +3,14 @@ type Headers = {
   title: string;
   key: string;
   align: "end" | "start" | "center";
-  search: { operator: string; type: "number" | "text" };
+  search: { operator: string; type: "number" | "text" | "datetime" };
 };
 
 type SearchDefineArgs = {
   key: string;
   operator: string;
   value: string | number;
-  type: "text" | "number";
+  type: "text" | "number" | "datetime";
 };
 const { headers } = defineProps<{
   headers: Readonly<Headers[]>;
@@ -31,6 +31,15 @@ function transformValue(
       return undefined;
     }
     return `%${value}%`;
+  }
+
+  // Handle datetime transformation
+  if (type === "datetime") {
+    if (value === "" || value === null || value === undefined) {
+      return undefined;
+    }
+    // Convert to ISO string for GraphQL
+    return new Date(value).toISOString();
   }
 
   return value;
@@ -69,6 +78,25 @@ const handleSearch = ({ key, operator, value, type }: SearchDefineArgs) => {
             })
           "
         ></v-text-field>
+
+        <!-- Add datetime input support -->
+        <v-text-field
+          v-else-if="header.search.type === 'datetime'"
+          :key="header.key"
+          :label="header.title"
+          type="datetime-local"
+          density="compact"
+          clearable
+          @update:model-value="
+            handleSearch({
+              key: header.key,
+              operator: header.search.operator,
+              value: $event,
+              type: header.search.type
+            })
+          "
+        ></v-text-field>
+
         <v-number-input
           v-else
           :key="header.key + 'number'"

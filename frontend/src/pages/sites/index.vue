@@ -24,11 +24,11 @@ Site index page component.
     @see: components/app/navigation/SubBar.vue for a reusable navigation sub-bar component.
 -->
 <script setup lang="ts">
-import type { GetSitesPagniatedQuery } from "#gql";
+import type { GetSitesPaginatedQuery } from "#gql";
 
 // Type definition for individual site items from GraphQL query
 // the query itself is in: ecomon/frontend/src/queries/sites.gql
-type Site = GetSitesPagniatedQuery["items"][number];
+type Site = GetSitesPaginatedQuery["items"][number];
 
 // Use submenu layout for consistent navigation with other sections
 definePageMeta({ layout: "submenu" });
@@ -43,7 +43,7 @@ const {
   isLoading: loading,  // Loading state for data fetching
   handleReset,    // Function to reset all filters and search
   handleSearch    // Function to handle search queries
-} = useSitePagniated();
+} = useSitePaginated();
 
 // Table column configuration with search capabilities
 const headers = [

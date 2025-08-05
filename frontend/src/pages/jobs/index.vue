@@ -10,7 +10,7 @@ const {
   isLoading: loading,
   handleReset,
   handleSearch
-} = useGetJobsPagniated({
+} = useGetJobsPaginated({
   startValues: {
     page: 1,
     itemsPerPage: 10,

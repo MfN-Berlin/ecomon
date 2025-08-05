@@ -23,7 +23,7 @@ const {
   isLoading: loading,
   handleReset,
   handleSearch
-} = useRecordModelInferenceResultsPagniated({
+} = useRecordModelInferenceResultsPaginated({
   startValues: {
     search: baseSearch.value,
     sortBy: [{ key: "start_time", order: "asc" }],

@@ -18,9 +18,9 @@ export const useSiteDirectoryDelete = useCreateMutation(QUERY_KEYS.sites, GqlDel
 
 export const useSiteListDataDirectories = useCreateList(QUERY_KEYS.dataDirectories, GqlListDataDirectories);
 
-export const useSitePagniated = useCreatePagniated({
+export const useSitePaginated = useCreatePaginated({
   baseQueryKey: QUERY_KEYS.sites,
-  pagniatedQueryFn: GqlGetSitesPagniated
+  paginatedQueryFn: GqlGetSitesPaginated
 });
 
 export const useSiteScanAllDirectories = useCreateAction(GqlScanAllSiteDirectories);

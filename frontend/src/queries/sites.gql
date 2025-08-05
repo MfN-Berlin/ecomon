@@ -114,7 +114,7 @@ mutation deleteSite($id: bigint!) {
   }
 }
 
-query getSitesPagniated(
+query getSitesPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [sites_order_by!] = { id: desc }
