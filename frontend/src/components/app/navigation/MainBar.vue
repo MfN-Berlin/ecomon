@@ -14,10 +14,12 @@ function toggleDrawer() {
     </template>
     <app-bread-crumbs></app-bread-crumbs>
     <v-spacer></v-spacer>
+    <!--
     <template v-slot:append>
       <transition name="fade">
         <v-btn v-if="!$vuetify.display.xs" icon="mdi-dots-vertical"></v-btn>
       </transition>
     </template>
+    -->
   </v-app-bar>
 </template>
