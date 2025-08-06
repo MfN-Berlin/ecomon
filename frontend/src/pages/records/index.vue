@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Record } from "#gql/default";
-import DataDirectoryBrowser from "~/components/sites/DataDirectoryBrowser.vue";
 
 definePageMeta({ layout: "full-width" });
 
@@ -15,10 +14,10 @@ const {
   handleSearch
 } = useRecordsPaginated();
 
-const config = useRuntimeConfig();
+// Set default sorting by filepath
+sortBy.value = [{ key: 'filepath', order: 'asc' }];
 
-// Add state for the directory browser
-const showDirectoryBrowser = ref(false);
+const config = useRuntimeConfig();
 
 // Extract the pagination options into a reusable constant
 const paginationOptions = [
@@ -38,10 +37,9 @@ const headers = [
   // commented out as filepath also includes filename
   // { title: "filename", key: "filename", align: "end", search: { operator: "_like", type: "text" } },
 
-
   // { title: "Record Type", key: "record_type", align: "end", search: { operator: "_like", type: "text" } },
   // { title: "Record Status", key: "record_status", align: "end", search: { operator: "_like", type: "text" } },
-  { title: "File Path", key: "filepath", align: "start", search: { operator: "_like", type: "text" } },  // changed alignment to start for better readability
+  { title: "File Path", key: "filepath", align: "start", sortable: true, search: false},  // changed alignment to start for better readability
   // { title: "Date & Time", key: "record_datetime", align: "start", search: { operator: "_gte", type: "datetime" } }, // changed alignment to start for better readability
   { title: "Date & Time", key: "record_datetime", align: "start", search: false }, // changed alignment to start for better readability
   // { title: "File Size", key: "file_size", align: "end", search: { operator: "_eq", type: "number" } },
@@ -60,45 +58,46 @@ function getNested(obj, key) {
   return key.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
 }
 
-function selectDirectory() {
-  showDirectoryBrowser.value = true;
-}
+const selectedSite = ref<number | null>(null);
 
-function handleSubmit(path: string[]) {
-  console.log("submit", path);
-  // Close the directory browser
-  showDirectoryBrowser.value = false;
-}
-
-// Handle directory selection - using the correct format
-function onDirectorySelected(directories: string[]) {
-  console.log('Raw directories parameter:', directories);
-  
-  if (Array.isArray(directories) && directories.length > 0) {
-    let selectedDirectory = directories[0];
-    console.log('Selected directory:', selectedDirectory);
-    
-    if (selectedDirectory && selectedDirectory.trim() !== '') {
-      console.log('Applying directory filter:', selectedDirectory);
-      
-      // Use the same format as your date search (direct object format)
-      handleSearch({
-        filepath: { _like: `%${selectedDirectory}%` }
-      });
-      
-    } else {
-      console.log('Selected directory is empty or invalid');
-    }
-  } else {
-    console.log('No valid directories selected or invalid format');
+const { data: sitesData } = await $fetch('http://localhost:8080/v1/graphql', {
+  method: 'POST',
+  body: {
+    query: `
+      query getSiteList {
+        sites(order_by: {name: asc}) {
+          id
+          name
+          prefix
+          remarks
+          created_at
+          updated_at
+        }
+      }
+    `
   }
-  
-  showDirectoryBrowser.value = false;
-}  
+});
 
-function onDirectoryBrowserClosed() {
-  showDirectoryBrowser.value = false;
-}
+const sites = computed(() => {
+  if (!sitesData?.sites) return [];
+  
+  return sitesData.sites.map(site => ({
+    title: site.name,
+    value: site.id
+  }));
+});
+
+watch(selectedSite, (newSiteId) => {
+  if (newSiteId) {
+    handleSearch({
+      site_id: { _eq: newSiteId }
+    });
+  } else {
+    handleSearch({
+      site_id: { _eq: undefined }
+    });
+  }
+});
 </script>
 
 <style scoped>
@@ -149,31 +148,27 @@ tr:hover {
               <v-card-title class="text-subtitle-2 pa-0 mb-2">Quick Filters</v-card-title>
               <v-row no-gutters>
                 <v-col cols="auto" class="mr-3">
-                  <v-btn
-                    variant="outlined"
-                    color="primary"
-                    prepend-icon="mdi-folder-open"
-                    style="min-width: 200px;"
-                    @click="selectDirectory"
-                  >
-                    Select directory
-                  </v-btn>
-                </v-col>
-                <v-col cols="auto">
-                  <v-text-field
-                    label="Date"
-                    type="datetime-local"
+                  <v-select
+                    v-model="selectedSite"
+                    label="Select site"
+                    :items="sites"
                     density="compact"
                     variant="outlined"
                     clearable
                     style="min-width: 200px;"
-                    @update:model-value="
-                      handleSearch({
-                        record_datetime: { _gte: $event ? new Date($event).toISOString() : undefined }
-                      })
-                    "
+                    prepend-inner-icon="mdi-access-point-network"
                   />
                 </v-col>
+                <v-col cols="auto">
+                  <v-text-field
+                    label="Date"
+                    density="compact"
+                    variant="outlined"
+                    disabled
+                    style="min-width: 200px;"
+                    prepend-inner-icon="mdi-calendar"
+                  />
+                </v-col>                
               </v-row>
             </v-card>
           </v-col>
@@ -207,17 +202,5 @@ tr:hover {
         </tr>
       </template>
     </v-data-table-server>
-
-    <!-- DataDirectoryBrowser component -->
-    <v-dialog v-model="showDirectoryBrowser" persistent max-width="500px">
-      <DataDirectoryBrowser
-        v-if="showDirectoryBrowser"
-        :directories="[]" 
-        @select="onDirectorySelected"
-        @cancel="onDirectoryBrowserClosed"
-      />
-    </v-dialog>
-
-
-</v-container>
+  </v-container>
 </template>
