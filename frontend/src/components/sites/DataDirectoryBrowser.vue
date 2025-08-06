@@ -18,6 +18,32 @@ const props = defineProps<{
 const params = ref({ subpath: "" });
 const { data, isPending } = useSiteListDataDirectories(params);
 
+// Log the root directory path when component mounts
+onMounted(() => {
+  console.log('DataDirectoryBrowser mounted');
+  console.log('Initial params:', params.value);
+  console.log('Initial subpath:', params.value.subpath);
+  console.log('Is at root:', isRoot.value);
+});
+// Watch for changes in data to log root directory information
+watch(data, (newData) => {
+  if (newData && newData.length > 0) {
+    console.log('Root directory data loaded:', newData);
+    console.log('Number of directories in root:', newData.length);
+    console.log('Root directory names:', newData.map(item => item.name));
+    console.log('Root directory paths:', newData.map(item => item.path));
+  }
+}, { immediate: true });
+
+// Watch for navigation changes
+watch(() => params.value.subpath, (newSubpath, oldSubpath) => {
+  console.log('Navigation changed:');
+  console.log('  From:', oldSubpath || '(root)');
+  console.log('  To:', newSubpath || '(root)');
+  console.log('  Current breadcrumbs:', breadcrumbs.value);
+});
+
+
 // Computed properties for UI state
 const isRoot = computed(() => !params.value.subpath);
 const breadcrumbs = computed(() => ["data", ...params.value.subpath.split("/").filter(Boolean)]);
@@ -79,17 +105,57 @@ function handleBreadcrumbClick(index: number) {
 /**
  * Emits selection of current directory
  */
+//function handleSelect() {
+//  console.log('Selected directory:', params.value.subpath);
+//  emit("select", [params.value.subpath]);
+//}
+
+/**
+ * Emits selection of current directory (fixed to handle checkbox selections)
+ */
 function handleSelect() {
-  emit("select", [params.value.subpath]);
+  // If there are checkbox selections, use those instead of current path
+  if (directorySelection.value.length > 0) {
+    handleMultiSelect();
+    return;
+  }
+  
+  // Otherwise, select the current navigated directory
+  const currentPath = params.value.subpath || '';
+  console.log('Selecting current directory:', currentPath);
+  emit("select", [currentPath]);
 }
 
 /**
  * Emits selection of multiple directories
  */
+//function handleMultiSelect() {
+//  if (!data?.value) return;
+//  emit("select", directorySelection.value.map((dirIndex) => data.value![dirIndex]!.path));
+//}
+
+/**
+ * Emits selection of multiple directories (fixed to build correct paths)
+ */
 function handleMultiSelect() {
   if (!data?.value) return;
-  emit("select", directorySelection.value.map((dirIndex) => data.value![dirIndex]!.path));
+  
+  const selectedPaths = directorySelection.value.map((dirIndex) => {
+    const selectedDir = data.value![dirIndex];
+    
+    // Build the full path by combining current subpath with selected directory name
+    const fullPath = params.value.subpath 
+      ? `${params.value.subpath}/${selectedDir.name}`
+      : selectedDir.name;
+    
+    console.log('Selected directory full path:', fullPath);
+    return fullPath;
+  });
+  
+  console.log('Multi-selecting directories:', selectedPaths);
+  emit("select", selectedPaths);
 }
+
 </script>
 
 <template>
