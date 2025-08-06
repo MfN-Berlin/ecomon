@@ -73,6 +73,8 @@ const endsWithRestrictedLetter = (name: string) => {
  * Determines if directory item should be disabled
  */
 const isDisabled = (item: any) => {
+  console.log('props.directories:', props.directories);
+  console.log('Checking if item is disabled:', item.path, props.directories.includes(item?.path));
   return props.directories.includes(item?.path) || endsWithRestrictedLetter(item.name);
 };
 
@@ -103,14 +105,6 @@ function handleBreadcrumbClick(index: number) {
 }
 
 /**
- * Emits selection of current directory
- */
-//function handleSelect() {
-//  console.log('Selected directory:', params.value.subpath);
-//  emit("select", [params.value.subpath]);
-//}
-
-/**
  * Emits selection of current directory (fixed to handle checkbox selections)
  */
 function handleSelect() {
@@ -126,22 +120,27 @@ function handleSelect() {
   emit("select", [currentPath]);
 }
 
-/**
- * Emits selection of multiple directories
- */
-//function handleMultiSelect() {
-//  if (!data?.value) return;
-//  emit("select", directorySelection.value.map((dirIndex) => data.value![dirIndex]!.path));
-//}
 
 /**
- * Emits selection of multiple directories (fixed to build correct paths)
+ * Emits selection of multiple directories (fixed indexing)
  */
 function handleMultiSelect() {
   if (!data?.value) return;
   
+  console.log('Directory selection indices:', directorySelection.value);
+  console.log('Sorted data:', sortedData.value);
+  console.log('Original data:', data.value);
+  
   const selectedPaths = directorySelection.value.map((dirIndex) => {
-    const selectedDir = data.value![dirIndex];
+    // Make sure we're using the sorted data, not the original data
+    const selectedDir = sortedData.value[dirIndex];
+    
+    console.log(`Index ${dirIndex} maps to:`, selectedDir);
+    
+    if (!selectedDir) {
+      console.error(`No directory found at index ${dirIndex}`);
+      return null;
+    }
     
     // Build the full path by combining current subpath with selected directory name
     const fullPath = params.value.subpath 
@@ -150,12 +149,11 @@ function handleMultiSelect() {
     
     console.log('Selected directory full path:', fullPath);
     return fullPath;
-  });
+  }).filter(Boolean); // Remove any null values
   
   console.log('Multi-selecting directories:', selectedPaths);
   emit("select", selectedPaths);
 }
-
 </script>
 
 <template>

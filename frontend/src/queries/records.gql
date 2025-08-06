@@ -50,14 +50,33 @@ mutation updateRecord(
 
 
 query getRecordsPaginated(
-  $limit: Int = 10
-  $offset: Int = 0
-  $order_by: [records_order_by!] = { id: desc }
-  $where: records_bool_exp = {}
+  $limit: Int = 10,
+  $offset: Int = 0,
+  $order_by: [records_order_by!] = { id: desc },
+  $where: records_bool_exp = {},
+  $filepath: String = "AKWAMO",
+  $record_datetime_from: timestamp,
+  $record_datetime_to: timestamp
+
 ) {
-  items: records(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
-    ...Record
-  }
+  items: records(
+    limit: $limit, 
+    offset: $offset, 
+    order_by: $order_by, 
+    where: $where
+#    where: { _and: [
+#      {filepath: { _ilike: $filepath }}
+#    ]}
+#    {
+#      _and: [
+#        { filepath: { _ilike: $filepath } }
+#        { record_datetime: { _gte: $record_datetime_from } }
+#        { record_datetime: { _lte: $record_datetime_to } }
+#      ]
+#    }
+    ) {
+      ...Record
+    }
   total: records_aggregate(where: $where) {
     aggregate {
       count
