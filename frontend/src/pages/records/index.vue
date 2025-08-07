@@ -180,6 +180,51 @@ watch(selectedSite, (newSiteId) => {
     });
   }
 });
+
+// Add reactive variable for the date input
+const selectedDate = ref<string>('');
+
+/**
+ * Watch for date changes and apply filter
+ * When user enters a date, filter records by record_datetime
+ * Supports partial matching (YYYY or YYYY-MM format)
+ */
+watch(selectedDate, (newDate) => {
+  console.log('Date input changed:', newDate);
+
+  // For input like "2024-01", create a date range
+  if (newDate && newDate.trim() !== '') {
+    let startDate, endDate;
+    
+    if (newDate.length === 4) { // YYYY
+      startDate = `${newDate}-01-01`;
+      endDate = `${parseInt(newDate) + 1}-01-01`;
+    } else if (newDate.length === 7) { // YYYY-MM
+      startDate = `${newDate}-01`;
+      const [year, month] = newDate.split('-');
+      const nextMonth = parseInt(month) === 12 ? '01' : String(parseInt(month) + 1).padStart(2, '0');
+      const nextYear = parseInt(month) === 12 ? String(parseInt(year) + 1) : year;
+      endDate = `${nextYear}-${nextMonth}-01`;
+    } else { // YYYY-MM-DD
+      startDate = newDate;
+      endDate = newDate + 'T23:59:59';
+    }
+    
+    handleSearch({
+      record_datetime: { 
+        _gte: startDate,
+        _lt: endDate 
+      }
+    });
+  } else {
+      // Clear date filter when input is cleared
+      console.log('Clearing date filter');
+      handleSearch({
+        record_datetime: { _like: undefined }
+      });
+    }
+});
+
 </script>
 
 <style scoped>
@@ -271,12 +316,16 @@ tr:hover {
                 <!-- Date Display Field (currently disabled/read-only) -->
                 <v-col cols="auto">
                   <v-text-field
-                    label="Date"
+                    v-model="selectedDate"
+                    label="Date (YYYY-MM-DD or YYYY-MM)"
                     density="compact"
                     variant="outlined"
-                    disabled
-                    style="min-width: 200px;"
+                    clearable
+                    placeholder="2024-01 or 2024-01-15"
+                    style="min-width: 320px;"
                     prepend-inner-icon="mdi-calendar"
+                    hint="Enter date to filter records"
+                    persistent-hint
                   />
                 </v-col>                
               </v-row>
@@ -324,6 +373,9 @@ tr:hover {
             <template v-if="header.key === 'site.prefix'">
               <!-- Display site prefix and name for site-related fields -->
               {{ item.site?.prefix }}, {{ item.site?.name }}
+            </template>
+            <template v-else-if="header.key === 'record_datetime'">
+              {{ item.record_datetime }}
             </template>
             <template v-else>
               {{ getNested(item, header.key) }}
