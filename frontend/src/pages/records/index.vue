@@ -131,6 +131,13 @@ function getNested(obj, key) {
   return key.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
 }
 
+
+/************************
+ * 
+ * Site Filtering Logic
+ * 
+ ************************/
+
 // Reactive reference for the currently selected site ID
 const selectedSite = ref<number | null>(null);
 
@@ -180,6 +187,12 @@ watch(selectedSite, (newSiteId) => {
     });
   }
 });
+
+/***************************
+ * 
+ * Date Filtering Logic
+ * 
+****************************/
 
 // Add reactive variable for the date input
 const selectedDate = ref<string>('');
@@ -313,7 +326,7 @@ tr:hover {
                   />
                 </v-col>
                 
-                <!-- Date Display Field (currently disabled/read-only) -->
+                <!-- Date Input Field -->
                 <v-col cols="auto">
                   <v-text-field
                     v-model="selectedDate"
@@ -327,7 +340,7 @@ tr:hover {
                     hint="Enter date to filter records"
                     persistent-hint
                   />
-                </v-col>                
+                </v-col>
               </v-row>
             </v-card>
           </v-col>
@@ -356,11 +369,6 @@ tr:hover {
         Table Header 
       -->
       <template v-slot:thead>
-        <CommonTableSearchBar 
-          :headers="headers" 
-          @update:key="handleSearch" 
-          @update:reset="handleReset" 
-        />
       </template>
       
       <!-- 
