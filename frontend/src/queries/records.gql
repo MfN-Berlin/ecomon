@@ -13,6 +13,7 @@ fragment Record on records {
   site {
     id
     name
+    prefix
   }
 }
 
