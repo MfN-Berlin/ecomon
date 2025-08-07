@@ -10,59 +10,10 @@ const deleteAction = useActionAndRoute({
   gotoUrl: "/records"
 });
 
-import { saveAs } from "file-saver";
-import { ref, computed } from "vue";
-
-// Store inference results from child
-const inferenceResults = ref<any[]>([]);
-
-// Handler for results emitted from inference-results-table
-function handleInferenceResults(results: any[]) {
-  inferenceResults.value = results;
-};
-
-// Download inference results as CSV
-function downloadInferenceCsv() {
-  if (!inferenceResults.value.length) return;
-  const keys = ["filepath", "datetime", "start_time", "end_time", "model", "label", "confidence"];
-  const csvRows = [
-    keys.join(","),
-    ...inferenceResults.value.map(row => {
-      const modelName = row.model?.name || ""; // Access model.name
-      const labelName = row.label?.name || ""; // Access label.name
-      const filePath = data.value?.filepath || "";
-      const recordDateTime = data.value?.record_datetime || "";
-
-      return [
-        `"${String(filePath)}"`,
-        `"${String(recordDateTime)}"`,
-        `"${String(row.start_time ?? "")}"`,
-        `"${String(row.end_time ?? "")}"`,
-        `"${String(modelName)}"` ,
-        `"${String(labelName)}"`,
-        `"${String(row.confidence ?? "")}"`
-      ].join(",");
-    })
-  ];
-  const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
-  saveAs(blob, `inference_results_${id.value}.csv`);
-}
-// Download record data as CSV (optional, for completeness)
-function downloadRecordCsv() {
-  if (!data.value) return;
-  const record = data.value;
-  const keys = Object.keys(record);
-  const csvRows = [
-    keys.join(","),
-    keys.map(k => `"${String(record[k] ?? "")}"`).join(",")
-  ];
-  const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
-  saveAs(blob, `record_${record.id}.csv`);
-}
-
 const confidence = 0.5; // Set your confidence threshold
  
 </script>
+
 <template>
   <v-container>
     <v-row>
@@ -102,18 +53,8 @@ const confidence = 0.5; // Set your confidence threshold
         />
       </v-col>
       <v-col cols="12" md="8">
-        <v-btn
-          class="mb-2"
-          color="primary"
-          prepend-icon="mdi-download"
-          @click="downloadInferenceCsv"
-          :disabled="!inferenceResults.length"
-        >
-          Download Inference Results >= {{confidence}}
-        </v-btn>
         <inference-results-table
           :record-id="id"
-          @update:results="handleInferenceResults"
           :confidence="confidence"
         />
       </v-col>

@@ -103,6 +103,90 @@ watch(selectedModel, (newModelId) => {
     });
   }
 });
+
+/************************
+ * 
+ * Download Inference Results Logic
+ * 
+ ************************/
+
+// Track inference results for download functionality
+const inferenceResults = ref([]);
+
+// Watch items to update inferenceResults
+watch(items, (newItems) => {
+  if (newItems) {
+    inferenceResults.value = newItems;
+  }
+}, { immediate: true });
+
+/**
+ * Downloads inference results as CSV file
+ * Filters results by confidence threshold and formats data for CSV export
+ */
+function downloadInferenceCsv() {
+  if (!inferenceResults.value || inferenceResults.value.length === 0) {
+    console.warn('No inference results to download');
+    return;
+  }
+
+  // Filter results by confidence threshold
+  const filteredResults = inferenceResults.value.filter(result => 
+    result.confidence >= props.confidence
+  );
+
+  if (filteredResults.length === 0) {
+    console.warn(`No results found with confidence >= ${props.confidence}`);
+    return;
+  }
+
+  // Convert to CSV format
+  const csvHeaders = [
+    'ID',
+    'Start Time',
+    'End Time', 
+    'Model ID',
+    'Model Name',
+    'Label Name',
+    'Confidence',
+    'Record ID'
+  ];
+
+  const csvRows = filteredResults.map(result => [
+    result.id,
+    result.start_time,
+    result.end_time,
+    result.model_id,
+    result.model?.name || 'N/A',
+    result.label?.name || 'N/A',
+    result.confidence,
+    result.record_id
+  ]);
+
+  // Create CSV content
+  const csvContent = [
+    csvHeaders.join(','),
+    ...csvRows.map(row => row.map(field => 
+      typeof field === 'string' && field.includes(',') 
+        ? `"${field}"` 
+        : field
+    ).join(','))
+  ].join('\n');
+
+  // Create and trigger download
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', `inference_results_record_${props.recordId}_confidence_${props.confidence}.csv`);
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 </script>
 
 <template>
@@ -124,6 +208,60 @@ watch(selectedModel, (newModelId) => {
         prepend-inner-icon="mdi-brain"
       />
     </v-card>
+
+    <!-- Top Controls Row -->
+    <v-row align="center" class="pa-2 mb-2" no-gutters>
+      <!-- Download Button -->
+      <v-col cols="auto">
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-download"
+          @click="downloadInferenceCsv"
+          :disabled="!inferenceResults.length"
+        >
+          Download Inference Results >= {{ confidence }}
+        </v-btn>
+      </v-col>
+
+      <!-- Spacer to push pagination to the right -->
+      <v-spacer />
+      
+      <!-- Top Pagination Controls -->
+      <v-col cols="auto">
+        <div class="d-flex align-center">
+          <!-- Items per page selector -->
+          <span class="text-caption mr-2">Items per page:</span>
+          <v-select
+            v-model="itemsPerPage"
+            :items="[10, 25, 50, 100, 200, 500, 1000]"
+            variant="outlined"
+            density="compact"
+            style="min-width: 100px;"
+            hide-details
+          />
+          
+          <!-- Page navigation -->
+          <span class="text-caption mx-3">
+            {{ ((page - 1) * itemsPerPage) + 1 }}-{{ Math.min(page * itemsPerPage, totalItems) }} of {{ totalItems }}
+          </span>
+          
+          <v-btn
+            icon="mdi-chevron-left"
+            variant="text"
+            density="compact"
+            :disabled="page <= 1"
+            @click="page--"
+          />
+          <v-btn
+            icon="mdi-chevron-right"
+            variant="text"
+            density="compact"
+            :disabled="page >= Math.ceil(totalItems / itemsPerPage)"
+            @click="page++"
+          />
+        </div>
+      </v-col>
+    </v-row>
 
     <!-- <audio controls autoplay :src="source"></audio> -->
     <v-data-table-server
