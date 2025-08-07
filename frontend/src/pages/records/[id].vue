@@ -61,12 +61,12 @@ function downloadRecordCsv() {
 }
 
 const confidence = 0.5; // Set your confidence threshold
-
+ 
 </script>
 <template>
   <v-container>
     <v-row>
-      <v-col cols="12" md="5">
+      <v-col cols="12" md="4">
         <records-form
           v-if="data"
           :loading="isFetching || isPending"
@@ -101,7 +101,7 @@ const confidence = 0.5; // Set your confidence threshold
           max-width="800"
         />
       </v-col>
-      <v-col cols="12" md="7">
+      <v-col cols="12" md="8">
         <v-btn
           class="mb-2"
           color="primary"
