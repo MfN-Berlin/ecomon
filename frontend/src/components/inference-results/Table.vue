@@ -8,11 +8,72 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(["update:results"]);
 
-// Filter items with confidence >= 0.7
-const baseSearch = computed(() => ({
-  record_id: { _eq: props.recordId },
-  confidence: { _gte: props.confidence }
-}));
+// Reactive reference for the currently selected model ID
+const selectedModel = ref<number | null>(null);
+
+/******************************
+ *
+ * Confidence Filtering Logic
+ *
+ ******************************/
+
+// Reactive reference for the confidence filter
+const filterConfidence = ref(0.5);
+const debouncedFilterConfidence = ref(filterConfidence.value);
+let debounceTimer: ReturnType<typeof setTimeout>;
+
+// Watch for changes in the confidence filter and debounce the update
+watch(filterConfidence, (newValue) => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    debouncedFilterConfidence.value = newValue;
+  }, 400);
+});
+
+/************************
+ * 
+ * Model Filtering Logic
+ * 
+ ************************/
+
+/**
+ * Model Filter Integration
+ * Uses the useModelFilter composable to get available models for the dropdown
+ */
+const modelsFilter = useModelFilter({});
+
+/**
+ * Computed property to transform model data for v-select component
+ */
+const models = computed(() => {
+  if (!modelsFilter.data.value) return [];
+  
+  return modelsFilter.data.value.map(model => ({
+    title: `${model.name} (ID: ${model.id})`,
+    value: model.id
+  }));
+});
+
+/************************
+ * 
+ * Data Table Logic
+ * 
+ ************************/
+
+// Filter items with confidence >= the prop value and optional model filter
+const baseSearch = computed(() => {
+  const search: any = {
+    record_id: { _eq: props.recordId },
+    confidence: { _gte: debouncedFilterConfidence.value }
+  };
+  
+  // Add model filter if a model is selected
+  if (selectedModel.value) {
+    search.model_id = { _eq: selectedModel.value };
+  }
+  
+  return search;
+});
 
 const {
   page,
@@ -25,13 +86,12 @@ const {
   handleSearch
 } = useRecordModelInferenceResultsPaginated({
   startValues: {
-    search: baseSearch.value,
+    search: baseSearch,
     sortBy: [{ key: "start_time", order: "asc" }],
     itemsPerPage: 100 
   }
 });
 
-watch(items, (val) => { console.log("items", val); });
 watch(items, (val) => {
   emit("update:results", val);
 }, { immediate: true });
@@ -39,90 +99,32 @@ watch(items, (val) => {
 const config = useRuntimeConfig();
 const headers = [
   { title: "", key: "actions", align: "end", sortable: false, search: false },
-//  { title: "ID", key: "id", align: "end", sortable: false, search: false },
-  { title: "Start time", key: "start_time", align: "end", sortable: true, search: false },
-  { title: "End time", key: "end_time", align: "end", sortable: true, search: false },
-  { title: "Model ID", key: "model_id", align: "end", sortable: true, search:false  },
-  { title: "(Model)", key: "model.name", align: "start", sortable: false, search: false },
-  { title: "(Label)", key: "label.name", align: "start", sortable: false, search: false },
+  { title: "Start time (s)", key: "start_time", align: "end", sortable: true, search: false },
+  { title: "End time (s)", key: "end_time", align: "end", sortable: true, search: false },
+//  { title: "Model ID", key: "model_id", align: "end", sortable: true, search:false  },
+  { title: "Model", key: "model.name", align: "start", sortable: false, search: false },
+  { title: "Species", key: "label.name", align: "start", sortable: false, search: false },
   { title: "Confidence", key: "confidence", align: "end", sortable: true, search: false }
 ] as const;
 
-/************************
- * 
- * Model Filtering Logic
- * 
- ************************/
-
-// Reactive reference for the currently selected model ID
-const selectedModel = ref<number | null>(null);
-
-/**
- * Model Filter Integration
- * Uses the useModelFilter composable to get available models for the dropdown
- * This provides a consistent way to access model data across the application
- */
-const modelsFilter = useModelFilter({});
-
-/**
- * Computed property to transform model data for v-select component
- * Converts raw model objects into the format expected by Vuetify's v-select
- * 
- * Format: {title: "display text", value: "option value"}
- * Display shows: "model_name (ID: model_id)" (e.g., "Bird Detection Model (ID: 123)")
- */
-const models = computed(() => {
-  // Return empty array if no data available
-  if (!modelsFilter.data.value) return [];
-  
-  // Transform each model into dropdown option format
-  return modelsFilter.data.value.map(model => ({
-    title: `${model.name} (ID: ${model.id})`,  // Display format: "Name (ID: 123)"
-    value: model.id                            // Value used for filtering
-  }));
-});
-
-/**
- * Watch for model selection changes and apply filter
- * When user selects a model from the dropdown, automatically filter results
- * When selection is cleared, remove the model filter
- * 
- * Uses GraphQL-style filter syntax: {model_id: {_eq: modelId}}
- */
-watch(selectedModel, (newModelId) => {
-  if (newModelId) {
-    // Apply model filter when model is selected
-    console.log('Model selected:', newModelId);
-    handleSearch({
-      model_id: { _eq: newModelId }
-    });
-  } else {
-    // Clear model filter when selection is cleared
-    handleSearch({
-      model_id: { _eq: undefined }
-    });
-  }
-});
-
-/************************
+/************************************
  * 
  * Download Inference Results Logic
  * 
- ************************/
+ ***********************************/
 
 // Track inference results for download functionality
-const inferenceResults = ref([]);
+const inferenceResults = ref<ModelInferenceResult[]>([]);
 
 // Watch items to update inferenceResults
 watch(items, (newItems) => {
   if (newItems) {
-    inferenceResults.value = newItems;
+    inferenceResults.value = newItems as ModelInferenceResult[];
   }
 }, { immediate: true });
 
 /**
  * Downloads inference results as CSV file
- * Filters results by confidence threshold and formats data for CSV export
  */
 function downloadInferenceCsv() {
   if (!inferenceResults.value || inferenceResults.value.length === 0) {
@@ -130,17 +132,15 @@ function downloadInferenceCsv() {
     return;
   }
 
-  // Filter results by confidence threshold
   const filteredResults = inferenceResults.value.filter(result => 
-    result.confidence >= props.confidence
+    result.confidence >= filterConfidence.value
   );
 
   if (filteredResults.length === 0) {
-    console.warn(`No results found with confidence >= ${props.confidence}`);
+    console.warn(`No results found with confidence >= ${filterConfidence.value}`);
     return;
   }
 
-  // Convert to CSV format
   const csvHeaders = [
     'ID',
     'Start Time',
@@ -163,7 +163,6 @@ function downloadInferenceCsv() {
     result.record_id
   ]);
 
-  // Create CSV content
   const csvContent = [
     csvHeaders.join(','),
     ...csvRows.map(row => row.map(field => 
@@ -173,20 +172,18 @@ function downloadInferenceCsv() {
     ).join(','))
   ].join('\n');
 
-  // Create and trigger download
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   
   link.setAttribute('href', url);
-  link.setAttribute('download', `inference_results_record_${props.recordId}_confidence_${props.confidence}.csv`);
+  link.setAttribute('download', `inference_results_record_${props.recordId}_confidence_${filterConfidence.value}.csv`);
   link.style.visibility = 'hidden';
   
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
-
 </script>
 
 <template>
@@ -194,19 +191,37 @@ function downloadInferenceCsv() {
     <!-- Filter Controls Card -->
     <v-card class="pa-3 mb-4" variant="outlined" color="primary">
       <v-card-title class="text-subtitle-2 pa-0 mb-2">Quick Filters</v-card-title>
-      
-      <!-- Model Dropdown -->
-      <v-select
-        v-model="selectedModel"
-        label="Select model"
-        :items="models"
-        variant="outlined"
-        density="compact"
-        clearable
-        item-title="title"
-        item-value="value"
-        prepend-inner-icon="mdi-brain"
-      />
+      <!-- Filter Controls Row -->
+      <v-row no-gutters class="align-center">
+        <!-- Model Dropdown -->
+        <v-col class="pr-2">
+          <v-select
+            v-model="selectedModel"
+            label="Select model"
+            :items="models"
+            variant="outlined"
+            density="compact"
+            clearable
+            item-title="title"
+            item-value="value"
+            prepend-inner-icon="mdi-brain"
+          />
+        </v-col>
+        <!-- Confidence Input -->
+        <v-col cols="2">
+          <v-text-field
+            v-model.number="filterConfidence"
+            label="Filter by confidence"
+            type="number"
+            min="0.1"
+            max="1.0"
+            step="0.001"
+            variant="outlined"
+            density="compact"
+            prepend-inner-icon="mdi-target"
+          />
+        </v-col>
+      </v-row>
     </v-card>
 
     <!-- Top Controls Row -->
@@ -219,7 +234,7 @@ function downloadInferenceCsv() {
           @click="downloadInferenceCsv"
           :disabled="!inferenceResults.length"
         >
-          Download Inference Results >= {{ confidence }}
+          Download Selected Inference Results
         </v-btn>
       </v-col>
 
@@ -263,7 +278,6 @@ function downloadInferenceCsv() {
       </v-col>
     </v-row>
 
-    <!-- <audio controls autoplay :src="source"></audio> -->
     <v-data-table-server
       v-model:items-per-page="itemsPerPage"
       v-model:page="page"
@@ -301,5 +315,9 @@ function downloadInferenceCsv() {
 /* Use :deep() to penetrate component encapsulation */
 :deep(.v-data-table-footer__items-per-page > .v-select) {
   min-width: 100px;  /* Adjust this value to make it wider */
+}
+/* Make sortable headers bold */
+:deep(.v-data-table__th--sortable) {
+  font-weight: bold!important;
 }
 </style>
