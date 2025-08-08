@@ -62,14 +62,6 @@ const paginationOptions = [
  * - search: Search configuration (false = no search, object = search settings)
  */
 const headers = [
-  // Site ID - searchable and sortable
-  { 
-    title: "Site Id", 
-    key: "site_id", 
-    align: "start", 
-    sortable: true, 
-    search: false
-  },
   // Site prefix and site name combined
   { 
     title: "Site", 
@@ -95,6 +87,7 @@ const headers = [
   },
   
   // Commented out fields that could be enabled in the future:
+  // { title: "Site Id", key: "site_id", align: "start", sortable: true, search: false },
   // { title: "Record Id", key: "id", align: "end", search: false },
   // { title: "Record Type", key: "record_type", align: "end", search: { operator: "_like", type: "text" } },
   // { title: "Record Status", key: "record_status", align: "end", search: { operator: "_like", type: "text" } },
@@ -395,3 +388,10 @@ tr:hover {
     </v-data-table-server>
   </v-container>
 </template>
+
+<style scoped>
+/* Make sortable headers bold */
+:deep(.v-data-table__th--sortable) {
+  font-weight: bold!important;
+}
+</style>
