@@ -52,33 +52,32 @@ const models = computed(() => {
   }));
 });
 
-// --- Labels Autocomplete ---
-// --- Labels Autocomplete ---
-const labelsFilter = useLabelsPaginated({
-  startValues: {
-    itemsPerPage: 100000, // Get a large number of labels
-    search: {}
+// --- Labels Autocomplete with Dynamic Search ---
+const labelsSearch = useLabelsSearch({});
+const searchTerm = ref('');
+const speciesItems = ref<string[]>([]);
+
+// Watch for search term changes and fetch labels when 3+ characters
+watch(searchTerm, async (newTerm) => {
+  if (newTerm && newTerm.length >= 3) {
+    // console.log("Searching for labels with term:", newTerm);
+    await labelsSearch.searchLabels(newTerm);
+  } else {
+    // Clear items when search term is too short
+    speciesItems.value = [];
   }
-});
+}, { debounce: 300 });
 
-// Trigger the query to fetch all labels
-onMounted(() => {
-  // No need to call onSearchTermChanged for paginated query
-});
-
-const labels = computed(() => {
-  console.log("Labels computed - raw data:", labelsFilter.items.value);
-  console.log("Labels isLoading:", labelsFilter.isLoading.value);
-  if (!labelsFilter.items.value) return [];
-  const mappedLabels = labelsFilter.items.value.map(label => label.name);
-  console.log("Mapped labels:", mappedLabels);
-  return mappedLabels;
-});
-// Create species items for autocomplete
-const speciesItems = computed(() => {
-  console.log("Species items computed, labels:", labels.value);
-  return labels.value;
-});
+// Watch for labels data changes and update species items
+watch(() => labelsSearch.data.value, (newData) => {
+  // console.log("Labels data updated:", newData);
+  if (newData && Array.isArray(newData.labels)) {
+    speciesItems.value = newData.labels.map(label => label.name);
+    // console.log("Species items updated:", speciesItems.value);
+  } else {
+    speciesItems.value = [];
+  }
+}, { immediate: true });
 
 /************************
  * 
@@ -225,13 +224,17 @@ function downloadInferenceCsv() {
         <v-col class="pr-2">
           <v-autocomplete
             v-model="filterSpecies"
+            v-model:search="searchTerm"
             :items="speciesItems"
             label="Filter by species"
             variant="outlined"
             density="compact"
             clearable
             prepend-inner-icon="mdi-bird"
-            :loading="labelsFilter.isLoading.value"
+            :loading="labelsSearch.pending.value"
+            placeholder="Type at least 3 characters..."
+            no-data-text="Type at least 3 characters to search for species"
+            :menu-props="{ maxHeight: 500 }"
           />
         </v-col>
         <!-- Confidence Input -->
