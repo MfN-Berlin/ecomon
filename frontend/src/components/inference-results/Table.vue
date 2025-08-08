@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ModelInferenceResult } from "#gql/default";
-import { watch } from "vue";
+import { ref, computed, watch } from "vue";
 
 const props = defineProps<{
   recordId: number;
@@ -8,50 +8,76 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(["update:results"]);
 
-// Reactive reference for the currently selected model ID
-const selectedModel = ref<number | null>(null);
-
 /******************************
  *
- * Confidence Filtering Logic
+ * Filtering Logic
  *
  ******************************/
-
-// Reactive reference for the confidence filter
+// --- Filter State ---
+const selectedModel = ref<number | null>(null);
 const filterConfidence = ref(0.5);
-const debouncedFilterConfidence = ref(filterConfidence.value);
-let debounceTimer: ReturnType<typeof setTimeout>;
+const filterSpecies = ref('');
 
-// Watch for changes in the confidence filter and debounce the update
+// --- Debouncing ---
+const debouncedFilterConfidence = ref(filterConfidence.value);
+const debouncedFilterSpecies = ref(filterSpecies.value);
+
+const confidenceDebounceTimer = ref<number | undefined>(undefined);
 watch(filterConfidence, (newValue) => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
+  if (confidenceDebounceTimer.value) {
+    clearTimeout(confidenceDebounceTimer.value);
+  }
+  confidenceDebounceTimer.value = setTimeout(() => {
     debouncedFilterConfidence.value = newValue;
   }, 400);
 });
 
-/************************
- * 
- * Model Filtering Logic
- * 
- ************************/
+const speciesDebounceTimer = ref<number | undefined>(undefined);
+watch(filterSpecies, (newValue) => {
+  if (speciesDebounceTimer.value) {
+    clearTimeout(speciesDebounceTimer.value);
+  }
+  speciesDebounceTimer.value = setTimeout(() => {
+    debouncedFilterSpecies.value = newValue;
+  }, 400);
+});
 
-/**
- * Model Filter Integration
- * Uses the useModelFilter composable to get available models for the dropdown
- */
+// --- Model Autocomplete ---
 const modelsFilter = useModelFilter({});
-
-/**
- * Computed property to transform model data for v-select component
- */
 const models = computed(() => {
   if (!modelsFilter.data.value) return [];
-  
   return modelsFilter.data.value.map(model => ({
     title: `${model.name} (ID: ${model.id})`,
     value: model.id
   }));
+});
+
+// --- Labels Autocomplete ---
+// --- Labels Autocomplete ---
+const labelsFilter = useLabelsPaginated({
+  startValues: {
+    itemsPerPage: 100000, // Get a large number of labels
+    search: {}
+  }
+});
+
+// Trigger the query to fetch all labels
+onMounted(() => {
+  // No need to call onSearchTermChanged for paginated query
+});
+
+const labels = computed(() => {
+  console.log("Labels computed - raw data:", labelsFilter.items.value);
+  console.log("Labels isLoading:", labelsFilter.isLoading.value);
+  if (!labelsFilter.items.value) return [];
+  const mappedLabels = labelsFilter.items.value.map(label => label.name);
+  console.log("Mapped labels:", mappedLabels);
+  return mappedLabels;
+});
+// Create species items for autocomplete
+const speciesItems = computed(() => {
+  console.log("Species items computed, labels:", labels.value);
+  return labels.value;
 });
 
 /************************
@@ -60,18 +86,20 @@ const models = computed(() => {
  * 
  ************************/
 
-// Filter items with confidence >= the prop value and optional model filter
 const baseSearch = computed(() => {
   const search: any = {
     record_id: { _eq: props.recordId },
     confidence: { _gte: debouncedFilterConfidence.value }
   };
   
-  // Add model filter if a model is selected
   if (selectedModel.value) {
     search.model_id = { _eq: selectedModel.value };
   }
   
+  if (debouncedFilterSpecies.value) {
+    search.label = { name: { _ilike: `%${debouncedFilterSpecies.value}%` } };
+  }
+
   return search;
 });
 
@@ -101,7 +129,6 @@ const headers = [
   { title: "", key: "actions", align: "end", sortable: false, search: false },
   { title: "Start time (s)", key: "start_time", align: "end", sortable: true, search: false },
   { title: "End time (s)", key: "end_time", align: "end", sortable: true, search: false },
-//  { title: "Model ID", key: "model_id", align: "end", sortable: true, search:false  },
   { title: "Model", key: "model.name", align: "start", sortable: false, search: false },
   { title: "Species", key: "label.name", align: "start", sortable: false, search: false },
   { title: "Confidence", key: "confidence", align: "end", sortable: true, search: false }
@@ -112,7 +139,7 @@ const itemsPerPageOptions = [
   { title: '25', value: 25 },
   { title: '50', value: 50 },
   { title: '100', value: 100 },
-  { title: 'All', value: 1000000 } // Use a large number to represent "All" items
+  { title: 'All', value: 1000000 }
 ];
 
 /************************************
@@ -121,10 +148,7 @@ const itemsPerPageOptions = [
  * 
  ***********************************/
 
-// Track inference results for download functionality
 const inferenceResults = ref<ModelInferenceResult[]>([]);
-
-// Watch items to update inferenceResults
 watch(items, (newItems) => {
   if (newItems) {
     inferenceResults.value = newItems as ModelInferenceResult[];
@@ -132,60 +156,33 @@ watch(items, (newItems) => {
 }, { immediate: true });
 
 const downloadableResults = computed(() => {
-  if (!inferenceResults.value) {
-    return [];
-  }
   return inferenceResults.value.filter(result => 
     result.confidence >= filterConfidence.value
   );
 });
 
-/**
- * Downloads inference results as CSV file
- */
 function downloadInferenceCsv() {
-  if (!inferenceResults.value || inferenceResults.value.length === 0) {
+  const filteredResults = downloadableResults.value;
+  if (filteredResults.length === 0) {
     console.warn('No inference results to download');
     return;
   }
 
-  const filteredResults = inferenceResults.value.filter(result => 
-    result.confidence >= filterConfidence.value
-  );
-
-  if (filteredResults.length === 0) {
-    console.warn(`No results found with confidence >= ${filterConfidence.value}`);
-    return;
-  }
-
   const csvHeaders = [
-    'ID',
-    'Start Time',
-    'End Time', 
-    'Model ID',
-    'Model Name',
-    'Label Name',
-    'Confidence',
-    'Record ID'
+    'ID', 'Start Time', 'End Time', 'Model ID', 'Model Name', 
+    'Label Name', 'Confidence', 'Record ID'
   ];
 
   const csvRows = filteredResults.map(result => [
-    result.id,
-    result.start_time,
-    result.end_time,
-    result.model_id,
-    result.model?.name || 'N/A',
-    result.label?.name || 'N/A',
-    result.confidence,
-    result.record_id
+    result.id, result.start_time, result.end_time, result.model_id,
+    result.model?.name || 'N/A', result.label?.name || 'N/A',
+    result.confidence, result.record_id
   ]);
 
   const csvContent = [
     csvHeaders.join(','),
     ...csvRows.map(row => row.map(field => 
-      typeof field === 'string' && field.includes(',') 
-        ? `"${field}"` 
-        : field
+      typeof field === 'string' && field.includes(',') ? `"${field}"` : field
     ).join(','))
   ].join('\n');
 
@@ -222,6 +219,19 @@ function downloadInferenceCsv() {
             item-title="title"
             item-value="value"
             prepend-inner-icon="mdi-brain"
+          />
+        </v-col>
+        <!-- Species Input -->
+        <v-col class="pr-2">
+          <v-autocomplete
+            v-model="filterSpecies"
+            :items="speciesItems"
+            label="Filter by species"
+            variant="outlined"
+            density="compact"
+            clearable
+            prepend-inner-icon="mdi-bird"
+            :loading="labelsFilter.isLoading.value"
           />
         </v-col>
         <!-- Confidence Input -->
@@ -274,7 +284,7 @@ function downloadInferenceCsv() {
           
           <!-- Page navigation -->
           <span class="text-caption mx-3">
-            {{ itemsPerPage === -1 ? `1-${totalItems} of ${totalItems}` : `${((page - 1) * itemsPerPage) + 1}-${Math.min(page * itemsPerPage, totalItems)} of ${totalItems}` }}
+            {{ itemsPerPage === 1000000 ? `1-${totalItems} of ${totalItems}` : `${((page - 1) * itemsPerPage) + 1}-${Math.min(page * itemsPerPage, totalItems)} of ${totalItems}` }}
           </span>
           
           <v-btn
