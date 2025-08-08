@@ -88,7 +88,7 @@ const {
   startValues: {
     search: baseSearch,
     sortBy: [{ key: "start_time", order: "asc" }],
-    itemsPerPage: 100 
+    itemsPerPage: 1000000
   }
 });
 
@@ -107,6 +107,14 @@ const headers = [
   { title: "Confidence", key: "confidence", align: "end", sortable: true, search: false }
 ] as const;
 
+const itemsPerPageOptions = [
+  { title: '10', value: 10 },
+  { title: '25', value: 25 },
+  { title: '50', value: 50 },
+  { title: '100', value: 100 },
+  { title: 'All', value: 1000000 } // Use a large number to represent "All" items
+];
+
 /************************************
  * 
  * Download Inference Results Logic
@@ -122,6 +130,15 @@ watch(items, (newItems) => {
     inferenceResults.value = newItems as ModelInferenceResult[];
   }
 }, { immediate: true });
+
+const downloadableResults = computed(() => {
+  if (!inferenceResults.value) {
+    return [];
+  }
+  return inferenceResults.value.filter(result => 
+    result.confidence >= filterConfidence.value
+  );
+});
 
 /**
  * Downloads inference results as CSV file
@@ -234,7 +251,7 @@ function downloadInferenceCsv() {
           @click="downloadInferenceCsv"
           :disabled="!inferenceResults.length"
         >
-          Download Selected Inference Results
+          Download {{ downloadableResults.length }} Inference Results
         </v-btn>
       </v-col>
 
@@ -248,7 +265,7 @@ function downloadInferenceCsv() {
           <span class="text-caption mr-2">Items per page:</span>
           <v-select
             v-model="itemsPerPage"
-            :items="[10, 25, 50, 100, 200, 500, 1000]"
+            :items="itemsPerPageOptions"
             variant="outlined"
             density="compact"
             style="min-width: 100px;"
@@ -257,7 +274,7 @@ function downloadInferenceCsv() {
           
           <!-- Page navigation -->
           <span class="text-caption mx-3">
-            {{ ((page - 1) * itemsPerPage) + 1 }}-{{ Math.min(page * itemsPerPage, totalItems) }} of {{ totalItems }}
+            {{ itemsPerPage === -1 ? `1-${totalItems} of ${totalItems}` : `${((page - 1) * itemsPerPage) + 1}-${Math.min(page * itemsPerPage, totalItems)} of ${totalItems}` }}
           </span>
           
           <v-btn
@@ -288,6 +305,7 @@ function downloadInferenceCsv() {
       :loading="loading"
       item-value="id"
       :recordId="props.recordId"
+      :items-per-page-options="itemsPerPageOptions"
     >
       <template v-slot:thead>
         <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />
