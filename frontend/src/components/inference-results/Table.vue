@@ -91,7 +91,7 @@ const baseSearch = computed(() => {
     confidence: { _gte: debouncedFilterConfidence.value }
   };
   
-  if (selectedModel.value) {
+  if (selectedModel.value != null) {  // careful not to check for 0, as 0 is a valid model id
     search.model_id = { _eq: selectedModel.value };
   }
   
