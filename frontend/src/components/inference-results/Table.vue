@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ModelInferenceResult } from "#gql/default";
+import { useAllSpeciesLabels } from "@/composables/api/labels";
 import { ref, computed, watch } from "vue";
 
 const props = defineProps<{
@@ -16,12 +17,10 @@ const emit = defineEmits(["update:results"]);
 // --- Filter State ---
 const selectedModel = ref<number | null>(null);
 const filterConfidence = ref(0.5);
-const filterSpecies = ref('');
+const filterSpecies = ref<string | null>(null);
 
 // --- Debouncing ---
 const debouncedFilterConfidence = ref(filterConfidence.value);
-const debouncedFilterSpecies = ref(filterSpecies.value);
-
 const confidenceDebounceTimer = ref<number | undefined>(undefined);
 watch(filterConfidence, (newValue) => {
   if (confidenceDebounceTimer.value) {
@@ -32,17 +31,7 @@ watch(filterConfidence, (newValue) => {
   }, 400);
 });
 
-const speciesDebounceTimer = ref<number | undefined>(undefined);
-watch(filterSpecies, (newValue) => {
-  if (speciesDebounceTimer.value) {
-    clearTimeout(speciesDebounceTimer.value);
-  }
-  speciesDebounceTimer.value = setTimeout(() => {
-    debouncedFilterSpecies.value = newValue;
-  }, 400);
-});
-
-// --- Model Autocomplete ---
+// --- Model Dropdown ---
 const modelsFilter = useModelFilter({});
 const models = computed(() => {
   if (!modelsFilter.data.value) return [];
@@ -52,33 +41,43 @@ const models = computed(() => {
   }));
 });
 
-// --- Labels Autocomplete with Dynamic Search ---
-const labelsSearch = useLabelsSearch({});
-const searchTerm = ref('');
-const speciesItems = ref<string[]>([]);
+// --- Species Dropdown (populated from API) ---
+const {
+  data: speciesLabels,
+  pending: speciesPending,
+  error: speciesError,
+  fetchAllSpeciesLabels
+} = useAllSpeciesLabels();
 
-// Watch for search term changes and fetch labels when 3+ characters
-watch(searchTerm, async (newTerm) => {
-  if (newTerm && newTerm.length >= 3) {
-    // console.log("Searching for labels with term:", newTerm);
-    await labelsSearch.searchLabels(newTerm);
-  } else {
-    // Clear items when search term is too short
-    speciesItems.value = [];
+// Fetch species labels for this recordId and threshold on mount or when recordId or threshold changes
+const fetchSpeciesLabelsForCurrent = () => {
+  fetchAllSpeciesLabels(props.recordId, debouncedFilterConfidence.value, selectedModel.value);
+};
+
+onMounted(fetchSpeciesLabelsForCurrent);
+
+watch(
+  [() => props.recordId, debouncedFilterConfidence, selectedModel],
+  fetchSpeciesLabelsForCurrent
+);
+
+// Prepare species dropdown items
+const speciesOptions = computed(() =>
+  (speciesLabels.value || []).map(label => ({
+    title: label.name,
+    value: label.id
+  }))
+);
+
+// Clear filterSpecies if the selected species is no longer in the dropdown options
+watch([speciesOptions, filterSpecies], ([options, selected]) => {
+  if (
+    selected &&
+    !options.some(option => option.value === selected)
+  ) {
+    filterSpecies.value = null;
   }
-}, { debounce: 300 });
-
-// Watch for labels data changes and update species items
-watch(() => labelsSearch.data.value, (newData) => {
-  // console.log("Labels data updated:", newData);
-  if (newData && Array.isArray(newData.labels)) {
-    speciesItems.value = newData.labels.map(label => label.name);
-    // console.log("Species items updated:", speciesItems.value);
-  } else {
-    speciesItems.value = [];
-  }
-}, { immediate: true });
-
+});
 /************************
  * 
  * Data Table Logic
@@ -95,8 +94,8 @@ const baseSearch = computed(() => {
     search.model_id = { _eq: selectedModel.value };
   }
   
-  if (debouncedFilterSpecies.value) {
-    search.label = { name: { _ilike: `%${debouncedFilterSpecies.value}%` } };
+  if (filterSpecies.value) {
+    search.label_id = {  _eq: filterSpecies.value };
   }
 
   return search;
@@ -220,21 +219,20 @@ function downloadInferenceCsv() {
             prepend-inner-icon="mdi-brain"
           />
         </v-col>
-        <!-- Species Input -->
+        <!-- Species Dropdown (populated from API) -->
         <v-col class="pr-2">
-          <v-autocomplete
+          <v-select
             v-model="filterSpecies"
-            v-model:search="searchTerm"
-            :items="speciesItems"
             label="Filter by species"
+            :items="speciesOptions"
             variant="outlined"
             density="compact"
             clearable
+            item-title="title"
+            item-value="value"
             prepend-inner-icon="mdi-bird"
-            :loading="labelsSearch.pending.value"
-            placeholder="Type at least 3 characters..."
-            no-data-text="Type at least 3 characters to search for species"
-            :menu-props="{ maxHeight: 500 }"
+            :loading="speciesPending"
+            :error="!!speciesError"
           />
         </v-col>
         <!-- Confidence Input -->
