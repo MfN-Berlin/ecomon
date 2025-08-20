@@ -1,5 +1,5 @@
 # Use the official Python image as the base image
-FROM python:3.11-slim
+FROM python:3.11-trixie
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     wget \
     ca-certificates \
-    docker.io \
+    docker-cli \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*   
 
