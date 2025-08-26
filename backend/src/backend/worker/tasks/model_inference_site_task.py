@@ -2,7 +2,6 @@ import os
 import subprocess
 import shutil
 import time
-import uuid
 import pandas
 from sqlalchemy import func
 from datetime import datetime
@@ -58,7 +57,7 @@ def model_inference_site_task(
         settings.host_tmp_dir, job_id, "inputPaths.txt"
     )
     
-    # workerId will be passd to the name of the Docker container where the model runs.
+    # workerId will be passed to the name of the Docker container where the model runs.
     workerId = job_id
 
     try:
