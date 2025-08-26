@@ -163,7 +163,6 @@ def model_inference_site_task(
                     else []
                 ),
                 "ghcr.io/mfn-berlin/birdid-model-zoo:latest",
-#                "mfn-berlin/birdid-model-zoo:aot29",
                 # "model", # for local testing
                 *(
                     [model.additional_model_arguments]
