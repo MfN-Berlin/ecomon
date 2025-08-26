@@ -54,7 +54,7 @@ mutation updateLocation($id: bigint!, $lat: numeric, $long: numeric, $name: Stri
   }
 }
 
-query getLocationsPagniated(
+query getLocationsPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [locations_order_by!] = { id: desc }

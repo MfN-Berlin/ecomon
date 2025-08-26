@@ -13,4 +13,9 @@
     </v-main>
   </v-app>
 </template>
-<style scoped></style>
+<style scoped>
+main {
+    padding-left: 0px;
+}
+</style>
+

@@ -13,6 +13,7 @@ fragment Record on records {
   site {
     id
     name
+    prefix
   }
 }
 
@@ -48,18 +49,81 @@ mutation updateRecord(
   }
 }
 
-query getRecordsPagniated(
-  $limit: Int = 10
-  $offset: Int = 0
-  $order_by: [records_order_by!] = { id: desc }
-  $where: records_bool_exp = {}
+
+query getRecordsPaginated(
+  $limit: Int = 10,
+  $offset: Int = 0,
+  $order_by: [records_order_by!] = { id: desc },
+  $where: records_bool_exp = {},
+  $filepath: String = "AKWAMO",
+  $record_datetime_from: timestamp,
+  $record_datetime_to: timestamp
+
 ) {
-  items: records(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
-    ...Record
-  }
+  items: records(
+    limit: $limit, 
+    offset: $offset, 
+    order_by: $order_by, 
+    where: $where
+#    where: { _and: [
+#      {filepath: { _ilike: $filepath }}
+#    ]}
+#    {
+#      _and: [
+#        { filepath: { _ilike: $filepath } }
+#        { record_datetime: { _gte: $record_datetime_from } }
+#        { record_datetime: { _lte: $record_datetime_to } }
+#      ]
+#    }
+    ) {
+      ...Record
+    }
   total: records_aggregate(where: $where) {
     aggregate {
       count
     }
   }
 }
+
+#query getRecordsPaginated(
+#  $limit: Int = 10, 
+#  $offset: Int = 0,
+#  $filepath: String = "",
+#  $record_datetime_from: timestamp,
+#  $record_datetime_to: timestamp
+#) {
+#  records(
+#    limit: $limit
+#    offset: $offset
+#    where: {
+#      _and: [
+#        { filepath: { _ilike: $filepath } }
+#        { record_datetime: { _gte: $record_datetime_from } }
+#        { record_datetime: { _lte: $record_datetime_to } }
+#      ]
+#    }
+#    order_by: { record_datetime: desc }
+#  ) {
+#    id
+#    site_id
+#    record_datetime
+#    filepath
+#    site {
+#      name
+#    }
+#  }
+#  
+#  records_aggregate(
+#    where: {
+#      _and: [
+#        { filepath: { _ilike: $filepath } }
+#        { record_datetime: { _gte: $record_datetime_from } }
+#        { record_datetime: { _lte: $record_datetime_to } }
+#      ]
+#    }
+#  ) {
+#    aggregate {
+#      count
+#    }
+#  }
+#}

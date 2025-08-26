@@ -9,9 +9,9 @@ export const useModelUpdate = useCreateMutation(QUERY_KEYS.models, GqlUpdateMode
 export const useModelInsert = useCreateMutation(QUERY_KEYS.models, GqlInsertModel);
 export const useModelDelete = useCreateMutation(QUERY_KEYS.models, GqlDeleteModel);
 
-export const useModelPagniated = useCreatePagniated({
+export const useModelPaginated = useCreatePaginated({
   baseQueryKey: QUERY_KEYS.models,
-  pagniatedQueryFn: GqlGetModelsPagniated
+  paginatedQueryFn: GqlGetModelsPaginated
 });
 
 export const useInferenceSiteTimespan = useCreateAction(GqlInferenceSiteTimespan);

@@ -10,6 +10,7 @@ const props = defineProps<{
   layout?: Partial<Plotly.Layout>;
   config?: Partial<Plotly.Config>;
   loading?: boolean;
+  hideHover?: boolean;
 }>();
 
 const emit = defineEmits(events);
@@ -135,6 +136,11 @@ function setPlotlyEventHandlers() {
 watchEffect(async () => {
   const data = props.data ? props.data : [];
   const div = divRef.value as Plotly.Root;
+  let layout = props.layout ? props.layout : {};
+
+  if (props.hideHover) {
+    layout = { ...layout, hovermode: false };
+  }  
   if (isCreated) {
     Plotly.react(div, data, props.layout, configWithDefaults.value);
   } else if (div) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: "default" });
+definePageMeta({ layout: "full-width" });
 const router = useRouter();
 const id = computed(() => parseInt(router.currentRoute.value.params.id as string));
 
@@ -9,11 +9,15 @@ const deleteAction = useActionAndRoute({
   action: () => deleteMutate({ id: id.value }),
   gotoUrl: "/records"
 });
+
+const confidence = 0.5; // Set your confidence threshold
+ 
 </script>
+
 <template>
-  <v-container class="">
+  <v-container>
     <v-row>
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="4">
         <records-form
           v-if="data"
           :loading="isFetching || isPending"
@@ -31,6 +35,7 @@ const deleteAction = useActionAndRoute({
             created_at: data?.created_at,
             updated_at: data?.updated_at
           }"
+          :readonly="true"
           @delete="deleteAction"
           @submit="
             (data) => {
@@ -47,8 +52,11 @@ const deleteAction = useActionAndRoute({
           max-width="800"
         />
       </v-col>
-      <v-col cols="12" md="6">
-        <inference-results-table :record-id="id"></inference-results-table>
+      <v-col cols="12" md="8">
+        <inference-results-table
+          :record-id="id"
+          :confidence="confidence"
+        />
       </v-col>
     </v-row>
   </v-container>

@@ -12,7 +12,7 @@ export type OrderByArgs = {
   [key: string]: "asc" | "desc";
 };
 
-type PagniatedVariables = {
+type PaginatedVariables = {
   limit: number;
   offset: number;
   order_by: OrderByArgs[];
@@ -25,7 +25,7 @@ type StartValues = {
   sortBy?: SortByArgs[];
 };
 
-type PagniatedResponse<T> = {
+type PaginatedResponse<T> = {
   items: T[];
   total: {
     aggregate?: // Add optional modifier here
@@ -37,18 +37,22 @@ type PagniatedResponse<T> = {
   };
 };
 
-export default function useCreateFilter<TItem, TData extends PagniatedResponse<TItem>>({
+export default function useCreateFilter<TItem, TData extends PaginatedResponse<TItem>>({
   baseQueryKey,
-  pagniatedQueryFn
+  paginatedQueryFn,
+  defaultOptions = { itemsPerPage: 100 }
 }: {
   baseQueryKey: string;
-  pagniatedQueryFn: (variables: PagniatedVariables) => Promise<TData>;
+  paginatedQueryFn: (variables: PaginatedVariables) => Promise<TData>;
+  defaultOptions?: PaginatedOptions; // Define the type for defaultOptions
 }) {
   // const { onError, throwErrorIfNoData } = useErrorHandling({});
 
-  return function usePagniated({ startValues }: { startValues?: StartValues } = {}) {
+  return function usePaginated(
+    { startValues }: { startValues?: StartValues } = {},
+  ) {
     const page = ref(startValues?.page ?? 1);
-    const itemsPerPage = ref(startValues?.itemsPerPage ?? 10);
+    const itemsPerPage = ref(startValues?.itemsPerPage ?? 100);
     const offset = computed(() => (page.value - 1) * itemsPerPage.value);
     const limit = computed(() => itemsPerPage.value);
 
@@ -82,7 +86,7 @@ export default function useCreateFilter<TItem, TData extends PagniatedResponse<T
     ]);
 
     async function fetchData() {
-      return await pagniatedQueryFn({
+      return await paginatedQueryFn({
         limit: limit.value,
         offset: offset.value,
         order_by: sortByOperation.value,

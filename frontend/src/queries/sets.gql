@@ -82,7 +82,7 @@ mutation deleteSet($id: bigint!) {
   }
 }
 
-query getSetsPagniated(
+query getSetsPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [sets_order_by!] = { id: desc }

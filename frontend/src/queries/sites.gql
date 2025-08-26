@@ -32,12 +32,16 @@ fragment SiteList on sites {
   updated_at
 }
 
-query filterSite($search: String = "", $limit: Int = 10, $offset: Int = 10) {
+query filterSite($search: String = "", $limit: Int = 10, $offset: Int = 0) {
   data: sites(
-    order_by: { name: asc }
+    order_by: { prefix: asc }
     limit: $limit
     offset: $offset
-    where: { _or: { name: { _like: $search }, remarks: { _like: $search } } }
+    where: { _or: [
+      { name: { _ilike: $search } },
+      { prefix: { _ilike: $search } },
+      { remarks: { _ilike: $search } }
+    ] }
   ) {
     ...SiteList
   }
@@ -110,7 +114,7 @@ mutation deleteSite($id: bigint!) {
   }
 }
 
-query getSitesPagniated(
+query getSitesPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [sites_order_by!] = { id: desc }

@@ -1,8 +1,8 @@
 export const useCancelJob = useCreateAction(GqlCancelJob);
 
-export const useGetJobsPagniated = useCreatePagniated({
+export const useGetJobsPaginated = useCreatePaginated({
   baseQueryKey: QUERY_KEYS.jobs,
-  pagniatedQueryFn: GqlGetJobsPagniated
+  paginatedQueryFn: GqlGetJobsPaginated
 });
 
 export const useGetSiteJobsByTopic = useCreateList(QUERY_KEYS.siteJobs, GqlGetSiteJobsByTopic);

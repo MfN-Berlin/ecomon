@@ -1,3 +1,33 @@
+<!--
+  SideDrawer.vue
+  
+  Description:
+    Main navigation drawer component that provides primary navigation for the application.
+    Features a collapsible sidebar with hierarchical menu structure supporting both 
+    regular navigation items and grouped sub-items.
+
+  Key Functionalities:
+    • Primary Navigation: Direct links to main application sections
+    • Hierarchical Menu: Supports grouped sub-items with expandable sections
+    • State Management: Integrates with UI store for drawer visibility control
+    • Responsive Design: Collapsible drawer that adapts to different screen sizes
+    • Brand Display: Shows application logo at the top
+
+  Navigation Structure:
+    • Home - Dashboard/landing page
+    • Jobs - Job management and monitoring
+    • Sites - Site configuration and management
+    • Locations - Geographic location management
+    • Models - AI/ML model management
+    • Data Tables - Grouped section containing:
+      - Records - Data record management
+      - Labels - Classification label management
+
+  Integration:
+    • Uses Pinia store (useUiStore) for state management
+    • Integrates with Nuxt routing for navigation
+    • Supports both direct routes and custom actions
+-->
 <script lang="ts" setup>
 import { ref } from "vue";
 
@@ -39,7 +69,7 @@ const drawerVisible = computed({
 // Watch for changes in the drawerVisible property and update the store
 </script>
 <template>
-  <v-navigation-drawer v-model="drawerVisible" :width="220">
+  <v-navigation-drawer v-model="drawerVisible" :width="230">
     <v-sheet class="px-8 py-2">
       <v-img cover src="/logo.png"></v-img>
     </v-sheet>

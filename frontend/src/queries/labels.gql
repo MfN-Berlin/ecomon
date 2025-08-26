@@ -7,7 +7,7 @@ fragment Label on labels {
   class
   order
 }
-query getLabelsPagniated(
+query getLabelsPaginated(
   $limit: Int = 10
   $offset: Int = 0
   $order_by: [labels_order_by!] = { id: desc }
@@ -20,6 +20,15 @@ query getLabelsPagniated(
     aggregate {
       count
     }
+  }
+}
+
+query getLabelsList(
+  $order_by: [labels_order_by!] = { name: asc }
+  $where: labels_bool_exp = {}
+) {
+  labels(order_by: $order_by, where: $where) {
+    ...Label
   }
 }
 

@@ -14,8 +14,8 @@ const emit = defineEmits<{
 }>();
 
 const colorScale = [
-  [0, "red"],
-  [0.33, "red"],
+  [0, "yellow"],
+  [0.33, "yellow"],
   [0.33, "white"],
   [0.66, "white"],
   [0.66, "green"],
@@ -26,7 +26,7 @@ const colorBar = {
   title: "Records",
   tickmode: "array",
   tickvals: [-0.66, 0, 0.66],
-  ticktext: ["error", "no record", "valid record"]
+  ticktext: ["deviant", "no record", "valid record"]
 };
 
 const id = computed(() => props.reportId);
@@ -119,6 +119,7 @@ defineExpose({
       :color-bar="colorBar"
       :zmin="-1"
       :zmax="1"
+      :hide-hover="true"
     />
   </v-container>
 </template>

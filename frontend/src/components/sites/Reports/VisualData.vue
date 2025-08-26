@@ -29,14 +29,14 @@ const DiagramTypes = [
   { value: "duration", title: "Record Durations" },
   { value: "heatmap", title: "Records Heatmap" }
 ] as const;
-const diagramType = ref<string>("monthly");
+const diagramType = ref<string>("heatmap");
 const timePeriod = ref<string | null>(null);
 
 watch(
   timePeriods,
   (newVal) => {
     if (newVal.length > 0) {
-      timePeriod.value = newVal[0];
+      timePeriod.value = "All"; // Default to "All" if available
     }
   },
   { immediate: true }

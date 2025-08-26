@@ -1,4 +1,4 @@
-export const useRecordModelInferenceResultsPagniated = useCreatePagniated({
+export const useRecordModelInferenceResultsPaginated = useCreatePaginated({
   baseQueryKey: QUERY_KEYS.recordModelInferenceResults,
-  pagniatedQueryFn: GqlGetRecordModelInferenceResults
+  paginatedQueryFn: GqlGetRecordModelInferenceResults
 });

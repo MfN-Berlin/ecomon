@@ -10,7 +10,7 @@ const {
   isLoading: loading,
   handleReset,
   handleSearch
-} = useModelPagniated();
+} = useModelPaginated();
 
 const headers = [
   { title: "id", key: "id", align: "end", search: { operator: "_eq", type: "number" } },

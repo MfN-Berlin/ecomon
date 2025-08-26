@@ -67,7 +67,7 @@ class AudioFileValidator:
             Tuple[List[Dict[str, str]], Optional[Tuple[float, str, int]]]: Errors and (duration, channels, sample rate) or None if validation fails.
         """
         errors = []
-        duration = channels = sample_rate = None
+        duration = channels = sample_rate = 0
 
         # Validate filename prefix
         if not file_path.name.startswith(self.site.prefix):
@@ -136,7 +136,6 @@ class RecordManager:
         """
         try:
             exists = self.session.query(Records.id, Records.errors).filter_by(filename=filename).first()
-            logger.info(f"Exists: {exists}")
             return exists
         except Exception as e:
             logger.error(f"Error checking file existence: {str(e)}")
@@ -207,15 +206,18 @@ class JobProgressReporter:
             total_files (int): Total number of files.
             added_records (int): Number of records added.
         """
-        JobService.updateResult(
-            self.session,
-            self.job_id,
-            {
-                "total_files": total_files,
-                "processed_files": processed_files,
-                "added_records": added_records,
-            },
-        )
+        try:
+            JobService.updateResult(
+                self.session,
+                self.job_id,
+                {
+                    "total_files": total_files,
+                    "processed_files": processed_files,
+                    "added_records": added_records,
+                },
+            )
+        except Exception as e:
+            self.logger.error(f"Error updating result: {str(e)}")
 
     def commit_batch(self, idx: int, total_files: int):
         """Commits the current batch of changes to the database and logs the progress.
@@ -281,16 +283,28 @@ def scan_directories_task(self, site_id: int, directories: list[str]):
                     "added_records": added_records,
                 }
 
-            errors, audio_props = validator.validate_and_get_props(file_path)
-            record = record_manager.create_record(file_path, errors, audio_props)
+            try:
+                errors, audio_props = validator.validate_and_get_props(file_path)
+                record = record_manager.create_record(file_path, errors, audio_props)
 
-            if record:
-                if record_manager.record_exists(file_path.name) is not None:
-                    logger.info(f"Updating record: {record}")
-                    session.merge(record)
-                else:
-                    session.add(record)
-                added_records += 1
+                if record:
+                    try:
+                        # Check if record exists
+                        existing = session.query(Records).filter_by(filename=record.filename).first()
+                        if existing:
+                            # Update fields
+                            for attr, value in record.__dict__.items():
+                                if attr != "_sa_instance_state":
+                                    setattr(existing, attr, value)
+                        else:
+                            session.add(record)
+                        added_records += 1
+                    except Exception as e:
+                        logger.warning(f"Could not insert or update record for {file_path.name}: {e}")
+                        # Continue processing other files even if this one fails
+
+            except Exception as e:
+                logger.error(f"Error processing file {file_path}: {e}")
 
             processed_files += 1
 
