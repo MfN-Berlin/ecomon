@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import time
+import uuid
 import pandas
 from sqlalchemy import func
 from datetime import datetime
@@ -56,6 +57,9 @@ def model_inference_site_task(
     host_input_paths_file = os.path.join(
         settings.host_tmp_dir, job_id, "inputPaths.txt"
     )
+    
+    # workerId will be passd to the name of the Docker container where the model runs.
+    workerId = job_id
 
     try:
         # get model string
@@ -160,6 +164,7 @@ def model_inference_site_task(
                     else []
                 ),
                 "ghcr.io/mfn-berlin/birdid-model-zoo:latest",
+#                "mfn-berlin/birdid-model-zoo:aot29",
                 # "model", # for local testing
                 *(
                     [model.additional_model_arguments]
@@ -178,6 +183,7 @@ def model_inference_site_task(
                     if settings.use_gpu.lower() != "none"
                     else []
                 ),  # gpu
+                f"-w {workerId}",
                 "-on output",
             ]
 
