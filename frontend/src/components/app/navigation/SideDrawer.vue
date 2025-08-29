@@ -48,6 +48,7 @@ const links: NavigationPoint[] = [
   { icon: "mdi-access-point-network", text: "Sites", route: "/sites" },
   { icon: "mdi-map-marker-multiple-outline", text: "Locations", route: "/locations" },
   { icon: "mdi-brain", text: "Models", route: "/models" },
+  { icon: "mdi-monitor-dashboard", text: "Dashboard", route: "/dashboard" },
   {
     icon: "mdi-table",
     text: "Data Tables",
