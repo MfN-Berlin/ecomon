@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, watch, ref } from 'vue';
+import PageControls from '@/components/dashboard/PageControls.vue'
+
 definePageMeta({ layout: "full-width" });
 
 // Get runtime configuration (may be used for API endpoints)
@@ -41,6 +43,15 @@ watch(
   }
 );
 
+// In index.vue, add this debug
+watch(
+  () => sites.value,
+  (newSites) => {
+    console.log("Sites computed value updated:", newSites);
+    console.log("Length:", newSites ? newSites.length : 0);
+  },
+  { immediate: true }
+);
 
 /*******************************
  * 
@@ -104,9 +115,42 @@ watch(
   { immediate: true }
 );
 
+/***********************************************
+ * 
+ * Handle selection updates from PageControls
+ * 
+ ***********************************************/
+const handleSelectionUpdate = (selection) => {
+  console.log('Selected model:', selection.model);
+  console.log('Selected sites:', selection.sites);
+  console.log('Selected year:', selection.year);
+  console.log('Selected species:', selection.species);
+};
 </script>
 
 <template>
-  <v-container>
+  <v-container style="max-width: 100%;">
+    <v-row>
+      <!-- Left column -->
+      <v-col cols="3">
+        <PageControls
+          v-if="sites.length > 0"
+          :available-models="modelList.data?.value || []"
+          :available-sites="sites"
+          :available-years="yearsList.data?.value || []"
+          @update:selection="handleSelectionUpdate"
+        />
+      </v-col>
+      <!-- Main content column -->
+      <v-col cols="9">
+        <div style="height: 800px;">
+          <iframe
+            src="http://localhost:9090"
+            style="width: 100%; height: 100%; border: none;"
+            title="Shiny App"
+          ></iframe>
+        </div>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
