@@ -16,20 +16,14 @@ const props = defineProps({
   },
   availableSpecies: {
     type: Array,
-    default: () => ['Strix aluco']
+    default: () => ['']
+  },
+  defaultThreshold: {
+    type: Number,
+    default: 0.5
   }
 });
 
-// Add this right after props definition
-watch(() => props.availableSites, (newSites) => {
-  console.log("availableSites props changed:", newSites);
-  console.log("Type:", typeof newSites);
-  console.log("Is Array?", Array.isArray(newSites));
-  console.log("Length:", newSites?.length);
-  if (newSites && newSites.length > 0) {
-    console.log("First item:", newSites[0]);
-  }
-}, { immediate: true });
 const emit = defineEmits(['update:selection']);
 
 // Initialize all reactive variables at the top
@@ -37,6 +31,7 @@ const selectedModel = ref(null);
 const selectedSites = ref([]);
 const selectedYear = ref(null);
 const selectedSpecies = ref(null);
+const threshold = ref(props.defaultThreshold);
 
 /***************
  * 
@@ -50,7 +45,8 @@ function updateSelection() {
     model: selectedModel.value,
     sites: selectedSites.value,
     year: selectedYear.value,
-    species: selectedSpecies.value
+    species: selectedSpecies.value,
+    threshold: threshold.value
   });
 }
 
@@ -69,20 +65,12 @@ const models = computed(() => {
   }));
 });
 
-// Watch for available models changes and select the first one
+// Watch for available models changes - DON'T auto-select
 watch(
   () => props.availableModels,
   (newModels) => {
-    if (newModels && newModels.length > 0 && !selectedModel.value) {
-      // Select first model when data loads
-      selectedModel.value = {
-        title: newModels[0].name,
-        value: newModels[0].id
-      };
-      
-      // Emit initial selection
-      updateSelection();
-    }
+    // No auto-selection
+    updateSelection();
   },
   { immediate: true }
 );
@@ -94,9 +82,7 @@ watch(
 ****************/
 
 // Available sites (those not yet selected)
-const availableSitesList = computed(() => {
-  console.log("Computing availableSitesList with:", props.availableSites);
-  
+const availableSitesList = computed(() => {  
   if (!props.availableSites || !Array.isArray(props.availableSites)) {
     console.log("No available sites or not an array");
     return [];
@@ -107,7 +93,7 @@ const availableSitesList = computed(() => {
     !selectedSites.value.some(s => s.value === site.value)
   );
   
-  console.log("Filtered sites:", filtered);
+  // console.log("Filtered sites:", filtered);
   return filtered;
 });
 
@@ -141,15 +127,12 @@ function deselectSite(site) {
 ********************************/
 const years = computed(() => props.availableYears);
 
-// Watch for available years changes and select the most recent one
+// Watch for available years changes - DON'T auto-select
 watch(
   () => props.availableYears,
   (newYears) => {
-    if (newYears && newYears.length > 0 && !selectedYear.value) {
-      // Select the latest year (assuming years are sorted)
-      selectedYear.value = newYears[newYears.length - 1];
-      updateSelection();
-    }
+    // No auto-selection
+    updateSelection();
   },
   { immediate: true }
 );
@@ -182,9 +165,10 @@ watch(
       <h3>Analysis Parameters</h3>
     </v-card-title>
     <v-card-text>
+
       <!-- Classifier/Model Dropdown -->
-      <div class="control-row">
-        <label for="model-select">Classifier</label>
+      <div class="control-row horizontal align-inputs">
+        <label for="model-select" class="label-inline text-right">Classifier</label>
         <v-select
           id="model-select"
           v-model="selectedModel"
@@ -194,6 +178,7 @@ watch(
           return-object
           density="compact"
           @update:model-value="updateSelection"
+          class="inline-select"
         ></v-select>
       </div>
 
@@ -203,17 +188,17 @@ watch(
         <div class="site-list">
           <label>Sites ({{ availableSitesList.length }})</label>
           <div class="site-list-scroll">
-            <v-list density="compact">
-              <template v-if="availableSitesList.length > 0">
-                <v-list-item
-                  v-for="site in availableSitesList"
-                  :key="site.value"
-                  @click="selectSite(site)"
-                >
-                  {{ site.title }}
-                </v-list-item>
-              </template>
-              <v-list-item v-else>
+            <v-list density="compact" class="site-list-items">
+              <v-list-item
+                v-for="site in availableSitesList"
+                :key="site.value"
+                :value="site"
+                @click="selectSite(site)"
+                class="site-list-item"
+              >
+                {{ site.title }}
+              </v-list-item>
+              <v-list-item v-if="availableSitesList.length === 0">
                 <v-list-item-title class="text-grey">No sites available</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -237,14 +222,17 @@ watch(
                   <v-icon color="error" size="small">mdi-close</v-icon>
                 </template>
               </v-list-item>
+              <v-list-item v-if="selectedSites.length === 0">
+                <v-list-item-title class="text-grey">No sites selected</v-list-item-title>
+              </v-list-item>
             </v-list>
           </div>
         </div>
       </div>
 
       <!-- Year Selector -->
-      <div class="control-row horizontal">
-        <label for="year-select" class="label-inline">Year</label>
+      <div class="control-row horizontal align-inputs">
+        <label for="year-select" class="label-inline text-right">Year</label>
         <v-select
           id="year-select"
           v-model="selectedYear"
@@ -252,12 +240,33 @@ watch(
           density="compact"
           @update:model-value="updateSelection"
           class="inline-select"
+          clearable
         ></v-select>
       </div>
 
+      <!-- Threshold Input -->
+      <div class="control-row horizontal align-inputs">
+        <label for="threshold-input" class="label-inline text-right">Threshold</label>
+        <div class="input-with-hint">
+          <v-text-field
+            id="threshold-input"
+            v-model.number="threshold"
+            type="number"
+            density="compact"
+            min="0.1"
+            max="1"
+            step="0.001"
+            @update:model-value="updateSelection"
+            class="threshold-input"
+            hide-details
+          ></v-text-field>
+          <span class="hint-text">Range: 0.01 to 1.00</span>
+        </div>
+      </div>
+
       <!-- Species Selector -->
-      <div class="control-row horizontal">
-        <label for="species-select" class="label-inline">Species</label>
+      <div class="control-row horizontal align-inputs">
+        <label for="species-select" class="label-inline text-right">Species</label>
         <v-select
           id="species-select"
           v-model="selectedSpecies"
@@ -266,6 +275,7 @@ watch(
           @update:model-value="updateSelection"
           class="inline-select species-select"
           item-class="species-item"
+          clearable
         ></v-select>
       </div>
     </v-card-text>
@@ -282,7 +292,7 @@ watch(
 }
 
 .v-card-title {
-  padding-bottom: 0;
+  padding-bottom: 1em!important;
 }
 
 .v-card-text {
@@ -360,10 +370,15 @@ label {
   align-items: center;
 }
 
+.control-row.horizontal .v-text-field {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .label-inline {
   margin-right: 1rem;
   margin-bottom: 0;
-  min-width: 60px;
+  min-width: 7em;
 }
 
 .inline-select {
@@ -382,5 +397,44 @@ label {
 
 :deep(.species-item.v-list-item--active) {
   font-style: italic; /* Italic for the active item in the dropdown */
+}
+
+/* Threshold input styling */
+.threshold-input {
+  width: 7em;
+  max-width: 7em;
+  flex-shrink: 0;
+}
+
+.threshold-input :deep(input) {
+  text-align: center;
+}
+
+/* Alignment for the inputs */
+.align-inputs {
+  display: grid;
+  grid-template-columns: 7em 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Right-align labels */
+.text-right {
+  text-align: right;
+  margin-right: 0;
+  padding-right: 1em; 
+}
+
+/* Input with hint on same line */
+.input-with-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hint-text {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 </style>

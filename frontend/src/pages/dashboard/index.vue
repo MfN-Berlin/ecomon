@@ -33,26 +33,6 @@ const sites = computed(() => {
   }));
 });
 
-// Wait until the site list is fetched, then print the list to the console
-watch(
-  () => sitesList.pending.value,
-  (loading) => {
-    if (!loading && sites.value.length > 0) {
-      console.log("Fetched sites:", sites.value);
-    }
-  }
-);
-
-// In index.vue, add this debug
-watch(
-  () => sites.value,
-  (newSites) => {
-    console.log("Sites computed value updated:", newSites);
-    console.log("Length:", newSites ? newSites.length : 0);
-  },
-  { immediate: true }
-);
-
 /*******************************
  * 
  * Models List
@@ -62,16 +42,6 @@ watch(
 const modelList = useAllModels();
 modelList.fetchAllModels();
 
-// Wait until the model list is fetched, then print the list to the console
-watch(
-  () => modelList.pending?.value,
-  (loading) => {
-    if (!loading && modelList.data?.value && modelList.data.value.length > 0) {
-      console.log("Fetched models:", modelList.data.value);
-    }
-  }
-);
-
 /*******************************
  * 
  * Years List
@@ -79,15 +49,6 @@ watch(
 ********************************/
 const yearsList = useRecordYears();
 yearsList.fetchYears();
-
-watch(
-  () => yearsList.pending.value,
-  (loading) => {
-    if (!loading && yearsList.data.value.length > 0) {
-      console.log("Fetched years:", yearsList.data.value);
-    }
-  }
-);
 
 /*******************************
  * 
@@ -103,7 +64,7 @@ const threshold = 0.5;
  * 
 ********************************/
 const speciesLabelsSearch = useLabelsSearch();
-speciesLabelsSearch.searchLabels("%%%");  // will get the fits 50 labels (for testing)
+speciesLabelsSearch.searchLabels(3, 2, 0.5);
 
 watch(
   () => speciesLabelsSearch.data.value,
@@ -115,39 +76,113 @@ watch(
   { immediate: true }
 );
 
+const formattedSpecies = computed(() => {
+  const speciesData = speciesLabelsSearch.data?.value?.labels || [];
+  
+  // Return the labels array formatted for v-select
+  return speciesData.map(species => ({
+    title: species.name,  // Display name
+    value: species.id     // Actual value
+  }));
+});
+
 /***********************************************
  * 
  * Handle selection updates from PageControls
  * 
  ***********************************************/
+// selected parameters to pass to Dashboard
+const selectedParams = ref({
+  model: null,
+  sites: [],
+  year: null,
+  species: null
+});
+
 const handleSelectionUpdate = (selection) => {
-  console.log('Selected model:', selection.model);
-  console.log('Selected sites:', selection.sites);
-  console.log('Selected year:', selection.year);
-  console.log('Selected species:', selection.species);
+  //  console.log('Selected model:', selection.model);
+  //  console.log('Selected sites:', selection.sites);
+  //  console.log('Selected year:', selection.year);
+  //  console.log('Selected species:', selection.species);
+
+  // Update the selectedParams ref with the new values
+  selectedParams.value = selection;
 };
+
+// Create a computed property for the iframe URL with query parameters
+const dashboardAppUrl = computed(() => {
+  const params = new URLSearchParams();
+  
+  // Add model parameter if available
+  if (selectedParams.value.model) {
+    params.append('model', selectedParams.value.model.value);
+    params.append('modelName', selectedParams.value.model.title);
+  }
+  
+  // Add sites parameter if available
+  if (selectedParams.value.sites && selectedParams.value.sites.length > 0) {
+    const siteIds = selectedParams.value.sites.map(site => site.value).join(',');
+    params.append('sites', siteIds);
+    
+    // Also add site titles for display in the dashboard
+    const siteTitles = selectedParams.value.sites.map(site => site.title).join('|');
+    params.append('siteTitles', encodeURIComponent(siteTitles));
+    // console.log("Site titles added:", siteTitles);
+  }
+  
+  // Add year parameter if available
+  if (selectedParams.value.year) {
+    params.append('year', selectedParams.value.year);
+  }
+  
+  // Add species parameter if available
+  if (selectedParams.value.species) {
+    params.append('species', selectedParams.value.species);
+  }
+  
+  // Add threshold parameter
+  params.append('threshold', threshold.toString());
+  
+  // Return the base URL with query parameters
+  return `http://localhost:9090/?${params.toString()}`;
+});
+
+watch(
+  () => speciesLabelsSearch.data.value,
+  (labels) => {
+    console.log("Species labels type:", typeof labels);
+    console.log("Is array?", Array.isArray(labels));
+    console.log("Structure:", JSON.stringify(labels).slice(0, 100));
+    if (labels && labels.length > 0) {
+      console.log("Fetched all species labels:", labels);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <v-container style="max-width: 100%;">
     <v-row>
       <!-- Left column -->
-      <v-col cols="3">
+      <v-col cols="4">
         <PageControls
           v-if="sites.length > 0"
           :available-models="modelList.data?.value || []"
           :available-sites="sites"
           :available-years="yearsList.data?.value || []"
+          :available-species="formattedSpecies"
           @update:selection="handleSelectionUpdate"
         />
       </v-col>
       <!-- Main content column -->
-      <v-col cols="9">
+      <v-col cols="8">
         <div style="height: 800px;">
           <iframe
-            src="http://localhost:9090"
+            :src="dashboardAppUrl"
             style="width: 100%; height: 100%; border: none;"
-            title="Shiny App"
+            title="Dashboard App"
+            ref="dashboardFrame"
           ></iframe>
         </div>
       </v-col>

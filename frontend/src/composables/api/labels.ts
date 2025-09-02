@@ -88,24 +88,35 @@ export const useAllSpeciesLabels = () => {
   };
 };
 
-// Simple search composable for labels
-// search by label prefix
+// Simple search composable for labels based on model_id, site_id and confidence threshold
 export const useLabelsSearch = () => {
   const pending = ref(false);
   const error = ref(null);
   const data = ref(null);
   
-  const searchLabels = async (searchTerm: string) => {
-    console.log("searchLabels called");
+  /**
+   * Searches for distinct labels based on model_id, site_id and confidence threshold
+   * Corresponds to the SQL query:
+   * select distinct l.id, l.name from model_inference_results mir
+   * join labels l on l.id = mir.label_id
+   * join records r on r.id = mir.record_id 
+   * where mir.model_id = $modelId
+   * and r.site_id = $siteId
+   * and mir.confidence >= $confidence;
+   * 
+   * @param modelId - The model ID to filter results by
+   * @param siteId - The site ID to filter records by
+   * @param confidence - The minimum confidence threshold (default 0.5)
+   */
+  const searchLabels = async (modelId: number, siteId: number, confidence: number = 0.5) => {
+    console.log(`searchLabels called with modelId=${modelId}, siteId=${siteId}, confidence=${confidence}`);
     pending.value = true;
     error.value = null;
     
     try {
       const config = useRuntimeConfig();
-      const where = searchTerm 
-        ? { name: { _ilike: `${searchTerm}%` } }
-        : {};
       
+      // Make the query match the underlying table structure more precisely
       const result = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
         headers: {
@@ -113,24 +124,52 @@ export const useLabelsSearch = () => {
         },
         body: {
           query: `
-            query getLabelsList($where: labels_bool_exp, $order_by: [labels_order_by!], $limit: Int) {
-              labels(where: $where, order_by: $order_by, limit: $limit) {
-                id
-                name
+            query getLabelsForModelSiteWithConfidence(
+              $modelId: Int!, 
+              $siteId: bigint!, 
+              $confidence: Float!
+            ) {
+              # Use a more direct approach that matches the table structure
+              model_inference_results(
+                where: {
+                  model_id: {_eq: $modelId},
+                  confidence: {_gte: $confidence},
+                  record: {
+                    site_id: {_eq: $siteId}
+                  }
+                },
+                distinct_on: [label_id]
+              ) {
+                label {
+                  id
+                  name
+                  # Include additional fields if needed
+                  english
+                  german
+                  class
+                  order
+                }
               }
             }
           `,
           variables: {
-            where,
-            order_by: { name: 'asc' },
-            limit: 50
+            modelId,
+            siteId,
+            confidence
           }
         }
       });
       console.log("Raw GraphQL result:", result);
-
       
-      data.value = result.data;
+      // Extract the labels from the nested structure
+      const labels = (result.data?.model_inference_results || [])
+        .map(mir => mir.label)
+        .filter(label => label != null);
+      
+      // Sort by name
+      labels.sort((a, b) => a.name.localeCompare(b.name));
+      
+      data.value = { labels };
     } catch (err) {
       error.value = err;
       console.error('Error searching labels:', err);
