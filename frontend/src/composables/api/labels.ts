@@ -93,30 +93,56 @@ export const useLabelsSearch = () => {
   const pending = ref(false);
   const error = ref(null);
   const data = ref(null);
+  let pendingSearch = null;
   
   /**
-   * Searches for distinct labels based on model_id, site_id and confidence threshold
-   * Corresponds to the SQL query:
-   * select distinct l.id, l.name from model_inference_results mir
-   * join labels l on l.id = mir.label_id
-   * join records r on r.id = mir.record_id 
-   * where mir.model_id = $modelId
-   * and r.site_id = $siteId
-   * and mir.confidence >= $confidence;
+   * Searches for distinct labels based on model_id, site_id and confidence threshold, and year
    * 
    * @param modelId - The model ID to filter results by
    * @param siteId - The site ID to filter records by
    * @param confidence - The minimum confidence threshold (default 0.5)
+   * @param year - The year to filter records by (records where record_datetime is in this year)
    */
-  const searchLabels = async (modelId: number, siteId: number, confidence: number = 0.5) => {
-    console.log(`searchLabels called with modelId=${modelId}, siteId=${siteId}, confidence=${confidence}`);
+  const searchLabels = async (modelId: number, siteId: number, confidence: number = 0.5, year: number | string | null = null) => {
+    console.log(`searchLabels called with modelId=${modelId}, siteId=${siteId}, confidence=${confidence}, year=${year}`);
     pending.value = true;
     error.value = null;
+
+    // Cancel any pending search
+    if (pendingSearch) {
+      pendingSearch.cancel();
+    }
+    
+    // Create an AbortController for this search
+    const controller = new AbortController();
+    pendingSearch = { 
+      controller, 
+      cancel: () => controller.abort() 
+    };
     
     try {
       const config = useRuntimeConfig();
       
-      // Make the query match the underlying table structure more precisely
+      // Build where conditions
+      const whereConditions: any = {
+        model_id: {_eq: modelId},
+        confidence: {_gte: confidence},
+        record: {
+          site_id: {_eq: siteId}
+        }
+      };
+      
+      // Add year filter if provided
+      if (year) {
+        whereConditions.record = {
+          ...whereConditions.record,
+          record_datetime: {
+            _gte: `${year}-01-01T00:00:00`,
+            _lt: `${parseInt(year.toString()) + 1}-01-01T00:00:00`
+          }
+        };
+      }
+      
       const result = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
         headers: {
@@ -124,18 +150,23 @@ export const useLabelsSearch = () => {
         },
         body: {
           query: `
-            query getLabelsForModelSiteWithConfidence(
+            query getLabelsForModelSiteWithConfidenceAndYear(
               $modelId: Int!, 
               $siteId: bigint!, 
-              $confidence: Float!
+              $confidence: Float!,
+              $yearStart: timestamp,
+              $yearEnd: timestamp
             ) {
-              # Use a more direct approach that matches the table structure
               model_inference_results(
                 where: {
                   model_id: {_eq: $modelId},
                   confidence: {_gte: $confidence},
                   record: {
-                    site_id: {_eq: $siteId}
+                    site_id: {_eq: $siteId},
+                    record_datetime: {
+                      _gte: $yearStart,
+                      _lt: $yearEnd
+                    }
                   }
                 },
                 distinct_on: [label_id]
@@ -143,7 +174,6 @@ export const useLabelsSearch = () => {
                 label {
                   id
                   name
-                  # Include additional fields if needed
                   english
                   german
                   class
@@ -155,9 +185,12 @@ export const useLabelsSearch = () => {
           variables: {
             modelId,
             siteId,
-            confidence
+            confidence,
+            yearStart: year ? `${year}-01-01T00:00:00` : null,
+            yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
           }
-        }
+        },
+        signal: controller.signal
       });
       console.log("Raw GraphQL result:", result);
       
@@ -171,18 +204,25 @@ export const useLabelsSearch = () => {
       
       data.value = { labels };
     } catch (err) {
-      error.value = err;
-      console.error('Error searching labels:', err);
+      // Only update error if not aborted
+      if (err.name !== 'AbortError') {
+        error.value = err;
+        console.error('Error searching labels:', err);
+      }
     } finally {
-      pending.value = false;
+      // Only update pending state if this is still the current search
+      if (pendingSearch && pendingSearch.controller === controller) {
+        pending.value = false;
+        pendingSearch = null;
+      }
     }
   };
-
   return {
     data,
     pending,
     error,
-    searchLabels
+    searchLabels,
+    pendingSearch
   };
 };
 

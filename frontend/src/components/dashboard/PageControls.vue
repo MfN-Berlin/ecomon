@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { debounce } from 'lodash-es';
 
 const props = defineProps({
   availableModels: {
@@ -33,13 +34,27 @@ const selectedYear = ref(null);
 const selectedSpecies = ref(null);
 const threshold = ref(props.defaultThreshold);
 
+// Check if the species list contains only a placeholder
+const hasOnlyPlaceholder = computed(() => {
+  return props.availableSpecies.length === 1 && 
+         props.availableSpecies[0]?.isPlaceholder === true;
+});
+
+// Get placeholder message for hint/help text
+const placeholderMessage = computed(() => {
+  if (hasOnlyPlaceholder.value) {
+    return props.availableSpecies[0]?.title || '';
+  }
+  return '';
+});
+
 /***************
  * 
  * Selection update
  * 
 ****************/
 
-// Function to emit selection updates
+// Function called when non-threshold values change
 function updateSelection() {
   emit('update:selection', {
     model: selectedModel.value,
@@ -48,6 +63,15 @@ function updateSelection() {
     species: selectedSpecies.value,
     threshold: threshold.value
   });
+}
+
+// Function to update threshold with debounce
+const debouncedUpdateSelection = debounce(() => {
+  updateSelection();
+}, 300);
+
+function updateThreshold() {
+  debouncedUpdateSelection();
 }
 
 /***************
@@ -93,7 +117,6 @@ const availableSitesList = computed(() => {
     !selectedSites.value.some(s => s.value === site.value)
   );
   
-  // console.log("Filtered sites:", filtered);
   return filtered;
 });
 
@@ -143,20 +166,30 @@ watch(
  * 
 ****************/
 
-const species = computed(() => props.availableSpecies);
+// Get the filtered species list for the dropdown - FIXED THE DUPLICATE COMPUTED PROPERTY
+const species = computed(() => {
+  // If there's only a placeholder item, return an empty array so nothing is shown in dropdown
+  if (hasOnlyPlaceholder.value) {
+    return [];
+  }
+  
+  // Otherwise, filter out any placeholder items
+  return props.availableSpecies.filter(item => !item.isPlaceholder);
+});
 
 watch(
   () => props.availableSpecies,
   (newSpecies) => {
-    if (newSpecies && newSpecies.length > 0 && !selectedSpecies.value) {
-      selectedSpecies.value = newSpecies[0];
+    // Don't auto-select the first species
+    // Only clear the selection when the species list changes to just placeholders
+    if (hasOnlyPlaceholder.value) {
+      // If we only have a placeholder, clear the selection
+      selectedSpecies.value = null;
       updateSelection();
     }
   },
   { immediate: true }
 );
-
-
 </script>
 
 <template>
@@ -256,7 +289,7 @@ watch(
             min="0.1"
             max="1"
             step="0.001"
-            @update:model-value="updateSelection"
+            @update:model-value="updateThreshold"
             class="threshold-input"
             hide-details
           ></v-text-field>
@@ -276,7 +309,13 @@ watch(
           class="inline-select species-select"
           item-class="species-item"
           clearable
+          :disabled="hasOnlyPlaceholder"
+          hide-details
         ></v-select>
+        <!-- Custom message element that's always fully visible -->
+        <div v-if="hasOnlyPlaceholder" class="custom-message">
+          {{ placeholderMessage }}
+        </div>
       </div>
     </v-card-text>
   </v-card>
@@ -436,5 +475,20 @@ label {
   color: rgba(0, 0, 0, 0.6);
   font-size: 0.75rem;
   white-space: nowrap;
+}
+.select-with-message {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.custom-message {
+  font-size: 0.75rem;
+  padding-top: 4px;
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: normal;
+  line-height: 1.2;
+  width: 40em;
+  margin-left: 9em;
 }
 </style>
