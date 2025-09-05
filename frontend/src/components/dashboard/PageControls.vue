@@ -133,7 +133,10 @@ watch(
 
 // Function to select a site
 function selectSite(site) {
-  selectedSites.value.push(site);
+  // for now, allow only one site to be selected at a time
+  // To allow multiple selections, uncomment the line below and comment the next one
+  // selectedSites.value.push(site);
+  selectedSites.value = [site]; // Set to array with only the new site
   updateSelection();
 }
 
@@ -240,7 +243,7 @@ watch(
 
         <!-- Selected Sites List -->
         <div class="site-list">
-          <label>Selected</label>
+          <label>Selected (only 1 for now)</label>
           <div class="site-list-scroll">
             <v-list density="compact" class="site-list-items">
               <v-list-item
