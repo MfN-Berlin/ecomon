@@ -190,6 +190,18 @@ const handleSelectionUpdate = (selection) => {
   if ('threshold' in selection) selectedParams.value.threshold = selection.threshold;
 };
 
+// al parameters selected -> show app
+const allParametersSelected = computed(() => {
+  return !!(
+    selectedParams.value.model && 
+    selectedParams.value.sites && 
+    selectedParams.value.sites.length > 0 && 
+    selectedParams.value.year &&
+    selectedParams.value.species &&
+    selectedParams.value.threshold !== undefined
+  );
+});
+
 // Create a computed property for the iframe URL with query parameters
 const dashboardAppUrl = computed(() => {
   // Make sure selectedParams exists before accessing its properties
@@ -297,12 +309,29 @@ console.log("Initial selectedParams:", selectedParams.value);
       <!-- Main content column -->
       <v-col cols="8">
         <div style="height: 800px;">
+          <template v-if="allParametersSelected">
           <iframe
             :src="dashboardAppUrl"
             style="width: 100%; height: 100%; border: none;"
             title="Dashboard App"
             ref="dashboardFrame"
           ></iframe>
+          </template>
+          <template v-else>
+            <v-card
+              class="d-flex align-center justify-center"
+              style="width: 100%; height: 100%;"
+              color="grey-lighten-4"
+            >
+              <div class="text-center pa-5">
+                <v-icon icon="mdi-tune" size="large" color="grey" class="mb-3"></v-icon>
+                <h3 class="text-h5 text-grey-darken-1">Select all parameters to display the dashboard</h3>
+                <p class="text-body-1 text-grey-darken-1">
+                  Please choose a classifier, site, year, and species from the control panel.
+                </p>
+              </div>
+            </v-card>
+          </template>
         </div>
       </v-col>
     </v-row>
