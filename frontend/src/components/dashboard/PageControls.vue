@@ -13,7 +13,7 @@ const props = defineProps({
   },
   availableYears: {
     type: Array,
-    default: () => ['2023', '2024', '2025']
+    default: () => ['2023', '2024', '2025']  // get this from the db
   },
   availableSpecies: {
     type: Array,
@@ -33,6 +33,8 @@ const selectedSites = ref([]);
 const selectedYear = ref(null);
 const selectedSpecies = ref(null);
 const threshold = ref(props.defaultThreshold);
+const isUpdatingThreshold = ref(false);
+let thresholdTimeoutId = null; 
 
 // Check if the species list contains only a placeholder
 const hasOnlyPlaceholder = computed(() => {
@@ -56,11 +58,18 @@ const placeholderMessage = computed(() => {
 
 // Function called when non-threshold values change
 function updateSelection() {
-  emit('update:selection', {
+  console.log("Updating selection:", {
     model: selectedModel.value,
     sites: selectedSites.value,
     year: selectedYear.value,
     species: selectedSpecies.value,
+    threshold: threshold.value
+  });
+  emit('update:selection', {
+    model: selectedModel.value,
+    sites: selectedSites.value,
+    year: selectedYear.value,
+    species: selectedSpecies.value || null, // Preserve species selection
     threshold: threshold.value
   });
 }
@@ -70,10 +79,33 @@ const debouncedUpdateSelection = debounce(() => {
   updateSelection();
 }, 300);
 
-function updateThreshold() {
-  debouncedUpdateSelection();
-}
+// Function to update threshold with debounce - without triggering species update
+const debouncedUpdateThreshold = debounce(() => {
+  emit('update:selection', {
+    model: selectedModel.value,
+    sites: selectedSites.value,
+    year: selectedYear.value,
+    species: selectedSpecies.value, // Keep the current species selection unchanged
+    threshold: threshold.value
+  });
+}, 300);
 
+function updateThreshold() {
+  isUpdatingThreshold.value = true;
+ 
+  // Clear any existing timeout
+  if (thresholdTimeoutId) {
+    clearTimeout(thresholdTimeoutId);
+  }
+
+  debouncedUpdateThreshold();
+
+  // Reset the flag after the debounce delay + a small buffer
+  thresholdTimeoutId = setTimeout(() => {
+    isUpdatingThreshold.value = false;
+    thresholdTimeoutId = null;
+  }, 350);
+}
 /***************
  * 
  * Models logic
@@ -183,13 +215,25 @@ const species = computed(() => {
 watch(
   () => props.availableSpecies,
   (newSpecies) => {
-    // Don't auto-select the first species
-    // Only clear the selection when the species list changes to just placeholders
-    if (hasOnlyPlaceholder.value) {
-      // If we only have a placeholder, clear the selection
-      selectedSpecies.value = null;
-      updateSelection();
+    // Don't update species selection during threshold updates
+    if (isUpdatingThreshold.value) {
+      return;
     }
+    
+    if (hasOnlyPlaceholder.value) {
+      selectedSpecies.value = null;
+    } else if (
+      selectedSpecies.value &&
+      newSpecies.some(s => s.value === selectedSpecies.value)
+    ) {
+      // If the current selection is valid, keep it
+      return;
+    } else {
+      // If the current selection is invalid, reset it to null
+      selectedSpecies.value = null;
+    }
+    // Only call updateSelection when we actually change selectedSpecies
+    updateSelection();
   },
   { immediate: true }
 );
