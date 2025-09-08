@@ -61,7 +61,7 @@ export const useAllSites = () => {
         body: {
           query: `
             query getAllSites {
-              sites(order_by: {name: asc}) {
+              sites(order_by: [{prefix: asc}, {name: asc}]) {
                 id
                 name
                 prefix
