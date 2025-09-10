@@ -34,11 +34,11 @@ const selectedYear = ref(null);
 const selectedSpecies = ref(null);
 const threshold = ref(props.defaultThreshold);
 const isUpdatingThreshold = ref(false);
-let thresholdTimeoutId = null; 
+let thresholdTimeoutId = null;
 
 // Check if the species list contains only a placeholder
 const hasOnlyPlaceholder = computed(() => {
-  return props.availableSpecies.length === 1 && 
+  return props.availableSpecies.length === 1 &&
          props.availableSpecies[0]?.isPlaceholder === true;
 });
 
@@ -51,9 +51,9 @@ const placeholderMessage = computed(() => {
 });
 
 /***************
- * 
+ *
  * Selection update
- * 
+ *
 ****************/
 
 // Function called when non-threshold values change
@@ -74,6 +74,11 @@ function updateSelection() {
   });
 }
 
+// Function to update species with debounce
+const debouncedUpdateSpecies = debounce(() => {
+  updateSelection();
+}, 1000);
+
 // Function to update threshold with debounce
 const debouncedUpdateSelection = debounce(() => {
   updateSelection();
@@ -92,7 +97,7 @@ const debouncedUpdateThreshold = debounce(() => {
 
 function updateThreshold() {
   isUpdatingThreshold.value = true;
- 
+
   // Clear any existing timeout
   if (thresholdTimeoutId) {
     clearTimeout(thresholdTimeoutId);
@@ -107,9 +112,9 @@ function updateThreshold() {
   }, 350);
 }
 /***************
- * 
+ *
  * Models logic
- * 
+ *
 ****************/
 
 // Models
@@ -132,23 +137,23 @@ watch(
 );
 
 /***************
- * 
+ *
  * Sites logic
- * 
+ *
 ****************/
 
 // Available sites (those not yet selected)
-const availableSitesList = computed(() => {  
+const availableSitesList = computed(() => {
   if (!props.availableSites || !Array.isArray(props.availableSites)) {
     console.log("No available sites or not an array");
     return [];
   }
-  
+
   // Filter out sites that are already selected
-  const filtered = props.availableSites.filter(site => 
+  const filtered = props.availableSites.filter(site =>
     !selectedSites.value.some(s => s.value === site.value)
   );
-  
+
   return filtered;
 });
 
@@ -179,7 +184,7 @@ function deselectSite(site) {
 }
 
 /*******************************
- * 
+ *
  * Years logic
  *
 ********************************/
@@ -196,9 +201,9 @@ watch(
 );
 
 /***************
- * 
+ *
  * Species logic
- * 
+ *
 ****************/
 
 // Get the filtered species list for the dropdown - FIXED THE DUPLICATE COMPUTED PROPERTY
@@ -207,7 +212,7 @@ const species = computed(() => {
   if (hasOnlyPlaceholder.value) {
     return [];
   }
-  
+
   // Otherwise, filter out any placeholder items
   return props.availableSpecies.filter(item => !item.isPlaceholder);
 });
@@ -219,7 +224,7 @@ watch(
     if (isUpdatingThreshold.value) {
       return;
     }
-    
+
     if (hasOnlyPlaceholder.value) {
       selectedSpecies.value = null;
     } else if (
@@ -233,7 +238,8 @@ watch(
       selectedSpecies.value = null;
     }
     // Only call updateSelection when we actually change selectedSpecies
-    updateSelection();
+    // Use the debounced function to update the selection
+    debouncedUpdateSpecies();
   },
   { immediate: true }
 );
@@ -260,6 +266,26 @@ watch(
           @update:model-value="updateSelection"
           class="inline-select"
         ></v-select>
+      </div>
+
+      <!-- Threshold Input -->
+      <div class="control-row horizontal align-inputs">
+        <label for="threshold-input" class="label-inline text-right">Threshold</label>
+        <div class="input-with-hint">
+          <v-text-field
+            id="threshold-input"
+            v-model.number="threshold"
+            type="number"
+            density="compact"
+            min="0.1"
+            max="1"
+            step="0.001"
+            @update:model-value="updateThreshold"
+            class="threshold-input"
+            hide-details
+          ></v-text-field>
+          <span class="hint-text">Range: 0.01 to 1.00</span>
+        </div>
       </div>
 
       <!-- Site Lists Container -->
@@ -324,26 +350,6 @@ watch(
         ></v-select>
       </div>
 
-      <!-- Threshold Input -->
-      <div class="control-row horizontal align-inputs">
-        <label for="threshold-input" class="label-inline text-right">Threshold</label>
-        <div class="input-with-hint">
-          <v-text-field
-            id="threshold-input"
-            v-model.number="threshold"
-            type="number"
-            density="compact"
-            min="0.1"
-            max="1"
-            step="0.001"
-            @update:model-value="updateThreshold"
-            class="threshold-input"
-            hide-details
-          ></v-text-field>
-          <span class="hint-text">Range: 0.01 to 1.00</span>
-        </div>
-      </div>
-
       <!-- Species Selector -->
       <div class="control-row horizontal align-inputs">
         <label for="species-select" class="label-inline text-right">Species</label>
@@ -352,7 +358,7 @@ watch(
           v-model="selectedSpecies"
           :items="species"
           density="compact"
-          @update:model-value="updateSelection"
+          @update:model-value="debouncedUpdateSpecies"
           class="inline-select species-select"
           item-class="species-item"
           clearable
@@ -508,7 +514,7 @@ label {
 .text-right {
   text-align: right;
   margin-right: 0;
-  padding-right: 1em; 
+  padding-right: 1em;
 }
 
 /* Input with hint on same line */
