@@ -20,9 +20,9 @@ const selectedParams = ref({
 });
 
 /*******************************
- * 
+ *
  * Site List
- * 
+ *
 ********************************/
 const sitesList = useAllSites();
 sitesList.fetchAllSites();
@@ -30,14 +30,14 @@ sitesList.fetchAllSites();
 /**
  * Computed property to transform site data for v-select component
  * Converts raw site objects into the format expected by Vuetify's v-select
- * 
+ *
  * Format: {title: "display text", value: "option value"}
  * Display shows: "site_prefix, site_name" (e.g., "ABC, Test Site")
  */
 const sites = computed(() => {
   // Return empty array if no data available
   if (!sitesList.data.value) return [];
-  
+
   // Transform each site into dropdown option format
   return sitesList.data.value.map(site => ({
     title: `${site.prefix}, ${site.name}`,  // Display format: "PREFIX, Name"
@@ -46,34 +46,34 @@ const sites = computed(() => {
 });
 
 /*******************************
- * 
+ *
  * Models List
- * 
+ *
 ********************************/
 
 const modelList = useAllModels();
 modelList.fetchAllModels();
 
 /*******************************
- * 
+ *
  * Years List
- * 
+ *
 ********************************/
 const yearsList = useRecordYears();
 yearsList.fetchYears();
 
 /*******************************
- * 
+ *
  * Species list
- * 
+ *
 ********************************/
 const speciesLabelsSearch = useLabelsSearch();
 
 // Watch for changes in selections to trigger species search
 watch(
   () => [
-    selectedParams.value.model, 
-    selectedParams.value.sites, 
+    selectedParams.value.model,
+    selectedParams.value.sites,
     selectedParams.value.year,
     selectedParams.value.threshold
   ],
@@ -90,12 +90,12 @@ watch(
 
     // Only search for species when all required parameters are available
     if (model && sites && Array.isArray(sites) && sites.length > 0 && year) {
-      console.log("Searching for species with:", 
-        "Model:", model.value, 
-        "Site:", sites[0].value, 
+      console.log("Searching for species with:",
+        "Model:", model.value,
+        "Site:", sites[0].value,
         "Year:", year,
         "Threshold:", threshold);
-      
+
       // Add a small delay to ensure all reactive updates have completed
       setTimeout(() => {
         // Use the first selected site for now (could be enhanced to handle multiple sites)
@@ -134,7 +134,7 @@ const formattedSpecies = computed(() => {
       title: message,
       value: null,
       disabled: true,
-      isPlaceholder: true 
+      isPlaceholder: true
     }];
   }
   // For empty arrays, show a different message
@@ -150,9 +150,9 @@ const formattedSpecies = computed(() => {
   // Process the data - use a try/catch to prevent errors
   try {
     // Convert to array if necessary
-    const processedSpecies = Array.isArray(speciesData) ? 
+    const processedSpecies = Array.isArray(speciesData) ?
       speciesData : Array.from(speciesData);
-    
+
     return processedSpecies.map(species => ({
       title: species.name,
       value: species.id,
@@ -171,9 +171,9 @@ const formattedSpecies = computed(() => {
 });
 
 /***********************************************
- * 
+ *
  * Handle selection updates from PageControls
- * 
+ *
  ***********************************************/
 const handleSelectionUpdate = (selection) => {
   //  console.log('Selected model:', selection.model);
@@ -193,9 +193,9 @@ const handleSelectionUpdate = (selection) => {
 // al parameters selected -> show app
 const allParametersSelected = computed(() => {
   return !!(
-    selectedParams.value.model && 
-    selectedParams.value.sites && 
-    selectedParams.value.sites.length > 0 && 
+    selectedParams.value.model &&
+    selectedParams.value.sites &&
+    selectedParams.value.sites.length > 0 &&
     selectedParams.value.year &&
     selectedParams.value.species &&
     selectedParams.value.threshold !== undefined
@@ -211,30 +211,31 @@ const dashboardAppUrl = computed(() => {
   }
 
   const params = new URLSearchParams();
-  
+
   try {
     // Add model parameter if available
     if (selectedParams.value.model) {
       params.append('model', selectedParams.value.model.value);
       params.append('modelName', selectedParams.value.model.title);
     }
-    
+
     // Add sites parameter if available
     if (selectedParams.value.sites && selectedParams.value.sites.length > 0) {
-      const siteIds = selectedParams.value.sites.map(site => site.value).join(',');
-      params.append('sites', siteIds);
-      
-      // Also add site titles for display in the dashboard
-      const siteTitles = selectedParams.value.sites.map(site => site.title).join('|');
-      params.append('siteTitles', encodeURIComponent(siteTitles));
-      // console.log("Site titles added:", siteTitles);
+      // Add lat, lon, id, and name for the first site
+      const firstSite = sitesList.data.value.find(site => site.id === selectedParams.value.sites[0].value);
+      if (firstSite) {
+        params.append('lat', firstSite.lat?.toString() || '');
+        params.append('lon', firstSite.lon?.toString() || '');
+        params.append('siteId', firstSite.id); // Add site ID
+        params.append('siteName', encodeURIComponent(firstSite.name)); // Add site name
+      }
     }
-    
+
     // Add year parameter if available
     if (selectedParams.value.year) {
       params.append('year', selectedParams.value.year);
     }
-    
+
     // Add species parameter if available
     if (selectedParams.value.species) {
       const speciesId = selectedParams.value.species;
@@ -242,10 +243,10 @@ const dashboardAppUrl = computed(() => {
 
       // Find the species name from formattedSpecies
       const speciesItems = formattedSpecies.value;
-      const selectedSpecies = speciesItems.find(item => 
+      const selectedSpecies = speciesItems.find(item =>
         item.value === speciesId && !item.isPlaceholder
       );
-      
+
       // Add the species name if found
       if (selectedSpecies && selectedSpecies.title) {
         params.append('speciesName', encodeURIComponent(selectedSpecies.title));
@@ -259,7 +260,7 @@ const dashboardAppUrl = computed(() => {
         }
       }
     }
-    
+
     // Add threshold parameter with default
     if (selectedParams.value.threshold !== undefined) {
       params.append('threshold', selectedParams.value.threshold.toString());

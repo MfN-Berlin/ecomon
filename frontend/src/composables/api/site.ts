@@ -41,7 +41,7 @@ export const useSiteGetFirstAndLastRecordDate = useCreateGet(
 export const useAllSites = () => {
   const pending = ref(false);
   const error = ref(null);
-  const data = ref<{ id: string; name: string }[]>([]);
+  const data = ref<{ id: string; name: string; prefix: string; lat: number | null; lon: number | null }[]>([]);
 
   /**
    * Fetch all sites with id and name.
@@ -65,13 +65,23 @@ export const useAllSites = () => {
                 id
                 name
                 prefix
+                location {
+                  lat
+                  long
+                }
               }
             }
           `,
         }
       });
 
-      const sites = result.data?.sites ?? [];
+      const sites = result.data?.sites.map((site: any) => ({
+        id: site.id,
+        name: site.name,
+        prefix: site.prefix,
+        lat: site.location?.lat ?? null,
+        lon: site.location?.long ?? null,
+      })) ?? [];
       data.value = sites;
 
     } catch (err) {
