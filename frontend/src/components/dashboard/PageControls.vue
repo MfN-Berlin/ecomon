@@ -49,6 +49,12 @@ const placeholderMessage = computed(() => {
   }
   return '';
 });
+const speciesCountMessage = computed(() => {
+  if (!hasOnlyPlaceholder.value && props.availableSpecies.length > 0) {
+    return `${props.availableSpecies.length} species found`;
+  }
+  return null; // No message if no species are found or placeholder applies
+});
 
 /***************
  *
@@ -365,9 +371,12 @@ watch(
           :disabled="hasOnlyPlaceholder"
           hide-details
         ></v-select>
-        <!-- Custom message element that's always fully visible -->
+        <!-- Display the appropriate message -->
         <div v-if="hasOnlyPlaceholder" class="custom-message">
           {{ placeholderMessage }}
+        </div>
+        <div v-else-if="speciesCountMessage" class="custom-message">
+          {{ speciesCountMessage }}
         </div>
       </div>
     </v-card-text>
