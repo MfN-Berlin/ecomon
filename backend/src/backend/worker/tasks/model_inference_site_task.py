@@ -56,6 +56,9 @@ def model_inference_site_task(
     host_input_paths_file = os.path.join(
         settings.host_tmp_dir, job_id, "inputPaths.txt"
     )
+    
+    # workerId will be passed to the name of the Docker container where the model runs.
+    workerId = job_id
 
     try:
         # get model string
@@ -178,6 +181,7 @@ def model_inference_site_task(
                     if settings.use_gpu.lower() != "none"
                     else []
                 ),  # gpu
+                f"-w {workerId}",
                 "-on output",
             ]
 
