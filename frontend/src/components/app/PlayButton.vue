@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { debounce } from 'lodash-es';
 import { files } from "eslint-plugin-prettier/recommended";
 
 const props = defineProps<{
@@ -8,12 +9,19 @@ const isPlaying = computed(() => audioPlayerStore.playing && audioPlayerStore.ge
 const isLoading = computed(() => audioPlayerStore.seeking && audioPlayerStore.getSrc() === props.src);
 const audioPlayerStore = useAudioPlayerStore();
 
-function play() {
+const debouncedPlay = debounce(() => {
   if (isPlaying.value) {
     audioPlayerStore.close();
   } else {
-    audioPlayerStore.play(props.src);
+    const test = "http://localhost:3000/ecomon_next/audio/test.flac";
+    audioPlayerStore.play(test);
+    // audioPlayerStore.play(props.src);
   }
+}, 300); // 300ms debounce
+
+
+function play() {
+  debouncedPlay();
 }
 </script>
 
