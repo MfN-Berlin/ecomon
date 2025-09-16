@@ -224,10 +224,11 @@ const dashboardAppUrl = computed(() => {
       // Add lat, lon, id, and name for the first site
       const firstSite = sitesList.data.value.find(site => site.id === selectedParams.value.sites[0].value);
       if (firstSite) {
+        const full_site_name = encodeURIComponent(`${firstSite.prefix}, ${firstSite.name}`);
         params.append('lat', firstSite.lat?.toString() || '');
         params.append('lon', firstSite.lon?.toString() || '');
-        params.append('siteId', firstSite.id); // Add site ID
-        params.append('siteName', encodeURIComponent(firstSite.name)); // Add site name
+        params.append('siteId', firstSite.id);
+        params.append('siteName', full_site_name);
       }
     }
 
