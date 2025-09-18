@@ -104,7 +104,8 @@ services:
     ports:
       - "7432:5432"
     volumes:
-      - ecomon_data:/var/lib/postgresql/data
+#      - ecomon_data:/var/lib/postgresql/data
+      - ${PGDATA_PATH}:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     networks:
       - ecomon
@@ -173,7 +174,7 @@ services:
 #    user: "${UID}:${GID}
 
 volumes:
-  ecomon_data:
+#  ecomon_data:
   redis_data:
 
 
