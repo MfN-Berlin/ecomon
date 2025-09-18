@@ -207,7 +207,7 @@ const dashboardAppUrl = computed(() => {
   // Make sure selectedParams exists before accessing its properties
   if (!selectedParams || !selectedParams.value) {
     console.error("selectedParams is undefined");
-    return "http://localhost:9090/"; // Return base URL without parameters
+    return "http://localhost:3838/dashboard"; // Return base URL without parameters
   }
 
   const params = new URLSearchParams();
@@ -270,11 +270,11 @@ const dashboardAppUrl = computed(() => {
     }
   } catch (e) {
     console.error("Error generating dashboard URL:", e);
-    return "http://localhost:9090/"; // Return base URL in case of errors
+    return "http://localhost:3838/dashboard"; // Return base URL in case of errors
   }
 
   // Return the base URL with query parameters
-  return `http://localhost:9090/?${params.toString()}`;
+  return `http://localhost:3838/dashboard?${params.toString()}`;
 });
 
 watch(

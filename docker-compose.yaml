@@ -94,6 +94,16 @@ services:
       - ecomon
     volumes:
       - redis_data:/data
+#  dashboard:
+#    image: ghcr.io/mfn-berlin/akwamo-webservice-next-dashboard:latest
+#    ports:
+#      - "3838:3838"
+#    environment:
+#      - HASURA_ADMIN_SECRET=${HASURA_ADMIN_SECRET}
+#      - HASURA_URL=${HASURA_URL}
+#    restart: unless-stopped
+#    user: "${UID}:${GID}"
+
 volumes:
   ecomon_data:
   redis_data:
