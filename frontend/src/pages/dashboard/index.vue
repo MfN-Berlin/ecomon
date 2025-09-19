@@ -274,7 +274,7 @@ const dashboardAppUrl = computed(() => {
   }
 
   // Return the base URL with query parameters
-  return `https://129.70.51.241/ecomon_next/dashboard?${params.toString()}`;
+  return `https://129.70.51.241/ecomon_next/dashboard/?${params.toString()}`;
 });
 
 watch(
