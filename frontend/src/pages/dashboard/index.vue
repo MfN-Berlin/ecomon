@@ -207,7 +207,7 @@ const dashboardAppUrl = computed(() => {
   // Make sure selectedParams exists before accessing its properties
   if (!selectedParams || !selectedParams.value) {
     console.error("selectedParams is undefined");
-    return "/ecomon_next/dashboard"; // Return base URL without parameters
+    return "https://129.70.51.241/ecomon_next/dashboard/"; // Return base URL without parameters
   }
 
   const params = new URLSearchParams();
@@ -270,11 +270,11 @@ const dashboardAppUrl = computed(() => {
     }
   } catch (e) {
     console.error("Error generating dashboard URL:", e);
-    return "/ecomon_next/dashboard"; // Return base URL in case of errors
+    return "https://129.70.51.241/ecomon_next/dashboard/"; // Return base URL in case of errors
   }
 
   // Return the base URL with query parameters
-  return `/ecomon_next/dashboard?${params.toString()}`;
+  return `https://129.70.51.241/ecomon_next/dashboard?${params.toString()}`;
 });
 
 watch(
