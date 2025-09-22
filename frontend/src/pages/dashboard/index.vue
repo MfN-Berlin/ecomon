@@ -19,6 +19,8 @@ const selectedParams = ref({
   threshold: 0.5
 });
 
+const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL;
+
 /*******************************
  *
  * Site List
@@ -176,12 +178,6 @@ const formattedSpecies = computed(() => {
  *
  ***********************************************/
 const handleSelectionUpdate = (selection) => {
-  //  console.log('Selected model:', selection.model);
-  //  console.log('Selected sites:', selection.sites);
-  //  console.log('Selected year:', selection.year);
-  //  console.log('Selected species:', selection.species);
-  //  console.log('Selected threshold:', selection.threshold);
-
   // Safely update each property individually
   if ('model' in selection) selectedParams.value.model = selection.model;
   if ('sites' in selection) selectedParams.value.sites = selection.sites;
@@ -207,7 +203,7 @@ const dashboardAppUrl = computed(() => {
   // Make sure selectedParams exists before accessing its properties
   if (!selectedParams || !selectedParams.value) {
     console.error("selectedParams is undefined");
-    return "https://129.70.51.241/ecomon_next/dashboard/"; // Return base URL without parameters
+    return DASHBOARD_URL; // Return base URL without parameters
   }
 
   const params = new URLSearchParams();
@@ -216,7 +212,6 @@ const dashboardAppUrl = computed(() => {
     // Add model parameter if available
     if (selectedParams.value.model) {
       params.append('model', selectedParams.value.model.value);
-      params.append('modelName', selectedParams.value.model.title);
     }
 
     // Add sites parameter if available
@@ -224,11 +219,7 @@ const dashboardAppUrl = computed(() => {
       // Add lat, lon, id, and name for the first site
       const firstSite = sitesList.data.value.find(site => site.id === selectedParams.value.sites[0].value);
       if (firstSite) {
-        const full_site_name = encodeURIComponent(`${firstSite.prefix}, ${firstSite.name}`);
-        params.append('lat', firstSite.lat?.toString() || '');
-        params.append('lon', firstSite.lon?.toString() || '');
         params.append('siteId', firstSite.id);
-        params.append('siteName', full_site_name);
       }
     }
 
@@ -247,19 +238,6 @@ const dashboardAppUrl = computed(() => {
       const selectedSpecies = speciesItems.find(item =>
         item.value === speciesId && !item.isPlaceholder
       );
-
-      // Add the species name if found
-      if (selectedSpecies && selectedSpecies.title) {
-        params.append('speciesName', encodeURIComponent(selectedSpecies.title));
-        console.log(`Added species name: ${selectedSpecies.title} for ID: ${speciesId}`);
-      } else {
-        // Try to find the species directly from the raw data
-        const rawSpecies = speciesLabelsSearch.data?.value?.labels?.find(s => s.id === speciesId);
-        if (rawSpecies && rawSpecies.name) {
-          params.append('speciesName', encodeURIComponent(rawSpecies.name));
-          console.log(`Added species name from raw data: ${rawSpecies.name}`);
-        }
-      }
     }
 
     // Add threshold parameter with default
@@ -270,11 +248,11 @@ const dashboardAppUrl = computed(() => {
     }
   } catch (e) {
     console.error("Error generating dashboard URL:", e);
-    return "https://129.70.51.241/ecomon_next/dashboard/"; // Return base URL in case of errors
+    return DASHBOARD_URL; // Return base URL in case of errors
   }
 
   // Return the base URL with query parameters
-  return `https://129.70.51.241/ecomon_next/dashboard/?${params.toString()}`;
+  return `${DASHBOARD_URL}?${params.toString()}`;
 });
 
 watch(

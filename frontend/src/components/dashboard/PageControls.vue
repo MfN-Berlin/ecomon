@@ -257,7 +257,6 @@ const species = computed(() => {
     }
   }
 
-  console.log("Final filteredSpecies:", filteredSpecies);
   return filteredSpecies;
 });
 
