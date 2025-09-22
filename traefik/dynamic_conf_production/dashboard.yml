@@ -1,0 +1,26 @@
+http:
+  routers:
+    shiny:
+      entryPoints:
+        - web
+      rule: Host(`{{env "DOMAIN"}}`) && PathPrefix(`{{env "SUB_PATH"}}/dashboard`)
+      service: shiny
+      middlewares:
+        - shiny-strip
+        - remove-auth-headers
+
+  services:
+    shiny:
+      loadBalancer:
+        servers:
+          - url: http://dashboard:3838/dashboard/
+
+  middlewares:
+    shiny-strip:
+      stripPrefix:
+        prefixes:
+          - {{env "SUB_PATH"}}  # remove the global sub_path before passing to service
+    remove-auth-headers:
+      headers:
+        customRequestHeaders:
+          Authorization: ""
