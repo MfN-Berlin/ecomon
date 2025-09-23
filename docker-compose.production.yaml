@@ -172,6 +172,8 @@ services:
       - HASURA_URL=${HASURA_URL}
     restart: unless-stopped
 #    user: "${UID}:${GID}
+    networks:
+      - traefik-ingress
 
 volumes:
 #  ecomon_data:
