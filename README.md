@@ -15,7 +15,8 @@ This platform to analyze the audio monitoring data project.
 
 - **[Node.js](https://nodejs.org/)**: A JavaScript runtime built on Chrome's V8 JavaScript engine.
 - **[Nuxt.js](https://nuxtjs.org/)**: A framework for creating Vue.js applications, with a focus on server-side rendering and static site generation.
-- **[Vuetify](https://vuetifyjs.com/)**: A Vue UI Library with beautifully handcrafted Material Components.
+- **[Vuetify](https://vuetifyjs.com/)**: A Vue UI library
+- **[Shiny](https://shiny.posit.co/)**: A data science library, used for plotting.
 
 3. Infrastructure
 
