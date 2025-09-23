@@ -42,7 +42,7 @@ export default defineNuxtConfig({
         }
       },
       // default value, can be overridden in .env file
-      dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3838/dashboard/'
+      dashboardUrl: process.env.NUXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3838/dashboard/'
     }
   },
 

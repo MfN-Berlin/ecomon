@@ -38,6 +38,7 @@ services:
       - NUXT_PUBLIC_GQL_HOST="${PROTOCOL}://${DOMAIN}${SUB_PATH}/api/v1/graphql"
       - NUXT_PUBLIC_API_BASE_URL=${SUB_PATH}
       - NUXT_PUBLIC_GRAPHQL_CLIENT_CLIENTS_DEFAULT_HOST="${PROTOCOL}://${DOMAIN}${SUB_PATH}/api/v1/graphql"
+      - NUXT_PUBLIC_DASHBOARD_URL="${PROTOCOL}://${DOMAIN}${SUB_PATH}/dashboard/"
 
   api:
     build:
