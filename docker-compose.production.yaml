@@ -168,7 +168,7 @@ services:
     ports:
       - "3838:3838"
     environment:
-      - HASURA_ADMIN_SECRET=${HASURA_ADMIN_SECRET}
+      - HASURA_SECRET=${HASURA_ADMIN_SECRET}
       - HASURA_URL=${HASURA_URL}
     restart: unless-stopped
 #    user: "${UID}:${GID}
