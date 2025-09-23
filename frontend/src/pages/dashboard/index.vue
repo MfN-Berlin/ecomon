@@ -19,7 +19,7 @@ const selectedParams = ref({
   threshold: 0.5
 });
 
-// set in .env, read in nuxt.config.ts
+// set in docker compose, read in nuxt.config.ts (or default to http://localhost:3838/dashboard/)
 const DASHBOARD_URL = config.public.dashboardUrl;
 
 /*******************************
