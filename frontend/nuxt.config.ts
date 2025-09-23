@@ -40,7 +40,9 @@ export default defineNuxtConfig({
             host: "http://localhost:8080/v1/graphql"
           }
         }
-      }
+      },
+      // default value, can be overridden in .env file
+      dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3838/dashboard/'
     }
   },
 

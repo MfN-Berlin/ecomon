@@ -19,7 +19,8 @@ const selectedParams = ref({
   threshold: 0.5
 });
 
-const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL;
+// set in .env, read in nuxt.config.ts
+const DASHBOARD_URL = config.public.dashboardUrl;
 
 /*******************************
  *
