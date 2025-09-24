@@ -38,6 +38,9 @@ services:
       - NUXT_PUBLIC_GQL_HOST="${PROTOCOL}://${DOMAIN}${SUB_PATH}/api/v1/graphql"
       - NUXT_PUBLIC_API_BASE_URL=${SUB_PATH}
       - NUXT_PUBLIC_GRAPHQL_CLIENT_CLIENTS_DEFAULT_HOST="${PROTOCOL}://${DOMAIN}${SUB_PATH}/api/v1/graphql"
+      - NUXT_PUBLIC_DASHBOARD_URL="${PROTOCOL}://${DOMAIN}${SUB_PATH}/dashboard/"
+    env_file:
+      - .env
 
   api:
     build:
@@ -63,6 +66,7 @@ services:
     volumes:
       - ${BASE_DATA_DIRECTORY}:/data
       - ${TMP_DIR}:/tmp
+
   worker:
     build:
       context: ./backend
@@ -102,11 +106,131 @@ services:
       POSTGRES_DATABASE: "${DB_NAME}"
     ports:
       - "7432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: ${POSTGRES_MEMORY_LIMIT}
+          cpus: ${POSTGRES_CPU_LIMIT}
+        reservations:
+          memory: ${POSTGRES_MEMORY_RESERVATION}
+          cpus: ${POSTGRES_CPU_RESERVATION}
+    command: >
+      postgres
+      -c shared_buffers=${POSTGRES_SHARED_BUFFERS}
+      -c effective_cache_size=${POSTGRES_EFFECTIVE_CACHE_SIZE}
+      -c maintenance_work_mem=${POSTGRES_MAINTENANCE_WORK_MEM}
+      -c work_mem=${POSTGRES_WORK_MEM}
+      -c checkpoint_completion_target=${POSTGRES_CHECKPOINT_COMPLETION_TARGET}
+      -c wal_buffers=${POSTGRES_WAL_BUFFERS}
+      -c default_statistics_target=${POSTGRES_DEFAULT_STATISTICS_TARGET}
+      -c random_page_cost=${POSTGRES_RANDOM_PAGE_COST}
+      -c effective_io_concurrency=${POSTGRES_EFFECTIVE_IO_CONCURRENCY}
+      -c min_wal_size=${POSTGRES_MIN_WAL_SIZE}
+      -c max_wal_size=${POSTGRES_MAX_WAL_SIZE}
+      -c max_worker_processes=${POSTGRES_MAX_WORKER_PROCESSES}
+      -c max_parallel_workers_per_gather=${POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER}
+      -c max_parallel_workers=${POSTGRES_MAX_PARALLEL_WORKERS}
+      -c max_parallel_maintenance_workers=${POSTGRES_MAX_PARALLEL_MAINTENANCE_WORKERS}
+      -c max_connections=${POSTGRES_MAX_CONNECTIONS}
+      -c huge_pages=${POSTGRES_HUGE_PAGES}
+      -c log_min_duration_statement=${POSTGRES_LOG_MIN_DURATION_STATEMENT}
     volumes:
-      - ecomon_data:/var/lib/postgresql/data
+      - ${PGDATA_PATH}:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    env_file:
+      - .env
     networks:
       - ecomon
+
+  graphql-engine:
+    image: hasura/graphql-engine:v2.38.0-ce
+    ports:
+      - "10080:8080"
+    deploy:
+      resources:
+        limits:
+          memory: ${HASURA_MEMORY_LIMIT}
+          cpus: ${HASURA_CPU_LIMIT}
+        reservations:
+          memory: ${HASURA_MEMORY_RESERVATION}
+          cpus: ${HASURA_CPU_RESERVATION}
+    restart: unless-stopped
+    environment:
+      # Database connections
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/hasura
+      PGDATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/ecomon
+
+      # Console and dev settings
+      HASURA_GRAPHQL_ENABLE_CONSOLE: ${HASURA_GRAPHQL_ENABLE_CONSOLE}
+      HASURA_GRAPHQL_READ_ONLY_MODE: ${HASURA_GRAPHQL_READ_ONLY_MODE}
+      HASURA_GRAPHQL_DEV_MODE: ${HASURA_GRAPHQL_DEV_MODE}
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: ${HASURA_GRAPHQL_ENABLED_LOG_TYPES}
+
+      # Security
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_ADMIN_SECRET}
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: ${HASURA_GRAPHQL_UNAUTHORIZED_ROLE}
+
+      # Performance tuning
+      HASURA_GRAPHQL_CONNECTIONS_PER_READ_REPLICA: ${HASURA_GRAPHQL_CONNECTIONS_PER_READ_REPLICA}
+      HASURA_GRAPHQL_STRIPES_PER_READ_REPLICA: ${HASURA_GRAPHQL_STRIPES_PER_READ_REPLICA}
+      HASURA_GRAPHQL_POOL_TIMEOUT: ${HASURA_GRAPHQL_POOL_TIMEOUT}
+      HASURA_GRAPHQL_CONNECTION_LIFETIME: ${HASURA_GRAPHQL_CONNECTION_LIFETIME}
+
+      # Live queries optimization
+      HASURA_GRAPHQL_LIVE_QUERIES_MULTIPLEXED_REFETCH_INTERVAL: ${HASURA_GRAPHQL_LIVE_QUERIES_MULTIPLEXED_REFETCH_INTERVAL}
+      HASURA_GRAPHQL_LIVE_QUERIES_MULTIPLEXED_BATCH_SIZE: ${HASURA_GRAPHQL_LIVE_QUERIES_MULTIPLEXED_BATCH_SIZE}
+
+      # Webhooks
+      HASURA_WEBHOOKS_BASE_URL: ${HASURA_WEBHOOKS_BASE_URL}
+      # HASURA_GRAPHQL_AUTH_HOOK: ${HASURA_WEBHOOKS_BASE_URL}/session
+      # HASURA_WEBHOOKS_API_KEY: ${HASURA_API_KEY}
+      # HASURA_GRAPHQL_AUTH_HOOK_SEND_REQUEST_BODY: ${HASURA_GRAPHQL_AUTH_HOOK_SEND_REQUEST_BODY}
+    depends_on:
+      - db
+    networks:
+      - ecomon
+      - traefik-ingress
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    deploy:
+      resources:
+        limits:
+          memory: ${REDIS_MEMORY_LIMIT}
+          cpus: ${REDIS_CPU_LIMIT}
+        reservations:
+          memory: ${REDIS_MEMORY_RESERVATION}
+          cpus: ${REDIS_CPU_RESERVATION}
+    command:
+      - redis-server
+      - --maxmemory
+      - ${REDIS_MAXMEMORY}
+      - --maxmemory-policy
+      - ${REDIS_MAXMEMORY_POLICY}
+      - --save
+      - ${REDIS_SAVE_INTERVAL}
+      - ${REDIS_SAVE_CHANGES}
+      - --appendonly
+      - ${REDIS_APPENDONLY}
+      - --appendfsync
+      - ${REDIS_APPENDFSYNC}
+      - --tcp-keepalive
+      - ${REDIS_TCP_KEEPALIVE}
+      - --timeout
+      - ${REDIS_TIMEOUT}
+      - --tcp-backlog
+      - ${REDIS_TCP_BACKLOG}
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data  # Redis can use a Docker volume since it's smaller
+    networks:
+      - ecomon
+    env_file:
+      - .env
+
   db-migrate:
     build:
       context: ./hasura
@@ -124,45 +248,21 @@ services:
       - ecomon
     volumes:
       - ./hasura:/app
-  graphql-engine:
-    image: hasura/graphql-engine:v2.38.0-ce
-    # ports:
-    #   - "10080:8080"
-    restart: unless-stopped
+
+  dashboard:
+    image: ghcr.io/mfn-berlin/akwamo-webservice-next-dashboard:latest
+    ports:
+      - "3838:3838"
     environment:
-      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/hasura
-      PGDATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/ecomon
-      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
-      HASURA_GRAPHQL_READ_ONLY_MODE: "false"
-      HASURA_GRAPHQL_DEV_MODE: "true"
-      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
-      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_ADMIN_SECRET}
-      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "user" # Allow access without admin secret
-      HASURA_WEBHOOKS_BASE_URL: ${HASURA_WEBHOOKS_BASE_URL}
-      # HASURA_GRAPHQL_AUTH_HOOK: ${HASURA_WEBHOOKS_BASE_URL}/session
-      # HASURA_WEBHOOKS_API_KEY: ${HASURA_API_KEY}
-      # HASURA_GRAPHQL_AUTH_HOOK_SEND_REQUEST_BODY: ${HASURA_GRAPHQL_AUTH_HOOK_SEND_REQUEST_BODY}
-
-    depends_on:
-      - db
-
+      - HASURA_SECRET=${HASURA_ADMIN_SECRET}
+      - HASURA_URL=${HASURA_URL}
+    restart: unless-stopped
+    # user: "${UID}:${GID}
     networks:
-      - ecomon
       - traefik-ingress
 
-  redis:
-    image: redis:alpine
-    container_name: redis
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
-    # ports:
-    #   - "10379:6379"
-    networks:
-      - ecomon
-
 volumes:
-  ecomon_data:
+#  ecomon_data:
   redis_data:
 
 

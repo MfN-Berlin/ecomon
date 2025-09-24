@@ -1,0 +1,51 @@
+name: Build Docker images
+
+on:
+  push:
+    branches:
+      - '*'  # Trigger on push to any branch
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - name: api
+            dockerfile: ./backend/Dockerfile.api
+            context: ./backend
+          - name: worker
+            dockerfile: ./backend/Dockerfile.worker
+            context: ./backend
+          - name: frontend
+            dockerfile: ./frontend/Dockerfile
+            context: ./frontend
+          - name: hasura-migrate
+            dockerfile: ./hasura/Dockerfile.hasura-migrate
+            context: ./hasura
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare lowercase vars
+        run: |
+          echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image - ${{ matrix.name }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/ecomon-${{ matrix.name }}:latest
+            ghcr.io/${{ env.OWNER_LC }}/ecomon-${{ matrix.name }}:${{ github.sha }}

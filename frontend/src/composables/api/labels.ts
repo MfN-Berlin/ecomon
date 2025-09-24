@@ -88,23 +88,61 @@ export const useAllSpeciesLabels = () => {
   };
 };
 
-// Simple search composable for labels
-// search by label prefix
+// Simple search composable for labels based on model_id, site_id and confidence threshold
 export const useLabelsSearch = () => {
   const pending = ref(false);
   const error = ref(null);
   const data = ref(null);
-  
-  const searchLabels = async (searchTerm: string) => {
+  let pendingSearch = null;
+
+  /**
+   * Searches for distinct labels based on model_id, site_id and confidence threshold, and year
+   *
+   * @param modelId - The model ID to filter results by
+   * @param siteId - The site ID to filter records by
+   * @param confidence - The minimum confidence threshold (default 0.5)
+   * @param year - The year to filter records by (records where record_datetime is in this year)
+   */
+  const searchLabels = async (modelId: number, siteId: number, confidence: number = 0.5, year: number | string | null = null) => {
+    console.log(`searchLabels called with modelId=${modelId}, siteId=${siteId}, confidence=${confidence}, year=${year}`);
     pending.value = true;
     error.value = null;
-    
+
+    // Cancel any pending search
+    if (pendingSearch) {
+      pendingSearch.cancel();
+    }
+
+    // Create an AbortController for this search
+    const controller = new AbortController();
+    pendingSearch = {
+      controller,
+      cancel: () => controller.abort()
+    };
+
     try {
       const config = useRuntimeConfig();
-      const where = searchTerm 
-        ? { name: { _ilike: `${searchTerm}%` } }
-        : {};
-      
+
+      // Build where conditions
+      const whereConditions: any = {
+        model_id: {_eq: modelId},
+        confidence: {_gte: confidence},
+        record: {
+          site_id: {_eq: siteId}
+        }
+      };
+
+      // Add year filter if provided
+      if (year) {
+        whereConditions.record = {
+          ...whereConditions.record,
+          record_datetime: {
+            _gte: `${year}-01-01T00:00:00`,
+            _lt: `${parseInt(year.toString()) + 1}-01-01T00:00:00`
+          }
+        };
+      }
+
       const result = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
         headers: {
@@ -112,25 +150,175 @@ export const useLabelsSearch = () => {
         },
         body: {
           query: `
-            query getLabelsList($where: labels_bool_exp, $order_by: [labels_order_by!], $limit: Int) {
-              labels(where: $where, order_by: $order_by, limit: $limit) {
-                id
-                name
+            query getLabelsForModelSiteWithConfidenceAndYear(
+              $modelId: Int!,
+              $siteId: bigint!,
+              $confidence: Float!,
+              $yearStart: timestamp,
+              $yearEnd: timestamp
+            ) {
+              model_inference_results(
+                where: {
+                  model_id: {_eq: $modelId},
+                  confidence: {_gte: $confidence},
+                  record: {
+                    site_id: {_eq: $siteId},
+                    record_datetime: {
+                      _gte: $yearStart,
+                      _lt: $yearEnd
+                    }
+                  }
+                },
+                distinct_on: [label_id],
+                order_by: [
+                  {label_id: asc},
+                  {confidence: desc}
+                ]
+              ) {
+                label {
+                  id
+                  name
+                  english
+                  german
+                  class
+                  order
+                }
               }
             }
           `,
           variables: {
-            where,
-            order_by: { name: 'asc' },
-            limit: 50
+            modelId,
+            siteId,
+            confidence,
+            yearStart: year ? `${year}-01-01T00:00:00` : null,
+            yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
+          }
+        },
+        signal: controller.signal
+      });
+      console.log("Raw GraphQL result:", result);
+
+      // Extract the labels from the nested structure
+      const labels = (result.data?.model_inference_results || [])
+        .map(mir => mir.label)
+        .filter(label => label != null);
+
+      // Sort by name
+      labels.sort((a, b) => a.name.localeCompare(b.name));
+
+      data.value = { labels };
+    } catch (err) {
+      // Only update error if not aborted
+      if (err.name !== 'AbortError') {
+        error.value = err;
+        console.error('Error searching labels:', err);
+      }
+    } finally {
+      // Only update pending state if this is still the current search
+      if (pendingSearch && pendingSearch.controller === controller) {
+        pending.value = false;
+        pendingSearch = null;
+      }
+    }
+  };
+  return {
+    data,
+    pending,
+    error,
+    searchLabels,
+    pendingSearch
+  };
+};
+
+/**
+ * Fetch all unique species labels (id and name) for a list of site IDs, a model, a threshold, and a year.
+ * If any argument is missing/None/empty, returns an empty list.
+ * @param siteIds Array of site IDs to filter by.
+ * @param modelId The model_id to filter by.
+ * @param threshold The minimum confidence value to filter by.
+ * @param year The year to filter by (record_datetime must be in this year).
+ */
+export const useAllSpeciesLabelsForSites = () => {
+  const pending = ref(false);
+  const error = ref(null);
+  const data = ref<{ id: string; name: string }[]>([]);
+
+  const fetchAllSpeciesLabelsForSites = async (
+    siteIds: (string | number)[] | null | undefined,
+    modelId: number | string | null | undefined,
+    threshold: number | null | undefined = 0,
+    year: number | null | undefined = null
+  ) => {
+    console.log("fetchAllSpeciesLabelsForSites called");
+
+    // If any required argument is missing, return empty list
+    if (
+      !siteIds || !Array.isArray(siteIds) || siteIds.length === 0 ||
+      modelId == null || threshold == null || year == null
+    ) {
+      data.value = [];
+      return;
+    }
+
+    pending.value = true;
+    error.value = null;
+
+    try {
+      const config = useRuntimeConfig();
+
+      // Build the where clause for the query
+      const where: any = {
+        site_id: { _in: siteIds },
+        model_id: { _eq: modelId },
+        confidence: { _gte: threshold },
+        // Filter by year using a _gte and _lt range on record_datetime
+        record_datetime: {
+          _gte: `${year}-01-01T00:00:00`,
+          _lt: `${year + 1}-01-01T00:00:00`
+        }
+      };
+
+      const result = await $fetch(config.public.GQL_HOST, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: {
+          query: `
+            query getAllSpeciesLabelsForSites($where: model_inference_results_bool_exp!) {
+              model_inference_results(where: $where) {
+                label {
+                  id
+                  name
+                }
+              }
+            }
+          `,
+          variables: {
+            where
           }
         }
       });
-      
-      data.value = result.data;
+      console.log("Raw GraphQL result:", result);
+
+
+      // Extract unique label objects by id
+      const seen = new Set();
+      const uniqueLabels: { id: string; name: string }[] = [];
+      for (const mir of result.data?.model_inference_results ?? []) {
+        const label = mir.label;
+        if (label && label.id && !seen.has(label.id)) {
+          seen.add(label.id);
+          uniqueLabels.push({ id: label.id, name: label.name });
+        }
+      }
+      uniqueLabels.sort((a, b) => a.name.localeCompare(b.name));
+      data.value = uniqueLabels;
+
     } catch (err) {
       error.value = err;
-      console.error('Error searching labels:', err);
+      data.value = [];
+      console.error('Error fetching all species labels for sites:', err);
     } finally {
       pending.value = false;
     }
@@ -140,6 +328,6 @@ export const useLabelsSearch = () => {
     data,
     pending,
     error,
-    searchLabels
+    fetchAllSpeciesLabelsForSites
   };
 };
