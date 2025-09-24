@@ -94,10 +94,10 @@ export const useLabelsSearch = () => {
   const error = ref(null);
   const data = ref(null);
   let pendingSearch = null;
-  
+
   /**
    * Searches for distinct labels based on model_id, site_id and confidence threshold, and year
-   * 
+   *
    * @param modelId - The model ID to filter results by
    * @param siteId - The site ID to filter records by
    * @param confidence - The minimum confidence threshold (default 0.5)
@@ -112,17 +112,17 @@ export const useLabelsSearch = () => {
     if (pendingSearch) {
       pendingSearch.cancel();
     }
-    
+
     // Create an AbortController for this search
     const controller = new AbortController();
-    pendingSearch = { 
-      controller, 
-      cancel: () => controller.abort() 
+    pendingSearch = {
+      controller,
+      cancel: () => controller.abort()
     };
-    
+
     try {
       const config = useRuntimeConfig();
-      
+
       // Build where conditions
       const whereConditions: any = {
         model_id: {_eq: modelId},
@@ -131,7 +131,7 @@ export const useLabelsSearch = () => {
           site_id: {_eq: siteId}
         }
       };
-      
+
       // Add year filter if provided
       if (year) {
         whereConditions.record = {
@@ -142,7 +142,7 @@ export const useLabelsSearch = () => {
           }
         };
       }
-      
+
       const result = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
         headers: {
@@ -151,8 +151,8 @@ export const useLabelsSearch = () => {
         body: {
           query: `
             query getLabelsForModelSiteWithConfidenceAndYear(
-              $modelId: Int!, 
-              $siteId: bigint!, 
+              $modelId: Int!,
+              $siteId: bigint!,
               $confidence: Float!,
               $yearStart: timestamp,
               $yearEnd: timestamp
@@ -169,7 +169,11 @@ export const useLabelsSearch = () => {
                     }
                   }
                 },
-                distinct_on: [label_id]
+                distinct_on: [label_id],
+                order_by: [
+                  {label_id: asc},
+                  {confidence: desc}
+                ]
               ) {
                 label {
                   id
@@ -193,15 +197,15 @@ export const useLabelsSearch = () => {
         signal: controller.signal
       });
       console.log("Raw GraphQL result:", result);
-      
+
       // Extract the labels from the nested structure
       const labels = (result.data?.model_inference_results || [])
         .map(mir => mir.label)
         .filter(label => label != null);
-      
+
       // Sort by name
       labels.sort((a, b) => a.name.localeCompare(b.name));
-      
+
       data.value = { labels };
     } catch (err) {
       // Only update error if not aborted
@@ -327,4 +331,3 @@ export const useAllSpeciesLabelsForSites = () => {
     fetchAllSpeciesLabelsForSites
   };
 };
-
