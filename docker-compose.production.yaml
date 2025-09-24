@@ -26,9 +26,10 @@ services:
       - SUB_PATH=${SUB_PATH}
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-frontend:latest
+    # build:
+    #   context: ./frontend
+    #   dockerfile: Dockerfile
     restart: unless-stopped
     # ports:
     #   - "10300:3000"
@@ -43,9 +44,10 @@ services:
       - .env
 
   api:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.api
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-api:latest
+    # build:
+    #  context: ./backend
+    #  dockerfile: Dockerfile.api
     restart: unless-stopped
     # ports:
     #   - "10800:80"
@@ -68,9 +70,10 @@ services:
       - ${TMP_DIR}:/tmp
 
   worker:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.worker
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-worker:latest
+    # build:
+    #  context: ./backend
+    #  dockerfile: Dockerfile.worker
     restart: unless-stopped
     networks:
       - ecomon
@@ -232,9 +235,10 @@ services:
       - .env
 
   db-migrate:
-    build:
-      context: ./hasura
-      dockerfile: Dockerfile.hasura-migrate
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-hasura-migrate:latest
+    # build:
+    #  context: ./hasura
+    #  dockerfile: Dockerfile.hasura-migrate
     depends_on:
       - db
       - graphql-engine

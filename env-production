@@ -14,6 +14,8 @@ BASE_DATA_DIRECTORY=/mnt/akwamodata
 REDIS_HOST=redis
 REDIS_PORT=6379
 
+GITHUB_REPOSITORY_OWNER=mfn
+
 #traefik
 DOMAIN=localhost
 SUB_PATH=/ecomon_next
