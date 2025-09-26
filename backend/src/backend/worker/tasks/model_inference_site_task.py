@@ -56,7 +56,7 @@ def model_inference_site_task(
     host_input_paths_file = os.path.join(
         settings.host_tmp_dir, job_id, "inputPaths.txt"
     )
-    
+
     # workerId will be passed to the name of the Docker container where the model runs.
     workerId = job_id
 
@@ -203,33 +203,34 @@ def model_inference_site_task(
 
             # read the output.pkl file and add the results to the database
             df = pandas.read_pickle(os.path.join(job_temp_dir, "output.pkl"))
+            # if confidence is 0 or below confidence resolution
+            df = df[df["confidence"] >= 0.01]
+
+            # Prepare ModelInferenceResults objects
+            results = []
             for _, row in df.iterrows():
                 confidence = row["confidence"]
-                # if confidence is 0 or below confidence resolution (0.0001)
-                if confidence < 0.01:
-                    logger.warning(
-                        f"Skipping record {row['filename']} with confidence {confidence}"
-                    )
-                    continue
-                session.add(
-                    ModelInferenceResults(
-                        record_id=record_name_to_id[row["filename"]],
-                        model_id=model_id,
-                        start_time=row["start_time"],
-                        end_time=row["end_time"],
-                        confidence=row["confidence"],
-                        label_id=row["label_id"],
-                    )
-                )
+                results.append(ModelInferenceResults(
+                    record_id=record_name_to_id[row["filename"]],
+                    model_id=model_id,
+                    start_time=row["start_time"],
+                    end_time=row["end_time"],
+                    confidence=row["confidence"],
+                    label_id=row["label_id"],
+                ))
+            session.bulk_save_objects(results)
+
+            # Prepare ModelInferenceLogs objects
             unique_filenames = df["filename"].unique()
-            for filename in unique_filenames:
-                session.add(
-                    ModelInferenceLogs(
-                        model_id=model_id,
-                        record_id=record_name_to_id[filename],
-                        analyzed=True,
-                    )
+            logs = [
+                ModelInferenceLogs(
+                    model_id=model_id,
+                    record_id=record_name_to_id[filename],
+                    analyzed=True,
                 )
+                for filename in unique_filenames
+            ]
+            session.bulk_save_objects(logs)
             session.commit()
             session.close()
             db_session.remove()

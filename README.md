@@ -61,9 +61,10 @@ For local Development you need docker, nodejs, poetry, python3.10 installed on y
 8. Change directory to frontend and install dependencies with `npm install`
 9. copy env-default to .env and change the variables to your own
 10. Run the frontend with `npm start`
-11. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql
+11. Run the dashboard by checking out https://github.com/MfN-Berlin/ecomon-dashboard and starting it with docker-compose from inside its repo.
+12. Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql
     endpoint
-12. If you want to do changes on Hasura Metadata or DatabaseSchema you can start `hasura console` in the hasura folder to oben the console in live editing mode
+13. If you want to do changes on Hasura Metadata or DatabaseSchema you can start `hasura console` in the hasura folder to open the console in live editing mode
 
 ### Production
 
