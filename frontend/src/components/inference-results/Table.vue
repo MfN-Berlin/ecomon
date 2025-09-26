@@ -1,3 +1,10 @@
+/**
+  * Table displaying model inference results for a given record.
+  * Includes filtering by model, species, and confidence threshold.
+  * Allows downloading filtered results as CSV.
+  * See pages/records/[id].vue
+  * See: composables/api/modelInfrenceResults.ts
+ */
 <script setup lang="ts">
 import type { ModelInferenceResult } from "#gql/default";
 import { useAllSpeciesLabels } from "@/composables/api/labels";
@@ -79,21 +86,22 @@ watch([speciesOptions, filterSpecies], ([options, selected]) => {
   }
 });
 /************************
- * 
+ *
  * Data Table Logic
- * 
+ *
  ************************/
 
 const baseSearch = computed(() => {
   const search: any = {
     record_id: { _eq: props.recordId },
-    confidence: { _gte: debouncedFilterConfidence.value }
+    confidence: { _gte: debouncedFilterConfidence.value },
+    end_time: { _lte: 60 }  // Only include results with end_time <= 60 seconds
   };
-  
+
   if (selectedModel.value != null) {  // careful not to check for 0, as 0 is a valid model id
     search.model_id = { _eq: selectedModel.value };
   }
-  
+
   if (filterSpecies.value) {
     search.label_id = {  _eq: filterSpecies.value };
   }
@@ -141,9 +149,9 @@ const itemsPerPageOptions = [
 ];
 
 /************************************
- * 
+ *
  * Download Inference Results Logic
- * 
+ *
  ***********************************/
 
 const inferenceResults = ref<ModelInferenceResult[]>([]);
@@ -154,7 +162,7 @@ watch(items, (newItems) => {
 }, { immediate: true });
 
 const downloadableResults = computed(() => {
-  return inferenceResults.value.filter(result => 
+  return inferenceResults.value.filter(result =>
     result.confidence >= filterConfidence.value
   );
 });
@@ -167,7 +175,7 @@ function downloadInferenceCsv() {
   }
 
   const csvHeaders = [
-    'ID', 'Start Time', 'End Time', 'Model ID', 'Model Name', 
+    'ID', 'Start Time', 'End Time', 'Model ID', 'Model Name',
     'Label Name', 'Confidence', 'Record ID'
   ];
 
@@ -179,7 +187,7 @@ function downloadInferenceCsv() {
 
   const csvContent = [
     csvHeaders.join(','),
-    ...csvRows.map(row => row.map(field => 
+    ...csvRows.map(row => row.map(field =>
       typeof field === 'string' && field.includes(',') ? `"${field}"` : field
     ).join(','))
   ].join('\n');
@@ -187,11 +195,11 @@ function downloadInferenceCsv() {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
-  
+
   link.setAttribute('href', url);
   link.setAttribute('download', `inference_results_record_${props.recordId}_confidence_${filterConfidence.value}.csv`);
   link.style.visibility = 'hidden';
-  
+
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -268,7 +276,7 @@ function downloadInferenceCsv() {
 
       <!-- Spacer to push pagination to the right -->
       <v-spacer />
-      
+
       <!-- Top Pagination Controls -->
       <v-col cols="auto">
         <div class="d-flex align-center">
@@ -282,12 +290,12 @@ function downloadInferenceCsv() {
             style="min-width: 100px;"
             hide-details
           />
-          
+
           <!-- Page navigation -->
           <span class="text-caption mx-3">
             {{ itemsPerPage === 1000000 ? `1-${totalItems} of ${totalItems}` : `${((page - 1) * itemsPerPage) + 1}-${Math.min(page * itemsPerPage, totalItems)} of ${totalItems}` }}
           </span>
-          
+
           <v-btn
             icon="mdi-chevron-left"
             variant="text"
