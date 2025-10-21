@@ -26,6 +26,7 @@ services:
 
   db:
     image: postgres:16
+    shm_size: ${POSTGRES_SHM_SIZE}
     restart: always
     environment:
       POSTGRES_DB: ecomon

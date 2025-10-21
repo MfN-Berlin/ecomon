@@ -113,6 +113,7 @@ def model_inference_site_task(
             }
 
         while total_count > file_counter:
+            session.autoflush = False
             if self.check_revoked():
                 time.sleep(1)
                 # Wait for 1 second to ensure the task is revoked
@@ -209,28 +210,30 @@ def model_inference_site_task(
             # Prepare ModelInferenceResults objects
             results = []
             for _, row in df.iterrows():
-                confidence = row["confidence"]
-                results.append(ModelInferenceResults(
-                    record_id=record_name_to_id[row["filename"]],
-                    model_id=model_id,
-                    start_time=row["start_time"],
-                    end_time=row["end_time"],
-                    confidence=row["confidence"],
-                    label_id=row["label_id"],
-                ))
-            session.bulk_save_objects(results)
+                results.append({
+                    "record_id": record_name_to_id[row["filename"]],
+                    "model_id": model_id,
+                    "start_time": row["start_time"],
+                    "end_time": row["end_time"],
+                    "confidence": row["confidence"],
+                    "label_id": row["label_id"],
+                })
+            # Bulk insert results using mappings (faster than bulk_save_objects)
+            if results:
+                session.bulk_insert_mappings(ModelInferenceResults, results)
 
             # Prepare ModelInferenceLogs objects
             unique_filenames = df["filename"].unique()
             logs = [
-                ModelInferenceLogs(
-                    model_id=model_id,
-                    record_id=record_name_to_id[filename],
-                    analyzed=True,
-                )
+                {
+                    "model_id": model_id,
+                    "record_id": record_name_to_id[filename],
+                    "analyzed": True,
+                }
                 for filename in unique_filenames
             ]
-            session.bulk_save_objects(logs)
+            if logs:
+                session.bulk_insert_mappings(ModelInferenceLogs, logs)
             session.commit()
             session.close()
             db_session.remove()
