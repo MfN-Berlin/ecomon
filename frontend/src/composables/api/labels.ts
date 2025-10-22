@@ -88,7 +88,7 @@ export const useAllSpeciesLabels = () => {
   };
 };
 
-// Simple search composable for labels based on model_id, site_id and confidence threshold
+// Simple search composable for labels based on model_id, site_id and year
 export const useLabelsSearch = () => {
   const pending = ref(false);
   const error = ref(null);
@@ -96,15 +96,14 @@ export const useLabelsSearch = () => {
   let pendingSearch = null;
 
   /**
-   * Searches for distinct labels based on model_id, site_id and confidence threshold, and year
+   * Searches for distinct labels based on model_id, site_id and year
    *
    * @param modelId - The model ID to filter results by
    * @param siteId - The site ID to filter records by
-   * @param confidence - The minimum confidence threshold (default 0.5)
    * @param year - The year to filter records by (records where record_datetime is in this year)
    */
-  const searchLabels = async (modelId: number, siteId: number, confidence: number = 0.5, year: number | string | null = null) => {
-    console.log(`searchLabels called with modelId=${modelId}, siteId=${siteId}, confidence=${confidence}, year=${year}`);
+  const searchLabels = async (modelId: number, siteId: number, year: number | string | null = null) => {
+    console.log(`searchLabels called with modelId=${modelId}, siteId=${siteId}, year=${year}`);
     pending.value = true;
     error.value = null;
 
@@ -126,7 +125,6 @@ export const useLabelsSearch = () => {
       // Build where conditions
       const whereConditions: any = {
         model_id: {_eq: modelId},
-        confidence: {_gte: confidence},
         record: {
           site_id: {_eq: siteId}
         }
@@ -150,17 +148,15 @@ export const useLabelsSearch = () => {
         },
         body: {
           query: `
-            query getLabelsForModelSiteWithConfidenceAndYear(
+            query getLabelsForModelSiteWithYear(
               $modelId: Int!,
               $siteId: bigint!,
-              $confidence: Float!,
               $yearStart: timestamp,
               $yearEnd: timestamp
             ) {
               model_inference_results(
                 where: {
                   model_id: {_eq: $modelId},
-                  confidence: {_gte: $confidence},
                   record: {
                     site_id: {_eq: $siteId},
                     record_datetime: {
@@ -189,7 +185,6 @@ export const useLabelsSearch = () => {
           variables: {
             modelId,
             siteId,
-            confidence,
             yearStart: year ? `${year}-01-01T00:00:00` : null,
             yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
           }
