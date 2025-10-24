@@ -350,26 +350,6 @@ watch(
         ></v-select>
       </div>
 
-      <!-- Threshold Input -->
-      <div class="control-row horizontal align-inputs">
-        <label for="threshold-input" class="label-inline text-right">Threshold</label>
-        <div class="input-with-hint">
-          <v-text-field
-            id="threshold-input"
-            v-model.number="threshold"
-            type="number"
-            density="compact"
-            min="0.1"
-            max="1"
-            step="0.001"
-            @update:model-value="updateThreshold"
-            class="threshold-input"
-            hide-details
-          ></v-text-field>
-          <span class="hint-text">Range: 0.01 to 1.00</span>
-        </div>
-      </div>
-
       <!-- Site Lists Container -->
       <div class="site-lists-container">
         <!-- Available Sites List -->

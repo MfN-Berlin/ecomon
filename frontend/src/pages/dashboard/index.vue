@@ -15,8 +15,7 @@ const selectedParams = ref({
   model: null,
   sites: [],
   year: null,
-  species: null,
-  threshold: 0.5
+  species: null
 });
 
 // set in docker compose, read in nuxt.config.ts (or default to http://localhost:3838/dashboard/)
@@ -77,10 +76,9 @@ watch(
   () => [
     selectedParams.value.model,
     selectedParams.value.sites,
-    selectedParams.value.year,
-    selectedParams.value.threshold
+    selectedParams.value.year
   ],
-  ([model, sites, year, threshold]) => {
+  ([model, sites, year]) => {
     // Safety check
     if (!selectedParams || !selectedParams.value) {
       console.error("selectedParams is undefined");
@@ -96,13 +94,12 @@ watch(
       console.log("Searching for species with:",
         "Model:", model.value,
         "Site:", sites[0].value,
-        "Year:", year,
-        "Threshold:", threshold);
+        "Year:", year);
 
       // Add a small delay to ensure all reactive updates have completed
       setTimeout(() => {
         // Use the first selected site for now (could be enhanced to handle multiple sites)
-        speciesLabelsSearch.searchLabels(model.value, sites[0].value, threshold, year);
+        speciesLabelsSearch.searchLabels(model.value, sites[0].value, year);
       }, 0);
     } else {
       // Reset species data when parameters are missing
@@ -184,7 +181,6 @@ const handleSelectionUpdate = (selection) => {
   if ('sites' in selection) selectedParams.value.sites = selection.sites;
   if ('year' in selection) selectedParams.value.year = selection.year;
   if ('species' in selection) selectedParams.value.species = selection.species;
-  if ('threshold' in selection) selectedParams.value.threshold = selection.threshold;
 };
 
 // al parameters selected -> show app
@@ -194,8 +190,7 @@ const allParametersSelected = computed(() => {
     selectedParams.value.sites &&
     selectedParams.value.sites.length > 0 &&
     selectedParams.value.year &&
-    selectedParams.value.species &&
-    selectedParams.value.threshold !== undefined
+    selectedParams.value.species
   );
 });
 
@@ -241,12 +236,9 @@ const dashboardAppUrl = computed(() => {
       );
     }
 
-    // Add threshold parameter with default
-    if (selectedParams.value.threshold !== undefined) {
-      params.append('threshold', selectedParams.value.threshold.toString());
-    } else {
-      params.append('threshold', "0.5");  // Fallback default
-    }
+    // Add default threshold parameter
+    params.append('threshold', '0.5');
+
   } catch (e) {
     console.error("Error generating dashboard URL:", e);
     return DASHBOARD_URL; // Return base URL in case of errors
@@ -283,7 +275,6 @@ console.log("Initial selectedParams:", selectedParams.value);
           :available-sites="sites"
           :available-years="yearsList.data?.value || []"
           :available-species="formattedSpecies"
-          :default-threshold="0.5"
           @update:selection="handleSelectionUpdate"
         />
       </v-col>
