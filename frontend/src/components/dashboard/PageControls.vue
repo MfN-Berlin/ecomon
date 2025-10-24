@@ -182,10 +182,8 @@ watch(
 
 // Function to select a site
 function selectSite(site) {
-  // for now, allow only one site to be selected at a time
-  // To allow multiple selections, uncomment the line below and comment the next one
-  // selectedSites.value.push(site);
-  selectedSites.value = [site]; // Set to array with only the new site
+  selectedSites.value.push(site);  // Set to allow multiple selections
+  // selectedSites.value = [site]; // Set to array with only the new site
   updateSelection();
 }
 
@@ -354,7 +352,7 @@ watch(
       <div class="site-lists-container">
         <!-- Available Sites List -->
         <div class="site-list">
-          <label>Sites ({{ availableSitesList.length }})</label>
+          <label>Sites available ({{ availableSitesList.length }})</label>
           <div class="site-list-scroll">
             <v-list density="compact" class="site-list-items">
               <v-list-item
@@ -375,7 +373,7 @@ watch(
 
         <!-- Selected Sites List -->
         <div class="site-list">
-          <label>Selected (only 1 for now)</label>
+          <label>Sites selected ({{ selectedSites.length }})</label>
           <div class="site-list-scroll">
             <v-list density="compact" class="site-list-items">
               <v-list-item

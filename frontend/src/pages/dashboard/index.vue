@@ -212,11 +212,10 @@ const dashboardAppUrl = computed(() => {
 
     // Add sites parameter if available
     if (selectedParams.value.sites && selectedParams.value.sites.length > 0) {
-      // Add lat, lon, id, and name for the first site
-      const firstSite = sitesList.data.value.find(site => site.id === selectedParams.value.sites[0].value);
-      if (firstSite) {
-        params.append('siteId', firstSite.id);
-      }
+      const siteIds = selectedParams.value.sites
+        .map(site => site.value)
+        .join(',');
+      params.append('siteId', siteIds);
     }
 
     // Add year parameter if available
