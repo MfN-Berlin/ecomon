@@ -99,11 +99,11 @@ export const useLabelsSearch = () => {
    * Searches for distinct labels based on model_id, site_id and year
    *
    * @param modelId - The model ID to filter results by
-   * @param siteId - The site ID to filter records by
+   * @param siteIds - The list of site IDs to filter records by
    * @param year - The year to filter records by (records where record_datetime is in this year)
    */
-  const searchLabels = async (modelId: number, siteId: number, year: number | string | null = null) => {
-    console.log(`searchLabels called with modelId=${modelId}, siteId=${siteId}, year=${year}`);
+  const searchLabels = async (modelId: number, siteIds: number[], year: number | string | null = null) => {
+    console.log(`searchLabels called with modelId=${modelId}, siteIds=${siteIds}, year=${year}`);
     pending.value = true;
     error.value = null;
 
@@ -126,7 +126,7 @@ export const useLabelsSearch = () => {
       const whereConditions: any = {
         model_id: {_eq: modelId},
         record: {
-          site_id: {_eq: siteId}
+          site_id: {_in: siteIds}
         }
       };
 
@@ -150,7 +150,7 @@ export const useLabelsSearch = () => {
           query: `
             query getLabelsForModelSiteWithYear(
               $modelId: Int!,
-              $siteId: bigint!,
+              $siteIds: [bigint!]!,
               $yearStart: timestamp,
               $yearEnd: timestamp
             ) {
@@ -158,7 +158,7 @@ export const useLabelsSearch = () => {
                 where: {
                   model_id: {_eq: $modelId},
                   record: {
-                    site_id: {_eq: $siteId},
+                    site_id: {_in: $siteIds},
                     record_datetime: {
                       _gte: $yearStart,
                       _lt: $yearEnd
@@ -174,17 +174,13 @@ export const useLabelsSearch = () => {
                 label {
                   id
                   name
-                  english
-                  german
-                  class
-                  order
                 }
               }
             }
           `,
           variables: {
             modelId,
-            siteId,
+            siteIds,
             yearStart: year ? `${year}-01-01T00:00:00` : null,
             yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
           }

@@ -81,7 +81,7 @@ function updateSelection() {
     model: selectedModel.value,
     sites: selectedSites.value,
     year: selectedYear.value,
-    species: selectedSpecies.value || null, // Preserve species selection
+    species: selectedSpecies.value, // Preserve species selection
     threshold: threshold.value
   });
 }
@@ -96,33 +96,6 @@ const debouncedUpdateSelection = debounce(() => {
   updateSelection();
 }, 300);
 
-// Function to update threshold with debounce - without triggering species update
-const debouncedUpdateThreshold = debounce(() => {
-  emit('update:selection', {
-    model: selectedModel.value,
-    sites: selectedSites.value,
-    year: selectedYear.value,
-    species: selectedSpecies.value, // Keep the current species selection unchanged
-    threshold: threshold.value
-  });
-}, 300);
-
-function updateThreshold() {
-  isUpdatingThreshold.value = true;
-
-  // Clear any existing timeout
-  if (thresholdTimeoutId) {
-    clearTimeout(thresholdTimeoutId);
-  }
-
-  debouncedUpdateThreshold();
-
-  // Reset the flag after the debounce delay + a small buffer
-  thresholdTimeoutId = setTimeout(() => {
-    isUpdatingThreshold.value = false;
-    thresholdTimeoutId = null;
-  }, 1000);
-}
 /***************
  *
  * Models logic
@@ -143,7 +116,7 @@ watch(
   () => props.availableModels,
   (newModels) => {
     // No auto-selection
-    updateSelection();
+//    updateSelection();
   },
   { immediate: true }
 );
@@ -175,7 +148,8 @@ watch(
   () => {
     // When sites list changes, we don't auto-select any
     // but we ensure the availableSitesList is updated
-    updateSelection();
+    // DON'T call updateSelection here to prevent clearing species
+//    updateSelection();
   },
   { immediate: true }
 );
@@ -184,13 +158,30 @@ watch(
 function selectSite(site) {
   selectedSites.value.push(site);  // Set to allow multiple selections
   // selectedSites.value = [site]; // Set to array with only the new site
-  updateSelection();
+  // updateSelection();
+  // Call updateSelection but preserve the species
+  emit('update:selection', {
+    model: selectedModel.value,
+    sites: selectedSites.value,
+    year: selectedYear.value,
+//    species: selectedSpecies.value, // Preserve species selection
+    threshold: threshold.value
+  });
 }
 
 // Function to deselect a site
 function deselectSite(site) {
   selectedSites.value = selectedSites.value.filter(s => s.value !== site.value);
-  updateSelection();
+//  updateSelection();
+  // Call updateSelection but preserve the species
+  emit('update:selection', {
+    model: selectedModel.value,
+    sites: selectedSites.value,
+    year: selectedYear.value,
+    // Don't include species in the emit to preserve it
+//    species: selectedSpecies.value, // Preserve species selection
+    threshold: threshold.value
+  });
 }
 
 /*******************************
@@ -205,7 +196,7 @@ watch(
   () => props.availableYears,
   (newYears) => {
     // No auto-selection
-    updateSelection();
+//    updateSelection();
   },
   { immediate: true }
 );
@@ -219,40 +210,27 @@ watch(
 // Get the filtered species list for the dropdown - FIXED THE DUPLICATE COMPUTED PROPERTY
 const species = computed(() => {
   console.log("Computing species list:");
-  console.log("- hasOnlyPlaceholder:", hasOnlyPlaceholder.value);
   console.log("- selectedSpecies:", selectedSpecies.value);
-  console.log("- selectedSpeciesName:", selectedSpeciesName.value);
-  console.log("- availableSpecies length:", props.availableSpecies.length);
 
-  // Start with an empty array
   let filteredSpecies = [];
 
-  // If there are non-placeholder species, add them
+  // Add all available species except placeholders
   if (!hasOnlyPlaceholder.value) {
     filteredSpecies = props.availableSpecies.filter(item => !item.isPlaceholder);
   }
 
-  // Always ensure the currently selected species is included in the dropdown
+  // Ensure the currently selected species is included
   if (
     selectedSpecies.value &&
     !filteredSpecies.some(s => s.value === selectedSpecies.value)
   ) {
-    const selectedSpeciesItem = props.availableSpecies.find(
-      s => s.value === selectedSpecies.value
-    );
-
-    if (selectedSpeciesItem) {
-      filteredSpecies.push(selectedSpeciesItem);
-    } else {
-      // If the selected species is not in availableSpecies, create a fallback entry
-      // Use the stored species name if available, otherwise fallback to ID
-      const speciesName = getSpeciesName(selectedSpecies.value);
-      console.log("Creating fallback with speciesName:", speciesName);
-      filteredSpecies.push({
-        value: selectedSpecies.value,
-        title: speciesName ? `${speciesName} (not in list)` : `Species ${selectedSpecies.value} (not in list)`
-      });
-    }
+    const speciesName = getSpeciesName(selectedSpecies.value);
+    filteredSpecies.push({
+      value: selectedSpecies.value,
+      title: speciesName
+        ? `${speciesName} (not in list)`
+        : `Species ${selectedSpecies.value} (not in list)`
+    });
   }
 
   return filteredSpecies;
@@ -262,41 +240,28 @@ watch(
   () => props.availableSpecies,
   (newSpecies) => {
     console.log("availableSpecies changed:");
-    console.log("- isUpdatingThreshold:", isUpdatingThreshold.value);
     console.log("- newSpecies length:", newSpecies.length);
     console.log("- selectedSpecies:", selectedSpecies.value);
-    console.log("- selectedSpeciesName:", selectedSpeciesName.value);
 
-    // Don't update species selection during threshold updates
-    if (isUpdatingThreshold.value) {
-      console.log("Skipping species update - threshold is updating");
-      return;
-    }
-
-    if (hasOnlyPlaceholder.value) {
-      console.log("Only placeholder available - clearing selection");
-      selectedSpecies.value = null;
-      selectedSpeciesName.value = null; // Clear stored name
-    } else if (
-      selectedSpecies.value &&
-      newSpecies.some(s => s.value === selectedSpecies.value)
-    ) {
-      // If the current selection is valid, update the stored name
+    if (selectedSpecies.value) {
+      // Check if the selected species exists in the new list
       const currentSpecies = newSpecies.find(s => s.value === selectedSpecies.value);
       if (currentSpecies) {
-        selectedSpeciesName.value = currentSpecies.title;
-        console.log("Updated stored name:", selectedSpeciesName.value);
+        console.log("Selected species is still valid:", currentSpecies.title);
+        selectedSpeciesName.value = currentSpecies.title; // Update the name
+      } else {
+        console.log("Selected species not in new list, preserving selection");
+        // Keep the species selected but mark it as not in the list
+        const speciesName = getSpeciesName(selectedSpecies.value);
+        selectedSpeciesName.value = speciesName
+          ? `${speciesName} (not in list)`
+          : `Species ${selectedSpecies.value} (not in list)`;
       }
-      return;
-    } else if (selectedSpecies.value) {
-      // Species is selected but not in new list - keep it selected and preserve the name
-      console.log("Species not in new list - preserving selection and name");
-      // Don't clear selectedSpecies.value or selectedSpeciesName.value
-      return;
+    } else if (hasOnlyPlaceholder.value) {
+      console.log("Only placeholder available - clearing selection");
+      selectedSpecies.value = null;
+      selectedSpeciesName.value = null;
     }
-
-    // Only call updateSelection when we actually change selectedSpecies
-    debouncedUpdateSpecies();
   },
   { immediate: true }
 );
