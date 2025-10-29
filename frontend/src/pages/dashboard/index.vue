@@ -70,6 +70,8 @@ yearsList.fetchYears();
  *
 ********************************/
 const speciesLabelsSearch = useLabelsSearch();
+// Store the species selection that should be preserved
+const preservedSpeciesSelection = ref(null);
 
 // Watch for changes in selections to trigger species search
 watch(
@@ -84,6 +86,12 @@ watch(
       console.error("selectedParams is undefined");
       return;
     }
+
+    // Store the current species selection before search
+    if (selectedParams.value.species) {
+      preservedSpeciesSelection.value = selectedParams.value.species;
+    }
+
     // Clear any pending search operations
     if (speciesLabelsSearch.pendingSearch) {
       speciesLabelsSearch.pendingSearch.cancel();
@@ -93,24 +101,53 @@ watch(
     if (model && sites && Array.isArray(sites) && sites.length > 0 && year) {
       console.log("Searching for species with:",
         "Model:", model.value,
-        "Site:", sites[0].value,
+        "Sites:", sites.map(site => site.value),
         "Year:", year);
 
-      // Add a small delay to ensure all reactive updates have completed
-      setTimeout(() => {
-        // Use the first selected site for now (could be enhanced to handle multiple sites)
-        speciesLabelsSearch.searchLabels(model.value, sites[0].value, year);
-      }, 0);
-    } else {
-      // Reset species data when parameters are missing
+      // Use the first selected site for now (could be enhanced to handle multiple sites)
+      console.log("108");
+      console.log(sites.map(site => site.value));
+      speciesLabelsSearch.searchLabels(model.value, sites.map(site => site.value), year);
+
+    } else if (!model || !sites || sites.length === 0 || !year) {
+      // Only clear species data if required parameters are missing
+      // But preserve the selection
       if (speciesLabelsSearch.data.value) {
-        // Use a non-reactive way to clear the data
         speciesLabelsSearch.data.value = null;
       }
       console.log("Not all parameters available for species search");
     }
   },
-  { immediate: true, deep: true } // Add deep: true to detect nested changes in arrays
+  { immediate: true, deep: true }
+);
+
+// Watch for when species search completes and restore the selection
+watch(
+  () => speciesLabelsSearch.data.value,
+  (labels) => {
+    console.log("Species labels type:", typeof labels);
+    console.log("Is array?", Array.isArray(labels));
+    console.log("Structure:", JSON.stringify(labels).slice(0, 100));
+    if (labels && labels.length > 0) {
+      console.log("Fetched all species labels:", labels);
+
+      // Restore the preserved species selection if it exists in the new data
+      if (preservedSpeciesSelection.value) {
+        const speciesExists = labels.labels?.some(
+          species => species.id === preservedSpeciesSelection.value
+        );
+
+        if (speciesExists) {
+          console.log("Restoring species selection:", preservedSpeciesSelection.value);
+          selectedParams.value.species = preservedSpeciesSelection.value;
+        } else {
+          console.log("Previously selected species not available in new site");
+          preservedSpeciesSelection.value = null;
+        }
+      }
+    }
+  },
+  { immediate: true }
 );
 
 const formattedSpecies = computed(() => {
@@ -180,7 +217,11 @@ const handleSelectionUpdate = (selection) => {
   if ('model' in selection) selectedParams.value.model = selection.model;
   if ('sites' in selection) selectedParams.value.sites = selection.sites;
   if ('year' in selection) selectedParams.value.year = selection.year;
-  if ('species' in selection) selectedParams.value.species = selection.species;
+  // Only update species if it's explicitly provided in the selection
+  // This prevents clearing the species when other parameters change
+  if ('species' in selection && selection.species !== undefined) {
+    selectedParams.value.species = selection.species;
+  }
 };
 
 // al parameters selected -> show app
@@ -212,11 +253,10 @@ const dashboardAppUrl = computed(() => {
 
     // Add sites parameter if available
     if (selectedParams.value.sites && selectedParams.value.sites.length > 0) {
-      // Add lat, lon, id, and name for the first site
-      const firstSite = sitesList.data.value.find(site => site.id === selectedParams.value.sites[0].value);
-      if (firstSite) {
-        params.append('siteId', firstSite.id);
-      }
+      const siteIds = selectedParams.value.sites
+        .map(site => site.value)
+        .join(',');
+      params.append('siteId', siteIds);
     }
 
     // Add year parameter if available
@@ -247,19 +287,6 @@ const dashboardAppUrl = computed(() => {
   // Return the base URL with query parameters
   return `${DASHBOARD_URL}?${params.toString()}`;
 });
-
-watch(
-  () => speciesLabelsSearch.data.value,
-  (labels) => {
-    console.log("Species labels type:", typeof labels);
-    console.log("Is array?", Array.isArray(labels));
-    console.log("Structure:", JSON.stringify(labels).slice(0, 100));
-    if (labels && labels.length > 0) {
-      console.log("Fetched all species labels:", labels);
-    }
-  },
-  { immediate: true }
-);
 
 console.log("Component setup completed");
 console.log("Initial selectedParams:", selectedParams.value);
