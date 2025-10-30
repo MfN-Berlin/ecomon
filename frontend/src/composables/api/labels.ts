@@ -107,12 +107,10 @@ export const useLabelsSearch = () => {
     pending.value = true;
     error.value = null;
 
-    // Cancel any pending search
     if (pendingSearch) {
       pendingSearch.cancel();
     }
 
-    // Create an AbortController for this search
     const controller = new AbortController();
     pendingSearch = {
       controller,
@@ -122,48 +120,61 @@ export const useLabelsSearch = () => {
     try {
       const config = useRuntimeConfig();
 
-      // Build where conditions
-      const whereConditions: any = {
-        model_id: {_eq: modelId},
-        record: {
-          site_id: {_in: siteIds}
-        }
-      };
-
-      // Add year filter if provided
-      if (year) {
-        whereConditions.record = {
-          ...whereConditions.record,
-          record_datetime: {
-            _gte: `${year}-01-01T00:00:00`,
-            _lt: `${parseInt(year.toString()) + 1}-01-01T00:00:00`
-          }
-        };
-      }
-
-      const result = await $fetch(config.public.GQL_HOST, {
+      // Step 1: Get filtered record IDs first
+      const recordsResult = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: {
           query: `
-            query getLabelsForModelSiteWithYear(
-              $modelId: Int!,
+            query getFilteredRecords(
               $siteIds: [bigint!]!,
               $yearStart: timestamp,
               $yearEnd: timestamp
             ) {
+              records(
+                where: {
+                  site_id: {_in: $siteIds},
+                  record_datetime: {
+                    _gte: $yearStart,
+                    _lt: $yearEnd
+                  }
+                }
+              ) {
+                id
+              }
+            }
+          `,
+          variables: {
+            siteIds,
+            yearStart: year ? `${year}-01-01T00:00:00` : null,
+            yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
+          }
+        },
+        signal: controller.signal
+      });
+
+      const recordIds = (recordsResult.data?.records || []).map(r => r.id);
+      console.log(`Found ${recordIds.length} matching records`);
+
+      if (recordIds.length === 0) {
+        data.value = { labels: [] };
+        return;
+      }
+
+      // Step 2: Query model_inference_results with the filtered record IDs
+      const result = await $fetch(config.public.GQL_HOST, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: {
+          query: `
+            query getLabelsForRecords(
+              $modelId: Int!,
+              $recordIds: [bigint!]!
+            ) {
               model_inference_results(
                 where: {
                   model_id: {_eq: $modelId},
-                  record: {
-                    site_id: {_in: $siteIds},
-                    record_datetime: {
-                      _gte: $yearStart,
-                      _lt: $yearEnd
-                    }
-                  }
+                  record_id: {_in: $recordIds}
                 },
                 distinct_on: [label_id],
                 order_by: [
@@ -180,32 +191,27 @@ export const useLabelsSearch = () => {
           `,
           variables: {
             modelId,
-            siteIds,
-            yearStart: year ? `${year}-01-01T00:00:00` : null,
-            yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
+            recordIds
           }
         },
         signal: controller.signal
       });
+
       console.log("Raw GraphQL result:", result);
 
-      // Extract the labels from the nested structure
       const labels = (result.data?.model_inference_results || [])
         .map(mir => mir.label)
         .filter(label => label != null);
 
-      // Sort by name
       labels.sort((a, b) => a.name.localeCompare(b.name));
 
       data.value = { labels };
     } catch (err) {
-      // Only update error if not aborted
       if (err.name !== 'AbortError') {
         error.value = err;
         console.error('Error searching labels:', err);
       }
     } finally {
-      // Only update pending state if this is still the current search
       if (pendingSearch && pendingSearch.controller === controller) {
         pending.value = false;
         pendingSearch = null;
