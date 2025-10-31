@@ -4,13 +4,28 @@ table:
 object_relationships:
   - name: label
     using:
-      foreign_key_constraint_on: label_id
+      manual_configuration:
+        remote_table:
+          name: labels
+          schema: public
+        column_mapping:
+          label_id: id
   - name: model
     using:
-      foreign_key_constraint_on: model_id
+      manual_configuration:
+        remote_table:
+          name: models
+          schema: public
+        column_mapping:
+          model_id: id
   - name: record
     using:
-      foreign_key_constraint_on: record_id
+      manual_configuration:
+        remote_table:
+          name: records
+          schema: public
+        column_mapping:
+          record_id: id
 select_permissions:
   - role: user
     permission:
@@ -22,6 +37,7 @@ select_permissions:
         - end_time
         - start_time
         - confidence
+        - site_id
       filter: {}
       allow_aggregations: true
     comment: ""
