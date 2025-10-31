@@ -2122,16 +2122,17 @@ type model_inference_results {
   id: bigint!
 
   """An object relationship"""
-  label: labels!
+  label: labels
   label_id: Int!
 
   """An object relationship"""
-  model: models!
+  model: models
   model_id: Int!
 
   """An object relationship"""
-  record: records!
+  record: records
   record_id: bigint!
+  site_id: bigint!
   start_time: numeric!
 }
 
@@ -2168,6 +2169,7 @@ type model_inference_results_avg_fields {
   label_id: Float
   model_id: Float
   record_id: Float
+  site_id: Float
   start_time: Float
 }
 
@@ -2187,6 +2189,7 @@ input model_inference_results_bool_exp {
   model_id: Int_comparison_exp
   record: records_bool_exp
   record_id: bigint_comparison_exp
+  site_id: bigint_comparison_exp
   start_time: numeric_comparison_exp
 }
 
@@ -2195,9 +2198,9 @@ unique or primary key constraints on table "model_inference_results"
 """
 enum model_inference_results_constraint {
   """
-  unique or primary key constraint on columns "id"
+  unique or primary key constraint on columns "id", "site_id"
   """
-  model_inference_results_pkey
+  model_inference_results_new_pkey
 }
 
 """
@@ -2210,6 +2213,7 @@ input model_inference_results_inc_input {
   label_id: Int
   model_id: Int
   record_id: bigint
+  site_id: bigint
   start_time: numeric
 }
 
@@ -2226,6 +2230,7 @@ input model_inference_results_insert_input {
   model_id: Int
   record: records_obj_rel_insert_input
   record_id: bigint
+  site_id: bigint
   start_time: numeric
 }
 
@@ -2237,6 +2242,7 @@ type model_inference_results_max_fields {
   label_id: Int
   model_id: Int
   record_id: bigint
+  site_id: bigint
   start_time: numeric
 }
 
@@ -2248,6 +2254,7 @@ type model_inference_results_min_fields {
   label_id: Int
   model_id: Int
   record_id: bigint
+  site_id: bigint
   start_time: numeric
 }
 
@@ -2282,12 +2289,14 @@ input model_inference_results_order_by {
   model_id: order_by
   record: records_order_by
   record_id: order_by
+  site_id: order_by
   start_time: order_by
 }
 
 """primary key columns input for table: model_inference_results"""
 input model_inference_results_pk_columns_input {
   id: bigint!
+  site_id: bigint!
 }
 
 """
@@ -2313,6 +2322,9 @@ enum model_inference_results_select_column {
   record_id
 
   """column name"""
+  site_id
+
+  """column name"""
   start_time
 }
 
@@ -2326,6 +2338,7 @@ input model_inference_results_set_input {
   label_id: Int
   model_id: Int
   record_id: bigint
+  site_id: bigint
   start_time: numeric
 }
 
@@ -2337,6 +2350,7 @@ type model_inference_results_stddev_fields {
   label_id: Float
   model_id: Float
   record_id: Float
+  site_id: Float
   start_time: Float
 }
 
@@ -2348,6 +2362,7 @@ type model_inference_results_stddev_pop_fields {
   label_id: Float
   model_id: Float
   record_id: Float
+  site_id: Float
   start_time: Float
 }
 
@@ -2359,6 +2374,7 @@ type model_inference_results_stddev_samp_fields {
   label_id: Float
   model_id: Float
   record_id: Float
+  site_id: Float
   start_time: Float
 }
 
@@ -2381,6 +2397,7 @@ input model_inference_results_stream_cursor_value_input {
   label_id: Int
   model_id: Int
   record_id: bigint
+  site_id: bigint
   start_time: numeric
 }
 
@@ -2392,6 +2409,7 @@ type model_inference_results_sum_fields {
   label_id: Int
   model_id: Int
   record_id: bigint
+  site_id: bigint
   start_time: numeric
 }
 
@@ -2418,6 +2436,9 @@ enum model_inference_results_update_column {
   record_id
 
   """column name"""
+  site_id
+
+  """column name"""
   start_time
 }
 
@@ -2440,6 +2461,7 @@ type model_inference_results_var_pop_fields {
   label_id: Float
   model_id: Float
   record_id: Float
+  site_id: Float
   start_time: Float
 }
 
@@ -2451,6 +2473,7 @@ type model_inference_results_var_samp_fields {
   label_id: Float
   model_id: Float
   record_id: Float
+  site_id: Float
   start_time: Float
 }
 
@@ -2462,6 +2485,7 @@ type model_inference_results_variance_fields {
   label_id: Float
   model_id: Float
   record_id: Float
+  site_id: Float
   start_time: Float
 }
 
@@ -3343,7 +3367,7 @@ type mutation_root {
   """
   delete single row from the table: "model_inference_results"
   """
-  delete_model_inference_results_by_pk(id: bigint!): model_inference_results
+  delete_model_inference_results_by_pk(id: bigint!, site_id: bigint!): model_inference_results
 
   """
   delete data from the table: "model_labels"
@@ -4732,7 +4756,7 @@ type query_root {
   """
   fetch data from the table: "model_inference_results" using primary key columns
   """
-  model_inference_results_by_pk(id: bigint!): model_inference_results
+  model_inference_results_by_pk(id: bigint!, site_id: bigint!): model_inference_results
 
   """An array relationship"""
   model_labels(
@@ -9078,7 +9102,7 @@ type subscription_root {
   """
   fetch data from the table: "model_inference_results" using primary key columns
   """
-  model_inference_results_by_pk(id: bigint!): model_inference_results
+  model_inference_results_by_pk(id: bigint!, site_id: bigint!): model_inference_results
 
   """
   fetch data from the table in a streaming manner: "model_inference_results"
