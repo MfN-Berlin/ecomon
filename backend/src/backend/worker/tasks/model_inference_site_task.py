@@ -206,34 +206,48 @@ def model_inference_site_task(
             df = pandas.read_pickle(os.path.join(job_temp_dir, "output.pkl"))
             # if confidence is 0 or below confidence resolution
             df = df[df["confidence"] >= 0.01]
+            if len(df) == 0:
+                # No results to insert, skip to next batch
+                continue
 
-            # Prepare ModelInferenceResults objects
-            results = []
-            for _, row in df.iterrows():
-                results.append({
-                    "record_id": record_name_to_id[row["filename"]],
-                    "model_id": model_id,
-                    "start_time": row["start_time"],
-                    "end_time": row["end_time"],
-                    "confidence": row["confidence"],
-                    "label_id": row["label_id"],
-                })
-            # Bulk insert results using mappings (faster than bulk_save_objects)
-            if results:
-                session.bulk_insert_mappings(ModelInferenceResults, results)
+            # Map filename to record_id and add model_id
+            df["record_id"] = df["filename"].map(record_name_to_id)
+            df["model_id"] = model_id
 
-            # Prepare ModelInferenceLogs objects
-            unique_filenames = df["filename"].unique()
-            logs = [
-                {
-                    "model_id": model_id,
-                    "record_id": record_name_to_id[filename],
-                    "analyzed": True,
-                }
-                for filename in unique_filenames
-            ]
-            if logs:
-                session.bulk_insert_mappings(ModelInferenceLogs, logs)
+            # CRITICAL: Sort by record_id for partition efficiency
+            # This ensures inserts go to the same partition sequentially,
+            # reducing partition switching overhead and improving cache utilization
+            df = df.sort_values("record_id")
+
+            # Select and reorder columns for insertion
+            df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
+
+            # Use pandas to_sql for fast bulk insert with multi-row statements
+            df_results.to_sql(
+                "model_inference_results",
+                con=session.connection(),
+                if_exists="append",
+                index=False,
+                method="multi",  # Use multi-row INSERT statements
+                chunksize=1000   # Insert 1000 rows per statement
+            )
+
+            # Insert logs - also sort by record_id for consistency
+            logs_df = pandas.DataFrame({
+                "model_id": model_id,
+                "record_id": sorted(df["record_id"].unique()),  # Sort for partition efficiency
+                "analyzed": True
+            })
+
+            logs_df.to_sql(
+                "model_inference_logs",
+                con=session.connection(),
+                if_exists="append",
+                index=False,
+                method="multi",
+                chunksize=1000
+            )
+
             session.commit()
             session.close()
             db_session.remove()
