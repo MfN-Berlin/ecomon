@@ -120,13 +120,13 @@ export const useLabelsSearch = () => {
     try {
       const config = useRuntimeConfig();
 
-      // Step 1: Get filtered record IDs first
+      // Step 1: Get record_ids that match site and year criteria
       const recordsResult = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: {
           query: `
-            query getFilteredRecords(
+            query getMatchingRecordIds(
               $siteIds: [bigint!]!,
               $yearStart: timestamp,
               $yearEnd: timestamp
@@ -154,20 +154,21 @@ export const useLabelsSearch = () => {
       });
 
       const recordIds = (recordsResult.data?.records || []).map(r => r.id);
-      console.log(`Found ${recordIds.length} matching records`);
 
       if (recordIds.length === 0) {
         data.value = { labels: [] };
         return;
       }
 
-      // Step 2: Query model_inference_results with the filtered record IDs
+      console.log(`Found ${recordIds.length} matching records`);
+
+      // Step 2: Query model_inference_results with record_id filter (enables partition pruning!)
       const result = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: {
           query: `
-            query getLabelsForRecords(
+            query getLabelsForRecordIds(
               $modelId: Int!,
               $recordIds: [bigint!]!
             ) {
@@ -178,8 +179,7 @@ export const useLabelsSearch = () => {
                 },
                 distinct_on: [label_id],
                 order_by: [
-                  {label_id: asc},
-                  {confidence: desc}
+                  {label_id: asc}
                 ]
               ) {
                 label {
