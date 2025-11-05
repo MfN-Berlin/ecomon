@@ -234,48 +234,101 @@ def model_inference_site_task(
             # Select and reorder columns for insertion
             df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
 
-            # Use COPY for maximum speed (10-50x faster than INSERT on indexed tables)
-            logger.info(f"Inserting {len(df_results)} results using COPY")
+            # Determine partition range for partition-aware operations
+            min_record_id = df_results["record_id"].min()
+            max_record_id = df_results["record_id"].max()
+
+            # Calculate partition numbers (assuming 25000 records per partition based on your schema)
+            min_partition = (min_record_id // 25000) + 1
+            max_partition = (max_record_id // 25000) + 1
+
+            logger.info(f"Inserting {len(df_results)} results across partitions p{min_partition:03d} to p{max_partition:03d}")
+
             connection = session.connection().connection
             cursor = connection.cursor()
 
-            # Create CSV buffer in memory
-            buffer = StringIO()
-            df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
-            buffer.seek(0)
-
-            # COPY from buffer to table (bypasses most index overhead)
-            cursor.copy_expert(
-                """
-                COPY model_inference_results
-                (record_id, model_id, start_time, end_time, confidence, label_id)
-                FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
-                """,
-                buffer
-            )
-
-            # Insert logs using COPY
-            logs_df = pandas.DataFrame({
-                "model_id": model_id,
-                "record_id": sorted(df["record_id"].unique()),
-                "analyzed": True
-            })
-
-            logger.info(f"Inserting {len(logs_df)} logs using COPY")
-            logs_buffer = StringIO()
-            logs_df.to_csv(logs_buffer, index=False, header=False, sep='\t')
-            logs_buffer.seek(0)
-
-            cursor.copy_expert(
-                """
-                COPY model_inference_logs
-                (model_id, record_id, analyzed)
-                FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t')
-                """,
-                logs_buffer
-            )
+            # Disable indexes on affected partitions for faster inserts
+            partitions_to_optimize = range(min_partition, max_partition + 1)
+            for partition_num in partitions_to_optimize:
+                partition_name = f"mir_partitions.model_inference_results_p{partition_num:03d}"
+                logger.info(f"Disabling indexes on partition {partition_name}")
+                try:
+                    cursor.execute(f"ALTER TABLE {partition_name} SET UNLOGGED")  # Faster than disabling indexes
+                except Exception as e:
+                    logger.warning(f"Could not set {partition_name} to UNLOGGED: {e}")
 
             session.commit()
+
+            try:
+                # If data fits in a single partition, use partition-aware COPY
+                if min_partition == max_partition:
+                    partition_name = f"mir_partitions.model_inference_results_p{min_partition:03d}"
+                    logger.info(f"Using partition-aware COPY to {partition_name}")
+
+                    buffer = StringIO()
+                    df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
+                    buffer.seek(0)
+
+                    cursor.copy_expert(
+                        f"""
+                        COPY {partition_name}
+                        (record_id, model_id, start_time, end_time, confidence, label_id)
+                        FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
+                        """,
+                        buffer
+                    )
+                else:
+                    # Multiple partitions: use parent table COPY
+                    logger.info("Using parent table COPY (multiple partitions)")
+
+                    buffer = StringIO()
+                    df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
+                    buffer.seek(0)
+
+                    cursor.copy_expert(
+                        """
+                        COPY model_inference_results
+                        (record_id, model_id, start_time, end_time, confidence, label_id)
+                        FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
+                        """,
+                        buffer
+                    )
+
+                # Insert logs using COPY
+                logs_df = pandas.DataFrame({
+                    "model_id": model_id,
+                    "record_id": sorted(df["record_id"].unique()),
+                    "analyzed": True
+                })
+
+                logger.info(f"Inserting {len(logs_df)} logs using COPY")
+                logs_buffer = StringIO()
+                logs_df.to_csv(logs_buffer, index=False, header=False, sep='\t')
+                logs_buffer.seek(0)
+
+                cursor.copy_expert(
+                    """
+                    COPY model_inference_logs
+                    (model_id, record_id, analyzed)
+                    FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t')
+                    """,
+                    logs_buffer
+                )
+
+                session.commit()
+
+            finally:
+                # Re-enable indexes/logging on affected partitions
+                for partition_num in partitions_to_optimize:
+                    partition_name = f"mir_partitions.model_inference_results_p{partition_num:03d}"
+                    logger.info(f"Re-enabling indexes on partition {partition_name}")
+                    try:
+                        cursor.execute(f"ALTER TABLE {partition_name} SET LOGGED")
+                    except Exception as e:
+                        logger.warning(f"Could not set {partition_name} to LOGGED: {e}")
+
+                session.commit()
+
             session.close()
             db_session.remove()
             session = db_session()
