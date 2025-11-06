@@ -247,7 +247,7 @@ def model_inference_site_task(
             # COPY from buffer to table (bypasses most index overhead)
             cursor.copy_expert(
                 """
-                COPY model_inference_results_write
+                COPY model_inference_results_pt_record
                 (record_id, model_id, start_time, end_time, confidence, label_id)
                 FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
                 """,
