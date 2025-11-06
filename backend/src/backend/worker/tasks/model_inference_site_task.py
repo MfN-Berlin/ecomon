@@ -4,7 +4,7 @@ import shutil
 import time
 import pandas
 from io import StringIO
-from sqlalchemy import func
+from sqlalchemy import func, text  # Add text import
 from datetime import datetime
 from celery.utils.log import get_task_logger
 from collections import namedtuple
@@ -78,12 +78,12 @@ def model_inference_site_task(
 
         # CRITICAL: Optimize session for bulk inserts on heavily indexed partitioned table
         logger.info("Optimizing database session for bulk inserts")
-        session.execute("SET session_replication_role = replica")  # Skip FK triggers
-        session.execute("SET work_mem = '512MB'")
-        session.execute("SET maintenance_work_mem = '1GB'")
-        session.execute("SET synchronous_commit = OFF")
-        session.execute("SET commit_delay = 100000")
-        session.execute("SET commit_siblings = 5")
+        session.execute(text("SET session_replication_role = replica"))  # Skip FK triggers
+        session.execute(text("SET work_mem = '512MB'"))
+        session.execute(text("SET maintenance_work_mem = '1GB'"))
+        session.execute(text("SET synchronous_commit = OFF"))
+        session.execute(text("SET commit_delay = 100000"))
+        session.execute(text("SET commit_siblings = 5"))
         session.commit()
 
         # detach model from session
@@ -137,12 +137,12 @@ def model_inference_site_task(
             records = (
                 session.query(Records.id, Records.filepath, Records.filename)
                 .outerjoin(
-                    ModelInferenceResults,
-                    (Records.id == ModelInferenceResults.record_id)
-                    & (ModelInferenceResults.model_id == model_id),
+                    ModelInferenceLogs,
+                    (Records.id == ModelInferenceLogs.record_id)
+                    & (ModelInferenceLogs.model_id == model_id),
                 )
                 .filter(Records.site_id == site_id)
-                .filter(ModelInferenceResults.id.is_(None))
+                .filter(ModelInferenceLogs.id.is_(None))
                 .limit(BATCH_SIZE)
                 .all()
             )
@@ -247,7 +247,7 @@ def model_inference_site_task(
             # COPY from buffer to table (bypasses most index overhead)
             cursor.copy_expert(
                 """
-                COPY model_inference_results_pt_record
+                COPY model_inference_results_write
                 (record_id, model_id, start_time, end_time, confidence, label_id)
                 FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
                 """,
@@ -275,18 +275,19 @@ def model_inference_site_task(
                 logs_buffer
             )
 
+            cursor.close()
             session.commit()
             session.close()
             db_session.remove()
             session = db_session()
 
             # Re-apply session optimizations after reconnecting
-            session.execute("SET session_replication_role = replica")
-            session.execute("SET work_mem = '512MB'")
-            session.execute("SET maintenance_work_mem = '1GB'")
-            session.execute("SET synchronous_commit = OFF")
-            session.execute("SET commit_delay = 100000")
-            session.execute("SET commit_siblings = 5")
+            session.execute(text("SET session_replication_role = replica"))
+            session.execute(text("SET work_mem = '512MB'"))
+            session.execute(text("SET maintenance_work_mem = '1GB'"))
+            session.execute(text("SET synchronous_commit = OFF"))
+            session.execute(text("SET commit_delay = 100000"))
+            session.execute(text("SET commit_siblings = 5"))
             session.commit()
 
             file_counter += len(records)
@@ -309,12 +310,13 @@ def model_inference_site_task(
     finally:
         # Re-enable normal operation
         try:
-            session.execute("SET session_replication_role = DEFAULT")
+            session.execute(text("SET session_replication_role = DEFAULT"))
             session.commit()
         except:
             pass
-        # Uncomment this when you're ready to clean up
-        shutil.rmtree(job_temp_dir)
+        # Clean up temp directory only if it exists
+        if os.path.exists(job_temp_dir):
+            shutil.rmtree(job_temp_dir)
 
     return {
         "status": "success",
