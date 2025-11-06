@@ -137,12 +137,12 @@ def model_inference_site_task(
             records = (
                 session.query(Records.id, Records.filepath, Records.filename)
                 .outerjoin(
-                    ModelInferenceResults,
-                    (Records.id == ModelInferenceResults.record_id)
-                    & (ModelInferenceResults.model_id == model_id),
+                    ModelInferenceLogs,  # ✅ Changed from ModelInferenceResults
+                    (Records.id == ModelInferenceLogs.record_id)
+                    & (ModelInferenceLogs.model_id == model_id),
                 )
                 .filter(Records.site_id == site_id)
-                .filter(ModelInferenceResults.id.is_(None))
+                .filter(ModelInferenceLogs.id.is_(None))  # ✅ Changed from ModelInferenceResults
                 .limit(BATCH_SIZE)
                 .all()
             )
@@ -298,7 +298,7 @@ def model_inference_site_task(
                         buffer
                     )
 
-                # Insert logs using COPY
+                # Insert logs using COPY with ON CONFLICT handling
                 logs_df = pandas.DataFrame({
                     "model_id": model_id,
                     "record_id": sorted(df["record_id"].unique()),
@@ -306,18 +306,37 @@ def model_inference_site_task(
                 })
 
                 logger.info(f"Inserting {len(logs_df)} logs using COPY")
+
+                # Create temporary table for logs
+                cursor.execute("""
+                    CREATE TEMPORARY TABLE temp_model_inference_logs (
+                        model_id INTEGER,
+                        record_id BIGINT,
+                        analyzed BOOLEAN
+                    ) ON COMMIT DROP
+                """)
+
+                # COPY into temporary table
                 logs_buffer = StringIO()
                 logs_df.to_csv(logs_buffer, index=False, header=False, sep='\t')
                 logs_buffer.seek(0)
 
                 cursor.copy_expert(
                     """
-                    COPY model_inference_logs
+                    COPY temp_model_inference_logs
                     (model_id, record_id, analyzed)
                     FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t')
                     """,
                     logs_buffer
                 )
+
+                # Insert from temp table with ON CONFLICT DO NOTHING
+                cursor.execute("""
+                    INSERT INTO model_inference_logs (model_id, record_id, analyzed)
+                    SELECT model_id, record_id, analyzed
+                    FROM temp_model_inference_logs
+                    ON CONFLICT (model_id, record_id) DO NOTHING
+                """)
 
                 cursor.close()
                 connection.commit()
