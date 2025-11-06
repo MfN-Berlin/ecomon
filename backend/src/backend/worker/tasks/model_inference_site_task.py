@@ -4,7 +4,7 @@ import shutil
 import time
 import pandas
 from io import StringIO
-from sqlalchemy import func, text
+from sqlalchemy import func
 from datetime import datetime
 from celery.utils.log import get_task_logger
 from collections import namedtuple
@@ -78,12 +78,12 @@ def model_inference_site_task(
 
         # CRITICAL: Optimize session for bulk inserts on heavily indexed partitioned table
         logger.info("Optimizing database session for bulk inserts")
-        session.execute(text("SET session_replication_role = replica"))  # Skip FK triggers
-        session.execute(text("SET work_mem = '512MB'"))
-        session.execute(text("SET maintenance_work_mem = '1GB'"))
-        session.execute(text("SET synchronous_commit = OFF"))
-        session.execute(text("SET commit_delay = 100000"))
-        session.execute(text("SET commit_siblings = 5"))
+        session.execute("SET session_replication_role = replica")  # Skip FK triggers
+        session.execute("SET work_mem = '512MB'")
+        session.execute("SET maintenance_work_mem = '1GB'")
+        session.execute("SET synchronous_commit = OFF")
+        session.execute("SET commit_delay = 100000")
+        session.execute("SET commit_siblings = 5")
         session.commit()
 
         # detach model from session
@@ -137,12 +137,12 @@ def model_inference_site_task(
             records = (
                 session.query(Records.id, Records.filepath, Records.filename)
                 .outerjoin(
-                    ModelInferenceLogs,  # ✅ Changed from ModelInferenceResults
-                    (Records.id == ModelInferenceLogs.record_id)
-                    & (ModelInferenceLogs.model_id == model_id),
+                    ModelInferenceResults,
+                    (Records.id == ModelInferenceResults.record_id)
+                    & (ModelInferenceResults.model_id == model_id),
                 )
                 .filter(Records.site_id == site_id)
-                .filter(ModelInferenceLogs.id.is_(None))  # ✅ Changed from ModelInferenceResults
+                .filter(ModelInferenceResults.id.is_(None))
                 .limit(BATCH_SIZE)
                 .all()
             )
@@ -234,138 +234,59 @@ def model_inference_site_task(
             # Select and reorder columns for insertion
             df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
 
-            # Determine partition range for partition-aware operations
-            min_record_id = df_results["record_id"].min()
-            max_record_id = df_results["record_id"].max()
-
-            # Calculate partition numbers (assuming 25000 records per partition based on your schema)
-            min_partition = (min_record_id // 25000) + 1
-            max_partition = (max_record_id // 25000) + 1
-
-            logger.info(f"Inserting {len(df_results)} results across partitions p{min_partition:03d} to p{max_partition:03d}")
-
+            # Use COPY for maximum speed (10-50x faster than INSERT on indexed tables)
+            logger.info(f"Inserting {len(df_results)} results using COPY")
             connection = session.connection().connection
+            cursor = connection.cursor()
 
-            # Disable indexes on affected partitions for faster inserts
-            partitions_to_optimize = list(range(min_partition, max_partition + 1))
-            for partition_num in partitions_to_optimize:
-                partition_name = f"mir_partitions.model_inference_results_p{partition_num:03d}"
-                logger.info(f"Setting partition {partition_name} to UNLOGGED")
-                try:
-                    # Create new cursor for each DDL operation
-                    cursor = connection.cursor()
-                    cursor.execute(f"ALTER TABLE {partition_name} SET UNLOGGED")
-                    cursor.close()
-                    connection.commit()
-                except Exception as e:
-                    logger.warning(f"Could not set {partition_name} to UNLOGGED: {e}")
+            # Create CSV buffer in memory
+            buffer = StringIO()
+            df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
+            buffer.seek(0)
 
-            try:
-                # Create fresh cursor for COPY operations
-                cursor = connection.cursor()
+            # COPY from buffer to table (bypasses most index overhead)
+            cursor.copy_expert(
+                """
+                COPY model_inference_results_pt_record
+                (record_id, model_id, start_time, end_time, confidence, label_id)
+                FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
+                """,
+                buffer
+            )
 
-                # If data fits in a single partition, use partition-aware COPY
-                if min_partition == max_partition:
-                    partition_name = f"mir_partitions.model_inference_results_p{min_partition:03d}"
-                    logger.info(f"Using partition-aware COPY to {partition_name}")
+            # Insert logs using COPY
+            logs_df = pandas.DataFrame({
+                "model_id": model_id,
+                "record_id": sorted(df["record_id"].unique()),
+                "analyzed": True
+            })
 
-                    buffer = StringIO()
-                    df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
-                    buffer.seek(0)
+            logger.info(f"Inserting {len(logs_df)} logs using COPY")
+            logs_buffer = StringIO()
+            logs_df.to_csv(logs_buffer, index=False, header=False, sep='\t')
+            logs_buffer.seek(0)
 
-                    cursor.copy_expert(
-                        f"""
-                        COPY {partition_name}
-                        (record_id, model_id, start_time, end_time, confidence, label_id)
-                        FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
-                        """,
-                        buffer
-                    )
-                else:
-                    # Multiple partitions: use parent table COPY
-                    logger.info("Using parent table COPY (multiple partitions)")
+            cursor.copy_expert(
+                """
+                COPY model_inference_logs
+                (model_id, record_id, analyzed)
+                FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t')
+                """,
+                logs_buffer
+            )
 
-                    buffer = StringIO()
-                    df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
-                    buffer.seek(0)
-
-                    cursor.copy_expert(
-                        """
-                        COPY model_inference_results
-                        (record_id, model_id, start_time, end_time, confidence, label_id)
-                        FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
-                        """,
-                        buffer
-                    )
-
-                # Insert logs using COPY with ON CONFLICT handling
-                logs_df = pandas.DataFrame({
-                    "model_id": model_id,
-                    "record_id": sorted(df["record_id"].unique()),
-                    "analyzed": True
-                })
-
-                logger.info(f"Inserting {len(logs_df)} logs using COPY")
-
-                # Create temporary table for logs
-                cursor.execute("""
-                    CREATE TEMPORARY TABLE temp_model_inference_logs (
-                        model_id INTEGER,
-                        record_id BIGINT,
-                        analyzed BOOLEAN
-                    ) ON COMMIT DROP
-                """)
-
-                # COPY into temporary table
-                logs_buffer = StringIO()
-                logs_df.to_csv(logs_buffer, index=False, header=False, sep='\t')
-                logs_buffer.seek(0)
-
-                cursor.copy_expert(
-                    """
-                    COPY temp_model_inference_logs
-                    (model_id, record_id, analyzed)
-                    FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t')
-                    """,
-                    logs_buffer
-                )
-
-                # Insert from temp table with ON CONFLICT DO NOTHING
-                cursor.execute("""
-                    INSERT INTO model_inference_logs (model_id, record_id, analyzed)
-                    SELECT model_id, record_id, analyzed
-                    FROM temp_model_inference_logs
-                    ON CONFLICT (model_id, record_id) DO NOTHING
-                """)
-
-                cursor.close()
-                connection.commit()
-
-            finally:
-                # Re-enable indexes/logging on affected partitions
-                for partition_num in partitions_to_optimize:
-                    partition_name = f"mir_partitions.model_inference_results_p{partition_num:03d}"
-                    logger.info(f"Setting partition {partition_name} back to LOGGED")
-                    try:
-                        # Create new cursor for each DDL operation
-                        cursor = connection.cursor()
-                        cursor.execute(f"ALTER TABLE {partition_name} SET LOGGED")
-                        cursor.close()
-                        connection.commit()
-                    except Exception as e:
-                        logger.warning(f"Could not set {partition_name} to LOGGED: {e}")
-
+            session.commit()
             session.close()
             db_session.remove()
             session = db_session()
 
             # Re-apply session optimizations after reconnecting
-            session.execute(text("SET session_replication_role = replica"))
-            session.execute(text("SET work_mem = '512MB'"))
-            session.execute(text("SET maintenance_work_mem = '1GB'"))
-            session.execute(text("SET synchronous_commit = OFF"))
-            session.execute(text("SET commit_delay = 100000"))
-            session.execute(text("SET commit_siblings = 5"))
+            session.execute("SET session_replication_role = replica")
+            session.execute("SET work_mem = '512MB'")
+            session.execute("SET maintenance_work_mem = '1GB'")
+            session.execute("SET synchronous_commit = OFF")
+            session.execute("SET commit_delay = 100000")
+            session.execute("SET commit_siblings = 5")
             session.commit()
 
             file_counter += len(records)
@@ -388,13 +309,12 @@ def model_inference_site_task(
     finally:
         # Re-enable normal operation
         try:
-            session.execute(text("SET session_replication_role = DEFAULT"))
+            session.execute("SET session_replication_role = DEFAULT")
             session.commit()
         except:
             pass
-        # Clean up temp directory only if it exists
-        if os.path.exists(job_temp_dir):
-            shutil.rmtree(job_temp_dir)
+        # Uncomment this when you're ready to clean up
+        shutil.rmtree(job_temp_dir)
 
     return {
         "status": "success",
