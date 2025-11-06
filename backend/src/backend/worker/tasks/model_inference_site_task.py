@@ -245,21 +245,25 @@ def model_inference_site_task(
             logger.info(f"Inserting {len(df_results)} results across partitions p{min_partition:03d} to p{max_partition:03d}")
 
             connection = session.connection().connection
-            cursor = connection.cursor()
 
             # Disable indexes on affected partitions for faster inserts
-            partitions_to_optimize = range(min_partition, max_partition + 1)
+            partitions_to_optimize = list(range(min_partition, max_partition + 1))
             for partition_num in partitions_to_optimize:
                 partition_name = f"mir_partitions.model_inference_results_p{partition_num:03d}"
-                logger.info(f"Disabling indexes on partition {partition_name}")
+                logger.info(f"Setting partition {partition_name} to UNLOGGED")
                 try:
-                    cursor.execute(f"ALTER TABLE {partition_name} SET UNLOGGED")  # Faster than disabling indexes
+                    # Create new cursor for each DDL operation
+                    cursor = connection.cursor()
+                    cursor.execute(f"ALTER TABLE {partition_name} SET UNLOGGED")
+                    cursor.close()
+                    connection.commit()
                 except Exception as e:
                     logger.warning(f"Could not set {partition_name} to UNLOGGED: {e}")
 
-            session.commit()
-
             try:
+                # Create fresh cursor for COPY operations
+                cursor = connection.cursor()
+
                 # If data fits in a single partition, use partition-aware COPY
                 if min_partition == max_partition:
                     partition_name = f"mir_partitions.model_inference_results_p{min_partition:03d}"
@@ -315,19 +319,22 @@ def model_inference_site_task(
                     logs_buffer
                 )
 
-                session.commit()
+                cursor.close()
+                connection.commit()
 
             finally:
                 # Re-enable indexes/logging on affected partitions
                 for partition_num in partitions_to_optimize:
                     partition_name = f"mir_partitions.model_inference_results_p{partition_num:03d}"
-                    logger.info(f"Re-enabling indexes on partition {partition_name}")
+                    logger.info(f"Setting partition {partition_name} back to LOGGED")
                     try:
+                        # Create new cursor for each DDL operation
+                        cursor = connection.cursor()
                         cursor.execute(f"ALTER TABLE {partition_name} SET LOGGED")
+                        cursor.close()
+                        connection.commit()
                     except Exception as e:
                         logger.warning(f"Could not set {partition_name} to LOGGED: {e}")
-
-                session.commit()
 
             session.close()
             db_session.remove()
