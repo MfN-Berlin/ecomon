@@ -95,15 +95,58 @@ export const useLabelsSearch = () => {
   const data = ref(null);
   let pendingSearch = null;
 
+  // Cache object to store results by key
+  const cache = new Map<string, { labels: any[], timestamp: number }>();
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+  /**
+   * Generate a cache key from the search parameters
+   */
+  const getCacheKey = (modelId: number, siteIds: number[], year: number | string | null) => {
+    const sortedSiteIds = [...siteIds].sort().join(',');
+    return `${modelId}_${sortedSiteIds}_${year}`;
+  };
+
+  /**
+   * Check if cached data is still valid
+   */
+  const isCacheValid = (timestamp: number) => {
+    return Date.now() - timestamp < CACHE_TTL;
+  };
+
   /**
    * Searches for distinct labels based on model_id, site_id and year
+   * Results are cached for 5 minutes
    *
    * @param modelId - The model ID to filter results by
    * @param siteIds - The list of site IDs to filter records by
    * @param year - The year to filter records by (records where record_datetime is in this year)
+   * @param forceRefresh - Force refresh even if cached data exists
    */
-  const searchLabels = async (modelId: number, siteIds: number[], year: number | string | null = null) => {
-    console.log(`searchLabels called with modelId=${modelId}, siteIds=${siteIds}, year=${year}`);
+  const searchLabels = async (
+    modelId: number,
+    siteIds: number[],
+    year: number | string | null = null,
+    forceRefresh: boolean = false
+  ) => {
+    console.log(`searchLabels called with modelId=${modelId}, siteIds=${siteIds}, year=${year}, forceRefresh=${forceRefresh}`);
+
+    // Generate cache key
+    const cacheKey = getCacheKey(modelId, siteIds, year);
+
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && cache.has(cacheKey)) {
+      const cached = cache.get(cacheKey);
+      if (isCacheValid(cached.timestamp)) {
+        console.log(`Returning cached results for key: ${cacheKey}`);
+        data.value = { labels: cached.labels };
+        return;
+      } else {
+        console.log(`Cache expired for key: ${cacheKey}`);
+        cache.delete(cacheKey);
+      }
+    }
+
     pending.value = true;
     error.value = null;
 
@@ -156,13 +199,16 @@ export const useLabelsSearch = () => {
       const recordIds = (recordsResult.data?.records || []).map(r => r.id);
 
       if (recordIds.length === 0) {
-        data.value = { labels: [] };
+        const emptyResult = { labels: [] };
+        data.value = emptyResult;
+        // Cache empty results too
+        cache.set(cacheKey, { labels: [], timestamp: Date.now() });
         return;
       }
 
       console.log(`Found ${recordIds.length} matching records`);
 
-      // Step 2: Query model_inference_results with record_id filter (enables partition pruning!)
+      // Step 2: Query model_inference_results_max_confidence with record_id filter
       const result = await $fetch(config.public.GQL_HOST, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -205,6 +251,12 @@ export const useLabelsSearch = () => {
 
       labels.sort((a, b) => a.name.localeCompare(b.name));
 
+      console.log("Processed labels:", labels);
+
+      // Store in cache
+      cache.set(cacheKey, { labels, timestamp: Date.now() });
+      console.log(`Cached results for key: ${cacheKey}`);
+
       data.value = { labels };
     } catch (err) {
       if (err.name !== 'AbortError') {
@@ -218,11 +270,31 @@ export const useLabelsSearch = () => {
       }
     }
   };
+
+  /**
+   * Clear all cached data
+   */
+  const clearCache = () => {
+    cache.clear();
+    console.log('Cache cleared');
+  };
+
+  /**
+   * Clear specific cached entry
+   */
+  const clearCacheEntry = (modelId: number, siteIds: number[], year: number | string | null) => {
+    const cacheKey = getCacheKey(modelId, siteIds, year);
+    cache.delete(cacheKey);
+    console.log(`Cleared cache for key: ${cacheKey}`);
+  };
+
   return {
     data,
     pending,
     error,
     searchLabels,
+    clearCache,
+    clearCacheEntry,
     pendingSearch
   };
 };
