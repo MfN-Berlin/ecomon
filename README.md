@@ -99,3 +99,4 @@ create_voucher
 Create_Random Sample
 
 Random sample nur für eine art
+# CI test
