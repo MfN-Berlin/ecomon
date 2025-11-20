@@ -172,7 +172,7 @@ export const useLabelsSearch = () => {
               $modelId: Int!,
               $recordIds: [bigint!]!
             ) {
-              model_inference_results(
+              model_inference_results_max_confidence(
                 where: {
                   model_id: {_eq: $modelId},
                   record_id: {_in: $recordIds}
@@ -199,7 +199,7 @@ export const useLabelsSearch = () => {
 
       console.log("Raw GraphQL result:", result);
 
-      const labels = (result.data?.model_inference_results || [])
+      const labels = (result.data?.model_inference_results_max_confidence || [])
         .map(mir => mir.label)
         .filter(label => label != null);
 
