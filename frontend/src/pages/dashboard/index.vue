@@ -166,7 +166,8 @@ const formattedSpecies = computed(() => {
 
   if (!speciesData) {
     // Create a placeholder message
-    let message = "Please choose a classifier, a site and a year to display species";
+    // Use an HTML line break; ensure the consumer renders HTML (e.g. v-html) or use CSS white-space if rendering plain text
+    let message = "Please choose a classifier, a site and<br/> a year to display species";
     return [{
       title: message,
       value: null,
@@ -326,7 +327,7 @@ console.log("Initial selectedParams:", selectedParams.value);
                 <v-icon icon="mdi-tune" size="large" color="grey" class="mb-3"></v-icon>
                 <h3 class="text-h5 text-grey-darken-1">Select all parameters to display the dashboard</h3>
                 <p class="text-body-1 text-grey-darken-1">
-                  Please choose a classifier, site, year, and species from the control panel.
+                  Please choose a classifier, site, year, and species from the control panel
                 </p>
               </div>
             </v-card>
