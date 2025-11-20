@@ -37,6 +37,24 @@ const threshold = ref(props.defaultThreshold);
 const isUpdatingThreshold = ref(false);
 let thresholdTimeoutId = null;
 
+/*******************************************
+ * manually maintained lists of
+ * stuff that is ready and can be displayed
+ ******************************************/
+
+ // Manually maintained list of ready site IDs
+const readySiteIds = ref([
+  1, 26, 27, 28, 29, 13, 16, 21, 22, 23, 6, 7, 8, 9
+]);
+
+// Manually maintained list of ready model IDs
+const readyModelIds = ref([
+  3
+]);
+
+/******************
+ * Species logic
+ ******************/
 // Check if the species list contains only a placeholder
 const hasOnlyPlaceholder = computed(() => {
   return props.availableSpecies.length === 1 &&
@@ -107,7 +125,8 @@ const debouncedUpdateSelection = debounce(() => {
 const models = computed(() => {
   return props.availableModels.map(model => ({
     title: model.name,
-    value: model.id
+    value: model.id,
+    isReady: readyModelIds.value.includes(model.id)
   }));
 });
 
@@ -134,10 +153,13 @@ const availableSitesList = computed(() => {
     return [];
   }
 
-  // Filter out sites that are already selected
-  const filtered = props.availableSites.filter(site =>
-    !selectedSites.value.some(s => s.value === site.value)
-  );
+  // Filter out sites that are already selected and add ready status
+  const filtered = props.availableSites
+    .filter(site => !selectedSites.value.some(s => s.value === site.value))
+    .map(site => ({
+      ...site,
+      isReady: readySiteIds.value.includes(site.value)
+    }));
 
   return filtered;
 });
@@ -156,6 +178,10 @@ watch(
 
 // Function to select a site
 function selectSite(site) {
+  // Only allow selection if site is ready
+  if (!site.isReady) {
+    return;
+  }
   selectedSites.value.push(site);  // Set to allow multiple selections
   // selectedSites.value = [site]; // Set to array with only the new site
   // updateSelection();
@@ -305,12 +331,30 @@ watch(
           v-model="selectedModel"
           :items="models"
           item-title="title"
-          item-value="id"
+          item-value="value"
           return-object
           density="compact"
           @update:model-value="updateSelection"
           class="inline-select"
-        ></v-select>
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :disabled="!item.raw.isReady"
+              :class="{ 'model-not-ready': !item.raw.isReady }"
+            >
+              <template v-slot:append v-if="!item.raw.isReady">
+                <v-chip size="x-small" color="warning" variant="flat">Pending</v-chip>
+              </template>
+            </v-list-item>
+          </template>
+          <template v-slot:selection="{ item }">
+            <span :class="{ 'text-grey': !item.raw.isReady }">
+              {{ item.title }}
+              <v-chip v-if="!item.raw.isReady" size="x-small" color="warning" variant="flat" class="ml-2">Pending</v-chip>
+            </span>
+          </template>
+        </v-select>
       </div>
 
       <!-- Site Lists Container -->
@@ -325,9 +369,13 @@ watch(
                 :key="site.value"
                 :value="site"
                 @click="selectSite(site)"
-                class="site-list-item"
+                :class="['site-list-item', { 'site-not-ready': !site.isReady }]"
+                :disabled="!site.isReady"
               >
                 {{ site.title }}
+                <template v-slot:append v-if="!site.isReady">
+                  <v-chip size="x-small" color="warning" variant="flat">Pending</v-chip>
+                </template>
               </v-list-item>
               <v-list-item v-if="availableSitesList.length === 0">
                 <v-list-item-title class="text-grey">No sites available</v-list-item-title>
@@ -391,8 +439,7 @@ watch(
           hide-details
         ></v-select>
         <!-- Display the appropriate message -->
-        <div v-if="hasOnlyPlaceholder" class="custom-message">
-          {{ placeholderMessage }}
+        <div v-if="hasOnlyPlaceholder" class="custom-message" v-html="placeholderMessage">
         </div>
         <div v-else-if="speciesCountMessage" class="custom-message">
           {{ speciesCountMessage }}
@@ -454,6 +501,24 @@ watch(
 
 .site-list-item {
   cursor: pointer;
+}
+
+.site-list-item.site-not-ready {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.model-not-ready {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.model-not-ready:hover {
+  background-color: transparent !important;
+}
+
+.site-list-item.site-not-ready:hover {
+  background-color: transparent !important;
 }
 
 label {

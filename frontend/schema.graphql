@@ -2198,9 +2198,9 @@ unique or primary key constraints on table "model_inference_results"
 """
 enum model_inference_results_constraint {
   """
-  unique or primary key constraint on columns "id", "site_id"
+  unique or primary key constraint on columns "id", "record_id"
   """
-  model_inference_results_new_pkey
+  model_inference_results_pt_record_pkey
 }
 
 """
@@ -2296,7 +2296,7 @@ input model_inference_results_order_by {
 """primary key columns input for table: model_inference_results"""
 input model_inference_results_pk_columns_input {
   id: bigint!
-  site_id: bigint!
+  record_id: bigint!
 }
 
 """
@@ -3367,7 +3367,7 @@ type mutation_root {
   """
   delete single row from the table: "model_inference_results"
   """
-  delete_model_inference_results_by_pk(id: bigint!, site_id: bigint!): model_inference_results
+  delete_model_inference_results_by_pk(id: bigint!, record_id: bigint!): model_inference_results
 
   """
   delete data from the table: "model_labels"
@@ -4756,7 +4756,7 @@ type query_root {
   """
   fetch data from the table: "model_inference_results" using primary key columns
   """
-  model_inference_results_by_pk(id: bigint!, site_id: bigint!): model_inference_results
+  model_inference_results_by_pk(id: bigint!, record_id: bigint!): model_inference_results
 
   """An array relationship"""
   model_labels(
@@ -9102,7 +9102,7 @@ type subscription_root {
   """
   fetch data from the table: "model_inference_results" using primary key columns
   """
-  model_inference_results_by_pk(id: bigint!, site_id: bigint!): model_inference_results
+  model_inference_results_by_pk(id: bigint!, record_id: bigint!): model_inference_results
 
   """
   fetch data from the table in a streaming manner: "model_inference_results"
@@ -9643,4 +9643,3 @@ input timestamptz_comparison_exp {
   _neq: timestamptz
   _nin: [timestamptz!]
 }
-

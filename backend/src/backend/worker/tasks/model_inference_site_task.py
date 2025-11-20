@@ -3,7 +3,8 @@ import subprocess
 import shutil
 import time
 import pandas
-from sqlalchemy import func
+from io import StringIO
+from sqlalchemy import func, text  # Add text import
 from datetime import datetime
 from celery.utils.log import get_task_logger
 from collections import namedtuple
@@ -32,7 +33,7 @@ settings = WorkerSettings()
 logger.setLevel(settings.log_level)
 
 
-BATCH_SIZE = 100
+BATCH_SIZE = 1000  # Increased from 100 for better throughput
 
 
 @app.task(
@@ -74,6 +75,17 @@ def model_inference_site_task(
 
         if not model:
             raise Exception(f"Model {model_id} not found")
+
+        # CRITICAL: Optimize session for bulk inserts on heavily indexed partitioned table
+        logger.info("Optimizing database session for bulk inserts")
+        session.execute(text("SET session_replication_role = replica"))  # Skip FK triggers
+        session.execute(text("SET work_mem = '512MB'"))
+        session.execute(text("SET maintenance_work_mem = '1GB'"))
+        session.execute(text("SET synchronous_commit = OFF"))
+        session.execute(text("SET commit_delay = 100000"))
+        session.execute(text("SET commit_siblings = 5"))
+        session.commit()
+
         # detach model from session
         ModelData = namedtuple(
             "ModelData",
@@ -125,12 +137,12 @@ def model_inference_site_task(
             records = (
                 session.query(Records.id, Records.filepath, Records.filename)
                 .outerjoin(
-                    ModelInferenceResults,
-                    (Records.id == ModelInferenceResults.record_id)
-                    & (ModelInferenceResults.model_id == model_id),
+                    ModelInferenceLogs,
+                    (Records.id == ModelInferenceLogs.record_id)
+                    & (ModelInferenceLogs.model_id == model_id),
                 )
                 .filter(Records.site_id == site_id)
-                .filter(ModelInferenceResults.id.is_(None))
+                .filter(ModelInferenceLogs.id.is_(None))
                 .limit(BATCH_SIZE)
                 .all()
             )
@@ -206,38 +218,78 @@ def model_inference_site_task(
             df = pandas.read_pickle(os.path.join(job_temp_dir, "output.pkl"))
             # if confidence is 0 or below confidence resolution
             df = df[df["confidence"] >= 0.01]
+            if len(df) == 0:
+                # No results to insert, skip to next batch
+                continue
 
-            # Prepare ModelInferenceResults objects
-            results = []
-            for _, row in df.iterrows():
-                results.append({
-                    "record_id": record_name_to_id[row["filename"]],
-                    "model_id": model_id,
-                    "start_time": row["start_time"],
-                    "end_time": row["end_time"],
-                    "confidence": row["confidence"],
-                    "label_id": row["label_id"],
-                })
-            # Bulk insert results using mappings (faster than bulk_save_objects)
-            if results:
-                session.bulk_insert_mappings(ModelInferenceResults, results)
+            # Map filename to record_id and add model_id
+            df["record_id"] = df["filename"].map(record_name_to_id)
+            df["model_id"] = model_id
 
-            # Prepare ModelInferenceLogs objects
-            unique_filenames = df["filename"].unique()
-            logs = [
-                {
-                    "model_id": model_id,
-                    "record_id": record_name_to_id[filename],
-                    "analyzed": True,
-                }
-                for filename in unique_filenames
-            ]
-            if logs:
-                session.bulk_insert_mappings(ModelInferenceLogs, logs)
+            # CRITICAL: Sort by record_id for partition efficiency
+            # This ensures inserts go to the same partition sequentially,
+            # reducing partition switching overhead and improving cache utilization
+            df = df.sort_values("record_id")
+
+            # Select and reorder columns for insertion
+            df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
+
+            # Use COPY for maximum speed (10-50x faster than INSERT on indexed tables)
+            logger.info(f"Inserting {len(df_results)} results using COPY")
+            connection = session.connection().connection
+            cursor = connection.cursor()
+
+            # Create CSV buffer in memory
+            buffer = StringIO()
+            df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
+            buffer.seek(0)
+
+            # COPY from buffer to table (bypasses most index overhead)
+            cursor.copy_expert(
+                """
+                COPY model_inference_results_pt_record
+                (record_id, model_id, start_time, end_time, confidence, label_id)
+                FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
+                """,
+                buffer
+            )
+
+            # Insert logs using COPY
+            logs_df = pandas.DataFrame({
+                "model_id": model_id,
+                "record_id": sorted(df["record_id"].unique()),
+                "analyzed": True
+            })
+
+            logger.info(f"Inserting {len(logs_df)} logs using COPY")
+            logs_buffer = StringIO()
+            logs_df.to_csv(logs_buffer, index=False, header=False, sep='\t')
+            logs_buffer.seek(0)
+
+            cursor.copy_expert(
+                """
+                COPY model_inference_logs
+                (model_id, record_id, analyzed)
+                FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t')
+                """,
+                logs_buffer
+            )
+
+            cursor.close()
             session.commit()
             session.close()
             db_session.remove()
             session = db_session()
+
+            # Re-apply session optimizations after reconnecting
+            session.execute(text("SET session_replication_role = replica"))
+            session.execute(text("SET work_mem = '512MB'"))
+            session.execute(text("SET maintenance_work_mem = '1GB'"))
+            session.execute(text("SET synchronous_commit = OFF"))
+            session.execute(text("SET commit_delay = 100000"))
+            session.execute(text("SET commit_siblings = 5"))
+            session.commit()
+
             file_counter += len(records)
 
             JobService.update_job_progress_by_counter(
@@ -247,6 +299,7 @@ def model_inference_site_task(
             for file in os.listdir(job_temp_dir):
                 os.remove(os.path.join(job_temp_dir, file))
             JobService.updateResult(session, job_id, {"inferred_records": file_counter})
+
         JobService.update_job_progress(session, job_id, 100)
 
     except Exception as e:
@@ -255,9 +308,16 @@ def model_inference_site_task(
         logger.error(f"Task failed: {str(e)}")
         raise e
     finally:
-        # Uncomment this when you're ready to clean up
+        # Re-enable normal operation
+        try:
+            session.execute(text("SET session_replication_role = DEFAULT"))
+            session.commit()
+        except:
+            pass
+        # Clean up temp directory only if it exists
+        if os.path.exists(job_temp_dir):
+            shutil.rmtree(job_temp_dir)
 
-        shutil.rmtree(job_temp_dir)
     return {
         "status": "success",
         "message": f"Successfully analyzed {file_counter} records for site {site_id}",
