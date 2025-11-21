@@ -490,7 +490,7 @@ watch(
                 <v-list-item-title class="text-grey">Type at least 3 characters to search</v-list-item-title>
               </v-list-item>
               <v-list-item v-else>
-                <v-list-item-title class="text-grey">No species found</v-list-item-title>
+                <v-list-item-title class="text-grey"></v-list-item-title>
               </v-list-item>
             </template>
           </v-autocomplete>
