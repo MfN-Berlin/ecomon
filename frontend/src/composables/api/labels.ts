@@ -114,6 +114,119 @@ export const useLabelsSearch = () => {
     return Date.now() - timestamp < CACHE_TTL;
   };
 
+
+  const searchLabels = async (
+    modelId: number,
+    siteIds: number[],
+    year: number | string | null = null,
+    forceRefresh: boolean = false
+  ) => {
+    console.log(`searchLabels called with modelId=${modelId}, siteIds=${siteIds}, year=${year}, forceRefresh=${forceRefresh}`);
+
+    // Generate cache key
+    const cacheKey = getCacheKey(modelId, siteIds, year);
+
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && cache.has(cacheKey)) {
+      const cached = cache.get(cacheKey);
+      if (isCacheValid(cached.timestamp)) {
+        console.log(`Returning cached results for key: ${cacheKey}`);
+        data.value = { labels: cached.labels };
+        return;
+      } else {
+        console.log(`Cache expired for key: ${cacheKey}`);
+        cache.delete(cacheKey);
+      }
+    }
+
+    pending.value = true;
+    error.value = null;
+
+    if (pendingSearch) {
+      pendingSearch.cancel();
+    }
+
+    const controller = new AbortController();
+    pendingSearch = {
+      controller,
+      cancel: () => controller.abort()
+    };
+
+    try {
+      const config = useRuntimeConfig();
+
+      // Combine the two queries into one
+      const result = await $fetch(config.public.GQL_HOST, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: {
+          query: `
+            query getLabelsForSitesAndYear(
+              $modelId: Int!,
+              $siteIds: [bigint!]!,
+              $yearStart: timestamp,
+              $yearEnd: timestamp
+            ) {
+              model_inference_results_max_confidence(
+                where: {
+                  model_id: { _eq: $modelId },
+                  record: {
+                    site_id: { _in: $siteIds },
+                    record_datetime: {
+                      _gte: $yearStart,
+                      _lt: $yearEnd
+                    }
+                  }
+                },
+                distinct_on: [label_id],
+                order_by: [{ label_id: asc }]
+              ) {
+                label {
+                  id
+                  name
+                }
+              }
+            }
+          `,
+          variables: {
+            modelId,
+            siteIds,
+            yearStart: year ? `${year}-01-01T00:00:00` : null,
+            yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
+          },
+          signal: controller.signal
+        }
+      });
+
+      console.log("Raw GraphQL result:", result);
+
+      const labels = (result.data?.model_inference_results_max_confidence || [])
+        .map(mir => mir.label)
+        .filter(label => label != null);
+
+      labels.sort((a, b) => a.name.localeCompare(b.name));
+
+      console.log("Processed labels:", labels);
+
+      // Store in cache
+      cache.set(cacheKey, { labels, timestamp: Date.now() });
+      console.log(`Cached results for key: ${cacheKey}`);
+
+      data.value = { labels };
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        error.value = err;
+        console.error('Error searching labels:', err);
+      }
+    } finally {
+      if (pendingSearch && pendingSearch.controller === controller) {
+        pending.value = false;
+        pendingSearch = null;
+      }
+    }
+  };
+
+
   /**
    * Searches for distinct labels based on model_id, site_id and year
    * Results are cached for 5 minutes
@@ -123,7 +236,7 @@ export const useLabelsSearch = () => {
    * @param year - The year to filter records by (records where record_datetime is in this year)
    * @param forceRefresh - Force refresh even if cached data exists
    */
-  const searchLabels = async (
+  const searchLabels_OLD = async (
     modelId: number,
     siteIds: number[],
     year: number | string | null = null,

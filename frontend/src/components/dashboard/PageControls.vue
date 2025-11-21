@@ -35,6 +35,7 @@ const selectedSpecies = ref(null);
 const selectedSpeciesName = ref(null);
 const threshold = ref(props.defaultThreshold);
 const isUpdatingThreshold = ref(false);
+const speciesSearchInput = ref('');
 let thresholdTimeoutId = null;
 
 /*******************************************
@@ -72,12 +73,6 @@ const placeholderMessage = computed(() => {
     return props.availableSpecies[0]?.title || '';
   }
   return '';
-});
-const speciesCountMessage = computed(() => {
-  if (!hasOnlyPlaceholder.value && props.availableSpecies.length > 0) {
-    return `${props.availableSpecies.length} species found`;
-  }
-  return null; // No message if no species are found or placeholder applies
 });
 
 /***************
@@ -233,25 +228,46 @@ watch(
  *
 ****************/
 
-// Get the filtered species list for the dropdown - FIXED THE DUPLICATE COMPUTED PROPERTY
-const species = computed(() => {
-  console.log("Computing species list:");
+// Get the filtered species list for the dropdown based on search input
+const filteredSpecies = computed(() => {
+  console.log("Computing filtered species list:");
+  console.log("- speciesSearchInput:", speciesSearchInput.value);
   console.log("- selectedSpecies:", selectedSpecies.value);
 
-  let filteredSpecies = [];
+  // If search input is less than 3 characters and no species is selected, return empty array
+  if ((!speciesSearchInput.value || speciesSearchInput.value.length < 3) && !selectedSpecies.value) {
+    console.log("-> Returning empty array (less than 3 chars and no selection)");
+    return [];
+  }
+
+  let filtered = [];
 
   // Add all available species except placeholders
   if (!hasOnlyPlaceholder.value) {
-    filteredSpecies = props.availableSpecies.filter(item => !item.isPlaceholder);
+    console.log("- Filtering available species...");
+    filtered = props.availableSpecies.filter(item => {
+      console.log("  - Checking item:", item.title, "isPlaceholder:", item.isPlaceholder);
+      if (item.isPlaceholder) return false;
+
+      // If there's search input, filter by it
+      if (speciesSearchInput.value && speciesSearchInput.value.length >= 3) {
+        const matches = item.title.toLowerCase().includes(speciesSearchInput.value.toLowerCase());
+        console.log("    -> Search match:", matches, "for search:", speciesSearchInput.value);
+        return matches;
+      }
+
+      console.log("    -> Including (no search filter)");
+      return true;
+    });
   }
 
   // Ensure the currently selected species is included
   if (
     selectedSpecies.value &&
-    !filteredSpecies.some(s => s.value === selectedSpecies.value)
+    !filtered.some(s => s.value === selectedSpecies.value)
   ) {
     const speciesName = getSpeciesName(selectedSpecies.value);
-    filteredSpecies.push({
+    filtered.push({
       value: selectedSpecies.value,
       title: speciesName
         ? `${speciesName} (not in list)`
@@ -259,7 +275,35 @@ const species = computed(() => {
     });
   }
 
-  return filteredSpecies;
+  return filtered;
+});
+
+// Update the species computed property message
+const speciesCountMessage = computed(() => {
+  // Show message if not a placeholder and there are available species
+  if (!hasOnlyPlaceholder.value && props.availableSpecies.length > 0) {
+    const totalCount = props.availableSpecies.filter(s => !s.isPlaceholder).length;
+
+    // If no search input or less than 3 characters, show total count
+    if (!speciesSearchInput.value || speciesSearchInput.value.length < 3) {
+      const message = `${totalCount} species available - type to search`;
+      return message;
+    }
+    // If 3+ characters typed
+    else if (speciesSearchInput.value.length >= 3) {
+      const filteredCount = filteredSpecies.value.length;
+
+      // If exactly 1 species matches, show no message
+      if (filteredCount === 1) {
+        return null;
+      }
+
+      // Otherwise show the filtered count
+      const message = `${totalCount} species found`;
+      return message;
+    }
+  }
+  return null;
 });
 
 watch(
@@ -280,7 +324,7 @@ watch(
         // Keep the species selected but mark it as not in the list
         const speciesName = getSpeciesName(selectedSpecies.value);
         selectedSpeciesName.value = speciesName
-          ? `${speciesName} (not in list)`
+          ? `${speciesName}`
           : `Species ${selectedSpecies.value} (not in list)`;
       }
     } else if (hasOnlyPlaceholder.value) {
@@ -426,23 +470,37 @@ watch(
       <!-- Species Selector -->
       <div class="control-row horizontal align-inputs">
         <label for="species-select" class="label-inline text-right">Species</label>
-        <v-select
-          id="species-select"
-          v-model="selectedSpecies"
-          :items="species"
-          density="compact"
-          @update:model-value="debouncedUpdateSpecies"
-          class="inline-select species-select"
-          item-class="species-item"
-          clearable
-          :disabled="hasOnlyPlaceholder"
-          hide-details
-        ></v-select>
-        <!-- Display the appropriate message -->
-        <div v-if="hasOnlyPlaceholder" class="custom-message" v-html="placeholderMessage">
-        </div>
-        <div v-else-if="speciesCountMessage" class="custom-message">
-          {{ speciesCountMessage }}
+        <div class="select-with-message">
+          <v-autocomplete
+            id="species-select"
+            v-model="selectedSpecies"
+            v-model:search="speciesSearchInput"
+            :items="filteredSpecies"
+            density="compact"
+            @update:model-value="debouncedUpdateSpecies"
+            class="inline-select species-select"
+            item-class="species-item"
+            clearable
+            :disabled="hasOnlyPlaceholder"
+            placeholder="Type at least 3 characters..."
+            :no-filter="true"
+          >
+            <template v-slot:no-data>
+              <v-list-item v-if="speciesSearchInput && speciesSearchInput.length < 3">
+                <v-list-item-title class="text-grey">Type at least 3 characters to search</v-list-item-title>
+              </v-list-item>
+              <v-list-item v-else>
+                <v-list-item-title class="text-grey">No species found</v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+          <!-- Reserve space for messages -->
+          <div class="message-container">
+            <div v-if="hasOnlyPlaceholder" class="custom-message" v-html="placeholderMessage"></div>
+            <div v-else-if="speciesCountMessage" class="species-message success-message">
+              {{ speciesCountMessage }}
+            </div>
+          </div>
         </div>
       </div>
     </v-card-text>
@@ -565,7 +623,17 @@ label {
   margin-bottom: 0;
   min-width: 7em;
 }
+/* Label column styling */
+.label-col {
+  width: 7em;
+  min-width: 7em;
+  padding-right: 1em;
+}
 
+.label-col .label-inline {
+  padding-top: 0.5rem;
+  display: block;
+}
 .inline-select {
   flex: 1;
 }
@@ -598,8 +666,8 @@ label {
 /* Alignment for the inputs */
 .align-inputs {
   display: grid;
-  grid-template-columns: 7em 1fr;
-  align-items: center;
+  grid-template-columns: 7em 1fr; /* Fixed label width and flexible input width */
+  align-items: center; /* Aligns label and input vertically */
   gap: 0.75rem;
 }
 
@@ -608,8 +676,31 @@ label {
   text-align: right;
   margin-right: 0;
   padding-right: 1em;
+  padding-top: 0.25em; /* Adjusts vertical alignment */
 }
 
+/* Select with message container */
+.select-with-message {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Message styling */
+.species-message {
+  font-size: 0.75rem;
+  padding-top: 4px;
+  padding-left: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  font-style: italic;
+  min-height: 18px; /* Prevents layout shift */
+}
+
+.success-message {
+  color: #2e7d32;
+  font-weight: 500;
+}
 /* Input with hint on same line */
 .input-with-hint {
   display: flex;
@@ -628,13 +719,36 @@ label {
   display: flex;
   flex-direction: column;
 }
+/* Reserve space for messages to prevent layout shifts */
+.message-container {
+  min-height: 1.5rem; /* Adjust this value to match the height of your messages */
+}
+
+/* Styling for the species message */
+.species-message {
+  font-size: 0.75rem;
+  padding-top: 4px;
+  padding-left: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  font-style: italic;
+}
+
+/* Styling for the success message */
+.success-message {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+/* Styling for the placeholder message */
 .custom-message {
   font-size: 0.75rem;
   padding-top: 4px;
   color: rgba(0, 0, 0, 0.7);
   font-weight: normal;
   line-height: 1.2;
-  width: 40em;
-  margin-left: 9em;
+}
+/* Specific styling for the Species label */
+label[for="species-select"] {
+  margin-top: -3em;
 }
 </style>
