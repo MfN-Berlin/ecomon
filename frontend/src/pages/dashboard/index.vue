@@ -104,9 +104,7 @@ watch(
         "Sites:", sites.map(site => site.value),
         "Year:", year);
 
-      // Use the first selected site for now (could be enhanced to handle multiple sites)
-      console.log("108");
-      console.log(sites.map(site => site.value));
+      // handle multiple sites
       speciesLabelsSearch.searchLabels(model.value, sites.map(site => site.value), year);
 
     } else if (!model || !sites || sites.length === 0 || !year) {
