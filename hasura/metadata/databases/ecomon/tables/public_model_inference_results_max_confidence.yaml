@@ -1,5 +1,5 @@
 table:
-  name: model_inference_results
+  name: model_inference_results_max_confidence
   schema: public
 object_relationships:
   - name: label
@@ -10,15 +10,6 @@ object_relationships:
         insertion_order: null
         remote_table:
           name: labels
-          schema: public
-  - name: model
-    using:
-      manual_configuration:
-        column_mapping:
-          model_id: id
-        insertion_order: null
-        remote_table:
-          name: models
           schema: public
   - name: record
     using:

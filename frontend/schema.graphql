@@ -2132,7 +2132,6 @@ type model_inference_results {
   """An object relationship"""
   record: records
   record_id: bigint!
-  site_id: bigint!
   start_time: numeric!
 }
 
@@ -2169,7 +2168,6 @@ type model_inference_results_avg_fields {
   label_id: Float
   model_id: Float
   record_id: Float
-  site_id: Float
   start_time: Float
 }
 
@@ -2189,7 +2187,6 @@ input model_inference_results_bool_exp {
   model_id: Int_comparison_exp
   record: records_bool_exp
   record_id: bigint_comparison_exp
-  site_id: bigint_comparison_exp
   start_time: numeric_comparison_exp
 }
 
@@ -2213,7 +2210,6 @@ input model_inference_results_inc_input {
   label_id: Int
   model_id: Int
   record_id: bigint
-  site_id: bigint
   start_time: numeric
 }
 
@@ -2230,7 +2226,6 @@ input model_inference_results_insert_input {
   model_id: Int
   record: records_obj_rel_insert_input
   record_id: bigint
-  site_id: bigint
   start_time: numeric
 }
 
@@ -2242,7 +2237,6 @@ type model_inference_results_max_fields {
   label_id: Int
   model_id: Int
   record_id: bigint
-  site_id: bigint
   start_time: numeric
 }
 
@@ -2254,7 +2248,6 @@ type model_inference_results_min_fields {
   label_id: Int
   model_id: Int
   record_id: bigint
-  site_id: bigint
   start_time: numeric
 }
 
@@ -2289,7 +2282,6 @@ input model_inference_results_order_by {
   model_id: order_by
   record: records_order_by
   record_id: order_by
-  site_id: order_by
   start_time: order_by
 }
 
@@ -2322,9 +2314,6 @@ enum model_inference_results_select_column {
   record_id
 
   """column name"""
-  site_id
-
-  """column name"""
   start_time
 }
 
@@ -2338,7 +2327,6 @@ input model_inference_results_set_input {
   label_id: Int
   model_id: Int
   record_id: bigint
-  site_id: bigint
   start_time: numeric
 }
 
@@ -2350,7 +2338,6 @@ type model_inference_results_stddev_fields {
   label_id: Float
   model_id: Float
   record_id: Float
-  site_id: Float
   start_time: Float
 }
 
@@ -2362,7 +2349,6 @@ type model_inference_results_stddev_pop_fields {
   label_id: Float
   model_id: Float
   record_id: Float
-  site_id: Float
   start_time: Float
 }
 
@@ -2374,7 +2360,6 @@ type model_inference_results_stddev_samp_fields {
   label_id: Float
   model_id: Float
   record_id: Float
-  site_id: Float
   start_time: Float
 }
 
@@ -2397,7 +2382,6 @@ input model_inference_results_stream_cursor_value_input {
   label_id: Int
   model_id: Int
   record_id: bigint
-  site_id: bigint
   start_time: numeric
 }
 
@@ -2409,7 +2393,6 @@ type model_inference_results_sum_fields {
   label_id: Int
   model_id: Int
   record_id: bigint
-  site_id: bigint
   start_time: numeric
 }
 
@@ -2436,9 +2419,6 @@ enum model_inference_results_update_column {
   record_id
 
   """column name"""
-  site_id
-
-  """column name"""
   start_time
 }
 
@@ -2461,7 +2441,6 @@ type model_inference_results_var_pop_fields {
   label_id: Float
   model_id: Float
   record_id: Float
-  site_id: Float
   start_time: Float
 }
 
@@ -2473,7 +2452,6 @@ type model_inference_results_var_samp_fields {
   label_id: Float
   model_id: Float
   record_id: Float
-  site_id: Float
   start_time: Float
 }
 
@@ -2485,7 +2463,6 @@ type model_inference_results_variance_fields {
   label_id: Float
   model_id: Float
   record_id: Float
-  site_id: Float
   start_time: Float
 }
 
@@ -9643,3 +9620,4 @@ input timestamptz_comparison_exp {
   _neq: timestamptz
   _nin: [timestamptz!]
 }
+
