@@ -11,6 +11,15 @@ object_relationships:
         remote_table:
           name: labels
           schema: public
+  - name: model
+    using:
+      manual_configuration:
+        column_mapping:
+          model_id: id
+        insertion_order: null
+        remote_table:
+          name: models
+          schema: public
   - name: record
     using:
       manual_configuration:
