@@ -173,9 +173,34 @@ services:
     volumes:
       - redis_data:/data
 
+  airflow:
+    image: apache/airflow:2.7.2
+    depends_on:
+      - db
+    environment:
+#      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USERNAME}:${DB_PASSWORD}@postgres/ecomon
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/ecomon
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+#      - airflow_logs:/opt/airflow/logs
+      - ./.env:/opt/airflow/airflow.env
+      - ${BASE_DATA_DIRECTORY}:/data
+    ports:
+      - "8282:8080"
+    command: >
+      bash -c "airflow db init &&
+               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+               airflow scheduler & airflow webserver"
+    restart: always
+    networks:
+      - ecomon
+
 volumes:
   ecomon_data:
   redis_data:
+  airflow_logs:
 
 networks:
   ecomon:
