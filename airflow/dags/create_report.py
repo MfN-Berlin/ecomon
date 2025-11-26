@@ -11,7 +11,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
   start_date = datetime(year=2024, month=1, day=1, hour=9, minute=0),
   catchup=False,
 )
-def extract_data():
+def create_report():
 
   @task
   def get_sites_from_db():
@@ -47,11 +47,11 @@ def extract_data():
     return record_counts
 
   @task
-  def get_birdnet_processed_counts(sites):
-    """Fetch BirdNET-medium processed record counts for each site from the database"""
+  def get_birdid_medium_processed_counts(sites):
+    """Fetch BirdId-medium processed record counts for each site from the database"""
     postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-    birdnet_counts = {}
+    birdid_medium_counts = {}
 
     for site in sites:
       site_id = site["site_id"]
@@ -69,10 +69,10 @@ def extract_data():
 
       # Execute query and fetch result
       result = postgres_hook.get_first(query)
-      birdnet_counts[site_id] = result[0] if result else 0
+      birdid_medium_counts[site_id] = result[0] if result else 0
 
-    logging.info(f"Fetched BirdNET processed counts for {len(birdnet_counts)} sites")
-    return birdnet_counts
+    logging.info(f"Fetched BirdId Medium processed counts for {len(birdid_medium_counts)} sites")
+    return birdid_medium_counts
 
   @task
   def create_report():
@@ -197,16 +197,46 @@ def extract_data():
       return running_site_ids
 
   @task
-  def calculate_import_statuses(aggregated_data, record_counts, birdnet_counts, running_jobs):
-      """Calculate DB_IMPORT and BIRDID_MEDIUM statuses for each prefix"""
-      MAX_DIFF = 10
+  def get_birdid_medium_visible_counts(sites):
+      """Fetch BirdID-medium visible record counts (from max_confidence table) for each site"""
+      postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-      # Convert record_counts and birdnet_counts keys from strings to integers
+      birdid_visible_counts = {}
+
+      for site in sites:
+          site_id = site["site_id"]
+          query = f"""
+          WITH tmp_record_ids AS (
+              SELECT id
+              FROM records
+              WHERE site_id = {site_id}
+          )
+          SELECT count(distinct(mirmc.record_id))
+          FROM model_inference_results_max_confidence AS mirmc
+          WHERE mirmc.record_id = ANY (ARRAY(SELECT id FROM tmp_record_ids))
+          AND model_id=3
+          """
+
+          # Execute query and fetch result
+          result = postgres_hook.get_first(query)
+          birdid_visible_counts[site_id] = result[0] if result else 0
+
+      logging.info(f"Fetched BirdID Medium visible counts for {len(birdid_visible_counts)} sites")
+      return birdid_visible_counts
+
+  @task
+  def calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs):
+      """Calculate DB_IMPORT and BIRDID_MEDIUM statuses for each prefix"""
+      MAX_DIFF = 10  # acceptable difference between status "ready" and "ready with losses" and "update this"
+
+      # Convert record_counts and birdid_medium_counts keys from strings to integers
       record_counts = {int(k): v for k, v in record_counts.items()}
-      birdnet_counts = {int(k): v for k, v in birdnet_counts.items()}
+      birdid_medium_counts = {int(k): v for k, v in birdid_medium_counts.items()}
+      birdid_visible_counts = {int(k): v for k, v in birdid_visible_counts.items()}
 
       logging.info(f"Record counts: {record_counts}")
-      logging.info(f"BirdNET processed counts: {birdnet_counts}")
+      logging.info(f"BirdID Medium processed counts: {birdid_medium_counts}")
+      logging.info(f"BirdID Medium visible counts: {birdid_visible_counts}")
       logging.info(f"Running inference jobs for sites: {running_jobs}")
 
       enriched_rows = []
@@ -214,7 +244,8 @@ def extract_data():
       for data in aggregated_data:
           site_id = data["site_id"]
           record_count = record_counts.get(site_id, 0) if site_id else 0
-          birdnet_count = birdnet_counts.get(site_id, 0) if site_id else 0
+          birdid_medium_count = birdid_medium_counts.get(site_id, 0) if site_id else 0
+          birdid_visible_count = birdid_visible_counts.get(site_id, 0) if site_id else 0
           wav_count = data["wav_count"]
 
           # Calculate DB_IMPORT status
@@ -235,7 +266,7 @@ def extract_data():
           elif site_id in running_jobs:
               birdid_medium_status = "running"
           else:
-              diff = abs(record_count - birdnet_count)
+              diff = abs(record_count - birdid_medium_count)
               if diff == 0:
                   birdid_medium_status = "ready"
               elif diff <= MAX_DIFF:
@@ -243,7 +274,7 @@ def extract_data():
               else:
                   birdid_medium_status = "update this"
 
-          logging.info(f"Prefix: {data['prefix']}, Site ID: {site_id}, WAV files: {wav_count}, Records: {record_count}, BirdNET processed: {birdnet_count}, Status: {birdid_medium_status}")
+          logging.info(f"Prefix: {data['prefix']}, Site ID: {site_id}, WAV files: {wav_count}, Records: {record_count}, BirdNET processed: {birdid_medium_count}, Status: {birdid_medium_status}")
 
           enriched_rows.append({
               "prefix": data["prefix"],
@@ -252,41 +283,128 @@ def extract_data():
               "wav_count": wav_count,
               "record_count": record_count,
               "db_import": db_import_status,
-              "birdnet_processed": birdnet_count,
-              "birdid_medium": birdid_medium_status
+              "birdid_medium_processed": birdid_medium_count,
+              "birdid_medium": birdid_medium_status,
+              "birdid_medium_visible": birdid_visible_count
           })
 
       return enriched_rows
 
   @task
   def transform_data(rows):
-    df = pd.DataFrame(rows)
-    # Columns order: prefix, site_id, wav_size_bytes, wav_count, record_count, db_import, birdnet_processed, birdid_medium
-    df = df[["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count", "db_import", "birdnet_processed", "birdid_medium"]]
-    df = df.sort_values(by="prefix")
-    return df
+      df = pd.DataFrame(rows)
+      # Columns order: prefix, site_id, wav_size_bytes, wav_count, record_count, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible
+      df = df[["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count", "db_import", "birdid_medium_processed", "birdid_medium", "birdid_medium_visible"]]
+      df = df.sort_values(by="prefix")
+      return df
 
   @task
   def print_report(report_df):
-    logging.info("File count report:")
-    for index, row in report_df.iterrows():
-      size_mb = row['wav_size_bytes'] / (1024 * 1024)
-      site_info = f"{row['site_id']}" if pd.notna(row['site_id']) else "Unknown"
-      db_import_status = row['db_import'] if row['db_import'] else "N/A"
-      birdid_medium_status = row['birdid_medium'] if row['birdid_medium'] else "N/A"
-      logging.info(f"Prefix: {row['prefix']}, Site ID: {site_info}, Size: {size_mb:.2f} MB, WAV files: {row['wav_count']}, Records: {row['record_count']}, DB Import: {db_import_status}, BirdNET processed: {row['birdnet_processed']}, BirdID Medium: {birdid_medium_status}")
+      logging.info("File count report:")
+      for index, row in report_df.iterrows():
+          size_mb = row['wav_size_bytes'] / (1024 * 1024)
+          site_info = f"{row['site_id']}" if pd.notna(row['site_id']) else "Unknown"
+          db_import_status = row['db_import'] if row['db_import'] else "N/A"
+          birdid_medium_status = row['birdid_medium'] if row['birdid_medium'] else "N/A"
+          logging.info(f"Prefix: {row['prefix']}, Site ID: {site_info}, Size: {size_mb:.2f} MB, WAV files: {row['wav_count']}, Records: {row['record_count']}, DB Import: {db_import_status}, BirdId Medium processed: {row['birdid_medium_processed']}, BirdID Medium: {birdid_medium_status}, Visible in UI: {row['birdid_medium_visible']}")
+
+  @task
+  def create_report_table():
+      """Create the report table if it doesn't exist"""
+      postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+
+      create_table_query = """
+      CREATE TABLE IF NOT EXISTS workflow_reports (
+          id SERIAL PRIMARY KEY,
+          report_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          prefix VARCHAR(50) NOT NULL,
+          site_id INTEGER,
+          wav_size_bytes BIGINT,
+          wav_count INTEGER,
+          record_count INTEGER,
+          db_import VARCHAR(50),
+          birdid_medium_processed INTEGER,
+          birdid_medium VARCHAR(50),
+          birdid_medium_visible INTEGER,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT fk_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_workflow_reports_date ON workflow_reports(report_date);
+      CREATE INDEX IF NOT EXISTS idx_workflow_reports_site_id ON workflow_reports(site_id);
+      CREATE INDEX IF NOT EXISTS idx_workflow_reports_prefix ON workflow_reports(prefix);
+      """
+
+      postgres_hook.run(create_table_query)
+      logging.info("Report table created or already exists")
+
+  @task
+  def save_report_to_db(report_df):
+      """Save the report data to the database"""
+      postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+
+      # Delete today's report if it exists (to avoid duplicates on re-runs)
+      delete_today_query = """
+      DELETE FROM workflow_reports
+      WHERE DATE(report_date) = CURRENT_DATE
+      """
+      postgres_hook.run(delete_today_query)
+      logging.info("Deleted today's existing report (if any)")
+
+      # Clear old reports (optional - keep last 30 days)
+      delete_old_query = """
+      DELETE FROM workflow_reports
+      WHERE report_date < CURRENT_TIMESTAMP - INTERVAL '30 days'
+      """
+      postgres_hook.run(delete_old_query)
+      logging.info("Cleared old reports (older than 30 days)")
+
+      # Insert new report data
+      insert_query = """
+      INSERT INTO workflow_reports (
+          report_date, prefix, site_id, wav_size_bytes, wav_count,
+          record_count, db_import, birdid_medium_processed,
+          birdid_medium, birdid_medium_visible
+      ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+      """
+
+      report_date = datetime.now()
+      rows_inserted = 0
+
+      for index, row in report_df.iterrows():
+          values = (
+              report_date,
+              row['prefix'],
+              int(row['site_id']) if pd.notna(row['site_id']) else None,
+              int(row['wav_size_bytes']) if pd.notna(row['wav_size_bytes']) else None,
+              int(row['wav_count']) if pd.notna(row['wav_count']) else None,
+              int(row['record_count']) if pd.notna(row['record_count']) else None,
+              row['db_import'] if row['db_import'] else None,
+              int(row['birdid_medium_processed']) if pd.notna(row['birdid_medium_processed']) else None,
+              row['birdid_medium'] if row['birdid_medium'] else None,
+              int(row['birdid_medium_visible']) if pd.notna(row['birdid_medium_visible']) else None
+          )
+
+          postgres_hook.run(insert_query, parameters=values)
+          rows_inserted += 1
+
+      logging.info(f"Saved {rows_inserted} rows to workflow_reports table")
+      return rows_inserted
 
   # Task dependencies
   sites = get_sites_from_db()
+  create_report_table()
   record_counts = get_record_counts_from_db(sites)
-  birdnet_counts = get_birdnet_processed_counts(sites)
+  birdid_medium_counts = get_birdid_medium_processed_counts(sites)
+  birdid_visible_counts = get_birdid_medium_visible_counts(sites)
   running_jobs = get_running_inference_jobs()
   rows = create_report()
   rows = list_wavs(rows)
   rows = calculate_wav_sizes(rows)
   aggregated_data = aggregate_wav_data_by_prefix(rows, sites)
-  enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdnet_counts, running_jobs)
+  enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs)
   report_df = transform_data(enriched_data)
   print_report(report_df)
+  save_report_to_db(report_df)  # Save to database
 
-extract_data()
+create_report()

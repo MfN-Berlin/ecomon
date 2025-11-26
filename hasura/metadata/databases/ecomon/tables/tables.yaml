@@ -14,3 +14,4 @@
 - "!include public_site_directories.yaml"
 - "!include public_site_reports.yaml"
 - "!include public_sites.yaml"
+- "!include public_workflow_reports.yaml"

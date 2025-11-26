@@ -1,9 +1,9 @@
 <!--
   SideDrawer.vue
-  
+
   Description:
     Main navigation drawer component that provides primary navigation for the application.
-    Features a collapsible sidebar with hierarchical menu structure supporting both 
+    Features a collapsible sidebar with hierarchical menu structure supporting both
     regular navigation items and grouped sub-items.
 
   Key Functionalities:
@@ -56,7 +56,15 @@ const links: NavigationPoint[] = [
       { icon: "mdi-record-rec", text: "Records", route: "/records" },
       { icon: "mdi-bird", text: "Labels", route: "/labels" }
     ]
-  }
+  },
+  {
+    icon: "mdi-transit-connection-variant",
+    text: "Workflow",
+    childs: [
+      { icon: "mdi-chart-box-outline", text: "Overview", route: "/workflow" },
+      { icon: "mdi-play-circle-outline", text: "Jobs", route: "/jobs" }
+    ]
+  },
 ];
 
 const drawerVisible = computed({
