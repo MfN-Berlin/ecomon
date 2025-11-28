@@ -1,81 +1,69 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h4 mb-4">Workflow Overview</h1>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title>
-            <v-icon left>mdi-chart-box-outline</v-icon>
-            Workflow Reports
-            <v-spacer></v-spacer>
-            <v-btn
-              color="primary"
-              @click="refetch"
-              :loading="pending"
-              prepend-icon="mdi-refresh"
-            >
-              Refresh
-            </v-btn>
-          </v-card-title>
-          <v-card-text>
-            <!-- Show error if any -->
-            <v-alert v-if="error" type="error" class="mb-4">
-              {{ error }}
-            </v-alert>
-
-            <v-data-table
-              :headers="headers"
-              :items="reports"
-              :loading="pending"
-              :items-per-page="25"
-              class="elevation-1"
-            >
-                <!-- Format file size -->
-              <template #item.wav_size_bytes="{ item }">
-                {{ formatBytes(item.wav_size_bytes) }}
-              </template>
-
-              <!-- Format report date -->
-              <template #item.report_date="{ item }">
-                {{ formatDate(item.report_date) }}
-              </template>
-
-              <!-- Color code DB Import status -->
-              <template #item.db_import="{ item }">
-                <v-chip
-                  :color="getStatusColor(item.db_import)"
-                  size="small"
-                  v-if="item.db_import"
-                >
-                  {{ item.db_import }}
-                </v-chip>
-              </template>
-
-              <!-- Color code BirdID Medium status -->
-              <template #item.birdid_medium="{ item }">
-                <v-chip
-                  :color="getStatusColor(item.birdid_medium)"
-                  size="small"
-                  v-if="item.birdid_medium"
-                >
-                  {{ item.birdid_medium }}
-                </v-chip>
-              </template>
-
-              <!-- Empty state -->
-              <template #no-data>
-                <v-alert type="info" class="my-4">
-                  No workflow reports available. Reports are generated daily at 3:00 AM.
-                </v-alert>
-              </template>
-            </v-data-table>
-          </v-card-text>
-        </v-card>
+  <v-container fluid class="pa-0 ma-0">
+    <v-row no-gutters>
+      <v-col cols="12" class="pa-0">
+        <v-data-table
+          :headers="headers"
+          :items="reports"
+          :loading="pending"
+          :items-per-page="25"
+          class="elevation-0 custom-table-margin"
+          density="compact"
+        >
+          <template #item.db_import="{ item }">
+            <span :class="getStatusColor(item.db_import)">
+              {{ item.db_import }}
+            </span>
+          </template>
+          <template #item.birdid_medium="{ item }">
+            <span :class="getStatusColor(item.birdid_medium)">
+              {{ item.birdid_medium }}
+            </span>
+          </template>
+          <template #item.report_date="{ item }">
+            {{ formatDate(item.report_date) }}
+          </template>
+          <template #bottom>
+            <table>
+              <colgroup>
+                <col style="width: 200px;" />
+                <col style="width: 240px;" />
+                <col style="width: 60px;" />
+                <col style="width: 180px;" />
+                <col style="width: 120px;" />
+                <col style="width: 120px;" />
+                <col style="width: 120px;" />
+                <col style="width: 120px;" />
+                <col style="width: 150px;" />
+                <col style="width: 130px;" />
+              </colgroup>
+              <tfoot>
+                <tr class="totals-row">
+                  <td class="v-data-table__td"><strong>Totals:</strong></td>
+                  <td class="v-data-table__td"></td>
+                  <td class="v-data-table__td"></td>
+                  <td class="v-data-table__td v-data-table-column--align-end">{{ (totalSize / (1024**4)).toFixed(4) }} TB</td>
+                  <td class="v-data-table__td v-data-table-column--align-end">{{ totalWavCount.toLocaleString() }}</td>
+                  <td class="v-data-table__td v-data-table-column--align-end">
+                    {{ totalRecords.toLocaleString() }}
+                    <span v-if="totalRecords > 0 && totalWavCount > 0">
+                      ({{ ((totalWavCount / totalRecords) * 100).toFixed(2) }}%)
+                    </span>
+                  </td>
+                  <td class="v-data-table__td v-data-table-column--align-center"></td>
+                  <td class="v-data-table__td v-data-table-column--align-end">
+                    {{ totalProcessed.toLocaleString() }}
+                    <span v-if="totalRecords > 0 && totalProcessed > 0">
+                      ({{ ((totalProcessed / totalRecords) * 100).toFixed(2) }}%)
+                    </span>
+                  </td>
+                  <td class="v-data-table__td v-data-table-column--align-center"></td>
+                  <td class="v-data-table__td"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </template>
+        </v-data-table>
       </v-col>
     </v-row>
   </v-container>
@@ -176,20 +164,36 @@ const reports = computed(() => {
   return filtered;
 });
 
+// Calculate totals
+const totalSize = computed(() => {
+  return reports.value.reduce((sum, report) => sum + (report.wav_size_bytes || 0), 0);
+});
+
+const totalWavCount = computed(() => {
+  return reports.value.reduce((sum, report) => sum + (report.wav_count || 0), 0);
+});
+
+const totalRecords = computed(() => {
+  return reports.value.reduce((sum, report) => sum + (report.record_count || 0), 0);
+});
+
+const totalProcessed = computed(() => {
+  return reports.value.reduce((sum, report) => sum + (report.birdid_medium_processed || 0), 0);
+});
+
 // Table headers
 const headers = [
-  { title: 'Report Date', key: 'report_date', sortable: true },
-  { title: 'Prefix', key: 'prefix', sortable: true },
-  { title: 'Site ID', key: 'site_id', sortable: true },
-  { title: 'WAV Size', key: 'wav_size_bytes', sortable: true },
-  { title: 'WAV Count', key: 'wav_count', sortable: true },
-  { title: 'Records', key: 'record_count', sortable: true },
-  { title: 'DB Import', key: 'db_import', sortable: true },
-  { title: 'BirdID Processed', key: 'birdid_medium_processed', sortable: true },
-  { title: 'BirdID Status', key: 'birdid_medium', sortable: true },
-  { title: 'Visible in UI', key: 'birdid_medium_visible', sortable: true },
+  { title: 'Report Date', key: 'report_date', sortable: true, width: '200px' },
+  { title: 'Prefix', key: 'prefix', sortable: true, width: '240px' },
+  { title: 'Site ID', key: 'site_id', sortable: true, width: '60px', align: 'end' },
+  { title: 'WAV Size', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
+  { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
+  { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
+  { title: 'DB Import', key: 'db_import', sortable: true, width: '120px', align: 'center' },
+  { title: 'BirdID Processed', key: 'birdid_medium_processed', sortable: true, width: '120px', align: 'end' },
+  { title: 'BirdID Status', key: 'birdid_medium', sortable: true, width: '150px', align: 'center'  },
+  { title: 'Visible in UI', key: 'birdid_medium_visible', sortable: true, width: '130px', align: 'end' },
 ];
-
 // Format bytes to human readable format
 const formatBytes = (bytes: number): string => {
   if (!bytes || bytes === 0) return '0 B';
@@ -202,29 +206,30 @@ const formatBytes = (bytes: number): string => {
 // Format date to readable format
 const formatDate = (date: string): string => {
   if (!date) return '';
-  return new Date(date).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
 // Get color based on status
 const getStatusColor = (status: string): string => {
-  if (!status) return 'grey';
+  console.log('Status:', status); // Debugging line
+  if (!status) return 'status-default';
   switch (status.toLowerCase()) {
     case 'ready':
-      return 'success';
+      return 'status-ready';
     case 'ready with losses':
-      return 'warning';
+      return 'status-ready-losses';
     case 'update this':
-      return 'error';
+      return 'status-update';
     case 'running':
-      return 'info';
+      return 'status-running';
     default:
-      return 'grey';
+      return 'status-default';
   }
 };
 
@@ -235,5 +240,64 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Add custom styles here if needed */
+.custom-table-margin {
+  margin-left: -1em;
+}
+
+.totals-row {
+  background-color: yellow !important;
+}
+
+.totals-row .v-data-table__td {
+  padding: 12px 16px !important;
+  font-size: 0.875rem;
+}
+.totals-row .v-data-table-column--align-end,
+.totals-row .align-end {
+  text-align: right !important;
+}
+
+.totals-row .align-center {
+  text-align: center !important;
+}
+.v-data-table {
+  width: 90%;
+}
+
+/* Status styles */
+.status-ready {
+  color: white;
+  background-color: green !important;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-ready-losses {
+  color: black;
+  background-color: yellowgreen !important;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-update {
+  color: white;
+  background-color: magenta !important;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-running {
+  color: black;
+  background-color: lightgray !important;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-default {
+  color: gray;
+}
 </style>
