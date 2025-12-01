@@ -190,8 +190,8 @@ const headers = [
   { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
   { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
   { title: 'DB Import', key: 'db_import', sortable: true, width: '120px', align: 'center' },
-  { title: 'BirdID Processed', key: 'birdid_medium_processed', sortable: true, width: '120px', align: 'end' },
-  { title: 'BirdID Status', key: 'birdid_medium', sortable: true, width: '150px', align: 'center'  },
+  { title: 'BirdID Medium Processed', key: 'birdid_medium_processed', sortable: true, width: '120px', align: 'end' },
+  { title: 'BirdID Medium Status', key: 'birdid_medium', sortable: true, width: '150px', align: 'center'  },
   { title: 'Visible in UI', key: 'birdid_medium_visible', sortable: true, width: '130px', align: 'end' },
 ];
 // Format bytes to human readable format
@@ -224,8 +224,8 @@ const getStatusColor = (status: string): string => {
       return 'status-ready';
     case 'ready with losses':
       return 'status-ready-losses';
-    case 'update this':
-      return 'status-update';
+    case 'pending': // Changed from "update this" to "pending"
+      return 'status-pending';
     case 'running':
       return 'status-running';
     default:
@@ -261,7 +261,7 @@ onMounted(() => {
   text-align: center !important;
 }
 .v-data-table {
-  width: 90%;
+  width: 95%;
 }
 
 /* Status styles */
@@ -281,7 +281,7 @@ onMounted(() => {
   border-radius: 4px;
 }
 
-.status-update {
+.status-pending {
   color: white;
   background-color: magenta !important;
   font-weight: bold;
