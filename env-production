@@ -9,6 +9,7 @@ DB_HOST=db
 DB_PORT=5432
 DB_NAME=ecomon
 PGDATA_PATH=YOUR_DATA_DIRECTORY/docker/data/volumes/akwamo-webservice-next_ecomon_data
+PGBACKUP_PATH=YOUR_BACKUP_DIRECTORY
 
 BASE_DATA_DIRECTORY=/mnt/akwamodata
 REDIS_HOST=redis
