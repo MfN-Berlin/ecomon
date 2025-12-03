@@ -23,6 +23,10 @@
           <template #item.report_date="{ item }">
             {{ formatDate(item.report_date) }}
           </template>
+          <template #item.visible_in_ui="{ item }">
+            <v-icon v-if="item.visible_in_ui" color="green">mdi-check</v-icon>
+            <v-icon v-else color="red">mdi-close</v-icon>
+          </template>
           <template #bottom>
             <table>
               <colgroup>
@@ -192,7 +196,7 @@ const headers = [
   { title: 'DB Import', key: 'db_import', sortable: true, width: '120px', align: 'center' },
   { title: 'BirdID Medium Processed', key: 'birdid_medium_processed', sortable: true, width: '120px', align: 'end' },
   { title: 'BirdID Medium Status', key: 'birdid_medium', sortable: true, width: '150px', align: 'center'  },
-  { title: 'Visible in UI', key: 'birdid_medium_visible', sortable: true, width: '130px', align: 'end' },
+  { title: 'Visible in UI', key: 'visible_in_ui', sortable: true, width: '130px', align: 'center' },
 ];
 // Format bytes to human readable format
 const formatBytes = (bytes: number): string => {

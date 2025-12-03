@@ -10338,6 +10338,7 @@ type workflow_reports {
   record_count: Int
   report_date: timestamp!
   site_id: Int
+  visible_in_ui: Boolean
   wav_count: Int
   wav_size_bytes: bigint
 }
@@ -10395,6 +10396,7 @@ input workflow_reports_bool_exp {
   record_count: Int_comparison_exp
   report_date: timestamp_comparison_exp
   site_id: Int_comparison_exp
+  visible_in_ui: Boolean_comparison_exp
   wav_count: Int_comparison_exp
   wav_size_bytes: bigint_comparison_exp
 }
@@ -10436,6 +10438,7 @@ input workflow_reports_insert_input {
   record_count: Int
   report_date: timestamp
   site_id: Int
+  visible_in_ui: Boolean
   wav_count: Int
   wav_size_bytes: bigint
 }
@@ -10504,6 +10507,7 @@ input workflow_reports_order_by {
   record_count: order_by
   report_date: order_by
   site_id: order_by
+  visible_in_ui: order_by
   wav_count: order_by
   wav_size_bytes: order_by
 }
@@ -10548,6 +10552,9 @@ enum workflow_reports_select_column {
   site_id
 
   """column name"""
+  visible_in_ui
+
+  """column name"""
   wav_count
 
   """column name"""
@@ -10568,6 +10575,7 @@ input workflow_reports_set_input {
   record_count: Int
   report_date: timestamp
   site_id: Int
+  visible_in_ui: Boolean
   wav_count: Int
   wav_size_bytes: bigint
 }
@@ -10628,6 +10636,7 @@ input workflow_reports_stream_cursor_value_input {
   record_count: Int
   report_date: timestamp
   site_id: Int
+  visible_in_ui: Boolean
   wav_count: Int
   wav_size_bytes: bigint
 }
@@ -10676,6 +10685,9 @@ enum workflow_reports_update_column {
 
   """column name"""
   site_id
+
+  """column name"""
+  visible_in_ui
 
   """column name"""
   wav_count

@@ -326,6 +326,7 @@ def create_report():
           birdid_medium_processed INTEGER,
           birdid_medium VARCHAR(50),
           birdid_medium_visible INTEGER,
+          visible_in_ui BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT fk_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
       );

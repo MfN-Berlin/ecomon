@@ -1,0 +1,14 @@
+http:
+  routers:
+    airflow-router:
+      rule: host(`{{env "DOMAIN"}}`) && PathPrefix(`{{env "SUB_PATH"}}/airflow`)
+      service: airflow-service
+      entryPoints:
+        - web
+
+  services:
+    airflow-service:
+      loadBalancer:
+        servers:
+          - url: "http://airflow:8080"
+        passHostHeader: true
