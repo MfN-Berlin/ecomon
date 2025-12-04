@@ -1,0 +1,22 @@
+table:
+  name: workflow_reports
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - wav_size_bytes
+        - birdid_medium
+        - db_import
+        - prefix
+        - birdid_medium_processed
+        - birdid_medium_visible
+        - id
+        - record_count
+        - site_id
+        - wav_count
+        - created_at
+        - report_date
+      filter: {}
+      allow_aggregations: true
+    comment: ""

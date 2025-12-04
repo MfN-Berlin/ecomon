@@ -2229,6 +2229,363 @@ input model_inference_results_insert_input {
   start_time: numeric
 }
 
+"""
+columns and relationships of "model_inference_results_max_confidence"
+"""
+type model_inference_results_max_confidence {
+  confidence: Float!
+  end_time: numeric!
+  id: bigint!
+
+  """An object relationship"""
+  label: labels
+  label_id: Int!
+
+  """An object relationship"""
+  model: models
+  model_id: Int!
+
+  """An object relationship"""
+  record: records
+  record_id: bigint!
+  start_time: numeric!
+}
+
+"""
+aggregated selection of "model_inference_results_max_confidence"
+"""
+type model_inference_results_max_confidence_aggregate {
+  aggregate: model_inference_results_max_confidence_aggregate_fields
+  nodes: [model_inference_results_max_confidence!]!
+}
+
+"""
+aggregate fields of "model_inference_results_max_confidence"
+"""
+type model_inference_results_max_confidence_aggregate_fields {
+  avg: model_inference_results_max_confidence_avg_fields
+  count(columns: [model_inference_results_max_confidence_select_column!], distinct: Boolean): Int!
+  max: model_inference_results_max_confidence_max_fields
+  min: model_inference_results_max_confidence_min_fields
+  stddev: model_inference_results_max_confidence_stddev_fields
+  stddev_pop: model_inference_results_max_confidence_stddev_pop_fields
+  stddev_samp: model_inference_results_max_confidence_stddev_samp_fields
+  sum: model_inference_results_max_confidence_sum_fields
+  var_pop: model_inference_results_max_confidence_var_pop_fields
+  var_samp: model_inference_results_max_confidence_var_samp_fields
+  variance: model_inference_results_max_confidence_variance_fields
+}
+
+"""aggregate avg on columns"""
+type model_inference_results_max_confidence_avg_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""
+Boolean expression to filter rows from the table "model_inference_results_max_confidence". All fields are combined with a logical 'AND'.
+"""
+input model_inference_results_max_confidence_bool_exp {
+  _and: [model_inference_results_max_confidence_bool_exp!]
+  _not: model_inference_results_max_confidence_bool_exp
+  _or: [model_inference_results_max_confidence_bool_exp!]
+  confidence: Float_comparison_exp
+  end_time: numeric_comparison_exp
+  id: bigint_comparison_exp
+  label: labels_bool_exp
+  label_id: Int_comparison_exp
+  model: models_bool_exp
+  model_id: Int_comparison_exp
+  record: records_bool_exp
+  record_id: bigint_comparison_exp
+  start_time: numeric_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "model_inference_results_max_confidence"
+"""
+enum model_inference_results_max_confidence_constraint {
+  """
+  unique or primary key constraint on columns "label_id", "record_id"
+  """
+  model_inference_results_max_confidence_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "model_inference_results_max_confidence"
+"""
+input model_inference_results_max_confidence_inc_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""
+input type for inserting data into table "model_inference_results_max_confidence"
+"""
+input model_inference_results_max_confidence_insert_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label: labels_obj_rel_insert_input
+  label_id: Int
+  model: models_obj_rel_insert_input
+  model_id: Int
+  record: records_obj_rel_insert_input
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate max on columns"""
+type model_inference_results_max_confidence_max_fields {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate min on columns"""
+type model_inference_results_max_confidence_min_fields {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""
+response of any mutation on the table "model_inference_results_max_confidence"
+"""
+type model_inference_results_max_confidence_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [model_inference_results_max_confidence!]!
+}
+
+"""
+on_conflict condition type for table "model_inference_results_max_confidence"
+"""
+input model_inference_results_max_confidence_on_conflict {
+  constraint: model_inference_results_max_confidence_constraint!
+  update_columns: [model_inference_results_max_confidence_update_column!]! = []
+  where: model_inference_results_max_confidence_bool_exp
+}
+
+"""
+Ordering options when selecting data from "model_inference_results_max_confidence".
+"""
+input model_inference_results_max_confidence_order_by {
+  confidence: order_by
+  end_time: order_by
+  id: order_by
+  label: labels_order_by
+  label_id: order_by
+  model: models_order_by
+  model_id: order_by
+  record: records_order_by
+  record_id: order_by
+  start_time: order_by
+}
+
+"""
+primary key columns input for table: model_inference_results_max_confidence
+"""
+input model_inference_results_max_confidence_pk_columns_input {
+  label_id: Int!
+  record_id: bigint!
+}
+
+"""
+select columns of table "model_inference_results_max_confidence"
+"""
+enum model_inference_results_max_confidence_select_column {
+  """column name"""
+  confidence
+
+  """column name"""
+  end_time
+
+  """column name"""
+  id
+
+  """column name"""
+  label_id
+
+  """column name"""
+  model_id
+
+  """column name"""
+  record_id
+
+  """column name"""
+  start_time
+}
+
+"""
+input type for updating data in table "model_inference_results_max_confidence"
+"""
+input model_inference_results_max_confidence_set_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate stddev on columns"""
+type model_inference_results_max_confidence_stddev_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type model_inference_results_max_confidence_stddev_pop_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type model_inference_results_max_confidence_stddev_samp_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""
+Streaming cursor of the table "model_inference_results_max_confidence"
+"""
+input model_inference_results_max_confidence_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: model_inference_results_max_confidence_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input model_inference_results_max_confidence_stream_cursor_value_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate sum on columns"""
+type model_inference_results_max_confidence_sum_fields {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""
+update columns of table "model_inference_results_max_confidence"
+"""
+enum model_inference_results_max_confidence_update_column {
+  """column name"""
+  confidence
+
+  """column name"""
+  end_time
+
+  """column name"""
+  id
+
+  """column name"""
+  label_id
+
+  """column name"""
+  model_id
+
+  """column name"""
+  record_id
+
+  """column name"""
+  start_time
+}
+
+input model_inference_results_max_confidence_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: model_inference_results_max_confidence_inc_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: model_inference_results_max_confidence_set_input
+
+  """filter the rows which have to be updated"""
+  where: model_inference_results_max_confidence_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type model_inference_results_max_confidence_var_pop_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate var_samp on columns"""
+type model_inference_results_max_confidence_var_samp_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate variance on columns"""
+type model_inference_results_max_confidence_variance_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
 """aggregate max on columns"""
 type model_inference_results_max_fields {
   confidence: Float
@@ -3347,6 +3704,19 @@ type mutation_root {
   delete_model_inference_results_by_pk(id: bigint!, record_id: bigint!): model_inference_results
 
   """
+  delete data from the table: "model_inference_results_max_confidence"
+  """
+  delete_model_inference_results_max_confidence(
+    """filter the rows which have to be deleted"""
+    where: model_inference_results_max_confidence_bool_exp!
+  ): model_inference_results_max_confidence_mutation_response
+
+  """
+  delete single row from the table: "model_inference_results_max_confidence"
+  """
+  delete_model_inference_results_max_confidence_by_pk(label_id: Int!, record_id: bigint!): model_inference_results_max_confidence
+
+  """
   delete data from the table: "model_labels"
   """
   delete_model_labels(
@@ -3462,6 +3832,19 @@ type mutation_root {
   delete single row from the table: "sites"
   """
   delete_sites_by_pk(id: bigint!): sites
+
+  """
+  delete data from the table: "workflow_reports"
+  """
+  delete_workflow_reports(
+    """filter the rows which have to be deleted"""
+    where: workflow_reports_bool_exp!
+  ): workflow_reports_mutation_response
+
+  """
+  delete single row from the table: "workflow_reports"
+  """
+  delete_workflow_reports_by_pk(id: Int!): workflow_reports
   inferenceSiteTimespan(inferenceSiteRequestInput: InferenceSiteRequestInput!): InferenceSiteResponse
 
   """
@@ -3584,6 +3967,28 @@ type mutation_root {
     """upsert condition"""
     on_conflict: model_inference_results_on_conflict
   ): model_inference_results_mutation_response
+
+  """
+  insert data into the table: "model_inference_results_max_confidence"
+  """
+  insert_model_inference_results_max_confidence(
+    """the rows to be inserted"""
+    objects: [model_inference_results_max_confidence_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: model_inference_results_max_confidence_on_conflict
+  ): model_inference_results_max_confidence_mutation_response
+
+  """
+  insert a single row into the table: "model_inference_results_max_confidence"
+  """
+  insert_model_inference_results_max_confidence_one(
+    """the row to be inserted"""
+    object: model_inference_results_max_confidence_insert_input!
+
+    """upsert condition"""
+    on_conflict: model_inference_results_max_confidence_on_conflict
+  ): model_inference_results_max_confidence
 
   """
   insert a single row into the table: "model_inference_results"
@@ -3793,6 +4198,28 @@ type mutation_root {
     """upsert condition"""
     on_conflict: sites_on_conflict
   ): sites
+
+  """
+  insert data into the table: "workflow_reports"
+  """
+  insert_workflow_reports(
+    """the rows to be inserted"""
+    objects: [workflow_reports_insert_input!]!
+
+    """upsert condition"""
+    on_conflict: workflow_reports_on_conflict
+  ): workflow_reports_mutation_response
+
+  """
+  insert a single row into the table: "workflow_reports"
+  """
+  insert_workflow_reports_one(
+    """the row to be inserted"""
+    object: workflow_reports_insert_input!
+
+    """upsert condition"""
+    on_conflict: workflow_reports_on_conflict
+  ): workflow_reports
   scanAllSiteDirectories(siteDirectoriesScanRequestInput: SiteDirectoriesScanRequestInput!): SiteDirectoriesScanResponse
   scanSiteDirectory(siteDirectoryScanRequestInput: SiteDirectoryScanRequestInput!): SiteDirectoryScanResponse
 
@@ -4041,6 +4468,40 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [model_inference_results_updates!]!
   ): [model_inference_results_mutation_response]
+
+  """
+  update data of the table: "model_inference_results_max_confidence"
+  """
+  update_model_inference_results_max_confidence(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_inference_results_max_confidence_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_inference_results_max_confidence_set_input
+
+    """filter the rows which have to be updated"""
+    where: model_inference_results_max_confidence_bool_exp!
+  ): model_inference_results_max_confidence_mutation_response
+
+  """
+  update single row of the table: "model_inference_results_max_confidence"
+  """
+  update_model_inference_results_max_confidence_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_inference_results_max_confidence_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_inference_results_max_confidence_set_input
+    pk_columns: model_inference_results_max_confidence_pk_columns_input!
+  ): model_inference_results_max_confidence
+
+  """
+  update multiples rows of table: "model_inference_results_max_confidence"
+  """
+  update_model_inference_results_max_confidence_many(
+    """updates to execute, in order"""
+    updates: [model_inference_results_max_confidence_updates!]!
+  ): [model_inference_results_max_confidence_mutation_response]
 
   """
   update data of the table: "model_labels"
@@ -4431,6 +4892,40 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [sites_updates!]!
   ): [sites_mutation_response]
+
+  """
+  update data of the table: "workflow_reports"
+  """
+  update_workflow_reports(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: workflow_reports_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: workflow_reports_set_input
+
+    """filter the rows which have to be updated"""
+    where: workflow_reports_bool_exp!
+  ): workflow_reports_mutation_response
+
+  """
+  update single row of the table: "workflow_reports"
+  """
+  update_workflow_reports_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: workflow_reports_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: workflow_reports_set_input
+    pk_columns: workflow_reports_pk_columns_input!
+  ): workflow_reports
+
+  """
+  update multiples rows of table: "workflow_reports"
+  """
+  update_workflow_reports_many(
+    """updates to execute, in order"""
+    updates: [workflow_reports_updates!]!
+  ): [workflow_reports_mutation_response]
 }
 
 scalar numeric
@@ -4734,6 +5229,51 @@ type query_root {
   fetch data from the table: "model_inference_results" using primary key columns
   """
   model_inference_results_by_pk(id: bigint!, record_id: bigint!): model_inference_results
+
+  """
+  fetch data from the table: "model_inference_results_max_confidence"
+  """
+  model_inference_results_max_confidence(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_max_confidence_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_max_confidence_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_max_confidence_bool_exp
+  ): [model_inference_results_max_confidence!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_results_max_confidence"
+  """
+  model_inference_results_max_confidence_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_max_confidence_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_max_confidence_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_max_confidence_bool_exp
+  ): model_inference_results_max_confidence_aggregate!
+
+  """
+  fetch data from the table: "model_inference_results_max_confidence" using primary key columns
+  """
+  model_inference_results_max_confidence_by_pk(label_id: Int!, record_id: bigint!): model_inference_results_max_confidence
 
   """An array relationship"""
   model_labels(
@@ -5099,6 +5639,51 @@ type query_root {
 
   """fetch data from the table: "sites" using primary key columns"""
   sites_by_pk(id: bigint!): sites
+
+  """
+  fetch data from the table: "workflow_reports"
+  """
+  workflow_reports(
+    """distinct select on columns"""
+    distinct_on: [workflow_reports_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [workflow_reports_order_by!]
+
+    """filter the rows returned"""
+    where: workflow_reports_bool_exp
+  ): [workflow_reports!]!
+
+  """
+  fetch aggregated fields from the table: "workflow_reports"
+  """
+  workflow_reports_aggregate(
+    """distinct select on columns"""
+    distinct_on: [workflow_reports_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [workflow_reports_order_by!]
+
+    """filter the rows returned"""
+    where: workflow_reports_bool_exp
+  ): workflow_reports_aggregate!
+
+  """
+  fetch data from the table: "workflow_reports" using primary key columns
+  """
+  workflow_reports_by_pk(id: Int!): workflow_reports
 }
 
 """All records metdata and datapath"""
@@ -9082,6 +9667,65 @@ type subscription_root {
   model_inference_results_by_pk(id: bigint!, record_id: bigint!): model_inference_results
 
   """
+  fetch data from the table: "model_inference_results_max_confidence"
+  """
+  model_inference_results_max_confidence(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_max_confidence_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_max_confidence_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_max_confidence_bool_exp
+  ): [model_inference_results_max_confidence!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_results_max_confidence"
+  """
+  model_inference_results_max_confidence_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_max_confidence_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_max_confidence_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_max_confidence_bool_exp
+  ): model_inference_results_max_confidence_aggregate!
+
+  """
+  fetch data from the table: "model_inference_results_max_confidence" using primary key columns
+  """
+  model_inference_results_max_confidence_by_pk(label_id: Int!, record_id: bigint!): model_inference_results_max_confidence
+
+  """
+  fetch data from the table in a streaming manner: "model_inference_results_max_confidence"
+  """
+  model_inference_results_max_confidence_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [model_inference_results_max_confidence_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: model_inference_results_max_confidence_bool_exp
+  ): [model_inference_results_max_confidence!]!
+
+  """
   fetch data from the table in a streaming manner: "model_inference_results"
   """
   model_inference_results_stream(
@@ -9585,6 +10229,65 @@ type subscription_root {
     """filter the rows returned"""
     where: sites_bool_exp
   ): [sites!]!
+
+  """
+  fetch data from the table: "workflow_reports"
+  """
+  workflow_reports(
+    """distinct select on columns"""
+    distinct_on: [workflow_reports_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [workflow_reports_order_by!]
+
+    """filter the rows returned"""
+    where: workflow_reports_bool_exp
+  ): [workflow_reports!]!
+
+  """
+  fetch aggregated fields from the table: "workflow_reports"
+  """
+  workflow_reports_aggregate(
+    """distinct select on columns"""
+    distinct_on: [workflow_reports_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [workflow_reports_order_by!]
+
+    """filter the rows returned"""
+    where: workflow_reports_bool_exp
+  ): workflow_reports_aggregate!
+
+  """
+  fetch data from the table: "workflow_reports" using primary key columns
+  """
+  workflow_reports_by_pk(id: Int!): workflow_reports
+
+  """
+  fetch data from the table in a streaming manner: "workflow_reports"
+  """
+  workflow_reports_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [workflow_reports_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: workflow_reports_bool_exp
+  ): [workflow_reports!]!
 }
 
 scalar timestamp
@@ -9619,5 +10322,421 @@ input timestamptz_comparison_exp {
   _lte: timestamptz
   _neq: timestamptz
   _nin: [timestamptz!]
+}
+
+"""
+columns and relationships of "workflow_reports"
+"""
+type workflow_reports {
+  birdid_medium: String
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  created_at: timestamp!
+  db_import: String
+  id: Int!
+  prefix: String!
+  record_count: Int
+  report_date: timestamp!
+  site_id: Int
+  visible_in_ui: Boolean
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""
+aggregated selection of "workflow_reports"
+"""
+type workflow_reports_aggregate {
+  aggregate: workflow_reports_aggregate_fields
+  nodes: [workflow_reports!]!
+}
+
+"""
+aggregate fields of "workflow_reports"
+"""
+type workflow_reports_aggregate_fields {
+  avg: workflow_reports_avg_fields
+  count(columns: [workflow_reports_select_column!], distinct: Boolean): Int!
+  max: workflow_reports_max_fields
+  min: workflow_reports_min_fields
+  stddev: workflow_reports_stddev_fields
+  stddev_pop: workflow_reports_stddev_pop_fields
+  stddev_samp: workflow_reports_stddev_samp_fields
+  sum: workflow_reports_sum_fields
+  var_pop: workflow_reports_var_pop_fields
+  var_samp: workflow_reports_var_samp_fields
+  variance: workflow_reports_variance_fields
+}
+
+"""aggregate avg on columns"""
+type workflow_reports_avg_fields {
+  birdid_medium_processed: Float
+  birdid_medium_visible: Float
+  id: Float
+  record_count: Float
+  site_id: Float
+  wav_count: Float
+  wav_size_bytes: Float
+}
+
+"""
+Boolean expression to filter rows from the table "workflow_reports". All fields are combined with a logical 'AND'.
+"""
+input workflow_reports_bool_exp {
+  _and: [workflow_reports_bool_exp!]
+  _not: workflow_reports_bool_exp
+  _or: [workflow_reports_bool_exp!]
+  birdid_medium: String_comparison_exp
+  birdid_medium_processed: Int_comparison_exp
+  birdid_medium_visible: Int_comparison_exp
+  created_at: timestamp_comparison_exp
+  db_import: String_comparison_exp
+  id: Int_comparison_exp
+  prefix: String_comparison_exp
+  record_count: Int_comparison_exp
+  report_date: timestamp_comparison_exp
+  site_id: Int_comparison_exp
+  visible_in_ui: Boolean_comparison_exp
+  wav_count: Int_comparison_exp
+  wav_size_bytes: bigint_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "workflow_reports"
+"""
+enum workflow_reports_constraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  workflow_reports_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "workflow_reports"
+"""
+input workflow_reports_inc_input {
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  id: Int
+  record_count: Int
+  site_id: Int
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""
+input type for inserting data into table "workflow_reports"
+"""
+input workflow_reports_insert_input {
+  birdid_medium: String
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  created_at: timestamp
+  db_import: String
+  id: Int
+  prefix: String
+  record_count: Int
+  report_date: timestamp
+  site_id: Int
+  visible_in_ui: Boolean
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""aggregate max on columns"""
+type workflow_reports_max_fields {
+  birdid_medium: String
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  created_at: timestamp
+  db_import: String
+  id: Int
+  prefix: String
+  record_count: Int
+  report_date: timestamp
+  site_id: Int
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""aggregate min on columns"""
+type workflow_reports_min_fields {
+  birdid_medium: String
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  created_at: timestamp
+  db_import: String
+  id: Int
+  prefix: String
+  record_count: Int
+  report_date: timestamp
+  site_id: Int
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""
+response of any mutation on the table "workflow_reports"
+"""
+type workflow_reports_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [workflow_reports!]!
+}
+
+"""
+on_conflict condition type for table "workflow_reports"
+"""
+input workflow_reports_on_conflict {
+  constraint: workflow_reports_constraint!
+  update_columns: [workflow_reports_update_column!]! = []
+  where: workflow_reports_bool_exp
+}
+
+"""Ordering options when selecting data from "workflow_reports"."""
+input workflow_reports_order_by {
+  birdid_medium: order_by
+  birdid_medium_processed: order_by
+  birdid_medium_visible: order_by
+  created_at: order_by
+  db_import: order_by
+  id: order_by
+  prefix: order_by
+  record_count: order_by
+  report_date: order_by
+  site_id: order_by
+  visible_in_ui: order_by
+  wav_count: order_by
+  wav_size_bytes: order_by
+}
+
+"""primary key columns input for table: workflow_reports"""
+input workflow_reports_pk_columns_input {
+  id: Int!
+}
+
+"""
+select columns of table "workflow_reports"
+"""
+enum workflow_reports_select_column {
+  """column name"""
+  birdid_medium
+
+  """column name"""
+  birdid_medium_processed
+
+  """column name"""
+  birdid_medium_visible
+
+  """column name"""
+  created_at
+
+  """column name"""
+  db_import
+
+  """column name"""
+  id
+
+  """column name"""
+  prefix
+
+  """column name"""
+  record_count
+
+  """column name"""
+  report_date
+
+  """column name"""
+  site_id
+
+  """column name"""
+  visible_in_ui
+
+  """column name"""
+  wav_count
+
+  """column name"""
+  wav_size_bytes
+}
+
+"""
+input type for updating data in table "workflow_reports"
+"""
+input workflow_reports_set_input {
+  birdid_medium: String
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  created_at: timestamp
+  db_import: String
+  id: Int
+  prefix: String
+  record_count: Int
+  report_date: timestamp
+  site_id: Int
+  visible_in_ui: Boolean
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""aggregate stddev on columns"""
+type workflow_reports_stddev_fields {
+  birdid_medium_processed: Float
+  birdid_medium_visible: Float
+  id: Float
+  record_count: Float
+  site_id: Float
+  wav_count: Float
+  wav_size_bytes: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type workflow_reports_stddev_pop_fields {
+  birdid_medium_processed: Float
+  birdid_medium_visible: Float
+  id: Float
+  record_count: Float
+  site_id: Float
+  wav_count: Float
+  wav_size_bytes: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type workflow_reports_stddev_samp_fields {
+  birdid_medium_processed: Float
+  birdid_medium_visible: Float
+  id: Float
+  record_count: Float
+  site_id: Float
+  wav_count: Float
+  wav_size_bytes: Float
+}
+
+"""
+Streaming cursor of the table "workflow_reports"
+"""
+input workflow_reports_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: workflow_reports_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input workflow_reports_stream_cursor_value_input {
+  birdid_medium: String
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  created_at: timestamp
+  db_import: String
+  id: Int
+  prefix: String
+  record_count: Int
+  report_date: timestamp
+  site_id: Int
+  visible_in_ui: Boolean
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""aggregate sum on columns"""
+type workflow_reports_sum_fields {
+  birdid_medium_processed: Int
+  birdid_medium_visible: Int
+  id: Int
+  record_count: Int
+  site_id: Int
+  wav_count: Int
+  wav_size_bytes: bigint
+}
+
+"""
+update columns of table "workflow_reports"
+"""
+enum workflow_reports_update_column {
+  """column name"""
+  birdid_medium
+
+  """column name"""
+  birdid_medium_processed
+
+  """column name"""
+  birdid_medium_visible
+
+  """column name"""
+  created_at
+
+  """column name"""
+  db_import
+
+  """column name"""
+  id
+
+  """column name"""
+  prefix
+
+  """column name"""
+  record_count
+
+  """column name"""
+  report_date
+
+  """column name"""
+  site_id
+
+  """column name"""
+  visible_in_ui
+
+  """column name"""
+  wav_count
+
+  """column name"""
+  wav_size_bytes
+}
+
+input workflow_reports_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: workflow_reports_inc_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: workflow_reports_set_input
+
+  """filter the rows which have to be updated"""
+  where: workflow_reports_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type workflow_reports_var_pop_fields {
+  birdid_medium_processed: Float
+  birdid_medium_visible: Float
+  id: Float
+  record_count: Float
+  site_id: Float
+  wav_count: Float
+  wav_size_bytes: Float
+}
+
+"""aggregate var_samp on columns"""
+type workflow_reports_var_samp_fields {
+  birdid_medium_processed: Float
+  birdid_medium_visible: Float
+  id: Float
+  record_count: Float
+  site_id: Float
+  wav_count: Float
+  wav_size_bytes: Float
+}
+
+"""aggregate variance on columns"""
+type workflow_reports_variance_fields {
+  birdid_medium_processed: Float
+  birdid_medium_visible: Float
+  id: Float
+  record_count: Float
+  site_id: Float
+  wav_count: Float
+  wav_size_bytes: Float
 }
 

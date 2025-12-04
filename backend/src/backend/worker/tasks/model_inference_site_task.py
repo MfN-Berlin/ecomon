@@ -32,9 +32,8 @@ settings = WorkerSettings()
 # Configure logger level from settings
 logger.setLevel(settings.log_level)
 
-
-BATCH_SIZE = 1000  # Increased from 100 for better throughput
-
+# BATCH_SIZE = 1000  # Increased from 100 for better throughput
+BATCH_SIZE = 100  # Reduced from 1000 to lower memory usage
 
 @app.task(
     name=f"{task_topic.MODEL_INFERENCE_SITE.value}",
