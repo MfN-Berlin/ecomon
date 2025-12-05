@@ -43,6 +43,18 @@ The `postgres_weekly_backup` DAG performs automated weekly backups of the Postgr
   - Cleans up the temporary timestamp file
 - **Configuration**: Uses `MAX_BACKUPS` environment variable (default: 2)
 
+#### Time required for backup
+The time required for running a backup is relatively long, so backups have to be planed, specifically the transfer to a safe location requires consideration.
+
+| Task | Approximate duration in hh:mm |
+|---|---|
+| Dumping DB to files  | 06:00 |
+| Compressing files to archive | 12:00 |
+| Checking compressed archive | 00:30 |
+| Manually transfer to safe location | 04:30 |
+| Total time for full backup  | 23:00 |
+
+
 ### Task Dependencies
 After the backup is terminated, the file should be downloaded from the server and stored in a safe location ("Z"). To manually copy the backup, do `rsync -P denbi-gpu:source-path destination-path-on-Z` where denbi-gpu is your SSH configuration to connect to the server. Make sure there is enough space on destination-path-on-Z.
 
