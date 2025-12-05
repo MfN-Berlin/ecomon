@@ -48,8 +48,8 @@ The time required for running a backup is relatively long, so backups have to be
 
 | Task | approximate duration in hh:mm |
 |---|---|
-| Dumping DB file  | 06:00 |
-| Compressing file | 12:00 |
+| Dumping DB to files  | 06:00 |
+| Compressing files to archive | 12:00 |
 | Checking compressed archive | 00:30 |
 | Manually transfer to safe location | 04:30 |
 | Total time for full backup  | 23:00 |
