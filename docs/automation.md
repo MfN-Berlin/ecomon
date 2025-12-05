@@ -19,11 +19,11 @@ The `postgres_weekly_backup` DAG performs automated weekly backups of the Postgr
 - **Function**:
   - Executes `pg_basebackup` to create a physical backup of the PostgreSQL database
   - Creates a timestamped backup directory: `basebackup_YYYY-MM-DD_HH-MM-SS`
-  - Stores the timestamp in `/backup/current_timestamp.txt` for subsequent tasks
-  - Logs output to `/backup/backup_YYYY-MM-DD_HH-MM-SS.log`
+  - Stores the timestamp in `$PGBACKUP_PATH/current_timestamp.txt` for subsequent tasks
+  - Logs output to `$PGBACKUP_PATH/backup_YYYY-MM-DD_HH-MM-SS.log`
 - **Configuration**:
-  - Uses environment variables: `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_PORT`, `PG_DATABASE`
-  - Backup location: `/backup/` directory
+  - Uses environment variables: `PGBACKUP_PATH`, `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_PORT`, `PG_DATABASE`
+  - Backup location: `$PGBACKUP_PATH` directory on the host (mounted on `/backup` in the container)
   - Format: Plain format with streaming WAL
 
 #### 2. Compress Backup (`compress_backup`)
@@ -32,7 +32,7 @@ The `postgres_weekly_backup` DAG performs automated weekly backups of the Postgr
   - Reads the timestamp from the previous task
   - Compresses the backup directory into a `.tar.gz` archive
   - Removes the original uncompressed backup directory to save space
-- **Output**: `basebackup_YYYY-MM-DD_HH-MM-SS.tar.gz`
+- **Output**: `$PGBACKUP_PATH/basebackup_YYYY-MM-DD_HH-MM-SS.tar.gz`
 
 #### 3. Rotate Backups (`rotate_backups`)
 - **Type**: BashOperator (NoTemplateBashOperator)
