@@ -10,6 +10,7 @@ This platform to analyze the audio monitoring data project.
 - **[SQLAlchemy](https://www.sqlalchemy.org/)**: A SQL toolkit and Object-Relational Mapping (ORM) system for Python.
 - **[Celery](https://docs.celeryproject.org/en/stable/)**: A distributed task queue system for Python.
 - **[Poetry](https://python-poetry.org/)**: A tool for dependency management in Python projects.
+- **[Airflow](https://airflow.apache.org/)**: A workflow scheduler.
 
 2. Frontend
 
@@ -31,12 +32,16 @@ This platform to analyze the audio monitoring data project.
 ![Architekture](./docs/architekture.png)
 
 ### Celery Worker
-
-In the current setup are two worker quues.
+Service for handling asynchronous jobs started in the UI. In the current setup are two worker queues.
 
 1. **db_worker_queue** One for Data aggreation jobs like importing folders to sites and generating vouchers
 2. **inference_queue** One for all inference jobs
    The amount of worker threads can be set independently
+
+
+### Automation using Airflow
+
+Additionally to the Celery worker, that is handling asynchronous jobs started in the UI, some workflows (e.g. database backups) are automated using Airflow and triggered by a scheduler. These are documented in [docs/automation.md](./docs/automation.md).
 
 ### Inferencing
 
@@ -68,7 +73,14 @@ For local Development you need docker, nodejs, poetry, python3.10 installed on y
 
 ### Production
 
-1. Copy production_env_default to .env and change the variables to your own a
+TL;DR;
+
+if everything is already setup, start the production instance by running
+`docker compose -f docker-compose.production.yaml up -d`
+
+#### Setting up the production environment from scratch
+
+1. Copy production_env_default to .env and change the variables to your own
 2. To start production environment run `docker compose -f docker-compose.production.yaml up -d`
 3. Import labels from csv with inside the production container
 
@@ -85,7 +97,7 @@ exit
 
 **_ Prepare Inference Models _**
 
-1. Download the model which are needed for the inference to the inferecen host
+1. Download the model which are needed for the inference to the inferece host
 
 ```bash
 # download the model
@@ -93,10 +105,3 @@ scp -r /path/to/model user@infercen-host:/path/to/model
 # unzip the model
 unzip model.zip
 ```
-
-TODO:
-create_voucher
-Create_Random Sample
-
-Random sample nur für eine art
-# CI test

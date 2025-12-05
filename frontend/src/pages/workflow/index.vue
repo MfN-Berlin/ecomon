@@ -2,6 +2,9 @@
   <v-container fluid class="pa-0 ma-0">
     <v-row no-gutters>
       <v-col cols="12" class="pa-0">
+        <div class="report-date">
+          <strong>Report Date:</strong> {{ formatDate(reports[0]?.report_date) }}
+        </div>
         <v-data-table
           :headers="headers"
           :items="reports"
@@ -20,52 +23,34 @@
               {{ item.birdid_medium }}
             </span>
           </template>
-          <template #item.report_date="{ item }">
-            {{ formatDate(item.report_date) }}
-          </template>
           <template #item.visible_in_ui="{ item }">
             <v-icon v-if="item.visible_in_ui" color="green">mdi-check</v-icon>
             <v-icon v-else color="red">mdi-close</v-icon>
           </template>
-          <template #bottom>
-            <table>
-              <colgroup>
-                <col style="width: 200px;" />
-                <col style="width: 240px;" />
-                <col style="width: 60px;" />
-                <col style="width: 180px;" />
-                <col style="width: 120px;" />
-                <col style="width: 120px;" />
-                <col style="width: 120px;" />
-                <col style="width: 120px;" />
-                <col style="width: 150px;" />
-                <col style="width: 130px;" />
-              </colgroup>
-              <tfoot>
-                <tr class="totals-row">
-                  <td class="v-data-table__td"><strong>Totals:</strong></td>
-                  <td class="v-data-table__td"></td>
-                  <td class="v-data-table__td"></td>
-                  <td class="v-data-table__td v-data-table-column--align-end">{{ (totalSize / (1024**4)).toFixed(4) }} TB</td>
-                  <td class="v-data-table__td v-data-table-column--align-end">{{ totalWavCount.toLocaleString() }}</td>
-                  <td class="v-data-table__td v-data-table-column--align-end">
-                    {{ totalRecords.toLocaleString() }}
-                    <span v-if="totalRecords > 0 && totalWavCount > 0">
-                      ({{ ((totalWavCount / totalRecords) * 100).toFixed(2) }}%)
-                    </span>
-                  </td>
-                  <td class="v-data-table__td v-data-table-column--align-center"></td>
-                  <td class="v-data-table__td v-data-table-column--align-end">
-                    {{ totalProcessed.toLocaleString() }}
-                    <span v-if="totalRecords > 0 && totalProcessed > 0">
-                      ({{ ((totalProcessed / totalRecords) * 100).toFixed(2) }}%)
-                    </span>
-                  </td>
-                  <td class="v-data-table__td v-data-table-column--align-center"></td>
-                  <td class="v-data-table__td"></td>
-                </tr>
-              </tfoot>
-            </table>
+
+          <!-- Totals row -->
+          <template #body.append>
+            <tr class="totals-row">
+              <td><strong>Totals:</strong></td>
+              <td></td>
+              <td class="text-end">{{ (totalSize / (1024**2)).toFixed(2) }} MB</td>
+              <td class="text-end">{{ totalWavCount.toLocaleString() }}</td>
+              <td class="text-end">
+                {{ totalRecords.toLocaleString() }}
+                <span v-if="totalRecords > 0 && totalWavCount > 0">
+                  ({{ ((totalWavCount / totalRecords) * 100).toFixed(2) }}%)
+                </span>
+              </td>
+              <td></td>
+              <td class="text-end">
+                {{ totalProcessed.toLocaleString() }}
+                <span v-if="totalRecords > 0 && totalProcessed > 0">
+                  ({{ ((totalProcessed / totalRecords) * 100).toFixed(2) }}%)
+                </span>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
           </template>
         </v-data-table>
       </v-col>
@@ -103,7 +88,7 @@ const fetchReports = async () => {
         query: `
           query GetLatestWorkflowReports {
             workflow_reports(
-              order_by: { report_date: desc, prefix: asc }
+              order_by: { prefix: asc }
             ) {
               id
               report_date
@@ -187,7 +172,6 @@ const totalProcessed = computed(() => {
 
 // Table headers
 const headers = [
-  { title: 'Report Date', key: 'report_date', sortable: true, width: '200px' },
   { title: 'Prefix', key: 'prefix', sortable: true, width: '240px' },
   { title: 'Site ID', key: 'site_id', sortable: true, width: '60px', align: 'end' },
   { title: 'WAV Size', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
@@ -303,5 +287,9 @@ onMounted(() => {
 
 .status-default {
   color: gray;
+}
+.report-date {
+  margin-bottom: 16px;
+  font-size: 1.2rem;
 }
 </style>

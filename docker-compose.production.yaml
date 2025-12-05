@@ -284,9 +284,7 @@ services:
       - PG_HOST=db
       - PG_PORT=5432
       - PG_DATABASE=ecomon
-      - BACKUP_DIR=/backup
-      - MAX_BACKUPS=3
-      - SPLIT_SIZE=50G
+      - MAX_BACKUPS=2
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./.env:/opt/airflow/airflow.env
@@ -297,7 +295,7 @@ services:
     command: >
       bash -c "rm -f /opt/airflow/airflow.db &&
                airflow db init &&
-               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+               airflow users create --username admin --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.com &&
                airflow scheduler & airflow webserver"
     restart: always
     networks:
