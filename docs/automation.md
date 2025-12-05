@@ -46,7 +46,7 @@ The `postgres_weekly_backup` DAG performs automated weekly backups of the Postgr
 #### Time required for backup
 The time required for running a backup is relatively long, so backups have to be planed, specifically the transfer to a safe location requires consideration.
 
-| Task | approximate duration in hh:mm |
+| Task | Approximate duration in hh:mm |
 |---|---|
 | Dumping DB to files  | 06:00 |
 | Compressing files to archive | 12:00 |
