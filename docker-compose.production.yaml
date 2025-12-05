@@ -284,9 +284,7 @@ services:
       - PG_HOST=db
       - PG_PORT=5432
       - PG_DATABASE=ecomon
-      - BACKUP_DIR=/backup
-      - MAX_BACKUPS=3
-      - SPLIT_SIZE=50G
+      - MAX_BACKUPS=2
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./.env:/opt/airflow/airflow.env
