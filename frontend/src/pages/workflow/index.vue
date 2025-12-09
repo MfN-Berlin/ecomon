@@ -38,7 +38,7 @@
               <td class="text-end">
                 {{ totalRecords.toLocaleString() }}
                 <span v-if="totalRecords > 0 && totalWavCount > 0">
-                  ({{ ((totalWavCount / totalRecords) * 100).toFixed(2) }}%)
+                  ({{ ((totalRecords / totalWavCount) * 100).toFixed(2) }}%)
                 </span>
               </td>
               <td></td>
@@ -88,7 +88,8 @@ const fetchReports = async () => {
         query: `
           query GetLatestWorkflowReports {
             workflow_reports(
-              order_by: { prefix: asc }
+              distinct_on: [prefix]
+              order_by: [{prefix: asc}, {report_date: desc}]
             ) {
               id
               report_date
@@ -130,27 +131,16 @@ const refetch = () => {
   fetchReports();
 };
 
-// Get reports from latest date only
+// Get reports - simplified since distinct_on handles latest per prefix
 const reports = computed(() => {
   if (!data.value?.workflow_reports?.length) {
     console.log('No reports found in data:', data.value);
     return [];
   }
 
-  // Get the most recent report date
-  const latestDate = data.value.workflow_reports[0].report_date;
+  console.log('Reports:', data.value.workflow_reports.length);
 
-  console.log('Latest date:', latestDate);
-  console.log('Total reports:', data.value.workflow_reports.length);
-
-  // Filter to only include reports from that date
-  const filtered = data.value.workflow_reports.filter(
-    (report: any) => report.report_date === latestDate
-  );
-
-  console.log('Filtered reports:', filtered.length);
-
-  return filtered;
+  return data.value.workflow_reports;
 });
 
 // Calculate totals
@@ -182,6 +172,7 @@ const headers = [
   { title: 'BirdID Medium Status', key: 'birdid_medium', sortable: true, width: '150px', align: 'center'  },
   { title: 'Visible in UI', key: 'visible_in_ui', sortable: true, width: '130px', align: 'center' },
 ];
+
 // Format bytes to human readable format
 const formatBytes = (bytes: number): string => {
   if (!bytes || bytes === 0) return '0 B';
@@ -196,7 +187,7 @@ const formatDate = (date: string): string => {
   if (!date) return '';
   const d = new Date(date);
   const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   const hours = String(d.getHours()).padStart(2, '0');
   const minutes = String(d.getMinutes()).padStart(2, '0');
@@ -205,14 +196,14 @@ const formatDate = (date: string): string => {
 
 // Get color based on status
 const getStatusColor = (status: string): string => {
-  console.log('Status:', status); // Debugging line
+  console.log('Status:', status);
   if (!status) return 'status-default';
   switch (status.toLowerCase()) {
     case 'ready':
       return 'status-ready';
     case 'ready with losses':
       return 'status-ready-losses';
-    case 'pending': // Changed from "update this" to "pending"
+    case 'pending':
       return 'status-pending';
     case 'running':
       return 'status-running';
@@ -240,6 +231,7 @@ onMounted(() => {
   padding: 12px 16px !important;
   font-size: 0.875rem;
 }
+
 .totals-row .v-data-table-column--align-end,
 .totals-row .align-end {
   text-align: right !important;
@@ -248,6 +240,7 @@ onMounted(() => {
 .totals-row .align-center {
   text-align: center !important;
 }
+
 .v-data-table {
   width: 95%;
 }
@@ -288,6 +281,7 @@ onMounted(() => {
 .status-default {
   color: gray;
 }
+
 .report-date {
   margin-bottom: 16px;
   font-size: 1.2rem;
