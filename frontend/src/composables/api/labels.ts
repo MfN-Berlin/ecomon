@@ -42,8 +42,8 @@ export const useAllSpeciesLabels = () => {
         },
         body: {
           query: `
-            query getAllSpeciesLabelsForRecord($where: model_inference_results_bool_exp!) {
-              model_inference_results(where: $where) {
+            query getAllSpeciesLabelsForRecord($where: model_inference_results_view_bool_exp!) {
+              model_inference_results_view(where: $where) {
                 label {
                   id
                   name
@@ -61,7 +61,7 @@ export const useAllSpeciesLabels = () => {
       // Extract unique label objects by id
       const seen = new Set();
       const uniqueLabels: { id: string; name: string }[] = [];
-      for (const mir of result.data?.model_inference_results ?? []) {
+      for (const mir of result.data?.model_inference_results_view ?? []) {
         const label = mir.label;
         if (label && label.id && !seen.has(label.id)) {
           seen.add(label.id);

@@ -290,7 +290,10 @@ services:
       - ./.env:/opt/airflow/airflow.env
       - ${BASE_DATA_DIRECTORY}:/data
       - ${PGBACKUP_PATH}:/backup
-    ports:
+    user: "0"
+    group_add:
+      - "1003"  # akwamo
+#    ports:
 #      - "8282:8080"
     command: >
       bash -c "rm -f /opt/airflow/airflow.db &&

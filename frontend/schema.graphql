@@ -2823,6 +2823,304 @@ type model_inference_results_variance_fields {
   start_time: Float
 }
 
+"""
+columns and relationships of "model_inference_results_view"
+"""
+type model_inference_results_view {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+
+  """An object relationship"""
+  label: labels
+  label_id: Int
+
+  """An object relationship"""
+  model: models
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""
+aggregated selection of "model_inference_results_view"
+"""
+type model_inference_results_view_aggregate {
+  aggregate: model_inference_results_view_aggregate_fields
+  nodes: [model_inference_results_view!]!
+}
+
+"""
+aggregate fields of "model_inference_results_view"
+"""
+type model_inference_results_view_aggregate_fields {
+  avg: model_inference_results_view_avg_fields
+  count(columns: [model_inference_results_view_select_column!], distinct: Boolean): Int!
+  max: model_inference_results_view_max_fields
+  min: model_inference_results_view_min_fields
+  stddev: model_inference_results_view_stddev_fields
+  stddev_pop: model_inference_results_view_stddev_pop_fields
+  stddev_samp: model_inference_results_view_stddev_samp_fields
+  sum: model_inference_results_view_sum_fields
+  var_pop: model_inference_results_view_var_pop_fields
+  var_samp: model_inference_results_view_var_samp_fields
+  variance: model_inference_results_view_variance_fields
+}
+
+"""aggregate avg on columns"""
+type model_inference_results_view_avg_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""
+Boolean expression to filter rows from the table "model_inference_results_view". All fields are combined with a logical 'AND'.
+"""
+input model_inference_results_view_bool_exp {
+  _and: [model_inference_results_view_bool_exp!]
+  _not: model_inference_results_view_bool_exp
+  _or: [model_inference_results_view_bool_exp!]
+  confidence: Float_comparison_exp
+  end_time: numeric_comparison_exp
+  id: bigint_comparison_exp
+  label: labels_bool_exp
+  label_id: Int_comparison_exp
+  model: models_bool_exp
+  model_id: Int_comparison_exp
+  record_id: bigint_comparison_exp
+  start_time: numeric_comparison_exp
+}
+
+"""
+input type for incrementing numeric columns in table "model_inference_results_view"
+"""
+input model_inference_results_view_inc_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""
+input type for inserting data into table "model_inference_results_view"
+"""
+input model_inference_results_view_insert_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label: labels_obj_rel_insert_input
+  label_id: Int
+  model: models_obj_rel_insert_input
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate max on columns"""
+type model_inference_results_view_max_fields {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate min on columns"""
+type model_inference_results_view_min_fields {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""
+response of any mutation on the table "model_inference_results_view"
+"""
+type model_inference_results_view_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [model_inference_results_view!]!
+}
+
+"""
+Ordering options when selecting data from "model_inference_results_view".
+"""
+input model_inference_results_view_order_by {
+  confidence: order_by
+  end_time: order_by
+  id: order_by
+  label: labels_order_by
+  label_id: order_by
+  model: models_order_by
+  model_id: order_by
+  record_id: order_by
+  start_time: order_by
+}
+
+"""
+select columns of table "model_inference_results_view"
+"""
+enum model_inference_results_view_select_column {
+  """column name"""
+  confidence
+
+  """column name"""
+  end_time
+
+  """column name"""
+  id
+
+  """column name"""
+  label_id
+
+  """column name"""
+  model_id
+
+  """column name"""
+  record_id
+
+  """column name"""
+  start_time
+}
+
+"""
+input type for updating data in table "model_inference_results_view"
+"""
+input model_inference_results_view_set_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate stddev on columns"""
+type model_inference_results_view_stddev_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type model_inference_results_view_stddev_pop_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type model_inference_results_view_stddev_samp_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""
+Streaming cursor of the table "model_inference_results_view"
+"""
+input model_inference_results_view_stream_cursor_input {
+  """Stream column input with initial value"""
+  initial_value: model_inference_results_view_stream_cursor_value_input!
+
+  """cursor ordering"""
+  ordering: cursor_ordering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input model_inference_results_view_stream_cursor_value_input {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+"""aggregate sum on columns"""
+type model_inference_results_view_sum_fields {
+  confidence: Float
+  end_time: numeric
+  id: bigint
+  label_id: Int
+  model_id: Int
+  record_id: bigint
+  start_time: numeric
+}
+
+input model_inference_results_view_updates {
+  """increments the numeric columns with given value of the filtered values"""
+  _inc: model_inference_results_view_inc_input
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: model_inference_results_view_set_input
+
+  """filter the rows which have to be updated"""
+  where: model_inference_results_view_bool_exp!
+}
+
+"""aggregate var_pop on columns"""
+type model_inference_results_view_var_pop_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate var_samp on columns"""
+type model_inference_results_view_var_samp_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
+"""aggregate variance on columns"""
+type model_inference_results_view_variance_fields {
+  confidence: Float
+  end_time: Float
+  id: Float
+  label_id: Float
+  model_id: Float
+  record_id: Float
+  start_time: Float
+}
+
 """Contains all all labels a mode uses"""
 type model_labels {
   id: Int!
@@ -3717,6 +4015,14 @@ type mutation_root {
   delete_model_inference_results_max_confidence_by_pk(label_id: Int!, record_id: bigint!): model_inference_results_max_confidence
 
   """
+  delete data from the table: "model_inference_results_view"
+  """
+  delete_model_inference_results_view(
+    """filter the rows which have to be deleted"""
+    where: model_inference_results_view_bool_exp!
+  ): model_inference_results_view_mutation_response
+
+  """
   delete data from the table: "model_labels"
   """
   delete_model_labels(
@@ -4000,6 +4306,22 @@ type mutation_root {
     """upsert condition"""
     on_conflict: model_inference_results_on_conflict
   ): model_inference_results
+
+  """
+  insert data into the table: "model_inference_results_view"
+  """
+  insert_model_inference_results_view(
+    """the rows to be inserted"""
+    objects: [model_inference_results_view_insert_input!]!
+  ): model_inference_results_view_mutation_response
+
+  """
+  insert a single row into the table: "model_inference_results_view"
+  """
+  insert_model_inference_results_view_one(
+    """the row to be inserted"""
+    object: model_inference_results_view_insert_input!
+  ): model_inference_results_view
 
   """
   insert data into the table: "model_labels"
@@ -4502,6 +4824,28 @@ type mutation_root {
     """updates to execute, in order"""
     updates: [model_inference_results_max_confidence_updates!]!
   ): [model_inference_results_max_confidence_mutation_response]
+
+  """
+  update data of the table: "model_inference_results_view"
+  """
+  update_model_inference_results_view(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: model_inference_results_view_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: model_inference_results_view_set_input
+
+    """filter the rows which have to be updated"""
+    where: model_inference_results_view_bool_exp!
+  ): model_inference_results_view_mutation_response
+
+  """
+  update multiples rows of table: "model_inference_results_view"
+  """
+  update_model_inference_results_view_many(
+    """updates to execute, in order"""
+    updates: [model_inference_results_view_updates!]!
+  ): [model_inference_results_view_mutation_response]
 
   """
   update data of the table: "model_labels"
@@ -5274,6 +5618,46 @@ type query_root {
   fetch data from the table: "model_inference_results_max_confidence" using primary key columns
   """
   model_inference_results_max_confidence_by_pk(label_id: Int!, record_id: bigint!): model_inference_results_max_confidence
+
+  """
+  fetch data from the table: "model_inference_results_view"
+  """
+  model_inference_results_view(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_view_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_view_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_view_bool_exp
+  ): [model_inference_results_view!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_results_view"
+  """
+  model_inference_results_view_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_view_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_view_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_view_bool_exp
+  ): model_inference_results_view_aggregate!
 
   """An array relationship"""
   model_labels(
@@ -9738,6 +10122,60 @@ type subscription_root {
     """filter the rows returned"""
     where: model_inference_results_bool_exp
   ): [model_inference_results!]!
+
+  """
+  fetch data from the table: "model_inference_results_view"
+  """
+  model_inference_results_view(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_view_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_view_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_view_bool_exp
+  ): [model_inference_results_view!]!
+
+  """
+  fetch aggregated fields from the table: "model_inference_results_view"
+  """
+  model_inference_results_view_aggregate(
+    """distinct select on columns"""
+    distinct_on: [model_inference_results_view_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [model_inference_results_view_order_by!]
+
+    """filter the rows returned"""
+    where: model_inference_results_view_bool_exp
+  ): model_inference_results_view_aggregate!
+
+  """
+  fetch data from the table in a streaming manner: "model_inference_results_view"
+  """
+  model_inference_results_view_stream(
+    """maximum number of rows returned in a single batch"""
+    batch_size: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [model_inference_results_view_stream_cursor_input]!
+
+    """filter the rows returned"""
+    where: model_inference_results_view_bool_exp
+  ): [model_inference_results_view!]!
 
   """An array relationship"""
   model_labels(
