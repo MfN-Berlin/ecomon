@@ -3,7 +3,7 @@ FROM debian:bookworm-slim
 
 # Install Hasura CLI
 RUN apt update && apt install -y curl \
-    && curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash \
+    && curl -fsSL https://raw.githubusercontent.com/hasura/graphql-engine/v2.34.0/cli/get.sh | bash \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /app/migrations /app/metadata /app/seeds
 
