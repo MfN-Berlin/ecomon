@@ -138,6 +138,9 @@ services:
       -c max_connections=${POSTGRES_MAX_CONNECTIONS}
       -c huge_pages=${POSTGRES_HUGE_PAGES}
       -c log_min_duration_statement=${POSTGRES_LOG_MIN_DURATION_STATEMENT}
+      -c autovacuum_work_mem=${POSTGRES_AUTOVACUUM_WORK_MEM}
+      -c temp_buffers=${POSTGRES_TEMP_BUFFERS}
+      -c checkpoint_timeout=${POSTGRES_CHECKPOINT_TIMEOUT}
     volumes:
       - ${PGDATA_PATH}:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
@@ -290,13 +293,21 @@ services:
       - ./.env:/opt/airflow/airflow.env
       - ${BASE_DATA_DIRECTORY}:/data
       - ${PGBACKUP_PATH}:/backup
-    ports:
+    user: "0"
+    group_add:
+      - "1003"  # akwamo
+#    ports:
 #      - "8282:8080"
-    command: >
-      bash -c "rm -f /opt/airflow/airflow.db &&
-               airflow db init &&
-               airflow users create --username admin --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.com &&
-               airflow scheduler & airflow webserver"
+#    command: >
+#      bash -c "rm -f /opt/airflow/airflow.db &&
+#               airflow db init &&
+#               airflow users create --username admin --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.com &&
+#               airflow scheduler & airflow webserver"
+
+    command: bash -c "airflow scheduler & airflow webserver"
+#   DEBUG
+#    entrypoint: /bin/bash
+#    command: -c "tail -f /dev/null"
     restart: always
     networks:
       - traefik-ingress

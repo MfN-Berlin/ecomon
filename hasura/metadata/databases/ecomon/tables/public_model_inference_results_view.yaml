@@ -1,0 +1,36 @@
+table:
+  name: model_inference_results_view
+  schema: public
+object_relationships:
+  - name: label
+    using:
+      manual_configuration:
+        column_mapping:
+          label_id: id
+        insertion_order: null
+        remote_table:
+          name: labels
+          schema: public
+  - name: model
+    using:
+      manual_configuration:
+        column_mapping:
+          model_id: id
+        insertion_order: null
+        remote_table:
+          name: models
+          schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - record_id
+        - label_id
+        - model_id
+        - end_time
+        - start_time
+        - confidence
+      filter: {}
+      allow_aggregations: true
+    comment: ""

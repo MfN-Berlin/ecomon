@@ -76,65 +76,61 @@ def create_report():
 
   @task
   def create_report():
+    """Get list of directories to process (memory efficient)"""
     BASE_DIR = '/data'
 
     if not os.path.isdir(BASE_DIR):
       raise ValueError(f"Not a valid directory {BASE_DIR}")
 
-    rows = []
+    # Only return directory paths, not file lists
+    directories = []
 
     for root, dirs, files in os.walk(BASE_DIR):
       rel_path = os.path.relpath(root, BASE_DIR)
       depth = rel_path.count(os.sep)
 
       if depth == 1:
-        rows.append({
-          "directory": rel_path,
-          "files": files,
-          "root": root
-        })
+        directories.append(rel_path)
 
       if depth >= 1:
         dirs[:] = []
 
-    return rows
+    logging.info(f"Found {len(directories)} directories to process")
+    return directories
 
   @task
-  def list_wavs(rows):
+  def list_wavs(directories):
+    """Count WAV files and calculate sizes in one pass (memory efficient)"""
     result = []
 
-    for dir_info in rows:
-      wav_count = sum(1 for f in dir_info["files"] if f.lower().endswith('.wav'))
-      result.append({
-        "directory": dir_info["directory"],
-        "wav_count": wav_count,
-        "root": dir_info["root"]
-      })
+    for directory in directories:
+      full_path = os.path.join('/data', directory)
+
+      try:
+        # Count WAV files and calculate total size without loading all filenames into memory
+        wav_count = 0
+        total_size = 0
+
+        for filename in os.listdir(full_path):
+          if filename.lower().endswith('.wav'):
+            wav_count += 1
+            file_path = os.path.join(full_path, filename)
+            try:
+              total_size += os.path.getsize(file_path)
+            except OSError as e:
+              logging.warning(f"Could not get size of {file_path}: {e}")
+
+        result.append({
+          "directory": directory,
+          "wav_count": wav_count,
+          "wav_size_bytes": total_size
+        })
+      except OSError as e:
+        logging.error(f"Error processing directory {full_path}: {e}")
+        continue
+
+    logging.info(f"Processed {len(result)} directories")
     return result
-
-  @task
-  def calculate_wav_sizes(rows):
-    enhanced_rows = []
-
-    for row in rows:
-      total_size = 0
-      root_path = row["root"]
-
-      for filename in os.listdir(root_path):
-        if filename.lower().endswith('.wav'):
-          file_path = os.path.join(root_path, filename)
-          try:
-            total_size += os.path.getsize(file_path)
-          except OSError as e:
-            logging.warning(f"Could not get size of {file_path}: {e}")
-
-      enhanced_rows.append({
-        "directory": row["directory"],
-        "wav_count": row["wav_count"],
-        "wav_size_bytes": total_size
-      })
-
-    return enhanced_rows
 
   @task
   def aggregate_wav_data_by_prefix(rows, sites):
@@ -258,7 +254,7 @@ def create_report():
               elif diff <= MAX_DIFF:
                   db_import_status = "ready with losses"
               else:
-                  db_import_status = "pending"  # Changed from "update this" to "pending"
+                  db_import_status = "pending"
 
           # Calculate BIRDID_MEDIUM status
           if record_count == 0:
@@ -272,7 +268,7 @@ def create_report():
               elif diff <= MAX_DIFF:
                   birdid_medium_status = "ready with losses"
               else:
-                  birdid_medium_status = "pending"  # Changed from "update this" to "pending"
+                  birdid_medium_status = "pending"
 
           logging.info(f"Prefix: {data['prefix']}, Site ID: {site_id}, WAV files: {wav_count}, Records: {record_count}, BirdNET processed: {birdid_medium_count}, Status: {birdid_medium_status}")
 
@@ -293,7 +289,6 @@ def create_report():
   @task
   def transform_data(rows):
       df = pd.DataFrame(rows)
-      # Columns order: prefix, site_id, wav_size_bytes, wav_count, record_count, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible
       df = df[["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count", "db_import", "birdid_medium_processed", "birdid_medium", "birdid_medium_visible"]]
       df = df.sort_values(by="prefix")
       return df
@@ -399,13 +394,12 @@ def create_report():
   birdid_medium_counts = get_birdid_medium_processed_counts(sites)
   birdid_visible_counts = get_birdid_medium_visible_counts(sites)
   running_jobs = get_running_inference_jobs()
-  rows = create_report()
-  rows = list_wavs(rows)
-  rows = calculate_wav_sizes(rows)
+  directories = create_report()
+  rows = list_wavs(directories)
   aggregated_data = aggregate_wav_data_by_prefix(rows, sites)
   enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs)
   report_df = transform_data(enriched_data)
   print_report(report_df)
-  save_report_to_db(report_df)  # Save to database
+  save_report_to_db(report_df)
 
 create_report()
