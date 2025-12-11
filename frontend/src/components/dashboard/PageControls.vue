@@ -45,7 +45,7 @@ let thresholdTimeoutId = null;
 
  // Manually maintained list of ready site IDs
 const readySiteIds = ref([
-  1, 26, 27, 28, 29, 13, 16, 21, 22, 23, 6, 7, 8, 9
+  26,27,25,28,29,13,14,24,4,16,21,22,23,5,15,3,6,7,8,9
 ]);
 
 // Manually maintained list of ready model IDs
