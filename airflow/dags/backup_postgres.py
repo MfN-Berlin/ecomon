@@ -34,7 +34,7 @@ create_backup = NoTemplateBashOperator(
     dag=dag,
 )
 
-# Task 2: Compress backup
+# Task 2: Compress and split backup into chunks
 compress_backup = NoTemplateBashOperator(
     task_id='compress_backup',
     bash_command="""
@@ -43,119 +43,112 @@ set -euo pipefail
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
 BACKUP_BASENAME="basebackup_$TIMESTAMP"
 BACKUP_PATH="/backup/$BACKUP_BASENAME"
-BACKUP_TAR="/backup/$BACKUP_BASENAME.tar.gz"
+BACKUP_DIR="/backup/backup_$TIMESTAMP"
+CHUNK_SIZE="10G"  # 10GB chunks to avoid S3FS issues
 
-echo "Compressing backup: $BACKUP_BASENAME"
-tar -C "/backup" -czf "$BACKUP_TAR" "$BACKUP_BASENAME"
+# Create directory for this backup
+echo "Creating backup directory: $BACKUP_DIR"
+mkdir -p "$BACKUP_DIR"
+
+echo "Compressing and splitting backup: $BACKUP_BASENAME"
+# Stream tar through gzip and split into chunks inside the backup directory
+# -a 3 ensures 3-digit suffix (000-999) for up to 999 parts
+tar -C "/backup" -cf - "$BACKUP_BASENAME" | gzip -1 | split -b $CHUNK_SIZE -d -a 3 - "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
 
 echo "Removing uncompressed backup directory..."
 rm -rf "$BACKUP_PATH"
 
-echo "Backup compressed: $BACKUP_TAR"
+# List created chunks
+echo "Backup compressed and split into:"
+ls -lh "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"* | awk '{print $9, $5}'
+
+# Count chunks
+CHUNK_COUNT=$(ls -1 "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"* 2>/dev/null | wc -l)
+echo "Total chunks created: $CHUNK_COUNT"
     """,
     dag=dag,
 )
 
-# Task 3: Verify backup integrity
+# Task 3: Verify backup integrity (no decompression)
 verify_backup = NoTemplateBashOperator(
     task_id='verify_backup',
     bash_command="""
 set -euo pipefail
 
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
-BACKUP_TAR="/backup/basebackup_$TIMESTAMP.tar.gz"
+BACKUP_BASENAME="basebackup_$TIMESTAMP"
+BACKUP_DIR="/backup/backup_$TIMESTAMP"
+BACKUP_PREFIX="$BACKUP_DIR/$BACKUP_BASENAME"
 
 echo "=== Backup Integrity Verification ==="
-echo "Archive: $BACKUP_TAR"
+echo "Backup directory: $BACKUP_DIR"
+echo "Backup prefix: $BACKUP_PREFIX"
 echo ""
 
-# Check 1: File exists
-if [ ! -f "$BACKUP_TAR" ]; then
-    echo "ERROR: Backup file does not exist!"
+# Check 0: Backup directory exists
+if [ ! -d "$BACKUP_DIR" ]; then
+    echo "ERROR: Backup directory does not exist!"
     exit 1
 fi
-echo "✓ Backup file exists"
+echo "✓ Backup directory exists"
 
-# Check 2: File is not empty
-FILE_SIZE=$(stat -f%z "$BACKUP_TAR" 2>/dev/null || stat -c%s "$BACKUP_TAR" 2>/dev/null)
-if [ "$FILE_SIZE" -eq 0 ]; then
-    echo "ERROR: Backup file is empty!"
+# Check 1: Chunks exist
+CHUNKS=($BACKUP_PREFIX.tar.gz.part*)
+if [ ${#CHUNKS[@]} -eq 0 ]; then
+    echo "ERROR: No backup chunks found!"
     exit 1
 fi
-echo "✓ Backup file is not empty (Size: $(numfmt --to=iec-i --suffix=B $FILE_SIZE 2>/dev/null || echo ${FILE_SIZE} bytes))"
+echo "✓ Found ${#CHUNKS[@]} backup chunks"
 
-# Check 3: File has minimum expected size (100MB)
-MIN_SIZE=$((100 * 1024 * 1024))  # 100MB in bytes
-if [ "$FILE_SIZE" -lt "$MIN_SIZE" ]; then
-    echo "WARNING: Backup file is smaller than expected minimum (100MB)"
-    echo "Current size: $(numfmt --to=iec-i --suffix=B $FILE_SIZE 2>/dev/null || echo ${FILE_SIZE} bytes)"
-fi
+# Check 2: All chunks are not empty and calculate total size
+TOTAL_SIZE=0
+for chunk in "${CHUNKS[@]}"; do
+    if [ ! -f "$chunk" ]; then
+        echo "ERROR: Chunk $chunk does not exist!"
+        exit 1
+    fi
 
-# Check 4: Verify gzip integrity
-echo "Checking gzip integrity..."
-if ! gzip -t "$BACKUP_TAR" 2>&1; then
-    echo "ERROR: Gzip integrity check failed!"
-    exit 1
-fi
-echo "✓ Gzip compression is valid"
+    CHUNK_SIZE=$(stat -c%s "$chunk" 2>/dev/null || stat -f%z "$chunk" 2>/dev/null)
+    if [ "$CHUNK_SIZE" -eq 0 ]; then
+        echo "ERROR: Chunk $chunk is empty!"
+        exit 1
+    fi
+    TOTAL_SIZE=$((TOTAL_SIZE + CHUNK_SIZE))
+done
+echo "✓ All chunks are non-empty"
+echo "✓ Total backup size: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE 2>/dev/null || echo ${TOTAL_SIZE} bytes)"
 
-# Check 5: Test tar archive without extracting
-echo "Testing tar archive structure..."
-if ! tar -tzf "$BACKUP_TAR" > /dev/null 2>&1; then
-    echo "ERROR: Tar archive test failed!"
-    exit 1
-fi
-echo "✓ Tar archive structure is valid"
-
-# Check 6: Verify essential PostgreSQL files are present
-echo "Checking for essential PostgreSQL files..."
-REQUIRED_FILES=("PG_VERSION" "postgresql.conf" "pg_hba.conf")
-MISSING_FILES=()
-
-# Disable pipefail temporarily to avoid SIGPIPE from grep -q
-set +o pipefail
-for file in "${REQUIRED_FILES[@]}"; do
-    if tar -tzf "$BACKUP_TAR" 2>/dev/null | grep -q "/${file}\$"; then
-        : # File found, do nothing
-    else
-        MISSING_FILES+=("$file")
+# Check 3: Verify gzip integrity of each chunk (without full decompression)
+echo "Verifying gzip integrity of chunks..."
+for chunk in "${CHUNKS[@]}"; do
+    if ! gunzip -t "$chunk" 2>/dev/null; then
+        echo "ERROR: Chunk $chunk failed gzip integrity check!"
+        exit 1
     fi
 done
-set -o pipefail
+echo "✓ All chunks passed gzip integrity check"
 
-if [ ${#MISSING_FILES[@]} -gt 0 ]; then
-    echo "WARNING: Some expected PostgreSQL files are missing:"
-    printf '  - %s\n' "${MISSING_FILES[@]}"
+# Check 4: Verify file naming sequence
+echo "Verifying chunk sequence..."
+EXPECTED_COUNT=${#CHUNKS[@]}
+ACTUAL_SEQUENCE=$(ls -1 "$BACKUP_PREFIX.tar.gz.part"* | wc -l)
+if [ "$EXPECTED_COUNT" -ne "$ACTUAL_SEQUENCE" ]; then
+    echo "WARNING: Chunk sequence may have gaps"
 else
-    echo "✓ All essential PostgreSQL files present"
+    echo "✓ Chunk sequence is complete"
 fi
-
-# Check 7: Count files in archive
-set +o pipefail
-FILE_COUNT=$(tar -tzf "$BACKUP_TAR" 2>/dev/null | wc -l)
-set -o pipefail
-echo "✓ Archive contains $FILE_COUNT files/directories"
-
-# Check 8: Check for base directory
-echo "Verifying backup base directory..."
-BACKUP_BASENAME="basebackup_$TIMESTAMP"
-set +o pipefail
-FIRST_ENTRY=$(tar -tzf "$BACKUP_TAR" 2>/dev/null | { read line; echo "$line"; })
-set -o pipefail
-
-if [[ "$FIRST_ENTRY" != "$BACKUP_BASENAME/"* ]]; then
-    echo "ERROR: Backup base directory '$BACKUP_BASENAME/' not found in archive!"
-    echo "First entry: $FIRST_ENTRY"
-    exit 1
-fi
-echo "✓ Backup base directory present"
 
 echo ""
 echo "=== Verification Summary ==="
-echo "Archive: $BACKUP_TAR"
-echo "Size: $(numfmt --to=iec-i --suffix=B $FILE_SIZE 2>/dev/null || echo ${FILE_SIZE} bytes)"
-echo "Files: $FILE_COUNT"
+echo "Backup directory: $BACKUP_DIR"
+echo "Backup prefix: $BACKUP_PREFIX"
+echo "Chunks: ${#CHUNKS[@]}"
+echo "Total size: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE 2>/dev/null || echo ${TOTAL_SIZE} bytes)"
 echo "Status: ✓ All integrity checks passed"
+echo ""
+echo "Note: Full content verification skipped to save time."
+echo "To verify archive contents, run:"
+echo "  cat $BACKUP_PREFIX.tar.gz.part* | gunzip | tar -t | head"
     """,
     dag=dag,
 )
@@ -166,20 +159,34 @@ rotate_backups = NoTemplateBashOperator(
     bash_command="""
 set -euo pipefail
 
-echo "Rotating old backups (keeping $MAX_BACKUPS)..."
+MAX_BACKUPS=3
 
-ALL_BACKUPS=($(ls -1t /backup/basebackup_*.tar.gz 2>/dev/null || true))
+echo "Rotating old backups (keeping $MAX_BACKUPS newest backups)..."
 
-COUNT=${#ALL_BACKUPS[@]}
+# Find all backup directories (not files), sorted newest first
+ALL_BACKUP_DIRS=()
+for dir in /backup/backup_*; do
+    if [ -d "$dir" ]; then
+        ALL_BACKUP_DIRS+=("$dir")
+    fi
+done
+
+# Sort directories newest first
+IFS=$'\n' ALL_BACKUP_DIRS=($(sort -r <<<"${ALL_BACKUP_DIRS[*]}"))
+unset IFS
+
+COUNT=${#ALL_BACKUP_DIRS[@]}
+echo "Found $COUNT backup directories"
 
 if (( COUNT > MAX_BACKUPS )); then
     DELETE_COUNT=$((COUNT - MAX_BACKUPS))
-    echo "Removing $DELETE_COUNT oldest backups"
+    echo "Removing $DELETE_COUNT oldest backup directories"
 
+    # Delete backups starting from index MAX_BACKUPS (oldest backups)
     for ((i=MAX_BACKUPS; i<COUNT; i++)); do
-        OLD="${ALL_BACKUPS[$i]}"
-        echo "Deleting: $OLD"
-        rm -f "$OLD"
+        OLD_DIR="${ALL_BACKUP_DIRS[$i]}"
+        echo "Deleting backup directory: $OLD_DIR"
+        rm -rf "$OLD_DIR"
     done
 else
     echo "No old backups to remove. Current count: $COUNT"

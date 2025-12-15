@@ -1,0 +1,146 @@
+================================================================================
+PostgreSQL Backup Restoration Guide
+================================================================================
+
+Backup Timestamp: TIMESTAMP_PLACEHOLDER
+Created: CREATION_DATE_PLACEHOLDER
+
+================================================================================
+QUICK RESTORATION
+================================================================================
+
+Prerequisites:
+- PostgreSQL must be stopped before restoration
+- Sufficient disk space for decompression
+- Root or postgres user access
+
+--------------------------------------------------------------------------------
+Method 1: Direct Restoration (Recommended)
+--------------------------------------------------------------------------------
+
+# Stop PostgreSQL
+systemctl stop postgresql
+# OR for Docker:
+# docker stop <postgres_container>
+
+# Set variables
+TIMESTAMP="TIMESTAMP_PLACEHOLDER"
+RESTORE_PATH="/var/lib/postgresql/data"
+BACKUP_DIR="/backup/backup_${TIMESTAMP}"
+
+# Backup existing data (safety measure)
+if [ -d "$RESTORE_PATH" ]; then
+    mv "$RESTORE_PATH" "${RESTORE_PATH}.backup_$(date +%Y%m%d_%H%M%S)"
+fi
+
+# Create restore directory
+mkdir -p "$RESTORE_PATH"
+
+# Restore from chunks
+cat "$BACKUP_DIR"/basebackup_${TIMESTAMP}.tar.gz.part* | gunzip | tar -xf - -C "$RESTORE_PATH" --strip-components=1
+
+# Set correct permissions
+chown -R postgres:postgres "$RESTORE_PATH"
+chmod 700 "$RESTORE_PATH"
+
+# Start PostgreSQL
+systemctl start postgresql
+# OR for Docker:
+# docker start <postgres_container>
+
+--------------------------------------------------------------------------------
+Method 2: Extract to Temporary Location First
+--------------------------------------------------------------------------------
+
+# Extract to temporary location for inspection
+TEMP_DIR="/tmp/pg_restore_$(date +%s)"
+mkdir -p "$TEMP_DIR"
+
+cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -xf - -C "$TEMP_DIR"
+
+# Inspect the backup
+ls -la "$TEMP_DIR"
+
+# Then copy to PostgreSQL data directory when ready
+
+--------------------------------------------------------------------------------
+Method 3: Verify Before Restoring
+--------------------------------------------------------------------------------
+
+# Test integrity without extracting
+cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | head -20
+
+# Count files in backup
+cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | wc -l
+
+# Search for specific files
+cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | grep "postgresql.conf"
+
+================================================================================
+BACKUP CONTENTS
+================================================================================
+
+This backup contains:
+- PostgreSQL data directory
+- Configuration files (postgresql.conf, pg_hba.conf)
+- Database files and WAL logs
+- All schemas, tables, and data
+
+================================================================================
+VERIFICATION
+================================================================================
+
+To verify backup integrity:
+
+for chunk in "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part*; do
+    echo "Checking $chunk..."
+    gunzip -t "$chunk" && echo "OK" || echo "FAILED"
+done
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Issue: Permission Denied
+Solution: Run with sudo or as postgres user
+    sudo -u postgres bash
+
+Issue: Not Enough Space
+Solution: Check available space
+    df -h /var/lib/postgresql
+    du -sh "$BACKUP_DIR"
+
+Issue: PostgreSQL Won't Start After Restore
+Solution: Check PostgreSQL logs
+    journalctl -u postgresql -n 50
+    # OR for Docker:
+    # docker logs <postgres_container>
+
+    # Verify permissions
+    ls -la /var/lib/postgresql/data
+    # Should be owned by postgres:postgres with 700 permissions
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+- ALWAYS backup current data before restoring
+- STOP PostgreSQL before restoration to avoid data corruption
+- VERIFY backup integrity before restoring to production
+- TEST restoration in a non-production environment first
+- This backup was created using pg_basebackup and includes all databases
+
+================================================================================
+SUPPORT
+================================================================================
+
+For issues or questions:
+1. Check PostgreSQL logs: journalctl -u postgresql
+2. Verify file permissions and ownership
+3. Ensure PostgreSQL version compatibility
+4. Contact your database administrator
+
+--------------------------------------------------------------------------------
+Backup created by: Airflow DAG postgres_weekly_backup
+Backup method: pg_basebackup with compression and chunking
+================================================================================
