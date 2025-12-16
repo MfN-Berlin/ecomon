@@ -58,6 +58,9 @@ The time required for running a backup is relatively long, so backups have to be
 ### Task Dependencies
 After the backup is terminated, the file should be downloaded from the server and stored in a safe location ("Z"). To manually copy the backup, do `rsync -P denbi-gpu:source-path destination-path-on-Z` where denbi-gpu is your SSH configuration to connect to the server. Make sure there is enough space on destination-path-on-Z.
 
+### Restoring a backup
+see: backup_restoration.txt
+
 ## Create Report DAG
 
 ### Overview
