@@ -99,67 +99,141 @@ def create_report():
     return directories
 
   @task
-  def list_wavs(directories):
-    """Count WAV files and calculate sizes in one pass (memory efficient)"""
-    result = []
+  def get_last_report_dates_by_directory():
+      """Get the last report date for each directory"""
+      postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-    for directory in directories:
-      full_path = os.path.join('/data', directory)
+      query = """
+      SELECT prefix, MAX(report_date) as last_report_date
+      FROM workflow_reports
+      GROUP BY prefix
+      """
 
-      try:
-        # Count WAV files and calculate total size without loading all filenames into memory
-        wav_count = 0
-        total_size = 0
+      records = postgres_hook.get_records(query)
 
-        for filename in os.listdir(full_path):
-          if filename.lower().endswith('.wav'):
-            wav_count += 1
-            file_path = os.path.join(full_path, filename)
-            try:
-              total_size += os.path.getsize(file_path)
-            except OSError as e:
-              logging.warning(f"Could not get size of {file_path}: {e}")
+      # Create a dictionary mapping prefix to last report date
+      last_dates = {}
+      for row in records:
+          if row and row[0] and row[1]:
+              last_dates[row[0]] = row[1]
 
-        result.append({
-          "directory": directory,
-          "wav_count": wav_count,
-          "wav_size_bytes": total_size
-        })
-      except OSError as e:
-        logging.error(f"Error processing directory {full_path}: {e}")
-        continue
+      logging.info(f"Found last report dates for {len(last_dates)} prefixes")
+      return last_dates
 
-    logging.info(f"Processed {len(result)} directories")
-    return result
+  @task
+  def list_wavs(directories, sites, last_report_dates):
+      """Count WAV files and calculate sizes only for directories modified since their last report"""
+      import os
+      from datetime import datetime
+
+      # Create a set of valid prefixes from sites
+      valid_prefixes = {site["prefix"] for site in sites}
+      logging.info(f"Valid site prefixes: {valid_prefixes}")
+
+      result = []
+      skipped_count = 0
+      processed_count = 0
+      no_previous_report_count = 0
+
+      for directory in directories:
+          # Extract prefix from directory (e.g., "TEST/TEST_20230506" -> "TEST")
+          prefix = directory.split("/")[0]
+
+          # Skip directories that don't match any site prefix
+          if prefix not in valid_prefixes:
+              logging.debug(f"Skipping directory {directory} (prefix '{prefix}' not in valid sites)")
+              continue
+
+          full_path = os.path.join('/data', directory)
+
+          try:
+              # Check directory modification time (works with s3fs)
+              dir_stat = os.stat(full_path)
+              dir_mtime = dir_stat.st_mtime
+              dir_mtime_dt = datetime.fromtimestamp(dir_mtime)
+
+              # Get last report date for this prefix
+              last_report_date = last_report_dates.get(prefix)
+
+              if last_report_date:
+                  # Convert to datetime if it's a string
+                  if isinstance(last_report_date, str):
+                      last_report_timestamp = datetime.fromisoformat(last_report_date).timestamp()
+                  else:
+                      last_report_timestamp = last_report_date.timestamp()
+
+                  # Skip if directory hasn't been modified since last report for this prefix
+                  if dir_mtime < last_report_timestamp:
+                      logging.debug(f"Skipping {directory} (last modified: {dir_mtime_dt}, last report: {last_report_date})")
+                      skipped_count += 1
+                      continue
+
+                  logging.info(f"Processing {directory} (modified: {dir_mtime_dt}, last report: {last_report_date})")
+              else:
+                  logging.info(f"Processing {directory} (no previous report for prefix '{prefix}')")
+                  no_previous_report_count += 1
+
+              # Count WAV files and calculate total size
+              wav_count = 0
+              total_size = 0
+
+              for filename in os.listdir(full_path):
+                  if filename.lower().endswith('.wav'):
+                      wav_count += 1
+                      file_path = os.path.join(full_path, filename)
+                      try:
+                          total_size += os.path.getsize(file_path)
+                      except OSError as e:
+                          logging.warning(f"Could not get size of {file_path}: {e}")
+
+              result.append({
+                  "directory": directory,
+                  "wav_count": wav_count,
+                  "wav_size_bytes": total_size
+              })
+              processed_count += 1
+
+          except OSError as e:
+              logging.error(f"Error processing directory {full_path}: {e}")
+              continue
+
+      logging.info(f"Processed {processed_count} directories ({no_previous_report_count} new prefixes), "
+                  f"skipped {skipped_count} unchanged directories (from {len(directories)} total)")
+      return result
 
   @task
   def aggregate_wav_data_by_prefix(rows, sites):
-    """Aggregate WAV file counts and sizes by prefix"""
-    # Create a lookup dictionary from prefix to site_id
-    prefix_to_site = {site["prefix"]: site["site_id"] for site in sites}
+      """Aggregate WAV file counts and sizes by prefix"""
+      # Handle empty input - return empty list to signal no data
+      if not rows:
+          logging.info("No rows to aggregate - no directories were processed")
+          return []
 
-    # Dictionary to store aggregated data by prefix
-    prefix_data = {}
+      # Create a lookup dictionary from prefix to site_id
+      prefix_to_site = {site["prefix"]: site["site_id"] for site in sites}
 
-    for row in rows:
-      # Extract prefix from directory (e.g., "TEST/TEST_20230506" -> "TEST")
-      prefix = row["directory"].split("/")[0]
+      # Dictionary to store aggregated data by prefix
+      prefix_data = {}
 
-      # Initialize prefix entry if it doesn't exist
-      if prefix not in prefix_data:
-        prefix_data[prefix] = {
-          "prefix": prefix,
-          "site_id": prefix_to_site.get(prefix),
-          "wav_count": 0,
-          "wav_size_bytes": 0
-        }
+      for row in rows:
+          # Extract prefix from directory (e.g., "TEST/TEST_20230506" -> "TEST")
+          prefix = row["directory"].split("/")[0]
 
-      # Aggregate the counts and sizes
-      prefix_data[prefix]["wav_count"] += row["wav_count"]
-      prefix_data[prefix]["wav_size_bytes"] += row["wav_size_bytes"]
+          # Initialize prefix entry if it doesn't exist
+          if prefix not in prefix_data:
+              prefix_data[prefix] = {
+                  "prefix": prefix,
+                  "site_id": prefix_to_site.get(prefix),
+                  "wav_count": 0,
+                  "wav_size_bytes": 0
+              }
 
-    logging.info(f"Aggregated data for {len(prefix_data)} prefixes")
-    return list(prefix_data.values())
+          # Aggregate the counts and sizes
+          prefix_data[prefix]["wav_count"] += row["wav_count"]
+          prefix_data[prefix]["wav_size_bytes"] += row["wav_size_bytes"]
+
+      logging.info(f"Aggregated data for {len(prefix_data)} prefixes")
+      return list(prefix_data.values())
 
   @task
   def get_running_inference_jobs():
@@ -223,6 +297,11 @@ def create_report():
   @task
   def calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs):
       """Calculate DB_IMPORT and BIRDID_MEDIUM statuses for each prefix"""
+      # Handle empty input
+      if not aggregated_data:
+          logging.info("No aggregated data - no directories were processed")
+          return []
+
       MAX_DIFF = 10  # acceptable difference between status "ready" and "ready with losses" and "pending"
 
       # Convert record_counts and birdid_medium_counts keys from strings to integers
@@ -288,6 +367,11 @@ def create_report():
 
   @task
   def transform_data(rows):
+      # Handle empty input
+      if not rows:
+          logging.info("No data to transform - no directories were processed")
+          return pd.DataFrame()
+
       df = pd.DataFrame(rows)
       df = df[["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count", "db_import", "birdid_medium_processed", "birdid_medium", "birdid_medium_visible"]]
       df = df.sort_values(by="prefix")
@@ -295,6 +379,11 @@ def create_report():
 
   @task
   def print_report(report_df):
+      # Handle empty DataFrame
+      if report_df.empty:
+          logging.info("No new data to report - all directories up to date")
+          return
+
       logging.info("File count report:")
       for index, row in report_df.iterrows():
           size_mb = row['wav_size_bytes'] / (1024 * 1024)
@@ -335,36 +424,23 @@ def create_report():
       logging.info("Report table created or already exists")
 
   @task
-  def save_report_to_db(report_df):
+  def save_report_to_db(report_df, rows):
       """Save the report data to the database"""
+      # Handle empty DataFrame - don't save if no directories were processed
+      if report_df.empty or not rows:
+          logging.info("No new data to save - skipping report creation (will show latest existing report)")
+          return 0
+
       postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-      # Delete today's report if it exists (to avoid duplicates on re-runs)
-      delete_today_query = """
-      DELETE FROM workflow_reports
-      WHERE DATE(report_date) = CURRENT_DATE
-      """
-      postgres_hook.run(delete_today_query)
-      logging.info("Deleted today's existing report (if any)")
-
-      # Clear old reports (optional - keep last 30 days)
-      delete_old_query = """
-      DELETE FROM workflow_reports
-      WHERE report_date < CURRENT_TIMESTAMP - INTERVAL '30 days'
-      """
-      postgres_hook.run(delete_old_query)
-      logging.info("Cleared old reports (older than 30 days)")
-
-      # Insert new report data
       insert_query = """
       INSERT INTO workflow_reports (
-          report_date, prefix, site_id, wav_size_bytes, wav_count,
-          record_count, db_import, birdid_medium_processed,
-          birdid_medium, birdid_medium_visible
+        report_date, prefix, site_id, wav_size_bytes, wav_count,
+        record_count, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible
       ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
       """
 
-      report_date = datetime.now()
+      report_date = datetime.now().date()
       rows_inserted = 0
 
       for index, row in report_df.iterrows():
@@ -390,16 +466,17 @@ def create_report():
   # Task dependencies
   sites = get_sites_from_db()
   create_report_table()
+  last_report_dates = get_last_report_dates_by_directory()
   record_counts = get_record_counts_from_db(sites)
   birdid_medium_counts = get_birdid_medium_processed_counts(sites)
   birdid_visible_counts = get_birdid_medium_visible_counts(sites)
   running_jobs = get_running_inference_jobs()
   directories = create_report()
-  rows = list_wavs(directories)
+  rows = list_wavs(directories, sites, last_report_dates)
   aggregated_data = aggregate_wav_data_by_prefix(rows, sites)
   enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs)
   report_df = transform_data(enriched_data)
   print_report(report_df)
-  save_report_to_db(report_df)
+  save_report_to_db(report_df, rows)  # Pass rows to check if any were processed
 
 create_report()

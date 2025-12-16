@@ -27,13 +27,16 @@
             <v-icon v-if="item.visible_in_ui" color="green">mdi-check</v-icon>
             <v-icon v-else color="red">mdi-close</v-icon>
           </template>
+          <template #item.wav_size_bytes="{ item }">
+            {{ formatBytesToMB(item.wav_size_bytes) }}
+          </template>
 
           <!-- Totals row -->
           <template #body.append>
             <tr class="totals-row">
               <td><strong>Totals:</strong></td>
               <td></td>
-              <td class="text-end">{{ (totalSize / (1024**2)).toFixed(2) }} MB</td>
+              <td class="text-end">{{ (totalSize / (1024**4)).toFixed(2) }} TB</td>
               <td class="text-end">{{ totalWavCount.toLocaleString() }}</td>
               <td class="text-end">
                 {{ totalRecords.toLocaleString() }}
@@ -164,7 +167,7 @@ const totalProcessed = computed(() => {
 const headers = [
   { title: 'Prefix', key: 'prefix', sortable: true, width: '240px' },
   { title: 'Site ID', key: 'site_id', sortable: true, width: '60px', align: 'end' },
-  { title: 'WAV Size', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
+  { title: 'WAV Size (MB)', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
   { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
   { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
   { title: 'DB Import', key: 'db_import', sortable: true, width: '120px', align: 'center' },
@@ -180,6 +183,12 @@ const formatBytes = (bytes: number): string => {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
+// Format bytes to MB with all decimals
+const formatBytesToMB = (bytes: number): string => {
+  if (!bytes || bytes === 0) return '0';
+  return (bytes / (1024 * 1024)).toString();
 };
 
 // Format date to readable format
