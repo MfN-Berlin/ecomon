@@ -13,14 +13,21 @@
           class="elevation-0 custom-table-margin"
           density="compact"
         >
+          <template #item.prefix="{ item }">
+            <span style="display: inline-flex; align-items: center; gap: 4px;">
+              <v-icon v-if="isUltrasound(item.prefix)" size="large" color="black" class="ml-1">
+                mdi-bat
+              </v-icon>{{ item.prefix }}
+            </span>
+          </template>
           <template #item.db_import="{ item }">
             <span :class="getStatusColor(item.db_import)">
-              {{ item.db_import }}
+              {{ getStatusText(item.db_import) }}
             </span>
           </template>
           <template #item.birdid_medium="{ item }">
             <span :class="getStatusColor(item.birdid_medium)">
-              {{ item.birdid_medium }}
+              {{ getStatusText(item.birdid_medium) }}
             </span>
           </template>
           <template #item.visible_in_ui="{ item }">
@@ -28,16 +35,22 @@
             <v-icon v-else color="red">mdi-close</v-icon>
           </template>
           <template #item.wav_size_bytes="{ item }">
-            {{ formatBytesToMB(item.wav_size_bytes) }}
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <span v-bind="props" style="cursor: help;">
+                  {{ formatBytesToMB(item.wav_size_bytes) }}
+                </span>
+              </template>
+              <span>{{ (item.wav_size_bytes || 0).toLocaleString('de-DE') }} bytes</span>
+            </v-tooltip>
           </template>
-
           <!-- Totals row -->
           <template #body.append>
             <tr class="totals-row">
               <td><strong>Totals:</strong></td>
               <td></td>
               <td class="text-end">{{ (totalSize / (1024**4)).toFixed(2) }} TB</td>
-              <td class="text-end">{{ totalWavCount.toLocaleString() }}</td>
+              <td class="text-end">{{ totalWavCount.toLocaleString('de-DE') }}</td>
               <td class="text-end">
                 {{ totalRecords.toLocaleString() }}
                 <span v-if="totalRecords > 0 && totalWavCount > 0">
@@ -56,6 +69,30 @@
             </tr>
           </template>
         </v-data-table>
+
+        <!-- Legend -->
+        <div class="legend-container">
+          <h3 class="legend-title">Status Legend:</h3>
+          <div class="legend-items">
+            <div class="legend-item">
+              <span class="legend-badge status-ready">ready</span>
+              <span class="legend-text">All files processed successfully</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-badge status-ready-losses">ready</span>
+              <span class="legend-text">Processing complete with minor discrepancies (≤10 files)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-badge status-pending">pending</span>
+              <span class="legend-text">Processing not yet complete or not started</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-badge status-running">running</span>
+              <span class="legend-text">Processing currently in progress</span>
+            </div>
+          </div>
+        </div>
+
       </v-col>
     </v-row>
   </v-container>
@@ -67,67 +104,13 @@ definePageMeta({
   layout: "default",
 });
 
-// State
-const pending = ref(false);
-const data = ref<any>(null);
-const error = ref<string | null>(null);
+// Use the composable from workflowReports.ts
+const { data, pending, error, fetchReports } = useWorkflowReports();
 
-// Fetch workflow reports
-const fetchReports = async () => {
-  pending.value = true;
-  error.value = null;
-
-  try {
-    const config = useRuntimeConfig();
-
-    console.log('Fetching from:', config.public.GQL_HOST);
-
-    const result = await $fetch(config.public.GQL_HOST, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: {
-        query: `
-          query GetLatestWorkflowReports {
-            workflow_reports(
-              distinct_on: [prefix]
-              order_by: [{prefix: asc}, {report_date: desc}]
-            ) {
-              id
-              report_date
-              prefix
-              site_id
-              wav_size_bytes
-              wav_count
-              record_count
-              db_import
-              birdid_medium_processed
-              birdid_medium
-              birdid_medium_visible
-              created_at
-            }
-          }
-        `
-      }
-    });
-
-    console.log('GraphQL result:', result);
-
-    if (result.errors) {
-      console.error('GraphQL errors:', result.errors);
-      error.value = result.errors[0]?.message || 'GraphQL query failed';
-    } else {
-      data.value = result.data;
-      console.log('Workflow reports:', data.value?.workflow_reports);
-    }
-  } catch (err: any) {
-    console.error('Error fetching workflow reports:', err);
-    error.value = err.message || 'Failed to fetch reports';
-  } finally {
-    pending.value = false;
-  }
-};
+// Fetch reports on mount
+onMounted(() => {
+  fetchReports();
+});
 
 // Refresh function
 const refetch = () => {
@@ -165,30 +148,29 @@ const totalProcessed = computed(() => {
 
 // Table headers
 const headers = [
-  { title: 'Prefix', key: 'prefix', sortable: true, width: '240px' },
+  { title: 'Prefix', key: 'prefix', sortable: true, width: '110px' },
   { title: 'Site ID', key: 'site_id', sortable: true, width: '60px', align: 'end' },
   { title: 'WAV Size (MB)', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
   { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
   { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
-  { title: 'DB Import', key: 'db_import', sortable: true, width: '120px', align: 'center' },
+  { title: 'DB Import', key: 'db_import', sortable: true, width: '200px', align: 'center' },
   { title: 'BirdID Medium Processed', key: 'birdid_medium_processed', sortable: true, width: '120px', align: 'end' },
-  { title: 'BirdID Medium Status', key: 'birdid_medium', sortable: true, width: '150px', align: 'center'  },
+  { title: 'BirdID Medium Status', key: 'birdid_medium', sortable: true, width: '200px', align: 'center'  },
   { title: 'Visible in UI', key: 'visible_in_ui', sortable: true, width: '130px', align: 'center' },
 ];
 
-// Format bytes to human readable format
-const formatBytes = (bytes: number): string => {
-  if (!bytes || bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+// Check if prefix is ultrasound (ends with U, V, or W)
+const isUltrasound = (prefix: string): boolean => {
+  if (!prefix) return false;
+  const lastChar = prefix.slice(-1).toUpperCase();
+  return ['U', 'V', 'W'].includes(lastChar);
 };
 
-// Format bytes to MB with all decimals
+// Format bytes to MB with 2 decimals (1 MB = 1,000,000 bytes, German locale)
 const formatBytesToMB = (bytes: number): string => {
-  if (!bytes || bytes === 0) return '0';
-  return (bytes / (1024 * 1024)).toString();
+  if (!bytes || bytes === 0) return '0,00';
+  const mb = Math.round(bytes / 1000000);
+  return mb.toLocaleString('DE-de');
 };
 
 // Format date to readable format
@@ -201,6 +183,13 @@ const formatDate = (date: string): string => {
   const hours = String(d.getHours()).padStart(2, '0');
   const minutes = String(d.getMinutes()).padStart(2, '0');
   return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
+// Get display text for status (converts "ready with losses" to "ready")
+const getStatusText = (status: string): string => {
+  if (!status) return '';
+  if (status.toLowerCase() === 'ready with losses') return 'ready';
+  return status;
 };
 
 // Get color based on status
@@ -220,11 +209,6 @@ const getStatusColor = (status: string): string => {
       return 'status-default';
   }
 };
-
-// Fetch data on mount
-onMounted(() => {
-  fetchReports();
-});
 </script>
 
 <style scoped>
@@ -294,5 +278,46 @@ onMounted(() => {
 .report-date {
   margin-bottom: 16px;
   font-size: 1.2rem;
+}
+
+/* Legend styles */
+.legend-container {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  width: 95%;
+}
+
+.legend-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend-badge {
+  display: inline-block;
+  min-width: 120px;
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+}
+
+.legend-text {
+  font-size: 0.875rem;
+  color: #555;
 }
 </style>
