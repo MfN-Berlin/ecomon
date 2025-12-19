@@ -228,19 +228,40 @@ def create_report():
         return result
 
     @task
-    def aggregate_wav_data_by_prefix(rows, sites):
-        """Aggregate WAV file counts and sizes by prefix"""
-        # Handle empty input - return empty list to signal no data
-        if not rows:
-            logging.info("No rows to aggregate - no directories were processed")
-            return []
+    def aggregate_wav_data_by_prefix(rows, sites, last_report_dates):
+        """Aggregate WAV file counts and sizes by prefix, using last report data for unchanged prefixes"""
 
         # Create a lookup dictionary from prefix to site_id
         prefix_to_site = {site["prefix"]: site["site_id"] for site in sites}
 
+        # Get last report data for all prefixes
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+
+        query = """
+        SELECT DISTINCT ON (prefix)
+            prefix, wav_count, wav_size_bytes
+        FROM workflow_reports
+        ORDER BY prefix, report_date DESC
+        """
+
+        last_report_records = postgres_hook.get_records(query)
+
         # Dictionary to store aggregated data by prefix
         prefix_data = {}
 
+        # Initialize with last known data for all sites
+        for record in last_report_records:
+            if record and record[0]:
+                prefix = record[0]
+                if prefix in prefix_to_site:  # Only include valid prefixes
+                    prefix_data[prefix] = {
+                        "prefix": prefix,
+                        "site_id": prefix_to_site.get(prefix),
+                        "wav_count": record[1] or 0,
+                        "wav_size_bytes": record[2] or 0
+                    }
+
+        # Update with new scanned data (overwrites old data for changed prefixes)
         for row in rows:
             # Extract prefix from directory (e.g., "TEST/TEST_20230506" -> "TEST")
             prefix = row["directory"].split("/")[0]
@@ -258,7 +279,18 @@ def create_report():
             prefix_data[prefix]["wav_count"] += row["wav_count"]
             prefix_data[prefix]["wav_size_bytes"] += row["wav_size_bytes"]
 
-        logging.info(f"Aggregated data for {len(prefix_data)} prefixes")
+        # Add any sites that have never been reported
+        for site in sites:
+            prefix = site["prefix"]
+            if prefix not in prefix_data:
+                prefix_data[prefix] = {
+                    "prefix": prefix,
+                    "site_id": site["site_id"],
+                    "wav_count": 0,
+                    "wav_size_bytes": 0
+                }
+
+        logging.info(f"Aggregated data for {len(prefix_data)} prefixes ({len(rows)} newly scanned)")
         return list(prefix_data.values())
 
     @task
@@ -499,7 +531,7 @@ def create_report():
     running_jobs = get_running_inference_jobs()
     directories = scan_directories()
     rows = list_wavs(directories, sites, last_report_dates)
-    aggregated_data = aggregate_wav_data_by_prefix(rows, sites)
+    aggregated_data = aggregate_wav_data_by_prefix(rows, sites, last_report_dates)  # Added last_report_dates
     enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs)
     report_df = transform_data(enriched_data)
     print_report(report_df)
