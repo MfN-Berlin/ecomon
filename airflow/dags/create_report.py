@@ -494,14 +494,18 @@ def create_report():
         insert_query = """
         INSERT INTO workflow_reports (
             report_date, prefix, site_id, wav_size_bytes, wav_count,
-            record_count, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            record_count, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible, visible_in_ui
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         report_date = datetime.now().date()
         rows_inserted = 0
 
         for index, row in report_df.iterrows():
+            # Automatically set visible_in_ui based on birdid_medium status
+            birdid_medium_status = row['birdid_medium'] if row['birdid_medium'] else ""
+            visible_in_ui = birdid_medium_status in ["ready", "ready with losses"]
+
             values = (
                 report_date,
                 row['prefix'],
@@ -512,7 +516,8 @@ def create_report():
                 row['db_import'] if row['db_import'] else None,
                 int(row['birdid_medium_processed']) if pd.notna(row['birdid_medium_processed']) else None,
                 row['birdid_medium'] if row['birdid_medium'] else None,
-                int(row['birdid_medium_visible']) if pd.notna(row['birdid_medium_visible']) else None
+                int(row['birdid_medium_visible']) if pd.notna(row['birdid_medium_visible']) else None,
+                visible_in_ui
             )
 
             postgres_hook.run(insert_query, parameters=values)
