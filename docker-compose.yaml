@@ -191,7 +191,8 @@ services:
       - PG_HOST=db
       - PG_PORT=5432
       - PG_DATABASE=ecomon
-      - MAX_BACKUPS=2
+      - MAX_BACKUPS=${MAX_BACKUPS}
+      - CHUNK_SIZE=${BACKUP_CHUNK_SIZE}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
 #      - ./.env:/opt/airflow/airflow.env

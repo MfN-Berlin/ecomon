@@ -39,14 +39,48 @@ const speciesSearchInput = ref('');
 let thresholdTimeoutId = null;
 
 /*******************************************
+ * Fetch ready sites from database
+ ******************************************/
+
+// Use the composable from workflowReports.ts
+const { data: readySiteIds, pending, error, fetchReadySites } = useReadySites();
+
+// Watch readySiteIds for changes
+watch(readySiteIds, (newValue) => {
+  console.log('🔍 readySiteIds changed:', newValue);
+  console.log('   - Type:', typeof newValue);
+  console.log('   - Is Array:', Array.isArray(newValue));
+  console.log('   - Length:', newValue?.length);
+}, { immediate: true });
+
+// Watch pending state
+watch(pending, (newValue) => {
+  console.log('⏳ Pending state:', newValue);
+});
+
+// Watch error state
+watch(error, (newValue) => {
+  if (newValue) {
+    console.error('❌ Error loading ready sites:', newValue);
+  }
+});
+
+// Fetch ready sites when component mounts
+onMounted(async () => {
+  console.log('🚀 Component mounted, fetching ready sites...');
+  await fetchReadySites();
+  console.log('✅ Fetch complete. readySiteIds:', readySiteIds.value);
+});
+
+/*******************************************
  * manually maintained lists of
  * stuff that is ready and can be displayed
  ******************************************/
 
  // Manually maintained list of ready site IDs
-const readySiteIds = ref([
-  26,27,25,28,29,13,14,24,4,16,21,22,23,5,15,3,6,7,8,9
-]);
+//const readySiteIds = ref([
+//  26,27,25,28,29,13,14,24,4,16,21,22,23,5,15,3,6,7,8,9
+//]);
 
 // Manually maintained list of ready model IDs
 const readyModelIds = ref([
@@ -143,18 +177,29 @@ watch(
 
 // Available sites (those not yet selected)
 const availableSitesList = computed(() => {
+  console.log('📋 Computing availableSitesList');
+  console.log('   - readySiteIds.value:', readySiteIds.value);
+  console.log('   - props.availableSites:', props.availableSites);
+
   if (!props.availableSites || !Array.isArray(props.availableSites)) {
-    console.log("No available sites or not an array");
+    console.log("❌ No available sites or not an array");
     return [];
   }
 
   // Filter out sites that are already selected and add ready status
   const filtered = props.availableSites
     .filter(site => !selectedSites.value.some(s => s.value === site.value))
-    .map(site => ({
-      ...site,
-      isReady: readySiteIds.value.includes(site.value)
-    }));
+    .map(site => {
+      const isReady = readySiteIds.value.includes(site.value);
+      console.log(`   - Site ${site.value} (${site.title}): isReady = ${isReady}`);
+      return {
+        ...site,
+        isReady
+      };
+    });
+
+  console.log('   - Filtered sites count:', filtered.length);
+  console.log('   - Ready sites count:', filtered.filter(s => s.isReady).length);
 
   return filtered;
 });

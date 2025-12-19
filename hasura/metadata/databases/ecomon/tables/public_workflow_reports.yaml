@@ -6,6 +6,7 @@ select_permissions:
     permission:
       columns:
         - wav_size_bytes
+        - visible_in_ui
         - birdid_medium
         - db_import
         - prefix

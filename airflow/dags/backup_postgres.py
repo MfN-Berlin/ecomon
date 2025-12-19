@@ -1,6 +1,8 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
+import os
+
 
 default_args = {
     'owner': 'airflow',
@@ -24,6 +26,10 @@ dag = DAG(
 class NoTemplateBashOperator(BashOperator):
     template_fields = ()  # disables Jinja templating
 
+# Read configuration from environment variables
+CHUNK_SIZE = os.getenv('BACKUP_CHUNK_SIZE', '1G') or '1G'
+MAX_BACKUPS = int(os.getenv('MAX_BACKUPS') or '3')  # Handle empty string
+
 # Task 1: Create backup (read from file)
 with open("/opt/airflow/dags/scripts/backup_pg.sh") as f:
     backup_script = f.read()
@@ -37,20 +43,20 @@ create_backup = NoTemplateBashOperator(
 # Task 2: Compress and split backup into chunks
 compress_backup = NoTemplateBashOperator(
     task_id='compress_backup',
-    bash_command="""
+    bash_command=f"""
 set -euo pipefail
 
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
 BACKUP_BASENAME="basebackup_$TIMESTAMP"
 BACKUP_PATH="/backup/$BACKUP_BASENAME"
 BACKUP_DIR="/backup/backup_$TIMESTAMP"
-CHUNK_SIZE="10G"  # 10GB chunks to avoid S3FS issues
+CHUNK_SIZE="{CHUNK_SIZE}"
 
 # Create directory for this backup
 echo "Creating backup directory: $BACKUP_DIR"
 mkdir -p "$BACKUP_DIR"
 
-echo "Compressing and splitting backup: $BACKUP_BASENAME"
+echo "Compressing and splitting backup: $BACKUP_BASENAME (chunk size: $CHUNK_SIZE)"
 # Stream tar through gzip and split into chunks inside the backup directory
 # -a 3 ensures 3-digit suffix (000-999) for up to 999 parts
 tar -C "/backup" -cf - "$BACKUP_BASENAME" | gzip -1 | split -b $CHUNK_SIZE -d -a 3 - "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
@@ -60,7 +66,7 @@ rm -rf "$BACKUP_PATH"
 
 # List created chunks
 echo "Backup compressed and split into:"
-ls -lh "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"* | awk '{print $9, $5}'
+ls -lh "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"* | awk '{{print $9, $5}}'
 
 # Count chunks
 CHUNK_COUNT=$(ls -1 "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"* 2>/dev/null | wc -l)
@@ -108,27 +114,15 @@ for chunk in "${CHUNKS[@]}"; do
         exit 1
     fi
 
-    CHUNK_SIZE=$(stat -c%s "$chunk" 2>/dev/null || stat -f%z "$chunk" 2>/dev/null)
-    if [ "$CHUNK_SIZE" -eq 0 ]; then
+    FILE_SIZE=$(stat -c%s "$chunk" 2>/dev/null || stat -f%z "$chunk" 2>/dev/null)
+    if [ "$FILE_SIZE" -eq 0 ]; then
         echo "ERROR: Chunk $chunk is empty!"
         exit 1
     fi
-    TOTAL_SIZE=$((TOTAL_SIZE + CHUNK_SIZE))
+    TOTAL_SIZE=$((TOTAL_SIZE + FILE_SIZE))
 done
 echo "✓ All chunks are non-empty"
 echo "✓ Total backup size: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE 2>/dev/null || echo ${TOTAL_SIZE} bytes)"
-
-# This won't work on a chunked archive
-#
-# Check 3: Verify gzip integrity of each chunk (without full decompression)
-#echo "Verifying gzip integrity of chunks..."
-#for chunk in "${CHUNKS[@]}"; do
-#    if ! gunzip -t "$chunk" 2>/dev/null; then
-#        echo "ERROR: Chunk $chunk failed gzip integrity check!"
-#        exit 1
-#    fi
-#done
-#echo "✓ All chunks passed gzip integrity check"
 
 # Check 4: Verify file naming sequence
 echo "Verifying chunk sequence..."
@@ -158,14 +152,14 @@ echo "  cat $BACKUP_PREFIX.tar.gz.part* | gunzip | tar -t | head"
 # Task 4: Rotate old backups
 rotate_backups = NoTemplateBashOperator(
     task_id='rotate_backups',
-    bash_command="""
+    bash_command=f"""
 set -euo pipefail
 
-MAX_BACKUPS=3
+MAX_BACKUPS={MAX_BACKUPS}
 
 echo "Rotating old backups (keeping $MAX_BACKUPS newest backups)..."
 
-# Find all backup directories (not files), sorted newest first
+# Find all backup directories (not files)
 ALL_BACKUP_DIRS=()
 for dir in /backup/backup_*; do
     if [ -d "$dir" ]; then
@@ -173,12 +167,23 @@ for dir in /backup/backup_*; do
     fi
 done
 
-# Sort directories newest first
-IFS=$'\n' ALL_BACKUP_DIRS=($(sort -r <<<"${ALL_BACKUP_DIRS[*]}"))
+COUNT=${{#ALL_BACKUP_DIRS[@]}}
+echo "Found $COUNT backup directories"
+
+if [ "$COUNT" -eq 0 ]; then
+    echo "No backup directories found"
+    rm -f /backup/current_timestamp.txt
+    exit 0
+fi
+
+# Sort directories by timestamp (newest first) - extract timestamp and sort numerically
+IFS=$'\n' ALL_BACKUP_DIRS=($(printf '%s\n' "${{ALL_BACKUP_DIRS[@]}}" | sort -t_ -k2 -rn))
 unset IFS
 
-COUNT=${#ALL_BACKUP_DIRS[@]}
-echo "Found $COUNT backup directories"
+echo "Backup directories (sorted newest first):"
+for i in "${{!ALL_BACKUP_DIRS[@]}}"; do
+    echo "  [$i] ${{ALL_BACKUP_DIRS[$i]}}"
+done
 
 if (( COUNT > MAX_BACKUPS )); then
     DELETE_COUNT=$((COUNT - MAX_BACKUPS))
@@ -186,12 +191,13 @@ if (( COUNT > MAX_BACKUPS )); then
 
     # Delete backups starting from index MAX_BACKUPS (oldest backups)
     for ((i=MAX_BACKUPS; i<COUNT; i++)); do
-        OLD_DIR="${ALL_BACKUP_DIRS[$i]}"
+        OLD_DIR="${{ALL_BACKUP_DIRS[$i]}}"
         echo "Deleting backup directory: $OLD_DIR"
         rm -rf "$OLD_DIR"
     done
+    echo "Kept $MAX_BACKUPS newest backups"
 else
-    echo "No old backups to remove. Current count: $COUNT"
+    echo "No old backups to remove. Current count: $COUNT (max: $MAX_BACKUPS)"
 fi
 
 rm -f /backup/current_timestamp.txt
