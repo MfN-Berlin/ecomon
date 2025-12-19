@@ -12,6 +12,11 @@ USE_GPU=None
 DB_WORKER_CONCURRENCY=16
 INF_WORKER_CONCURRENCY=8
 
+# Backup
+PGBACKUP_PATH=/YOUR_BACKUP_DIRECTORY
+BACKUP_CHUNK_SIZE=1G
+MAX_BACKUPS=3
+
 # .env.production - Production settings for 251GB RAM system
 
 # PostgreSQL
@@ -22,7 +27,6 @@ DB_HOST=db
 DB_PORT=5432
 DB_NAME=ecomon
 PGDATA_PATH=YOUR_DATA_DIRECTORY/docker/data/volumes/akwamo-webservice-next_ecomon_data
-PGBACKUP_PATH=YOUR_BACKUP_DIRECTORY
 
 # PostgreSQL Resource Limits
 POSTGRES_MEMORY_LIMIT=32G
