@@ -450,10 +450,10 @@ def create_report():
         logging.info("Report table created or already exists")
 
     @task
-    def save_report_to_db(report_df, rows):
+    def save_report_to_db(report_df):
         """Save the report data to the database"""
-        # Handle empty DataFrame - don't save if no directories were processed
-        if report_df.empty or not rows:
+        # Handle empty DataFrame - don't save if no data to report
+        if report_df.empty:
             logging.info("No new data to save - skipping report creation (will show latest existing report)")
             return 0
 
@@ -503,6 +503,6 @@ def create_report():
     enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs)
     report_df = transform_data(enriched_data)
     print_report(report_df)
-    save_report_to_db(report_df, rows)
+    save_report_to_db(report_df)
 
 create_report()
