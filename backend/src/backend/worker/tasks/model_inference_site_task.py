@@ -109,8 +109,10 @@ def model_inference_site_task(
             .filter(Records.record_datetime >= start_datetime)
             .filter(Records.record_datetime <= end_datetime)
             .filter(
-                (Records.errors.is_(None)) | (Records.errors == text("'null'::jsonb"))
-            )  # Skip records with errors
+                (Records.errors.is_(None))
+                | (Records.errors == text("'null'::jsonb"))
+                | (Records.errors.cast(text).like('%duration_mismatch%'))
+            )  # Skip records with errors except duration_mismatch
             .scalar()
         )
 
@@ -146,8 +148,10 @@ def model_inference_site_task(
                 .filter(Records.site_id == site_id)
                 .filter(ModelInferenceLogs.id.is_(None))
                 .filter(
-                    (Records.errors.is_(None)) | (Records.errors == text("'null'::jsonb"))
-                )  # Skip records with errors
+                    (Records.errors.is_(None))
+                    | (Records.errors == text("'null'::jsonb"))
+                    | (Records.errors.cast(text).like('%duration_mismatch%'))
+                )  # Skip records with errors except duration_mismatch
                 .limit(BATCH_SIZE)
                 .all()
             )
