@@ -90,7 +90,7 @@ export const useAllSpeciesLabels = () => {
 
 // Simple search composable for labels based on model_id and year
 //  just look at model and year, assuming at 0.01 threshold all species in the model are there anyway
-export const useLabelsSearch = () => {
+export const useLabelsSearch_EXP = () => {
   const pending = ref(false);
   const error = ref(null);
   const data = ref(null);
@@ -251,7 +251,7 @@ export const useLabelsSearch = () => {
 };
 
 // Simple search composable for labels based on model_id, site_id and year
-export const useLabelsSearch_OLD = () => {
+export const useLabelsSearch = () => {
   const pending = ref(false);
   const error = ref(null);
   const data = ref(null);
