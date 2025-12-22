@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from airflow.utils.dates import days_ago
+from datetime import datetime
 import os
 
 
@@ -17,7 +17,7 @@ dag = DAG(
     default_args=default_args,
     description='Weekly PostgreSQL backup with split chunks and rotation',
     schedule_interval='0 3 * * 0',  # Every Sunday at 03:00 AM
-    start_date=datetime(2025, 12, 1),  # Fixed date - changed from days_ago(1)
+    start_date=datetime(2025, 12, 1),
     catchup=False,
     max_active_runs=1,
 )
