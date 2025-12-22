@@ -82,7 +82,7 @@
             </div>
             <div class="legend-item">
               <span class="legend-badge status-pending">pending</span>
-              <span class="legend-text">Processing not yet complete or not started</span>
+              <span class="legend-text">Processing not yet started</span>
             </div>
             <div class="legend-item">
               <span class="legend-badge status-running">running</span>
