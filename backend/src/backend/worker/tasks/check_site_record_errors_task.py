@@ -98,7 +98,7 @@ def check_site_record_errors_task(self, site_id: int):
                 if sample_rate != site.sample_rate:
                     errors.append(
                         {
-                            "type": f"{RecordErrorsEnum.SAMPLERATE_MISSMATCH.value}",
+                            "type": f"{RecordErrorsEnum.SAMPLERATE_MISMATCH.value}",
                             "message": f"Sample rate mismatch: {sample_rate} != {site.sample_rate}",
                         }
                     )
@@ -110,7 +110,7 @@ def check_site_record_errors_task(self, site_id: int):
                 ):
                     errors.append(
                         {
-                            "type": RecordErrorsEnum.DURATION_MISSMATCH.value,
+                            "type": RecordErrorsEnum.DURATION_MISMATCH.value,
                             "message": f"Duration mismatch: {duration} != {site.record_regime_recording_duration} ",
                         }
                     )

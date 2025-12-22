@@ -19,15 +19,15 @@ const ErrorTypeTitleMap = {
   [RECORD_ERRORS.FILE_READ_ERROR]: "File Read Error",
   [RECORD_ERRORS.MISSING_FILE_PREFIX]: "Missing or Wrong File Prefix",
   [RECORD_ERRORS.RECORD_DATETIME_FORMAT]: "Record Datetime Format",
-  [RECORD_ERRORS.DURATION_MISSMATCH]: "Duration Missmatch",
-  [RECORD_ERRORS.SAMPLERATE_MISSMATCH]: "Samplerate Missmatch"
+  [RECORD_ERRORS.DURATION_MISMATCH]: "Duration Mismatch",
+  [RECORD_ERRORS.SAMPLERATE_MISMATCH]: "Samplerate Mismatch"
 };
 const ErrorTypeIconMap = {
   [RECORD_ERRORS.FILE_READ_ERROR]: "mdi-document-alert",
   [RECORD_ERRORS.MISSING_FILE_PREFIX]: "mdi-form-textbox",
   [RECORD_ERRORS.RECORD_DATETIME_FORMAT]: "mdi-calendar-range",
-  [RECORD_ERRORS.DURATION_MISSMATCH]: "mdi-clock",
-  [RECORD_ERRORS.SAMPLERATE_MISSMATCH]: "mdi-music"
+  [RECORD_ERRORS.DURATION_MISMATCH]: "mdi-clock",
+  [RECORD_ERRORS.SAMPLERATE_MISMATCH]: "mdi-music"
 };
 </script>
 <template>

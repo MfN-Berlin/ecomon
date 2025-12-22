@@ -94,14 +94,14 @@ class AudioFileValidator:
 
                 if sample_rate != self.site.sample_rate:
                     errors.append({
-                        "type": f"{RecordErrorsEnum.SAMPLERATE_MISSMATCH.value}",
+                        "type": f"{RecordErrorsEnum.SAMPLERATE_MISMATCH.value}",
                         "message": f"Sample rate mismatch: {sample_rate} != {self.site.sample_rate}",
                     })
                 expected = float(self.site.record_regime_recording_duration)
                 allowed = 1 / float(self.site.sample_rate)
                 if not (expected - allowed <= duration <= expected + allowed):
                     errors.append({
-                        "type": RecordErrorsEnum.DURATION_MISSMATCH.value,
+                        "type": RecordErrorsEnum.DURATION_MISMATCH.value,
                         "message": f"Duration mismatch: {duration} != {expected}",
                     })
         except Exception as e:
