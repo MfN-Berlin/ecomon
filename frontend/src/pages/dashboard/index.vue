@@ -105,7 +105,9 @@ watch(
         "Year:", year);
 
       // handle multiple sites
-      speciesLabelsSearch.searchLabels(model.value, sites.map(site => site.value), year);
+      //  just look at model and year, assuming at 0.01 threshold all species in the model are there anyway
+      // speciesLabelsSearch.searchLabels(model.value, sites.map(site => site.value), year);
+      speciesLabelsSearch.searchLabels(model.value, year);
 
     } else if (!model || !sites || sites.length === 0 || !year) {
       // Only clear species data if required parameters are missing

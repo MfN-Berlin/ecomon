@@ -88,8 +88,170 @@ export const useAllSpeciesLabels = () => {
   };
 };
 
-// Simple search composable for labels based on model_id, site_id and year
+// Simple search composable for labels based on model_id and year
+//  just look at model and year, assuming at 0.01 threshold all species in the model are there anyway
 export const useLabelsSearch = () => {
+  const pending = ref(false);
+  const error = ref(null);
+  const data = ref(null);
+  let pendingSearch = null;
+
+  // Cache object to store results by key
+  const cache = new Map<string, { labels: any[], timestamp: number }>();
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+  /**
+   * Generate a cache key from the search parameters
+   */
+  const getCacheKey = (modelId: number, year: number | string | null) => {
+    return `${modelId}_${year}`;
+  };
+
+  /**
+   * Check if cached data is still valid
+   */
+  const isCacheValid = (timestamp: number) => {
+    return Date.now() - timestamp < CACHE_TTL;
+  };
+
+
+  const searchLabels = async (
+    modelId: number,
+    year: number | string | null = null,
+    forceRefresh: boolean = false
+  ) => {
+    console.log(`searchLabels called with modelId=${modelId}, year=${year}, forceRefresh=${forceRefresh}`);
+
+    // Generate cache key
+    const cacheKey = getCacheKey(modelId, year);
+
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && cache.has(cacheKey)) {
+      const cached = cache.get(cacheKey);
+      if (isCacheValid(cached.timestamp)) {
+        console.log(`Returning cached results for key: ${cacheKey}`);
+        data.value = { labels: cached.labels };
+        return;
+      } else {
+        console.log(`Cache expired for key: ${cacheKey}`);
+        cache.delete(cacheKey);
+      }
+    }
+
+    pending.value = true;
+    error.value = null;
+
+    if (pendingSearch) {
+      pendingSearch.cancel();
+    }
+
+    const controller = new AbortController();
+    pendingSearch = {
+      controller,
+      cancel: () => controller.abort()
+    };
+
+    try {
+      const config = useRuntimeConfig();
+
+      // Combine the two queries into one
+      const result = await $fetch(config.public.GQL_HOST, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: {
+          query: `
+            query getLabelsForYear(
+              $modelId: Int!,
+              $yearStart: timestamp,
+              $yearEnd: timestamp
+            ) {
+              model_inference_results_max_confidence(
+                where: {
+                  model_id: { _eq: $modelId },
+                  record: {
+                    record_datetime: {
+                      _gte: $yearStart,
+                      _lt: $yearEnd
+                    }
+                  }
+                },
+                distinct_on: [label_id],
+                order_by: [{ label_id: asc }]
+              ) {
+                label {
+                  id
+                  name
+                }
+              }
+            }
+          `,
+          variables: {
+            modelId,
+            yearStart: year ? `${year}-01-01T00:00:00` : null,
+            yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
+          },
+          signal: controller.signal
+        }
+      });
+
+      console.log("Raw GraphQL result:", result);
+
+      const labels = (result.data?.model_inference_results_max_confidence || [])
+        .map(mir => mir.label)
+        .filter(label => label != null);
+
+      labels.sort((a, b) => a.name.localeCompare(b.name));
+
+      console.log("Processed labels:", labels);
+
+      // Store in cache
+      cache.set(cacheKey, { labels, timestamp: Date.now() });
+      console.log(`Cached results for key: ${cacheKey}`);
+
+      data.value = { labels };
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        error.value = err;
+        console.error('Error searching labels:', err);
+      }
+    } finally {
+      if (pendingSearch && pendingSearch.controller === controller) {
+        pending.value = false;
+        pendingSearch = null;
+      }
+    }
+  };
+
+  /**
+   * Clear all cached data
+   */
+  const clearCache = () => {
+    cache.clear();
+    console.log('Cache cleared');
+  };
+
+  /**
+   * Clear specific cached entry
+   */
+  const clearCacheEntry = (modelId: number, year: number | string | null) => {
+    const cacheKey = getCacheKey(modelId, year);
+    cache.delete(cacheKey);
+    console.log(`Cleared cache for key: ${cacheKey}`);
+  };
+
+  return {
+    data,
+    pending,
+    error,
+    searchLabels,
+    clearCache,
+    clearCacheEntry,
+    pendingSearch
+  };
+};
+
+// Simple search composable for labels based on model_id, site_id and year
+export const useLabelsSearch_OLD = () => {
   const pending = ref(false);
   const error = ref(null);
   const data = ref(null);
@@ -196,164 +358,6 @@ export const useLabelsSearch = () => {
           },
           signal: controller.signal
         }
-      });
-
-      console.log("Raw GraphQL result:", result);
-
-      const labels = (result.data?.model_inference_results_max_confidence || [])
-        .map(mir => mir.label)
-        .filter(label => label != null);
-
-      labels.sort((a, b) => a.name.localeCompare(b.name));
-
-      console.log("Processed labels:", labels);
-
-      // Store in cache
-      cache.set(cacheKey, { labels, timestamp: Date.now() });
-      console.log(`Cached results for key: ${cacheKey}`);
-
-      data.value = { labels };
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        error.value = err;
-        console.error('Error searching labels:', err);
-      }
-    } finally {
-      if (pendingSearch && pendingSearch.controller === controller) {
-        pending.value = false;
-        pendingSearch = null;
-      }
-    }
-  };
-
-
-  /**
-   * Searches for distinct labels based on model_id, site_id and year
-   * Results are cached for 5 minutes
-   *
-   * @param modelId - The model ID to filter results by
-   * @param siteIds - The list of site IDs to filter records by
-   * @param year - The year to filter records by (records where record_datetime is in this year)
-   * @param forceRefresh - Force refresh even if cached data exists
-   */
-  const searchLabels_OLD = async (
-    modelId: number,
-    siteIds: number[],
-    year: number | string | null = null,
-    forceRefresh: boolean = false
-  ) => {
-    console.log(`searchLabels called with modelId=${modelId}, siteIds=${siteIds}, year=${year}, forceRefresh=${forceRefresh}`);
-
-    // Generate cache key
-    const cacheKey = getCacheKey(modelId, siteIds, year);
-
-    // Check cache first (unless force refresh)
-    if (!forceRefresh && cache.has(cacheKey)) {
-      const cached = cache.get(cacheKey);
-      if (isCacheValid(cached.timestamp)) {
-        console.log(`Returning cached results for key: ${cacheKey}`);
-        data.value = { labels: cached.labels };
-        return;
-      } else {
-        console.log(`Cache expired for key: ${cacheKey}`);
-        cache.delete(cacheKey);
-      }
-    }
-
-    pending.value = true;
-    error.value = null;
-
-    if (pendingSearch) {
-      pendingSearch.cancel();
-    }
-
-    const controller = new AbortController();
-    pendingSearch = {
-      controller,
-      cancel: () => controller.abort()
-    };
-
-    try {
-      const config = useRuntimeConfig();
-
-      // Step 1: Get record_ids that match site and year criteria
-      const recordsResult = await $fetch(config.public.GQL_HOST, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-          query: `
-            query getMatchingRecordIds(
-              $siteIds: [bigint!]!,
-              $yearStart: timestamp,
-              $yearEnd: timestamp
-            ) {
-              records(
-                where: {
-                  site_id: {_in: $siteIds},
-                  record_datetime: {
-                    _gte: $yearStart,
-                    _lt: $yearEnd
-                  }
-                }
-              ) {
-                id
-              }
-            }
-          `,
-          variables: {
-            siteIds,
-            yearStart: year ? `${year}-01-01T00:00:00` : null,
-            yearEnd: year ? `${parseInt(year.toString()) + 1}-01-01T00:00:00` : null
-          }
-        },
-        signal: controller.signal
-      });
-
-      const recordIds = (recordsResult.data?.records || []).map(r => r.id);
-
-      if (recordIds.length === 0) {
-        const emptyResult = { labels: [] };
-        data.value = emptyResult;
-        // Cache empty results too
-        cache.set(cacheKey, { labels: [], timestamp: Date.now() });
-        return;
-      }
-
-      console.log(`Found ${recordIds.length} matching records`);
-
-      // Step 2: Query model_inference_results_max_confidence with record_id filter
-      const result = await $fetch(config.public.GQL_HOST, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-          query: `
-            query getLabelsForRecordIds(
-              $modelId: Int!,
-              $recordIds: [bigint!]!
-            ) {
-              model_inference_results_max_confidence(
-                where: {
-                  model_id: {_eq: $modelId},
-                  record_id: {_in: $recordIds}
-                },
-                distinct_on: [label_id],
-                order_by: [
-                  {label_id: asc}
-                ]
-              ) {
-                label {
-                  id
-                  name
-                }
-              }
-            }
-          `,
-          variables: {
-            modelId,
-            recordIds
-          }
-        },
-        signal: controller.signal
       });
 
       console.log("Raw GraphQL result:", result);
