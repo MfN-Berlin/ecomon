@@ -17,7 +17,7 @@ dag = DAG(
     default_args=default_args,
     description='Weekly PostgreSQL backup with split chunks and rotation',
     schedule_interval='0 3 * * 0',  # Every Sunday at 03:00 AM
-    start_date=days_ago(1),
+    start_date=datetime(2025, 12, 1),  # Fixed date - changed from days_ago(1)
     catchup=False,
     max_active_runs=1,
 )
@@ -58,8 +58,8 @@ mkdir -p "$BACKUP_DIR"
 
 echo "Compressing and splitting backup: $BACKUP_BASENAME (chunk size: $CHUNK_SIZE)"
 # Stream tar through gzip and split into chunks inside the backup directory
-# -a 3 ensures 3-digit suffix (000-999) for up to 999 parts
-tar -C "/backup" -cf - "$BACKUP_BASENAME" | gzip -1 | split -b $CHUNK_SIZE -d -a 3 - "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
+# -a 4 ensures 4-digit suffix (0000-9999) for up to 10,000 parts
+tar -C "/backup" -cf - "$BACKUP_BASENAME" | gzip -1 | split -b $CHUNK_SIZE -d -a 4 - "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
 
 echo "Removing uncompressed backup directory..."
 rm -rf "$BACKUP_PATH"

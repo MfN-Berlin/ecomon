@@ -5,20 +5,18 @@
         <div class="report-date">
           <strong>Report Date:</strong> {{ formatDate(reports[0]?.report_date) }}
         </div>
+
+        <!-- Main Table (Non-Ultrasound) -->
         <v-data-table
           :headers="headers"
-          :items="reports"
+          :items="nonUltrasoundReports"
           :loading="pending"
           :items-per-page="25"
           class="elevation-0 custom-table-margin"
           density="compact"
         >
           <template #item.prefix="{ item }">
-            <span style="display: inline-flex; align-items: center; gap: 4px;">
-              <v-icon v-if="isUltrasound(item.prefix)" size="large" color="black" class="ml-1">
-                mdi-bat
-              </v-icon>{{ item.prefix }}
-            </span>
+            <span>{{ item.prefix }}</span>
           </template>
           <template #item.db_import="{ item }">
             <span :class="getStatusColor(item.db_import)">
@@ -93,6 +91,79 @@
           </div>
         </div>
 
+        <!-- Ultrasound Table -->
+        <div v-if="ultrasoundReports.length > 0" class="ultrasound-section">
+          <h2 class="section-title">
+            <v-icon size="large" color="black" class="mr-2">mdi-bat</v-icon>
+            Ultrasound Sites
+          </h2>
+
+          <v-data-table
+            :headers="headers"
+            :items="ultrasoundReports"
+            :loading="pending"
+            :items-per-page="25"
+            class="elevation-0 custom-table-margin"
+            density="compact"
+          >
+            <template #item.prefix="{ item }">
+              <span style="display: inline-flex; align-items: center; gap: 4px;">
+                <v-icon size="large" color="black" class="ml-1">
+                  mdi-bat
+                </v-icon>{{ item.prefix }}
+              </span>
+            </template>
+            <template #item.db_import="{ item }">
+              <span :class="getStatusColor(item.db_import)">
+                {{ getStatusText(item.db_import) }}
+              </span>
+            </template>
+            <template #item.birdid_medium="{ item }">
+              <span :class="getStatusColor(item.birdid_medium)">
+                {{ getStatusText(item.birdid_medium) }}
+              </span>
+            </template>
+            <template #item.visible_in_ui="{ item }">
+              <v-icon v-if="item.visible_in_ui" color="green">mdi-check</v-icon>
+              <v-icon v-else color="red">mdi-close</v-icon>
+            </template>
+            <template #item.wav_size_bytes="{ item }">
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props" style="cursor: help;">
+                    {{ formatBytesToMB(item.wav_size_bytes) }}
+                  </span>
+                </template>
+                <span>{{ (item.wav_size_bytes || 0).toLocaleString('de-DE') }} bytes</span>
+              </v-tooltip>
+            </template>
+            <!-- Ultrasound Totals row -->
+            <template #body.append>
+              <tr class="totals-row">
+                <td><strong>Totals:</strong></td>
+                <td></td>
+                <td class="text-end">{{ (ultrasoundTotalSize / (1024**4)).toFixed(2) }} TB</td>
+                <td class="text-end">{{ ultrasoundTotalWavCount.toLocaleString('de-DE') }}</td>
+                <td class="text-end">
+                  {{ ultrasoundTotalRecords.toLocaleString() }}
+                  <span v-if="ultrasoundTotalRecords > 0 && ultrasoundTotalWavCount > 0">
+                    ({{ ((ultrasoundTotalRecords / ultrasoundTotalWavCount) * 100).toFixed(2) }}%)
+                  </span>
+                </td>
+                <td></td>
+                <td class="text-end">
+                  {{ ultrasoundTotalProcessed.toLocaleString() }}
+                  <span v-if="ultrasoundTotalRecords > 0 && ultrasoundTotalProcessed > 0">
+                    ({{ ((ultrasoundTotalProcessed / ultrasoundTotalRecords) * 100).toFixed(2) }}%)
+                  </span>
+                </td>
+                <td></td>
+                <td></td>
+              </tr>
+            </template>
+          </v-data-table>
+        </div>
+
       </v-col>
     </v-row>
   </v-container>
@@ -129,21 +200,54 @@ const reports = computed(() => {
   return data.value.workflow_reports;
 });
 
-// Calculate totals
+// Check if prefix is ultrasound (ends with U, V, or W)
+const isUltrasound = (prefix: string): boolean => {
+  if (!prefix) return false;
+  const lastChar = prefix.slice(-1).toUpperCase();
+  return ['U', 'V', 'W'].includes(lastChar);
+};
+
+// Split reports into ultrasound and non-ultrasound
+const nonUltrasoundReports = computed(() => {
+  return reports.value.filter(report => !isUltrasound(report.prefix));
+});
+
+const ultrasoundReports = computed(() => {
+  return reports.value.filter(report => isUltrasound(report.prefix));
+});
+
+// Calculate totals for non-ultrasound
 const totalSize = computed(() => {
-  return reports.value.reduce((sum, report) => sum + (report.wav_size_bytes || 0), 0);
+  return nonUltrasoundReports.value.reduce((sum, report) => sum + (report.wav_size_bytes || 0), 0);
 });
 
 const totalWavCount = computed(() => {
-  return reports.value.reduce((sum, report) => sum + (report.wav_count || 0), 0);
+  return nonUltrasoundReports.value.reduce((sum, report) => sum + (report.wav_count || 0), 0);
 });
 
 const totalRecords = computed(() => {
-  return reports.value.reduce((sum, report) => sum + (report.record_count || 0), 0);
+  return nonUltrasoundReports.value.reduce((sum, report) => sum + (report.record_count || 0), 0);
 });
 
 const totalProcessed = computed(() => {
-  return reports.value.reduce((sum, report) => sum + (report.birdid_medium_processed || 0), 0);
+  return nonUltrasoundReports.value.reduce((sum, report) => sum + (report.birdid_medium_processed || 0), 0);
+});
+
+// Calculate totals for ultrasound
+const ultrasoundTotalSize = computed(() => {
+  return ultrasoundReports.value.reduce((sum, report) => sum + (report.wav_size_bytes || 0), 0);
+});
+
+const ultrasoundTotalWavCount = computed(() => {
+  return ultrasoundReports.value.reduce((sum, report) => sum + (report.wav_count || 0), 0);
+});
+
+const ultrasoundTotalRecords = computed(() => {
+  return ultrasoundReports.value.reduce((sum, report) => sum + (report.record_count || 0), 0);
+});
+
+const ultrasoundTotalProcessed = computed(() => {
+  return ultrasoundReports.value.reduce((sum, report) => sum + (report.birdid_medium_processed || 0), 0);
 });
 
 // Table headers
@@ -158,13 +262,6 @@ const headers = [
   { title: 'BirdID Medium Status', key: 'birdid_medium', sortable: true, width: '200px', align: 'center'  },
   { title: 'Visible in UI', key: 'visible_in_ui', sortable: true, width: '130px', align: 'center' },
 ];
-
-// Check if prefix is ultrasound (ends with U, V, or W)
-const isUltrasound = (prefix: string): boolean => {
-  if (!prefix) return false;
-  const lastChar = prefix.slice(-1).toUpperCase();
-  return ['U', 'V', 'W'].includes(lastChar);
-};
 
 // Format bytes to MB with 2 decimals (1 MB = 1,000,000 bytes, German locale)
 const formatBytesToMB = (bytes: number): string => {
@@ -319,5 +416,19 @@ const getStatusColor = (status: string): string => {
 .legend-text {
   font-size: 0.875rem;
   color: #555;
+}
+
+/* Ultrasound section styles */
+.ultrasound-section {
+  margin-top: 32px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  color: #333;
 }
 </style>

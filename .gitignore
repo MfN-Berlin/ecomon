@@ -48,3 +48,6 @@ __pycache__/
 runtime-data/**
 
 Data
+
+# Locks
+.~lock.*#
