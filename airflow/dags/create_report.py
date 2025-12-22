@@ -7,8 +7,8 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 @dag(
     dag_id='create_report',
-    schedule='0 3 * * *',  # every day at 3:00
-    start_date = datetime(year=2024, month=1, day=1, hour=9, minute=0),
+    schedule='0 * * * *',  # every hour at minute 0
+    start_date=datetime(2025, 12, 1),
     catchup=False,
 )
 def create_report():
