@@ -4,7 +4,7 @@ import shutil
 import time
 import pandas
 from io import StringIO
-from sqlalchemy import func, text  # Add text import
+from sqlalchemy import func, text, Text
 from datetime import datetime
 from celery.utils.log import get_task_logger
 from collections import namedtuple
@@ -111,7 +111,7 @@ def model_inference_site_task(
             .filter(
                 (Records.errors.is_(None))
                 | (Records.errors == text("'null'::jsonb"))
-                | (Records.errors.cast(text).like('%duration_mismatch%'))
+                | (Records.errors.cast(Text).like('%duration_mismatch%'))
             )  # Skip records with errors except duration_mismatch
             .scalar()
         )
@@ -150,7 +150,7 @@ def model_inference_site_task(
                 .filter(
                     (Records.errors.is_(None))
                     | (Records.errors == text("'null'::jsonb"))
-                    | (Records.errors.cast(text).like('%duration_mismatch%'))
+                    | (Records.errors.cast(Text).like('%duration_mismatch%'))
                 )  # Skip records with errors except duration_mismatch
                 .limit(BATCH_SIZE)
                 .all()
