@@ -113,6 +113,7 @@ export const useWorkflowReports = () => {
                 wav_size_bytes
                 wav_count
                 record_count
+                skipped_records
                 db_import
                 birdid_medium_processed
                 birdid_medium
