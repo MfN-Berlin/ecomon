@@ -498,7 +498,7 @@ def create_report():
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
-        report_date = datetime.now().date()
+        report_date = datetime.now()
         rows_inserted = 0
 
         for index, row in report_df.iterrows():
