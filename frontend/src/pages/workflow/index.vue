@@ -24,9 +24,22 @@
             </span>
           </template>
           <template #item.birdid_medium="{ item }">
-            <span :class="getStatusColor(item.birdid_medium)">
-              {{ getStatusText(item.birdid_medium) }}
-            </span>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <span
+                  v-bind="props"
+                  :class="getStatusColor(item.birdid_medium)"
+                  style="cursor: help;"
+                >
+                  {{ getStatusText(item.birdid_medium) }}
+                </span>
+              </template>
+              <span>
+                Processed: {{ (item.birdid_medium_processed || 0).toLocaleString('de-DE') }}<br>
+                Skipped: {{ (item.skipped_records || 0).toLocaleString('de-DE') }}<br>
+                Total Records: {{ (item.record_count || 0).toLocaleString('de-DE') }}
+              </span>
+            </v-tooltip>
           </template>
           <template #item.visible_in_ui="{ item }">
             <v-icon v-if="item.visible_in_ui" color="green">mdi-check</v-icon>

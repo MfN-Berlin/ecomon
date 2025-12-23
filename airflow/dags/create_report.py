@@ -353,7 +353,32 @@ def create_report():
         return birdid_visible_counts
 
     @task
-    def calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs):
+    def get_skipped_record_counts(sites):
+        """Fetch skipped record counts (records with errors excluding duration_mismatch) for each site"""
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+
+        skipped_counts = {}
+
+        for site in sites:
+            site_id = site["site_id"]
+            query = f"""
+            SELECT COUNT(*)
+            FROM records
+            WHERE site_id = {site_id}
+              AND errors IS NOT NULL
+              AND errors != 'null'::jsonb
+              AND errors::text NOT LIKE '%duration_mismatch%'
+            """
+
+            # Execute query and fetch result
+            result = postgres_hook.get_first(query)
+            skipped_counts[site_id] = result[0] if result else 0
+
+        logging.info(f"Fetched skipped record counts for {len(skipped_counts)} sites")
+        return skipped_counts
+
+    @task
+    def calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, skipped_counts, running_jobs):
         """Calculate DB_IMPORT and BIRDID_MEDIUM statuses for each prefix"""
         # Handle empty input
         if not aggregated_data:
@@ -366,10 +391,12 @@ def create_report():
         record_counts = {int(k): v for k, v in record_counts.items()}
         birdid_medium_counts = {int(k): v for k, v in birdid_medium_counts.items()}
         birdid_visible_counts = {int(k): v for k, v in birdid_visible_counts.items()}
+        skipped_counts = {int(k): v for k, v in skipped_counts.items()}
 
         logging.info(f"Record counts: {record_counts}")
         logging.info(f"BirdID Medium processed counts: {birdid_medium_counts}")
         logging.info(f"BirdID Medium visible counts: {birdid_visible_counts}")
+        logging.info(f"Skipped record counts: {skipped_counts}")
         logging.info(f"Running inference jobs for sites: {running_jobs}")
 
         enriched_rows = []
@@ -379,6 +406,7 @@ def create_report():
             record_count = record_counts.get(site_id, 0) if site_id else 0
             birdid_medium_count = birdid_medium_counts.get(site_id, 0) if site_id else 0
             birdid_visible_count = birdid_visible_counts.get(site_id, 0) if site_id else 0
+            skipped_count = skipped_counts.get(site_id, 0) if site_id else 0
             wav_count = data["wav_count"]
 
             # Calculate DB_IMPORT status
@@ -399,7 +427,10 @@ def create_report():
             elif site_id in running_jobs:
                 birdid_medium_status = "running"
             else:
-                diff = abs(record_count - birdid_medium_count)
+                # Calculate the expected processed count (processed + skipped)
+                expected_processed = birdid_medium_count + skipped_count
+                diff = abs(record_count - expected_processed)
+
                 if diff == 0:
                     birdid_medium_status = "ready"
                 elif diff <= MAX_DIFF:
@@ -407,7 +438,7 @@ def create_report():
                 else:
                     birdid_medium_status = "pending"
 
-            logging.info(f"Prefix: {data['prefix']}, Site ID: {site_id}, WAV files: {wav_count}, Records: {record_count}, BirdNET processed: {birdid_medium_count}, Status: {birdid_medium_status}")
+            logging.info(f"Prefix: {data['prefix']}, Site ID: {site_id}, WAV files: {wav_count}, Records: {record_count}, Skipped: {skipped_count}, BirdNET processed: {birdid_medium_count}, Status: {birdid_medium_status}")
 
             enriched_rows.append({
                 "prefix": data["prefix"],
@@ -415,6 +446,7 @@ def create_report():
                 "wav_size_bytes": data["wav_size_bytes"],
                 "wav_count": wav_count,
                 "record_count": record_count,
+                "skipped_records": skipped_count,
                 "db_import": db_import_status,
                 "birdid_medium_processed": birdid_medium_count,
                 "birdid_medium": birdid_medium_status,
@@ -431,7 +463,7 @@ def create_report():
             return pd.DataFrame()
 
         df = pd.DataFrame(rows)
-        df = df[["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count", "db_import", "birdid_medium_processed", "birdid_medium", "birdid_medium_visible"]]
+        df = df[["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count", "skipped_records", "db_import", "birdid_medium_processed", "birdid_medium", "birdid_medium_visible"]]
         df = df.sort_values(by="prefix")
         return df
 
@@ -448,7 +480,7 @@ def create_report():
             site_info = f"{row['site_id']}" if pd.notna(row['site_id']) else "Unknown"
             db_import_status = row['db_import'] if row['db_import'] else "N/A"
             birdid_medium_status = row['birdid_medium'] if row['birdid_medium'] else "N/A"
-            logging.info(f"Prefix: {row['prefix']}, Site ID: {site_info}, Size: {size_mb:.2f} MB, WAV files: {row['wav_count']}, Records: {row['record_count']}, DB Import: {db_import_status}, BirdId Medium processed: {row['birdid_medium_processed']}, BirdID Medium: {birdid_medium_status}, Visible in UI: {row['birdid_medium_visible']}")
+            logging.info(f"Prefix: {row['prefix']}, Site ID: {site_info}, Size: {size_mb:.2f} MB, WAV files: {row['wav_count']}, Records: {row['record_count']}, Skipped: {row['skipped_records']}, DB Import: {db_import_status}, BirdId Medium processed: {row['birdid_medium_processed']}, BirdID Medium: {birdid_medium_status}, Visible in UI: {row['birdid_medium_visible']}")
 
     @task
     def create_report_table():
@@ -464,6 +496,7 @@ def create_report():
             wav_size_bytes BIGINT,
             wav_count INTEGER,
             record_count INTEGER,
+            skipped_records INTEGER,
             db_import VARCHAR(50),
             birdid_medium_processed INTEGER,
             birdid_medium VARCHAR(50),
@@ -494,8 +527,8 @@ def create_report():
         insert_query = """
         INSERT INTO workflow_reports (
             report_date, prefix, site_id, wav_size_bytes, wav_count,
-            record_count, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible, visible_in_ui
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            record_count, skipped_records, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible, visible_in_ui
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         report_date = datetime.now()
@@ -513,6 +546,7 @@ def create_report():
                 int(row['wav_size_bytes']) if pd.notna(row['wav_size_bytes']) else None,
                 int(row['wav_count']) if pd.notna(row['wav_count']) else None,
                 int(row['record_count']) if pd.notna(row['record_count']) else None,
+                int(row['skipped_records']) if pd.notna(row['skipped_records']) else None,
                 row['db_import'] if row['db_import'] else None,
                 int(row['birdid_medium_processed']) if pd.notna(row['birdid_medium_processed']) else None,
                 row['birdid_medium'] if row['birdid_medium'] else None,
@@ -533,11 +567,12 @@ def create_report():
     record_counts = get_record_counts_from_db(sites)
     birdid_medium_counts = get_birdid_medium_processed_counts(sites)
     birdid_visible_counts = get_birdid_medium_visible_counts(sites)
+    skipped_counts = get_skipped_record_counts(sites)
     running_jobs = get_running_inference_jobs()
     directories = scan_directories()
     rows = list_wavs(directories, sites, last_report_dates)
     aggregated_data = aggregate_wav_data_by_prefix(rows, sites, last_report_dates)  # Added last_report_dates
-    enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, running_jobs)
+    enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, skipped_counts, running_jobs)
     report_df = transform_data(enriched_data)
     print_report(report_df)
     save_report_to_db(report_df)
