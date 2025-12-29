@@ -248,15 +248,25 @@ def model_inference_site_task(
             connection = session.connection().connection
             cursor = connection.cursor()
 
+            # Construct table name with model name postfix
+            if not model or not model.name:
+                error_msg = f"Model name not found for model_id {model_id}. Cannot determine target table."
+                logger.error(error_msg)
+                raise Exception(error_msg)
+
+            table_name = f"model_inference_results_{model.name}"
+            logger.info(f"Writing to table: {table_name}")
+
             # Create CSV buffer in memory
             buffer = StringIO()
             df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
             buffer.seek(0)
 
             # COPY from buffer to table (bypasses most index overhead)
+            # Use %s placeholder with quoted identifier to handle special characters
             cursor.copy_expert(
-                """
-                COPY model_inference_results_pt_record
+                f"""
+                COPY "{table_name}"
                 (record_id, model_id, start_time, end_time, confidence, label_id)
                 FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
                 """,
