@@ -18,10 +18,9 @@ def ensure_and_clear_tables():
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-        # Recreate the migration progress table
+        # Ensure the migration progress table exists
         progress_table_query = """
-        DROP TABLE IF EXISTS migration_progress;
-        CREATE TABLE migration_progress (
+        CREATE TABLE IF NOT EXISTS migration_progress (
             partition_name text PRIMARY KEY,
             processed_at timestamp DEFAULT now(),
             row_count bigint,
@@ -30,7 +29,7 @@ def ensure_and_clear_tables():
         """
         postgres_hook.run(progress_table_query)
 
-        # Create the temporary results table
+        # Recreate the temporary results table
         results_temp_table_query = """
         DROP TABLE IF EXISTS model_inference_results_max_confidence_temp;
         CREATE TABLE model_inference_results_max_confidence_temp (
@@ -46,7 +45,7 @@ def ensure_and_clear_tables():
         """
         postgres_hook.run(results_temp_table_query)
 
-        print("Migration progress table and temporary results table ensured and cleared.")
+        print("Migration progress table ensured and temporary results table cleared.")
     except Exception as e:
         print(f"Error ensuring tables: {e}")
         raise
@@ -69,7 +68,6 @@ def summarize_migration():
         print(f"Error summarizing migration: {e}")
         raise
 
-# Function to process all partitions sequentially using the temporary results table
 def process_all_partitions(progress_table, results_temp_table, statement_timeout):
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
@@ -77,73 +75,79 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
         for i in range(1, 201):
             partition_name = f"mir_partitions.model_inference_results_p{i:03d}"
 
-            # Check if the partition is already processed
-            already_processed_query = f"""
-            SELECT 1 FROM {progress_table} WHERE partition_name = %s;
-            """
-            already_processed = postgres_hook.get_first(already_processed_query, parameters=(partition_name,))
-            if already_processed:
-                print(f"✓ {partition_name} already completed. Skipping.")
-                continue
+            try:
+                # Get the current row count for the partition
+                row_count_query = f"SELECT count(*) FROM {partition_name};"
+                current_row_count = postgres_hook.get_first(row_count_query)
+                if not current_row_count or not isinstance(current_row_count[0], int):
+                    print(f"✗ Failed to fetch row count for {partition_name}.")
+                    continue
 
-            # Get the row count for the partition
-            row_count_query = f"SELECT count(*) FROM {partition_name};"
-            row_count = postgres_hook.get_first(row_count_query)
-            if not row_count or not isinstance(row_count[0], int):
-                print(f"✗ Failed to fetch row count for {partition_name}.")
-                continue
+                current_row_count = current_row_count[0]
 
-            row_count = row_count[0]
-            print(f"→ Processing {partition_name} ({row_count} rows)")
+                # Check if the partition has new data
+                last_processed_query = f"""
+                SELECT row_count FROM {progress_table} WHERE partition_name = %s;
+                """
+                last_processed = postgres_hook.get_first(last_processed_query, parameters=(partition_name,))
+                if last_processed and current_row_count <= last_processed[0]:
+                    print(f"✓ {partition_name} has no new data. Skipping.")
+                    continue
 
-            # Start processing the partition
-            migration_query = f"""
-            SET statement_timeout = '{statement_timeout}s';
-            SET work_mem = '512MB';
-            SET temp_buffers = '256MB';
+                print(f"→ Processing {partition_name} ({current_row_count} rows)")
 
-            BEGIN;
+                # Start processing the partition
+                migration_query = f"""
+                SET statement_timeout = '{statement_timeout}s';
+                SET work_mem = '512MB';
+                SET temp_buffers = '256MB';
 
-            WITH best AS (
-                SELECT record_id, label_id, model_id, MAX(confidence) AS max_confidence
-                FROM {partition_name}
-                GROUP BY record_id, label_id, model_id
-            ),
-            dedup AS (
-                SELECT DISTINCT ON (p.record_id, p.label_id, p.model_id) p.*
-                FROM {partition_name} p
-                JOIN best b
-                  ON p.record_id = b.record_id
-                 AND p.label_id  = b.label_id
-                 AND p.model_id  = b.model_id
-                 AND p.confidence = b.max_confidence
-                ORDER BY p.record_id, p.label_id, p.model_id, p.id
-            )
-            INSERT INTO {results_temp_table}
-            (record_id, label_id, model_id, id, start_time, end_time, confidence)
-            SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
-            FROM dedup
-            ON CONFLICT (record_id, label_id, model_id)
-            DO UPDATE SET
-                id = EXCLUDED.id,
-                start_time = EXCLUDED.start_time,
-                end_time = EXCLUDED.end_time,
-                confidence = EXCLUDED.confidence
-            WHERE EXCLUDED.confidence > {results_temp_table}.confidence;
+                BEGIN;
 
-            INSERT INTO {progress_table}(partition_name, row_count, duration_seconds)
-            VALUES (%s, %s, 0)
-            ON CONFLICT (partition_name)
-            DO UPDATE SET
-                row_count = EXCLUDED.row_count,
-                duration_seconds = EXCLUDED.duration_seconds,
-                processed_at = now();
+                WITH best AS (
+                    SELECT record_id, label_id, model_id, MAX(confidence) AS max_confidence
+                    FROM {partition_name}
+                    GROUP BY record_id, label_id, model_id
+                ),
+                dedup AS (
+                    SELECT DISTINCT ON (p.record_id, p.label_id, p.model_id) p.*
+                    FROM {partition_name} p
+                    JOIN best b
+                      ON p.record_id = b.record_id
+                     AND p.label_id  = b.label_id
+                     AND p.model_id  = b.model_id
+                     AND p.confidence = b.max_confidence
+                    ORDER BY p.record_id, p.label_id, p.model_id, p.id
+                )
+                INSERT INTO {results_temp_table}
+                (record_id, label_id, model_id, id, start_time, end_time, confidence)
+                SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
+                FROM dedup
+                ON CONFLICT (record_id, label_id, model_id)
+                DO UPDATE SET
+                    id = EXCLUDED.id,
+                    start_time = EXCLUDED.start_time,
+                    end_time = EXCLUDED.end_time,
+                    confidence = EXCLUDED.confidence
+                WHERE EXCLUDED.confidence > {results_temp_table}.confidence;
 
-            COMMIT;
-            """
-            postgres_hook.run(migration_query, parameters=(partition_name, row_count))
+                INSERT INTO {progress_table}(partition_name, row_count, duration_seconds)
+                VALUES (%s, %s, 0)
+                ON CONFLICT (partition_name)
+                DO UPDATE SET
+                    row_count = EXCLUDED.row_count,
+                    duration_seconds = EXCLUDED.duration_seconds,
+                    processed_at = now();
 
-            print(f"✓ Finished processing {partition_name}")
+                COMMIT;
+                """
+                postgres_hook.run(migration_query, parameters=(partition_name, current_row_count))
+
+                print(f"✓ Finished processing {partition_name}")
+
+            except Exception as e:
+                print(f"✗ FAILED processing {partition_name} - {str(e)}")
+                continue  # Skip to the next partition
 
     except Exception as e:
         print(f"✗ FAILED processing partitions - {str(e)}")
