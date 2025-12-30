@@ -1,29 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Variables
 part="$1"
 log="./migrate_logs/${part//./_}.log"
 start_time=$(date +%s)
+PROGRESS_TABLE=${PROGRESS_TABLE:-migration_progress}
+
+# Ensure log directory exists
+mkdir -p ./migrate_logs
 
 echo "[$(date)] Checking $part..."
 
 # Skip if already processed
-already=$(docker exec "$CONTAINER" psql -U "$DBUSER" -d "$DBNAME" -Atc \
-    "SELECT 1 FROM migration_progress WHERE partition_name='${part}'" || echo "")
+already=$(docker exec "$CONTAINER" psql -U "$PG_USER" -d "$PG_DATABASE" -Atc \
+    "SELECT 1 FROM ${PROGRESS_TABLE} WHERE partition_name='${part}'" || echo "")
 
 if [[ "$already" == "1" ]]; then
     echo "✓ $part already completed. Skipping."
     exit 0
 fi
 
-# Check partition row count first
-row_count=$(docker exec "$CONTAINER" psql -U "$DBUSER" -d "$DBNAME" -Atc \
+# Check partition row count
+row_count=$(docker exec "$CONTAINER" psql -U "$PG_USER" -d "$PG_DATABASE" -Atc \
     "SELECT count(*) FROM ${part}" 2>&1 | tee -a "$log")
+
+if ! [[ "$row_count" =~ ^[0-9]+$ ]]; then
+    echo "✗ Failed to fetch row count for $part. Check logs: $log"
+    exit 1
+fi
 
 echo "→ Processing $part ($row_count rows) (logs: $log)"
 
 # Run migration with timeout and better error handling
-if docker exec "$CONTAINER" psql -U "$DBUSER" -d "$DBNAME" \
+if docker exec "$CONTAINER" psql -U "$PG_USER" -d "$PG_DATABASE" \
     -v ON_ERROR_STOP=1 \
     <<EOSQL >> "$log" 2>&1
 SET statement_timeout = '${STATEMENT_TIMEOUT}s';
@@ -59,7 +69,7 @@ SET
     confidence = EXCLUDED.confidence
 WHERE EXCLUDED.confidence > model_inference_results_max_confidence.confidence;
 
-INSERT INTO migration_progress(partition_name, row_count, duration_seconds)
+INSERT INTO ${PROGRESS_TABLE}(partition_name, row_count, duration_seconds)
 VALUES ('${part}', ${row_count}, 0)
 ON CONFLICT (partition_name) DO NOTHING;
 
@@ -70,8 +80,8 @@ then
     duration=$((end_time - start_time))
 
     # Update duration
-    docker exec "$CONTAINER" psql -U "$DBUSER" -d "$DBNAME" -c \
-        "UPDATE migration_progress SET duration_seconds = $duration WHERE partition_name = '${part}'" >> "$log" 2>&1
+    docker exec "$CONTAINER" psql -U "$PG_USER" -d "$PG_DATABASE" -c \
+        "UPDATE ${PROGRESS_TABLE} SET duration_seconds = $duration WHERE partition_name = '${part}'" >> "$log" 2>&1
 
     echo "✓ Finished $part in ${duration}s"
 else

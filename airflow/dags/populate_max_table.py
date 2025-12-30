@@ -1,12 +1,7 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import datetime, timedelta
-import os
-
-# Custom BashOperator to disable Jinja templating
-class NoTemplateBashOperator(BashOperator):
-    template_fields = ()  # Disable Jinja templating
 
 # Default arguments for the DAG
 default_args = {
@@ -18,37 +13,141 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-# Inline function to ensure the temporary migration progress table exists
-def ensure_migration_progress_temp_table():
-    import subprocess
-    command = f"""
-    docker exec my_db_container psql -U {os.getenv('PG_USER')} -d {os.getenv('PG_DATABASE')} -h {os.getenv('PG_HOST')} -p {os.getenv('PG_PORT')} -c "
-    CREATE TABLE IF NOT EXISTS migration_progress_temp (
-        partition_name text PRIMARY KEY,
-        processed_at timestamp DEFAULT now(),
-        row_count bigint,
-        duration_seconds integer
-    );
-    "
-    """
-    subprocess.run(command, shell=True, check=True)
+# Function to ensure the migration progress table and temporary results table exist and are cleared
+def ensure_and_clear_tables():
+    try:
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-# Inline function to summarize the migration using the temporary table
-def summarize_migration_temp():
-    import subprocess
-    command = f"""
-    docker exec my_db_container psql -U {os.getenv('PG_USER')} -d {os.getenv('PG_DATABASE')} -h {os.getenv('PG_HOST')} -p {os.getenv('PG_PORT')} -c "
-    SELECT partition_name, row_count, duration_seconds, processed_at
-    FROM migration_progress_temp
-    ORDER BY processed_at DESC
-    LIMIT 10;
-    "
-    """
-    subprocess.run(command, shell=True, check=True)
+        # Recreate the migration progress table
+        progress_table_query = """
+        DROP TABLE IF EXISTS migration_progress;
+        CREATE TABLE migration_progress (
+            partition_name text PRIMARY KEY,
+            processed_at timestamp DEFAULT now(),
+            row_count bigint,
+            duration_seconds integer
+        );
+        """
+        postgres_hook.run(progress_table_query)
 
-# Load the process_partition.sh script
-with open("/opt/airflow/dags/scripts/populate_max_table_from_partition.sh") as f:
-    process_partition_script = f.read()
+        # Create the temporary results table
+        results_temp_table_query = """
+        DROP TABLE IF EXISTS model_inference_results_max_confidence_temp;
+        CREATE TABLE model_inference_results_max_confidence_temp (
+            id bigint NOT NULL,
+            record_id bigint NOT NULL,
+            model_id integer NOT NULL,
+            label_id integer NOT NULL,
+            start_time numeric(9,4) NOT NULL,
+            end_time numeric(9,4) NOT NULL,
+            confidence real NOT NULL,
+            PRIMARY KEY (record_id, label_id, model_id)
+        );
+        """
+        postgres_hook.run(results_temp_table_query)
+
+        print("Migration progress table and temporary results table ensured and cleared.")
+    except Exception as e:
+        print(f"Error ensuring tables: {e}")
+        raise
+
+# Function to summarize the migration using the migration progress table
+def summarize_migration():
+    try:
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+        query = """
+        SELECT partition_name, row_count, duration_seconds, processed_at
+        FROM migration_progress
+        ORDER BY processed_at DESC
+        LIMIT 10;
+        """
+        records = postgres_hook.get_records(query)
+        print("Migration Summary:")
+        for record in records:
+            print(record)
+    except Exception as e:
+        print(f"Error summarizing migration: {e}")
+        raise
+
+# Function to process all partitions sequentially using the temporary results table
+def process_all_partitions(progress_table, results_temp_table, statement_timeout):
+    try:
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+
+        for i in range(1, 201):
+            partition_name = f"mir_partitions.model_inference_results_p{i:03d}"
+
+            # Check if the partition is already processed
+            already_processed_query = f"""
+            SELECT 1 FROM {progress_table} WHERE partition_name = %s;
+            """
+            already_processed = postgres_hook.get_first(already_processed_query, parameters=(partition_name,))
+            if already_processed:
+                print(f"✓ {partition_name} already completed. Skipping.")
+                continue
+
+            # Get the row count for the partition
+            row_count_query = f"SELECT count(*) FROM {partition_name};"
+            row_count = postgres_hook.get_first(row_count_query)
+            if not row_count or not isinstance(row_count[0], int):
+                print(f"✗ Failed to fetch row count for {partition_name}.")
+                continue
+
+            row_count = row_count[0]
+            print(f"→ Processing {partition_name} ({row_count} rows)")
+
+            # Start processing the partition
+            migration_query = f"""
+            SET statement_timeout = '{statement_timeout}s';
+            SET work_mem = '512MB';
+            SET temp_buffers = '256MB';
+
+            BEGIN;
+
+            WITH best AS (
+                SELECT record_id, label_id, model_id, MAX(confidence) AS max_confidence
+                FROM {partition_name}
+                GROUP BY record_id, label_id, model_id
+            ),
+            dedup AS (
+                SELECT DISTINCT ON (p.record_id, p.label_id, p.model_id) p.*
+                FROM {partition_name} p
+                JOIN best b
+                  ON p.record_id = b.record_id
+                 AND p.label_id  = b.label_id
+                 AND p.model_id  = b.model_id
+                 AND p.confidence = b.max_confidence
+                ORDER BY p.record_id, p.label_id, p.model_id, p.id
+            )
+            INSERT INTO {results_temp_table}
+            (record_id, label_id, model_id, id, start_time, end_time, confidence)
+            SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
+            FROM dedup
+            ON CONFLICT (record_id, label_id, model_id)
+            DO UPDATE SET
+                id = EXCLUDED.id,
+                start_time = EXCLUDED.start_time,
+                end_time = EXCLUDED.end_time,
+                confidence = EXCLUDED.confidence
+            WHERE EXCLUDED.confidence > {results_temp_table}.confidence;
+
+            INSERT INTO {progress_table}(partition_name, row_count, duration_seconds)
+            VALUES (%s, %s, 0)
+            ON CONFLICT (partition_name)
+            DO UPDATE SET
+                row_count = EXCLUDED.row_count,
+                duration_seconds = EXCLUDED.duration_seconds,
+                processed_at = now();
+
+            COMMIT;
+            """
+            postgres_hook.run(migration_query, parameters=(partition_name, row_count))
+
+            print(f"✓ Finished processing {partition_name}")
+
+    except Exception as e:
+        print(f"✗ FAILED processing partitions - {str(e)}")
+        raise
 
 # Define the DAG
 with DAG(
@@ -60,41 +159,28 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    # Task 1: Ensure temporary migration progress table exists
-    ensure_table_task = PythonOperator(
-        task_id='ensure_migration_progress_temp_table',
-        python_callable=ensure_migration_progress_temp_table,
+    # Task 1: Ensure and clear the migration progress table and temporary results table
+    ensure_tables_task = PythonOperator(
+        task_id='ensure_and_clear_tables',
+        python_callable=ensure_and_clear_tables,
     )
 
-    # Task 2: Process each partition sequentially
-    previous_task = ensure_table_task
-    for i in range(1, 201):
-        partition_name = f"mir_partitions.model_inference_results_p{i:03d}"
-        process_partition_task = NoTemplateBashOperator(
-            task_id=f'process_partition_{i:03d}',
-            bash_command=process_partition_script,
-            env={
-                'CONTAINER': 'my_db_container',
-                'PG_USER': os.getenv('PG_USER'),
-                'PG_PASSWORD': os.getenv('PG_PASSWORD'),
-                'PG_HOST': os.getenv('PG_HOST'),
-                'PG_PORT': os.getenv('PG_PORT'),
-                'PG_DATABASE': os.getenv('PG_DATABASE'),
-                'LOGDIR': './migrate_logs',
-                'STATEMENT_TIMEOUT': '3600',
-                'PARTITION_NAME': partition_name,
-                'PROGRESS_TABLE': 'migration_progress_temp',  # Use the temporary table
-            },
-        )
-        # Set sequential dependency
-        previous_task >> process_partition_task
-        previous_task = process_partition_task
+    # Task 2: Process all partitions sequentially
+    process_partitions_task = PythonOperator(
+        task_id='process_all_partitions',
+        python_callable=process_all_partitions,
+        op_kwargs={
+            'progress_table': 'migration_progress',
+            'results_temp_table': 'model_inference_results_max_confidence_temp',
+            'statement_timeout': 3600,
+        },
+    )
 
-    # Task 3: Summarize the migration using the temporary table
+    # Task 3: Summarize the migration using the migration progress table
     summarize_task = PythonOperator(
-        task_id='summarize_migration_temp',
-        python_callable=summarize_migration_temp,
+        task_id='summarize_migration',
+        python_callable=summarize_migration,
     )
 
-    # Set final dependency
-    previous_task >> summarize_task
+    # Set task dependencies
+    ensure_tables_task >> process_partitions_task >> summarize_task
