@@ -94,13 +94,16 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
                     print(f"✓ {partition_name} has no new data. Skipping.")
                     continue
 
-                print(f"→ Processing {partition_name} ({current_row_count} rows)")
+                print(f"→ Processing partition: {partition_name} ({current_row_count} rows)")
+
+                # Measure the start time
+                start_time = datetime.now()
 
                 # Start processing the partition
                 migration_query = f"""
                 SET statement_timeout = '{statement_timeout}s';
-                SET work_mem = '512MB';
-                SET temp_buffers = '256MB';
+                SET work_mem = '1GB';
+                SET temp_buffers = '512MB';
 
                 BEGIN;
 
@@ -110,14 +113,13 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
                     GROUP BY record_id, label_id, model_id
                 ),
                 dedup AS (
-                    SELECT DISTINCT ON (p.record_id, p.label_id, p.model_id) p.*
+                    SELECT p.record_id, p.label_id, p.model_id, p.id, p.start_time, p.end_time, p.confidence
                     FROM {partition_name} p
                     JOIN best b
-                      ON p.record_id = b.record_id
-                     AND p.label_id  = b.label_id
-                     AND p.model_id  = b.model_id
-                     AND p.confidence = b.max_confidence
-                    ORDER BY p.record_id, p.label_id, p.model_id, p.id
+                    ON p.record_id = b.record_id
+                    AND p.label_id  = b.label_id
+                    AND p.model_id  = b.model_id
+                    AND p.confidence = b.max_confidence
                 )
                 INSERT INTO {results_temp_table}
                 (record_id, label_id, model_id, id, start_time, end_time, confidence)
@@ -131,22 +133,30 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
                     confidence = EXCLUDED.confidence
                 WHERE EXCLUDED.confidence > {results_temp_table}.confidence;
 
+                COMMIT;
+                """
+                postgres_hook.run(migration_query)
+
+                # Measure the end time and calculate the duration
+                end_time = datetime.now()
+                duration_seconds = (end_time - start_time).total_seconds()
+
+                # Update the progress table with the duration
+                progress_update_query = f"""
                 INSERT INTO {progress_table}(partition_name, row_count, duration_seconds)
-                VALUES (%s, %s, 0)
+                VALUES (%s, %s, %s)
                 ON CONFLICT (partition_name)
                 DO UPDATE SET
                     row_count = EXCLUDED.row_count,
                     duration_seconds = EXCLUDED.duration_seconds,
                     processed_at = now();
-
-                COMMIT;
                 """
-                postgres_hook.run(migration_query, parameters=(partition_name, current_row_count))
+                postgres_hook.run(progress_update_query, parameters=(partition_name, current_row_count, duration_seconds))
 
-                print(f"✓ Finished processing {partition_name}")
+                print(f"✓ Finished processing partition: {partition_name} in {duration_seconds:.2f} seconds")
 
             except Exception as e:
-                print(f"✗ FAILED processing {partition_name} - {str(e)}")
+                print(f"✗ FAILED processing partition: {partition_name} - {str(e)}")
                 continue  # Skip to the next partition
 
     except Exception as e:
