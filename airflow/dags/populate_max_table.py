@@ -113,13 +113,15 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
                     GROUP BY record_id, label_id, model_id
                 ),
                 dedup AS (
-                    SELECT p.record_id, p.label_id, p.model_id, p.id, p.start_time, p.end_time, p.confidence
+                    SELECT DISTINCT ON (p.record_id, p.label_id, p.model_id)
+                        p.record_id, p.label_id, p.model_id, p.id, p.start_time, p.end_time, p.confidence
                     FROM {partition_name} p
                     JOIN best b
                     ON p.record_id = b.record_id
                     AND p.label_id  = b.label_id
                     AND p.model_id  = b.model_id
                     AND p.confidence = b.max_confidence
+                    ORDER BY p.record_id, p.label_id, p.model_id, p.id
                 )
                 INSERT INTO {results_temp_table}
                 (record_id, label_id, model_id, id, start_time, end_time, confidence)
