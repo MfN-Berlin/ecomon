@@ -29,10 +29,9 @@ def ensure_and_clear_tables():
         """
         postgres_hook.run(progress_table_query)
 
-        # Recreate the temporary results table
+        # Create the temporary results table if it doesn't exist (don't drop it)
         results_temp_table_query = """
-        DROP TABLE IF EXISTS model_inference_results_max_confidence_temp;
-        CREATE TABLE model_inference_results_max_confidence_temp (
+        CREATE TABLE IF NOT EXISTS model_inference_results_max_confidence_temp (
             id bigint NOT NULL,
             record_id bigint NOT NULL,
             model_id integer NOT NULL,
@@ -45,7 +44,7 @@ def ensure_and_clear_tables():
         """
         postgres_hook.run(results_temp_table_query)
 
-        print("Migration progress table ensured and temporary results table cleared.")
+        print("Migration progress table and temporary results table ensured.")
     except Exception as e:
         print(f"Error ensuring tables: {e}")
         raise
@@ -54,20 +53,34 @@ def ensure_and_clear_tables():
 def summarize_migration():
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
-        query = """
-        SELECT partition_name, row_count, duration_seconds, processed_at
-        FROM migration_progress
-        ORDER BY processed_at DESC
-        LIMIT 10;
+
+        # Query to calculate the summary statistics
+        summary_query = """
+        SELECT
+            COUNT(*) AS partitions_processed,  -- Total number of partitions processed
+            SUM(row_count) AS total_rows,      -- Total number of rows processed
+            MAX(duration_seconds) AS longest_duration,  -- Longest processing time
+            MIN(duration_seconds) AS shortest_duration, -- Shortest processing time
+            AVG(duration_seconds) AS average_duration   -- Average processing time
+        FROM migration_progress;
         """
-        records = postgres_hook.get_records(query)
+
+        # Fetch the summary statistics
+        summary = postgres_hook.get_first(summary_query)
+
+        # Print the summary statistics
         print("Migration Summary:")
-        for record in records:
-            print(record)
+        print(f"Partitions Processed: {summary[0]}")
+        print(f"Total Rows Processed: {summary[1]}")
+        print(f"Longest Duration: {summary[2]} seconds")
+        print(f"Shortest Duration: {summary[3]} seconds")
+        print(f"Average Duration: {summary[4]:.2f} seconds")
+
     except Exception as e:
         print(f"Error summarizing migration: {e}")
         raise
 
+# Function to process all partitions
 def process_all_partitions(progress_table, results_temp_table, statement_timeout):
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
@@ -107,33 +120,26 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
 
                 BEGIN;
 
-                WITH best AS (
-                    SELECT record_id, label_id, model_id, MAX(confidence) AS max_confidence
+                WITH ranked_rows AS (
+                    SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY record_id, label_id, model_id
+                               ORDER BY confidence DESC, id ASC
+                           ) AS rank
                     FROM {partition_name}
-                    GROUP BY record_id, label_id, model_id
-                ),
-                dedup AS (
-                    SELECT DISTINCT ON (p.record_id, p.label_id, p.model_id)
-                        p.record_id, p.label_id, p.model_id, p.id, p.start_time, p.end_time, p.confidence
-                    FROM {partition_name} p
-                    JOIN best b
-                    ON p.record_id = b.record_id
-                    AND p.label_id  = b.label_id
-                    AND p.model_id  = b.model_id
-                    AND p.confidence = b.max_confidence
-                    ORDER BY p.record_id, p.label_id, p.model_id, p.id
+                    WHERE model_id = 3  -- Filter for model_id = 3
                 )
                 INSERT INTO {results_temp_table}
                 (record_id, label_id, model_id, id, start_time, end_time, confidence)
                 SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
-                FROM dedup
+                FROM ranked_rows
+                WHERE rank = 1  -- Select only the row with the highest confidence
                 ON CONFLICT (record_id, label_id, model_id)
                 DO UPDATE SET
                     id = EXCLUDED.id,
                     start_time = EXCLUDED.start_time,
                     end_time = EXCLUDED.end_time,
-                    confidence = EXCLUDED.confidence
-                WHERE EXCLUDED.confidence > {results_temp_table}.confidence;
+                    confidence = EXCLUDED.confidence;
 
                 COMMIT;
                 """
