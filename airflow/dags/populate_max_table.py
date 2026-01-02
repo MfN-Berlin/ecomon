@@ -253,11 +253,18 @@ def swap_tables():
         main_table_exists = postgres_hook.get_first(check_main_table)[0]
 
         if main_table_exists:
-            # Merge temp data into main table (upsert)
             merge_query = """
+            SET work_mem = '2GB';
+            SET maintenance_work_mem = '2GB';
+
             BEGIN;
 
-            -- Insert or update records from temp into main
+            -- Drop indexes
+            DROP INDEX IF EXISTS idx_mir_max_conf_compound;
+            DROP INDEX IF EXISTS idx_mir_max_conf_label;
+            DROP INDEX IF EXISTS idx_mir_max_conf_model;
+
+            -- Fast merge without index overhead
             INSERT INTO model_inference_results_max_confidence
             (id, record_id, model_id, label_id, start_time, end_time, confidence)
             SELECT id, record_id, model_id, label_id, start_time, end_time, confidence
@@ -268,6 +275,16 @@ def swap_tables():
                 start_time = EXCLUDED.start_time,
                 end_time = EXCLUDED.end_time,
                 confidence = EXCLUDED.confidence;
+
+            -- Recreate indexes (parallel build if possible)
+            CREATE INDEX idx_mir_max_conf_compound
+            ON model_inference_results_max_confidence (model_id, label_id, confidence DESC, record_id);
+
+            CREATE INDEX idx_mir_max_conf_label
+            ON model_inference_results_max_confidence (label_id, confidence DESC);
+
+            CREATE INDEX idx_mir_max_conf_model
+            ON model_inference_results_max_confidence (model_id);
 
             COMMIT;
             """

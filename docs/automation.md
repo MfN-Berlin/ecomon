@@ -199,3 +199,43 @@ The DAG creates a daily snapshot of the system's data processing status by:
   - Inserts new report rows into `workflow_reports` table
   - One row per site/prefix
 - **Output**: Count of rows inserted
+
+## Populate Max Confidence Table DAG
+
+### Overview
+
+The `Populate_Max_Table_Test` DAG creates and maintains a materialized table (`model_inference_results_max_confidence`) containing the maximum confidence inference results for each unique combination of `record_id`, `label_id`, and `model_id` from 200 partitioned source tables. This optimized table significantly improves query performance for the dashboard by pre-computing the highest confidence predictions.
+
+### Purpose
+
+- **Performance Optimization**: Pre-aggregates maximum confidence values to avoid expensive window functions in queries
+- **Incremental Processing**: Only processes partitions with new data, reducing processing time
+- **Zero Downtime**: Uses a staging table pattern to ensure the main table is always available
+- **Data Integrity**: Preserves existing data when partitions are skipped
+- **Monitoring**: Tracks processing history and performance metrics
+
+### Schedule
+
+- **Frequency**: Daily at 4:00 AM (Monday to Friday)
+- **Timezone**: UTC
+- **Catchup**: Disabled
+
+### DAG Structure
+
+#### Tasks
+
+1. **ensure_and_clear_tables** - Setup and initialization
+2. **process_all_partitions** - Data processing
+3. **summarize_migration** - Performance reporting
+4. **swap_tables** - Data deployment
+
+#### Task Dependencies
+ensure_and_clear_tables >> process_all_partitions >> summarize_migration >> swap_tables
+
+Notes
+* The DAG preserves all existing data during merges
+* Progress tracking is never cleared, providing historical metrics
+* Staging table may contain data from incomplete runs (handled by UPSERT logic)
+* First run behavior differs (rename vs merge)
+* Designed for model_id = 3 only (modify filter if needed)
+* Zero downtime: Main table always available for queries during processing
