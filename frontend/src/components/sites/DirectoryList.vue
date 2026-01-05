@@ -71,6 +71,15 @@ const sortedData = computed(() => {
   if (!data) return [];
   return [...data].sort((a, b) => a.directory.localeCompare(b.directory));
 });
+
+const config = useRuntimeConfig();
+console.log('Runtime config:', config.public);
+console.log('ALLOW_EDIT value:', config.public.ALLOW_EDIT);
+const isEditAllowed = computed(() => {
+  const allowEdit = config.public.ALLOW_EDIT;
+  return allowEdit === 'true' || allowEdit === true;
+});
+
 </script>
 
 <template>
@@ -105,7 +114,7 @@ const sortedData = computed(() => {
               color="primary"
               variant="tonal"
               v-bind="props"
-              :disabled="scanAllDirectoriesPending"
+              :disabled="scanAllDirectoriesPending || !isEditAllowed"
               :loading="scanAllDirectoriesPending"
               @click="
                 openDialog(
@@ -128,6 +137,7 @@ const sortedData = computed(() => {
               variant="tonal"
               v-bind="props"
               :loading="addPending"
+              :disabled="!isEditAllowed"
               @click="handleAdd"
             >
               Add Directory
@@ -171,6 +181,7 @@ const sortedData = computed(() => {
                 size="small"
                 variant="text"
                 v-bind="props"
+                :disabled="!isEditAllowed"
                 @click="scanDirectory({ id: siteId, directory: item.directory })"
               />
             </template>
@@ -183,7 +194,7 @@ const sortedData = computed(() => {
                 size="small"
                 variant="text"
                 v-bind="props"
-                :disabled="activeJobInfo(item.directory)?.isRunning"
+                :disabled="activeJobInfo(item.directory)?.isRunning || !isEditAllowed"
                 @click="
                   openDialog(
                     `Delete Directory`,

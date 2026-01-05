@@ -11,6 +11,12 @@ const selectedStartDateTime = ref<Date>(new Date());
 const selectedEndDateTime = ref<Date>(new Date());
 const dialog = ref(false);
 
+const config = useRuntimeConfig();
+const isEditAllowed = computed(() => {
+  const allowEdit = config.public.ALLOW_EDIT;
+  return allowEdit === 'true' || allowEdit === true;
+});
+
 async function onStartInference() {
   await startInference({
     siteId: props.siteId,
@@ -23,7 +29,7 @@ async function onStartInference() {
 </script>
 
 <template>
-  <v-btn v-bind="$attrs" prepend-icon="mdi-brain">
+  <v-btn v-bind="$attrs" prepend-icon="mdi-brain" :disabled="!isEditAllowed">
     Start Inference
     <v-dialog v-model="dialog" max-width="500" activator="parent">
       <v-card>

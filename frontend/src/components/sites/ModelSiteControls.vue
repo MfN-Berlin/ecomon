@@ -20,6 +20,12 @@ const { $currentTimeString } = useNuxtApp();
 
 const { data: modelList, isLoading: modelListLoading, refetch: refetchModelList } = useModelList();
 
+const config = useRuntimeConfig();
+const isEditAllowed = computed(() => {
+  const allowEdit = config.public.ALLOW_EDIT;
+  return allowEdit === 'true' || allowEdit === true;
+});
+
 const modelIdMap = computed(() => {
   return modelList.value?.reduce(
     (acc, model) => {
@@ -57,7 +63,7 @@ async function onStartInference() {
       <v-toolbar flat density="compact" class="w-100 pr-3" color="surface">
         <sites-inference-log :site-id="props.siteId"></sites-inference-log>
         <v-spacer></v-spacer>
-        <v-btn prepend-icon="mdi-brain" color="primary" variant="tonal" @click="dialog = true"
+        <v-btn prepend-icon="mdi-brain" color="primary" variant="tonal" :disabled="!isEditAllowed" @click="dialog = true"
           >Start Inference</v-btn
         >
       </v-toolbar>

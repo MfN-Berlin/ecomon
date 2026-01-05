@@ -1,3 +1,5 @@
+ALLOW_EDIT=true
+
 HASURA_ADMIN_SECRET=ecomon
 HASURA_WEBHOOKS_BASE_URL=http://host.docker.internal:8000
 HASURA_URL=172.17.0.1:10080/v1/graphql
