@@ -30,6 +30,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     LOG_FORMAT: "simple",
     public: {
+      ALLOW_EDIT: process.env.ALLOW_EDIT,
       LOG_LEVEL: "debug",
       GQL_HOST: "http://localhost:8080/v1/graphql",
       API_BASE_URL: "/ecomon",
