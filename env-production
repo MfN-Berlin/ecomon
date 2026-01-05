@@ -1,3 +1,4 @@
+ALLOW_EDIT=true
 
 BASE_DATA_DIRECTORY=/mnt/akwamodata
 GITHUB_REPOSITORY_OWNER=mfn-berlin
