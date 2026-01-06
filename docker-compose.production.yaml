@@ -26,7 +26,7 @@ services:
       - SUB_PATH=${SUB_PATH}
 
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-frontend:latest
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-frontend:next
     # build:
     #   context: ./frontend
     #   dockerfile: Dockerfile
@@ -40,11 +40,12 @@ services:
       - NUXT_PUBLIC_API_BASE_URL=${SUB_PATH}
       - NUXT_PUBLIC_GRAPHQL_CLIENT_CLIENTS_DEFAULT_HOST="${PROTOCOL}://${DOMAIN}${SUB_PATH}/api/v1/graphql"
       - NUXT_PUBLIC_DASHBOARD_URL="${PROTOCOL}://${DOMAIN}${SUB_PATH}/dashboard/"
+      - NUXT_PUBLIC_ALLOW_EDIT=${ALLOW_EDIT}
     env_file:
       - .env
 
   api:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-api:latest
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-api:next
     # build:
     #  context: ./backend
     #  dockerfile: Dockerfile.api
@@ -70,7 +71,7 @@ services:
       - ${TMP_DIR}:/tmp
 
   worker:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-worker:latest
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-worker:next
     # build:
     #  context: ./backend
     #  dockerfile: Dockerfile.worker
@@ -260,7 +261,7 @@ services:
       - ./hasura:/app
 
   dashboard:
-    image: ghcr.io/mfn-berlin/akwamo-webservice-next-dashboard:latest
+    image: ghcr.io/mfn-berlin/akwamo-webservice-next-dashboard:next
     ports:
       - "3838:3838"
     environment:
