@@ -17,9 +17,9 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      link: [{ rel: "icon", type: "image/x-icon", href: "/ecomon_next/favicon.ico" }]
+      link: [{ rel: "icon", type: "image/x-icon", href: `${process.env.SUB_PATH || '/ecomon'}/favicon.ico` }]
     },
-    baseURL: "/ecomon_next/"
+    baseURL: process.env.SUB_PATH || "/ecomon/"
   },
   imports: {
     dirs: ["composables/**"]

@@ -1,7 +1,7 @@
 http:
   routers:
     airflow-router:
-      rule: "Host(`localhost`) && PathPrefix(`/ecomon_next/airflow`)"
+      rule: "Host(`localhost`) && PathPrefix(`/ecomon_validate/airflow`)"
       service: airflow-service
       entryPoints:
         - web

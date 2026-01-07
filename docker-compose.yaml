@@ -66,7 +66,7 @@ services:
     volumes:
       - ecomon_data:/var/lib/postgresql/data
       - ./postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-      - ./postgres/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+#      - ./postgres/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
       - ${PGBACKUP_PATH}:/backup
     networks:
       - ecomon
@@ -167,7 +167,7 @@ services:
       - ${REDIS_TIMEOUT}
       - --tcp-backlog
       - ${REDIS_TCP_BACKLOG}
-    container_name: redis
+#    container_name: redis
     ports:
       - 6379:6379
     networks:
@@ -184,8 +184,8 @@ services:
       - AIRFLOW_CONN_POSTGRES_DEFAULT=postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/ecomon
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
-      - AIRFLOW__WEBSERVER__BASE_URL=http://localhost/ecomon_next/airflow
-      - AIRFLOW__WEBSERVER__URL_PATH_PREFIX=/ecomon_next/airflow
+      - AIRFLOW__WEBSERVER__BASE_URL=http://localhost/ecomon_validate/airflow
+#      - AIRFLOW__WEBSERVER__URL_PATH_PREFIX=/ecomon_validate/airflow
       - PG_USER=${DB_USERNAME}
       - PG_PASSWORD=${DB_PASSWORD}
       - PG_HOST=db
@@ -198,8 +198,8 @@ services:
 #      - ./.env:/opt/airflow/airflow.env
       - ${BASE_DATA_DIRECTORY}:/data
       - ${PGBACKUP_PATH}:/backup
-#    ports:
-#      - "8282:8080"
+    ports:
+      - "8282:8080"
     command: >
       bash -c "rm -f /opt/airflow/airflow.db &&
                airflow db init &&

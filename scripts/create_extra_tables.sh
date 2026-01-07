@@ -1,0 +1,125 @@
+#!/bin/bash
+# filepath: /home/alvaro/Workspace/ecomon_validate/scripts/create_extra_tables.sh
+
+# Script to create partitioned inference results table and view
+# Usage: ./create_extra_tables.sh <container_name> <db_user> <db_password>
+
+set -e  # Exit on error
+
+# Check arguments
+if [ "$#" -lt 3 ]; then
+    echo "Usage: $0 <container_name> <db_user> <db_password>"
+    echo "Example: $0 ecomon-db ecomon mypassword"
+    exit 1
+fi
+
+CONTAINER_NAME=$1
+DB_USER=$2
+DB_PASSWORD=$3
+DB_NAME="ecomon"
+
+echo "Creating partitioned table and view"
+echo "Using database: $DB_NAME in container: $CONTAINER_NAME"
+
+# Create SQL script
+SQL_SCRIPT=$(cat <<EOF
+-- 1. Create new schema for partitions
+CREATE SCHEMA IF NOT EXISTS "mir_partitions";
+
+-- 2. Create partitioned table in public schema
+CREATE TABLE public."model_inference_results_pt_record" (
+    id bigint NOT NULL DEFAULT nextval('model_inference_results_id_seq'::regclass),
+    record_id bigint NOT NULL,
+    model_id integer NOT NULL,
+    label_id integer NOT NULL,
+    start_time numeric(9,4) NOT NULL,
+    end_time numeric(9,4) NOT NULL,
+    confidence real NOT NULL,
+    PRIMARY KEY (record_id, id)
+) PARTITION BY RANGE (record_id);
+
+-- 3. Create 200 partitions in the new schema using a loop
+DO \$\$
+DECLARE
+    partition_num integer;
+    range_size integer := 25000;
+    range_start bigint;
+    range_end bigint;
+    partition_name text;
+BEGIN
+    -- Create first partition with MINVALUE
+    EXECUTE format(
+        'CREATE TABLE "mir_partitions".model_inference_results_p001
+         PARTITION OF public."model_inference_results_pt_record"
+         FOR VALUES FROM (MINVALUE) TO (%s)',
+        range_size
+    );
+
+    -- Create partitions 2-199
+    FOR partition_num IN 2..199 LOOP
+        range_start := (partition_num - 1) * range_size;
+        range_end := partition_num * range_size;
+        partition_name := 'model_inference_results_p' || lpad(partition_num::text, 3, '0');
+
+        EXECUTE format(
+            'CREATE TABLE "mir_partitions".%I
+             PARTITION OF public."model_inference_results_pt_record"
+             FOR VALUES FROM (%s) TO (%s)',
+            partition_name,
+            range_start,
+            range_end
+        );
+    END LOOP;
+
+    -- Create last partition with MAXVALUE
+    range_start := 199 * range_size;
+    EXECUTE format(
+        'CREATE TABLE "mir_partitions".model_inference_results_p200
+         PARTITION OF public."model_inference_results_pt_record"
+         FOR VALUES FROM (%s) TO (MAXVALUE)',
+        range_start
+    );
+END \$\$;
+
+-- 4. Create view that selects from this partitioned table
+CREATE OR REPLACE VIEW public."model_inference_results_view" AS
+SELECT
+    id,
+    model_id,
+    record_id,
+    label_id,
+    start_time,
+    end_time,
+    confidence
+FROM public."model_inference_results_pt_record";
+
+-- 5. Add indexes on the partitioned table (will be created on all partitions automatically)
+CREATE INDEX IF NOT EXISTS "idx_mir_pt_record_model_id"
+    ON public."model_inference_results_pt_record" (model_id);
+CREATE INDEX IF NOT EXISTS "idx_mir_pt_record_label_id"
+    ON public."model_inference_results_pt_record" (label_id);
+CREATE INDEX IF NOT EXISTS "idx_mir_pt_record_confidence"
+    ON public."model_inference_results_pt_record" (confidence);
+CREATE INDEX IF NOT EXISTS "idx_mir_pt_record_times"
+    ON public."model_inference_results_pt_record" (start_time, end_time);
+
+-- Grant permissions
+GRANT SELECT, INSERT, UPDATE, DELETE ON public."model_inference_results_pt_record" TO $DB_USER;
+GRANT SELECT ON public."model_inference_results_view" TO $DB_USER;
+GRANT USAGE ON SCHEMA "mir_partitions" TO $DB_USER;
+EOF
+)
+
+# Execute SQL in Docker container
+echo "Executing SQL script..."
+docker exec -i "$CONTAINER_NAME" psql -U "$DB_USER" -d "$DB_NAME" <<< "$SQL_SCRIPT"
+
+if [ $? -eq 0 ]; then
+    echo "✓ Successfully created partitioned table and view"
+    echo "  - Table: public.model_inference_results_pt_record"
+    echo "  - View: public.model_inference_results_view"
+    echo "  - Schema: mir_partitions (with 200 partitions)"
+else
+    echo "✗ Failed to create partitioned table and view"
+    exit 1
+fi
