@@ -138,7 +138,6 @@ def process_partition_data(postgres_hook, partition_name, results_temp_table, st
                    ORDER BY confidence DESC, id ASC
                ) AS rank
         FROM {partition_name}
-        WHERE model_id = 3  -- Filter for model_id = 3
     )
     INSERT INTO {results_temp_table}
     (record_id, label_id, model_id, id, start_time, end_time, confidence)

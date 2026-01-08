@@ -1,5 +1,4 @@
 #!/bin/bash
-# filepath: /home/alvaro/Workspace/ecomon/airflow/dags/scripts/backup_pg.sh
 set -euo pipefail
 
 # Export vars for pg_basebackup

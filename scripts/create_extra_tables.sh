@@ -103,9 +103,30 @@ CREATE INDEX IF NOT EXISTS "idx_mir_pt_record_confidence"
 CREATE INDEX IF NOT EXISTS "idx_mir_pt_record_times"
     ON public."model_inference_results_pt_record" (start_time, end_time);
 
+-- 6. Create model_inference_results_max_confidence table and indexes
+CREATE TABLE IF NOT EXISTS public."model_inference_results_max_confidence" (
+    id bigint NOT NULL,
+    record_id bigint NOT NULL,
+    model_id integer NOT NULL,
+    label_id integer NOT NULL,
+    start_time numeric(9,4) NOT NULL,
+    end_time numeric(9,4) NOT NULL,
+    confidence real NOT NULL,
+    CONSTRAINT model_inference_results_max_confidence_pkey
+      PRIMARY KEY (record_id, label_id, model_id)
+);
+
+CREATE INDEX IF NOT EXISTS "idx_mir_max_conf_compound"
+  ON public."model_inference_results_max_confidence" (model_id, label_id, confidence DESC, record_id);
+CREATE INDEX IF NOT EXISTS "idx_mir_max_conf_label"
+  ON public."model_inference_results_max_confidence" (label_id, confidence DESC);
+CREATE INDEX IF NOT EXISTS "idx_mir_max_conf_model"
+  ON public."model_inference_results_max_confidence" (model_id);
+
 -- Grant permissions
 GRANT SELECT, INSERT, UPDATE, DELETE ON public."model_inference_results_pt_record" TO $DB_USER;
 GRANT SELECT ON public."model_inference_results_view" TO $DB_USER;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public."model_inference_results_max_confidence" TO $DB_USER;
 GRANT USAGE ON SCHEMA "mir_partitions" TO $DB_USER;
 EOF
 )

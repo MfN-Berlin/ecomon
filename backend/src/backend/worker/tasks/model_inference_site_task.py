@@ -254,7 +254,8 @@ def model_inference_site_task(
                 logger.error(error_msg)
                 raise Exception(error_msg)
 
-            table_name = f"model_inference_results_{model.name}"
+            # table_name = f"model_inference_results_{model.name}"
+            table_name = "model_inference_results_pt_record"
             logger.info(f"Writing to table: {table_name}")
 
             # Create CSV buffer in memory

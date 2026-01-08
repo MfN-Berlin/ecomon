@@ -80,4 +80,4 @@ Traefik will route http://localhost/ecomon to the frontend, http://localhost/sta
 
 If you want to do changes on Hasura Metadata, you can open the Hasura UI at http://localhost:8080/console/login
 
-If you want to edit scheduled jobs, you can open the Airflow UI at http://localhost/ecomon_validate/airflow/login/
+If you want to see scheduled jobs, you can open the Airflow UI at http://localhost/ecomon_validate/airflow/login/

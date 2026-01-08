@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { debounce } from 'lodash-es';
 
 const props = defineProps({
@@ -72,24 +72,58 @@ onMounted(async () => {
   console.log('✅ Fetch complete. readySiteIds:', readySiteIds.value);
 });
 
-/*******************************************
- * manually maintained lists of
- * stuff that is ready and can be displayed
- ******************************************/
-
- // Manually maintained list of ready site IDs
-//const readySiteIds = ref([
-//  26,27,25,28,29,13,14,24,4,16,21,22,23,5,15,3,6,7,8,9
-//]);
-
-// Manually maintained list of ready model IDs
-const readyModelIds = ref([
-  3
-]);
-
 /******************
- * Species logic
+ * Models logic
  ******************/
+
+// Read ready model IDs from environment (comma-separated ints). If none, enable all.
+const envReadyModelIds = (import.meta.env?.VITE_READY_MODEL_IDS || '').trim();
+const readyModelIds = ref([]); // was: ref<number[]>([])
+
+const initReadyModelIds = () => {
+  if (envReadyModelIds.length > 0) {
+    readyModelIds.value = envReadyModelIds
+      .split(',')
+      .map(s => Number(s.trim()))
+      .filter(n => Number.isFinite(n));
+  } else {
+    // No env var: mark all available models as ready
+    readyModelIds.value = Array.isArray(props.availableModels)
+      ? props.availableModels.map(m => m.id)
+      : [];
+  }
+};
+
+// Keep readyModelIds in sync when availableModels changes (for "enable all" case)
+watch(
+  () => props.availableModels,
+  () => {
+    if (!envReadyModelIds.length) {
+      readyModelIds.value = Array.isArray(props.availableModels)
+        ? props.availableModels.map(m => m.id)
+        : [];
+    }
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  initReadyModelIds();
+});
+
+// Models list with readiness
+const models = computed(() => {
+  return (props.availableModels || []).map(model => ({
+    title: model.name,
+    value: model.id,
+    isReady: readyModelIds.value.includes(model.id)
+  }));
+});
+
+
+/*****************
+* Species logic
+******************/
 // Check if the species list contains only a placeholder
 const hasOnlyPlaceholder = computed(() => {
   return props.availableSpecies.length === 1 &&
@@ -143,31 +177,6 @@ const debouncedUpdateSelection = debounce(() => {
   updateSelection();
 }, 300);
 
-/***************
- *
- * Models logic
- *
-****************/
-
-// Models
-// Transform models for v-select if needed (depends on your v-select component requirements)
-const models = computed(() => {
-  return props.availableModels.map(model => ({
-    title: model.name,
-    value: model.id,
-    isReady: readyModelIds.value.includes(model.id)
-  }));
-});
-
-// Watch for available models changes - DON'T auto-select
-watch(
-  () => props.availableModels,
-  (newModels) => {
-    // No auto-selection
-//    updateSelection();
-  },
-  { immediate: true }
-);
 
 /***************
  *
