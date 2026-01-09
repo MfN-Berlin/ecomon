@@ -3,7 +3,8 @@ name: Build Docker images
 on:
   push:
     branches:
-      - next  # Trigger on push to any branch
+      - next
+      - ecomon_validate
 
 jobs:
   docker:
