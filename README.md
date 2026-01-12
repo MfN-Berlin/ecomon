@@ -55,35 +55,9 @@ See INSTALL_DEV.md for installation of a development environment.
 
 ### Production
 
+See INSTALL_PROD.md  for installation of a production environment.
+
 TL;DR;
 
 if everything is already setup, start the production instance by running
 `docker compose -f docker-compose.production.yaml up -d`
-
-#### Setting up the production environment from scratch
-
-1. Copy production_env_default to .env and change the variables to your own
-2. To start production environment run `docker compose -f docker-compose.production.yaml up -d`
-3. Import labels from csv with inside the production container
-
-```bash
-# find api container
-docker ps | grep api
-# example output:
-# d150cb190c58   akwamo-webservice-next-api     ...
-# attach shell to container
-docker exec -it d150cb190c58 /bin/bash
-# exit container
-exit
-```
-
-**_ Prepare Inference Models _**
-
-1. Download the model which are needed for the inference to the inferece host
-
-```bash
-# download the model
-scp -r /path/to/model user@infercen-host:/path/to/model
-# unzip the model
-unzip model.zip
-```

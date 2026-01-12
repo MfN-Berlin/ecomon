@@ -1,4 +1,4 @@
-# Installing an Ecomon instance
+# Installing an Ecomon instance for development
 Instructions for installing Ecomon on Linux.
 
 System requirements for development:
@@ -11,12 +11,11 @@ Required software
 * Docker and Docker-Compose
 * Python and Conda (Miniconda3 suffices)
 
-## Install locally for development
 Clone the repository and checkout the desired branch
 ```
 git clone git@github.com:MfN-Berlin/ecomon.git ecomon_validate
-git checkout ecomon_validate
 cd ecomon_validate
+git checkout ecomon_validate
 ```
 
 Make a copy of the environment variables file for development
