@@ -61,3 +61,8 @@ TL;DR;
 
 if everything is already setup, start the production instance by running
 `docker compose -f docker-compose.production.yaml up -d`
+
+## Data
+To transfer data from an existing instance, see docs/transfer_data.md
+
+To restore an automatic backup, see docs/backup_restoration.txt
