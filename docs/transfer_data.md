@@ -25,4 +25,15 @@ ALTER USER my_user WITH PASSWORD 'new_password';
 
 
 # Transfer inference data from another instance of ecomon
-The script scripts/export_mode_inference_results.sh exports inference results of a given location and model(s) to CSV. Then use psql to import the CSV into the new database. See inline documentation in the script for examples.
+
+**export_model_inference_results.sh**
+
+The script scripts/export_model_inference_results.sh exports inference results of a given location and model(s) to CSV. Then use psql to import the CSV into the new database. See inline documentation in the script for examples.
+
+**export_model_inference_logs.sh**
+
+The script scripts/export_model_inference_logs.sh exports model inference logs from a PostgreSQL database to a CSV file for a specific site. It accepts command-line arguments to connect to either a local PostgreSQL database or one running in a Docker container, specifying credentials, database name, and the target site ID. The script then queries the database and exports the results to a CSV file.
+
+**export_mir_max_confidence.sh**
+
+This script exports the maximum confidence values from model inference results max confidence table for a specific site to a CSV file. It allows users to specify connection details for a PostgreSQL database, either locally or within a Docker container, using command-line arguments. The script processes these arguments, connects to the database, and generates a CSV file containing the desired data.
