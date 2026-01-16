@@ -1,3 +1,10 @@
+#**************************************
+# Description: Airflow DAG to populate the
+# max confidence table from partitioned data.
+# Used in the Dashboard page.
+# See docs/automation.md for details
+#**************************************
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
