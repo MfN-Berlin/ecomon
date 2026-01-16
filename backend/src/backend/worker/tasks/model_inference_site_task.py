@@ -67,6 +67,8 @@ def model_inference_site_task(
                 Models.name,
                 Models.additional_docker_arguments,
                 Models.additional_model_arguments,
+                Models.image,
+                Models.segment_duration
             )
             .filter(Models.id == model_id)
             .first()
@@ -74,6 +76,9 @@ def model_inference_site_task(
 
         if not model:
             raise Exception(f"Model {model_id} not found")
+
+        # DEBUG: Log the raw query result
+        logger.info(f"Raw query result - name: {model[0]}, image: {model[3]}, segment_duration: {model[4]}")
 
         # CRITICAL: Optimize session for bulk inserts on heavily indexed partitioned table
         logger.info("Optimizing database session for bulk inserts")
@@ -88,9 +93,15 @@ def model_inference_site_task(
         # detach model from session
         ModelData = namedtuple(
             "ModelData",
-            ["name", "additional_docker_arguments", "additional_model_arguments"],
+            ["name", "additional_docker_arguments", "additional_model_arguments", "image", "segment_duration"],
         )
         model = ModelData(*model)
+
+        # Add debug logging to verify
+        logger.info(f"Model name: {model.name}")
+        logger.info(f"Model image: {model.image}")
+        logger.info(f"Model segment_duration: {model.segment_duration}")
+
         file_counter = 0
         # Get current user and group IDs to make the docker output files readable
         uid = os.getuid()
@@ -192,9 +203,10 @@ def model_inference_site_task(
                     else []
                 ),  # additional models arguments
                 f"-i /app/inputPaths.txt",
-                f"-m {model.name}",
+                f"-m {model.image}",
                 f"-o /output",
                 f"-ov {host_model_output_dir}",
+                *(f"--segmentDuration {model.segment_duration}".split() if model.segment_duration else []),
                 "--removeTemporaryResultFile",
                 f"-chown {uid}:{gid}",
                 "--f pkl",

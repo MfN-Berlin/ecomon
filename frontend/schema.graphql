@@ -3539,6 +3539,7 @@ type models {
     where: events_bool_exp
   ): events_aggregate!
   id: Int!
+  image: String
 
   """An array relationship"""
   model_labels(
@@ -3577,8 +3578,8 @@ type models {
   ): model_labels_aggregate!
   name: String!
   remarks: String
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
   updated_at: timestamp
 }
 
@@ -3627,12 +3628,13 @@ input models_bool_exp {
   events: events_bool_exp
   events_aggregate: events_aggregate_bool_exp
   id: Int_comparison_exp
+  image: String_comparison_exp
   model_labels: model_labels_bool_exp
   model_labels_aggregate: model_labels_aggregate_bool_exp
   name: String_comparison_exp
   remarks: String_comparison_exp
-  segment_duration: Int_comparison_exp
-  step_duration: Int_comparison_exp
+  segment_duration: float8_comparison_exp
+  step_duration: float8_comparison_exp
   updated_at: timestamp_comparison_exp
 }
 
@@ -3656,8 +3658,8 @@ input type for incrementing numeric columns in table "models"
 """
 input models_inc_input {
   id: Int
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
 }
 
 """
@@ -3669,11 +3671,12 @@ input models_insert_input {
   created_at: timestamp
   events: events_arr_rel_insert_input
   id: Int
+  image: String
   model_labels: model_labels_arr_rel_insert_input
   name: String
   remarks: String
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
   updated_at: timestamp
 }
 
@@ -3683,10 +3686,11 @@ type models_max_fields {
   additional_model_arguments: String
   created_at: timestamp
   id: Int
+  image: String
   name: String
   remarks: String
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
   updated_at: timestamp
 }
 
@@ -3696,10 +3700,11 @@ type models_min_fields {
   additional_model_arguments: String
   created_at: timestamp
   id: Int
+  image: String
   name: String
   remarks: String
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
   updated_at: timestamp
 }
 
@@ -3740,6 +3745,7 @@ input models_order_by {
   created_at: order_by
   events_aggregate: events_aggregate_order_by
   id: order_by
+  image: order_by
   model_labels_aggregate: model_labels_aggregate_order_by
   name: order_by
   remarks: order_by
@@ -3770,6 +3776,9 @@ enum models_select_column {
   id
 
   """column name"""
+  image
+
+  """column name"""
   name
 
   """column name"""
@@ -3793,10 +3802,11 @@ input models_set_input {
   additional_model_arguments: String
   created_at: timestamp
   id: Int
+  image: String
   name: String
   remarks: String
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
   updated_at: timestamp
 }
 
@@ -3838,18 +3848,19 @@ input models_stream_cursor_value_input {
   additional_model_arguments: String
   created_at: timestamp
   id: Int
+  image: String
   name: String
   remarks: String
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
   updated_at: timestamp
 }
 
 """aggregate sum on columns"""
 type models_sum_fields {
   id: Int
-  segment_duration: Int
-  step_duration: Int
+  segment_duration: float8
+  step_duration: float8
 }
 
 """
@@ -3867,6 +3878,9 @@ enum models_update_column {
 
   """column name"""
   id
+
+  """column name"""
+  image
 
   """column name"""
   name

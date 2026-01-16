@@ -16,8 +16,7 @@ class BaseTask(app.Task):
         if self.request.id:
             result = app.AsyncResult(self.request.id)
 
-            if result.state == states.PENDING:
-                self.update_state(state=states.REVOKED)
+            if result.state == states.REVOKED:
                 time.sleep(1)
                 return True
         return False

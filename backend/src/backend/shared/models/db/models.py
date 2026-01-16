@@ -129,6 +129,7 @@ class Models(Base):
     step_duration = mapped_column(Integer)
     remarks = mapped_column(Text)
     updated_at = mapped_column(DateTime)
+    image = mapped_column(Text)
 
     model_labels: Mapped[List["ModelLabels"]] = relationship(
         "ModelLabels", uselist=True, back_populates="model"

@@ -38,8 +38,9 @@ mutation insertModel(
   $name: String!
   $additional_docker_arguments: String = ""
   $additional_model_arguments: String = ""
-  $segment_duration: Int
-  $step_duration: Int
+  $segment_duration: float8
+  $step_duration: float8
+  $image: String!
 ) {
   data: insert_models_one(
     object: {
@@ -49,6 +50,7 @@ mutation insertModel(
       additional_model_arguments: ""
       segment_duration: 0
       step_duration: 0
+      image: $image
     }
   ) {
     ...Model
@@ -60,8 +62,9 @@ mutation updateModel(
   $remarks: String
   $additional_docker_arguments: String
   $additional_model_arguments: String
-  $segment_duration: Int
-  $step_duration: Int
+  $segment_duration: float8
+  $step_duration: float8
+  $image: String
 ) {
   data: update_models_by_pk(
     pk_columns: { id: $id }
@@ -71,6 +74,7 @@ mutation updateModel(
       additional_model_arguments: $additional_model_arguments
       segment_duration: $segment_duration
       step_duration: $step_duration
+      image: $image
     }
   ) {
     ...Model
