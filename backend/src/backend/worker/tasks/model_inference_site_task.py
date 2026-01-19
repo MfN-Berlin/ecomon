@@ -240,6 +240,16 @@ def model_inference_site_task(
             df = pandas.read_pickle(os.path.join(job_temp_dir, "output.pkl"))
 
             # ====== ADD THIS DEBUGGING CODE RIGHT AFTER READING PICKLE ======
+            # Print all column names and basic info
+            logger.info("=== DATAFRAME STRUCTURE FROM PICKLE FILE ===")
+            logger.info(f"Total rows: {len(df)}")
+            logger.info(f"Columns ({len(df.columns)}): {df.columns.tolist()}")
+            logger.info("\nColumn details:")
+            for col in df.columns:
+                logger.info(f"- {col}: {df[col].dtype} (unique values: {df[col].nunique()}, "
+                          f"NaN count: {df[col].isna().sum()})")
+            logger.info("=== END OF DATAFRAME STRUCTURE ===")
+
             # Identify and log all problematic rows before any filtering
             logger.info(f"Original DataFrame shape: {df.shape}")
             logger.info(f"Original DataFrame columns: {df.columns.tolist()}")
