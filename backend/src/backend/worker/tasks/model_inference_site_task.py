@@ -3,6 +3,7 @@ import subprocess
 import shutil
 import time
 import pandas
+import numpy as np
 from io import StringIO
 from sqlalchemy import func, text, Text
 from datetime import datetime
@@ -254,6 +255,25 @@ def model_inference_site_task(
 
             # Select and reorder columns for insertion
             df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
+
+            # Log and handle NaN/inf values in label_id before converting to integer
+            nan_rows = df_results[df_results["label_id"].isna()]
+            if not nan_rows.empty:
+                logger.warning(f"Found {len(nan_rows)} records with NaN label_id values. Dropping these records.")
+                logger.debug(f"NaN label_id records details: {nan_rows.to_dict()}")
+
+            inf_rows = df_results[df_results["label_id"].isin([np.inf, -np.inf])]
+            if not inf_rows.empty:
+                logger.warning(f"Found {len(inf_rows)} records with infinite label_id values. Dropping these records.")
+                logger.debug(f"Infinite label_id records details: {inf_rows.to_dict()}")
+
+            # Handle NaN/inf values in label_id before converting to integer
+            original_count = len(df_results)
+            df_results = df_results.dropna(subset=["label_id"])  # Remove rows with NaN label_id
+            df_results = df_results[~df_results["label_id"].isin([np.inf, -np.inf])]  # Remove rows with inf label_id
+
+            if len(df_results) < original_count:
+                logger.warning(f"Dropped {original_count - len(df_results)} records with invalid label_id values")
 
             # Make sure label_id is integer
             df_results["label_id"] = df_results["label_id"].astype(int)
