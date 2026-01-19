@@ -238,6 +238,38 @@ def model_inference_site_task(
 
             # read the output.pkl file and add the results to the database
             df = pandas.read_pickle(os.path.join(job_temp_dir, "output.pkl"))
+
+            # ====== ADD THIS DEBUGGING CODE RIGHT AFTER READING PICKLE ======
+            # Identify and log all problematic rows before any filtering
+            logger.info(f"Original DataFrame shape: {df.shape}")
+            logger.info(f"Original DataFrame columns: {df.columns.tolist()}")
+
+            # Find all rows with problematic label_id values
+            problematic_rows = df[df['label_id'].isna() | df['label_id'].isin([np.inf, -np.inf]) |
+                                df['label_id'].apply(lambda x: isinstance(x, float) and not x.is_integer())]
+
+            if not problematic_rows.empty:
+                logger.warning(f"Found {len(problematic_rows)} problematic rows in original DataFrame")
+                logger.warning("=== PROBLEMATIC ROWS DETAILS ===")
+                logger.warning(f"{'Index':<8} {'Filename':<25} {'Start':<8} {'End':<8} {'Confidence':<12} {'Label_ID':<12} {'Label_Model'}")
+                logger.warning("-" * 80)
+
+                for idx, row in problematic_rows.iterrows():
+                    logger.warning(f"{idx:<8} {row.get('filename', 'N/A'):<25} "
+                                 f"{row.get('start_time', 'N/A'):<8.2f} "
+                                 f"{row.get('end_time', 'N/A'):<8.2f} "
+                                 f"{row.get('confidence', 'N/A'):<12.4f} "
+                                 f"{str(row.get('label_id', 'N/A')):<12} "
+                                 f"{str(row.get('label_model', 'N/A'))}")
+                logger.warning("=== END OF PROBLEMATIC ROWS ===")
+
+                # Also log the unique combinations of problematic values
+                logger.warning(f"Unique problematic label_id values: {problematic_rows['label_id'].unique()}")
+                logger.warning(f"Unique problematic label_model values: {problematic_rows['label_model'].unique()}")
+            else:
+                logger.info("No problematic rows found in original DataFrame")
+            # ====== END OF DEBUGGING CODE ======
+
             # if confidence is 0 or below confidence resolution
             df = df[df["confidence"] >= 0.01]
             if len(df) == 0:
