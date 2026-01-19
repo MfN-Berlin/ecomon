@@ -256,6 +256,19 @@ def model_inference_site_task(
             # Select and reorder columns for insertion
             df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
 
+            # ADD THIS DEBUGGING CODE RIGHT HERE:
+            logger.info(f"DataFrame shape before cleaning: {df_results.shape}")
+            logger.info(f"label_id column dtype: {df_results['label_id'].dtype}")
+            logger.info(f"label_id value counts:\n{df_results['label_id'].value_counts(dropna=False).head(20)}")
+
+            # Check for specific problematic values
+            problematic = df_results[~df_results['label_id'].apply(
+                lambda x: isinstance(x, (int, float)) and not (np.isnan(x) or np.isinf(x)) or x is None
+            )]
+            if not problematic.empty:
+                logger.warning(f"Found {len(problematic)} problematic label_id values")
+                logger.debug(f"Problematic records:\n{problematic[['record_id', 'label_id']].to_string()}")
+
             # Log and handle NaN/inf values in label_id before converting to integer
             nan_rows = df_results[df_results["label_id"].isna()]
             if not nan_rows.empty:
