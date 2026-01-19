@@ -250,6 +250,11 @@ def model_inference_site_task(
                           f"NaN count: {df[col].isna().sum()})")
             logger.info("=== END OF DATAFRAME STRUCTURE ===")
 
+            # Print first 10 rows
+            logger.info("\nFirst 10 rows:")
+            logger.info("\n" + df.head(10).to_string())
+            logger.info("=== END OF DATAFRAME PREVIEW ===")
+
             # Identify and log all problematic rows before any filtering
             logger.info(f"Original DataFrame shape: {df.shape}")
             logger.info(f"Original DataFrame columns: {df.columns.tolist()}")
