@@ -255,6 +255,9 @@ def model_inference_site_task(
             # Select and reorder columns for insertion
             df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
 
+            # Make sure label_id is integer
+            df_results["label_id"] = df_results["label_id"].astype(int)
+
             # Use COPY for maximum speed (10-50x faster than INSERT on indexed tables)
             logger.info(f"Inserting {len(df_results)} results using COPY")
             connection = session.connection().connection
