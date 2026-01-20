@@ -244,6 +244,8 @@ def model_inference_site_task(
             logger.info("=== DATAFRAME STRUCTURE FROM PICKLE FILE ===")
             logger.info(f"Total rows: {len(df)}")
             logger.info(f"Columns ({len(df.columns)}): {df.columns.tolist()}")
+
+            # Print column details
             logger.info("\nColumn details:")
             for col in df.columns:
                 logger.info(f"- {col}: {df[col].dtype} (unique values: {df[col].nunique()}, "
@@ -264,23 +266,21 @@ def model_inference_site_task(
                                 df['label_id'].apply(lambda x: isinstance(x, float) and not x.is_integer())]
 
             if not problematic_rows.empty:
-                logger.warning(f"Found {len(problematic_rows)} problematic rows in original DataFrame")
+                logger.warning(f"\nFound {len(problematic_rows)} problematic rows:")
                 logger.warning("=== PROBLEMATIC ROWS DETAILS ===")
-                logger.warning(f"{'Index':<8} {'Filename':<25} {'Start':<8} {'End':<8} {'Confidence':<12} {'Label_ID':<12} {'Label_Model'}")
+                logger.warning(f"{'Index':<6} {'Model':<6} {'Filename':<20} {'Start':<6} {'End':<6} "
+                                f"{'Conf':<6} {'Label_ID':<10} {'Label_Model'}")
                 logger.warning("-" * 80)
 
                 for idx, row in problematic_rows.iterrows():
-                    logger.warning(f"{idx:<8} {row.get('filename', 'N/A'):<25} "
-                                 f"{row.get('start_time', 'N/A'):<8.2f} "
-                                 f"{row.get('end_time', 'N/A'):<8.2f} "
-                                 f"{row.get('confidence', 'N/A'):<12.4f} "
-                                 f"{str(row.get('label_id', 'N/A')):<12} "
-                                 f"{str(row.get('label_model', 'N/A'))}")
+                    logger.warning(f"{idx:<6} {row.get('model_id', 'N/A'):<6} "
+                                    f"{row.get('filename', 'N/A')[:20]:<20} "
+                                    f"{row.get('start_time', 'N/A'):<6.2f} "
+                                    f"{row.get('end_time', 'N/A'):<6.2f} "
+                                    f"{row.get('confidence', 'N/A'):<6.2f} "
+                                    f"{str(row.get('label_id', 'N/A')):<10} "
+                                    f"{str(row.get('label_model', 'N/A'))}")
                 logger.warning("=== END OF PROBLEMATIC ROWS ===")
-
-                # Also log the unique combinations of problematic values
-                logger.warning(f"Unique problematic label_id values: {problematic_rows['label_id'].unique()}")
-                logger.warning(f"Unique problematic label_model values: {problematic_rows['label_model'].unique()}")
             else:
                 logger.info("No problematic rows found in original DataFrame")
             # ====== END OF DEBUGGING CODE ======
