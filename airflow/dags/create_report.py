@@ -47,32 +47,51 @@ def create_report():
         return record_counts
 
     @task
-    def get_birdid_medium_processed_counts(sites):
-        """Fetch BirdId-medium processed record counts for each site from the database"""
+    def fetch_models():
+        """Fetch all model IDs and names from the models table"""
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-        birdid_medium_counts = {}
+        query = "SELECT id, name FROM models ORDER BY id"
+
+        # Execute query and fetch results
+        records = postgres_hook.get_records(query)
+        models = [{'model_id': row[0], 'name': row[1]} for row in records]
+
+        logging.info(f"Fetched {len(models)} models from database")
+        return models
+
+    @task
+    def get_processed_counts_by_model(sites, models):
+        """Fetch processed record counts for each model and site from the database"""
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+
+        # Structure: {site_id: {model_id: count, ...}, ...}
+        model_counts = {}
 
         for site in sites:
             site_id = site["site_id"]
-            query = f"""
-            WITH tmp_record_ids AS (
-                SELECT id
-                FROM records
-                WHERE site_id = {site_id}
-            )
-            SELECT count(distinct(mil.record_id))
-            FROM model_inference_logs AS mil
-            WHERE mil.record_id = ANY (ARRAY(SELECT id FROM tmp_record_ids))
-            AND mil.model_id=3
-            """
+            model_counts[site_id] = {}
 
-            # Execute query and fetch result
-            result = postgres_hook.get_first(query)
-            birdid_medium_counts[site_id] = result[0] if result else 0
+            for model in models:
+                model_id = model["model_id"]
+                query = f"""
+                WITH tmp_record_ids AS (
+                    SELECT id
+                    FROM records
+                    WHERE site_id = {site_id}
+                )
+                SELECT count(distinct(mil.record_id))
+                FROM model_inference_logs AS mil
+                WHERE mil.record_id = ANY (ARRAY(SELECT id FROM tmp_record_ids))
+                AND mil.model_id={model_id}
+                """
 
-        logging.info(f"Fetched BirdId Medium processed counts for {len(birdid_medium_counts)} sites")
-        return birdid_medium_counts
+                # Execute query and fetch result
+                result = postgres_hook.get_first(query)
+                model_counts[site_id][model_id] = result[0] if result else 0
+
+        logging.info(f"Fetched processed counts for {len(models)} models across {len(model_counts)} sites")
+        return model_counts
 
     @task
     def scan_directories():
@@ -325,32 +344,37 @@ def create_report():
         return running_site_ids
 
     @task
-    def get_birdid_medium_visible_counts(sites):
-        """Fetch BirdID-medium visible record counts (from max_confidence table) for each site"""
+    def get_visible_counts_by_model(sites, models):
+        """Fetch visible record counts (from max_confidence table) for each model and site"""
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-        birdid_visible_counts = {}
+        # Structure: {site_id: {model_id: count, ...}, ...}
+        visible_counts = {}
 
         for site in sites:
             site_id = site["site_id"]
-            query = f"""
-            WITH tmp_record_ids AS (
-                SELECT id
-                FROM records
-                WHERE site_id = {site_id}
-            )
-            SELECT count(distinct(mirmc.record_id))
-            FROM model_inference_results_max_confidence AS mirmc
-            WHERE mirmc.record_id = ANY (ARRAY(SELECT id FROM tmp_record_ids))
-            AND model_id=3
-            """
+            visible_counts[site_id] = {}
 
-            # Execute query and fetch result
-            result = postgres_hook.get_first(query)
-            birdid_visible_counts[site_id] = result[0] if result else 0
+            for model in models:
+                model_id = model["model_id"]
+                query = f"""
+                WITH tmp_record_ids AS (
+                    SELECT id
+                    FROM records
+                    WHERE site_id = {site_id}
+                )
+                SELECT count(distinct(mirmc.record_id))
+                FROM model_inference_results_max_confidence AS mirmc
+                WHERE mirmc.record_id = ANY (ARRAY(SELECT id FROM tmp_record_ids))
+                AND model_id={model_id}
+                """
 
-        logging.info(f"Fetched BirdID Medium visible counts for {len(birdid_visible_counts)} sites")
-        return birdid_visible_counts
+                # Execute query and fetch result
+                result = postgres_hook.get_first(query)
+                visible_counts[site_id][model_id] = result[0] if result else 0
+
+        logging.info(f"Fetched visible counts for {len(models)} models across {len(visible_counts)} sites")
+        return visible_counts
 
     @task
     def get_skipped_record_counts(sites):
@@ -378,8 +402,8 @@ def create_report():
         return skipped_counts
 
     @task
-    def calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, skipped_counts, running_jobs):
-        """Calculate DB_IMPORT and BIRDID_MEDIUM statuses for each prefix"""
+    def calculate_import_statuses(aggregated_data, record_counts, processed_counts, visible_counts, skipped_counts, running_jobs, models):
+        """Calculate DB_IMPORT and model inference statuses for each prefix and model"""
         # Handle empty input
         if not aggregated_data:
             logging.info("No aggregated data - no directories were processed")
@@ -387,27 +411,39 @@ def create_report():
 
         MAX_DIFF = 10  # acceptable difference between status "ready" and "ready with losses" and "pending"
 
-        # Convert record_counts and birdid_medium_counts keys from strings to integers
+        # Convert record_counts and processed_counts keys from strings to integers
         record_counts = {int(k): v for k, v in record_counts.items()}
-        birdid_medium_counts = {int(k): v for k, v in birdid_medium_counts.items()}
-        birdid_visible_counts = {int(k): v for k, v in birdid_visible_counts.items()}
         skipped_counts = {int(k): v for k, v in skipped_counts.items()}
 
+        # Ensure processed_counts and visible_counts outer keys are integers
+        processed_counts_int = {}
+        for site_id, model_dict in processed_counts.items():
+            processed_counts_int[int(site_id)] = model_dict
+        processed_counts = processed_counts_int
+
+        visible_counts_int = {}
+        for site_id, model_dict in visible_counts.items():
+            visible_counts_int[int(site_id)] = model_dict
+        visible_counts = visible_counts_int
+
         logging.info(f"Record counts: {record_counts}")
-        logging.info(f"BirdID Medium processed counts: {birdid_medium_counts}")
-        logging.info(f"BirdID Medium visible counts: {birdid_visible_counts}")
+        logging.info(f"Processed counts by model: {processed_counts}")
+        logging.info(f"Visible counts by model: {visible_counts}")
         logging.info(f"Skipped record counts: {skipped_counts}")
         logging.info(f"Running inference jobs for sites: {running_jobs}")
+        logging.info(f"Models: {models}")
 
         enriched_rows = []
 
         for data in aggregated_data:
             site_id = data["site_id"]
             record_count = record_counts.get(site_id, 0) if site_id else 0
-            birdid_medium_count = birdid_medium_counts.get(site_id, 0) if site_id else 0
-            birdid_visible_count = birdid_visible_counts.get(site_id, 0) if site_id else 0
             skipped_count = skipped_counts.get(site_id, 0) if site_id else 0
             wav_count = data["wav_count"]
+
+            # Debug: Log the data being processed
+            logging.info(f"Processing prefix={data['prefix']}, site_id={site_id} (type={type(site_id)})")
+            logging.info(f"  record_count={record_count}, skipped_count={skipped_count}, wav_count={wav_count}")
 
             # Calculate DB_IMPORT status
             if record_count == 0:
@@ -421,26 +457,43 @@ def create_report():
                 else:
                     db_import_status = "pending"
 
-            # Calculate BIRDID_MEDIUM status
-            if record_count == 0:
-                birdid_medium_status = ""
-            elif site_id in running_jobs:
-                birdid_medium_status = "running"
-            else:
-                # Calculate the expected processed count (processed + skipped)
-                expected_processed = birdid_medium_count + skipped_count
-                diff = abs(record_count - expected_processed)
+            # Calculate status for each model
+            model_statuses = {}
+            for model in models:
+                model_id = model["model_id"]
+                model_name = model["name"]
 
-                if diff == 0:
-                    birdid_medium_status = "ready"
-                elif diff <= MAX_DIFF:
-                    birdid_medium_status = "ready with losses"
+                if record_count == 0:
+                    model_statuses[model_name] = ""
+                elif site_id in running_jobs:
+                    model_statuses[model_name] = "running"
                 else:
-                    birdid_medium_status = "pending"
+                    processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
+                    # Calculate the expected processed count (processed + skipped)
+                    expected_processed = processed_count + skipped_count
+                    diff = abs(record_count - expected_processed)
 
-            logging.info(f"Prefix: {data['prefix']}, Site ID: {site_id}, WAV files: {wav_count}, Records: {record_count}, Skipped: {skipped_count}, BirdNET processed: {birdid_medium_count}, Status: {birdid_medium_status}")
+                    if diff == 0:
+                        model_statuses[model_name] = "ready"
+                    elif diff <= MAX_DIFF:
+                        model_statuses[model_name] = "ready with losses"
+                    else:
+                        model_statuses[model_name] = "pending"
 
-            enriched_rows.append({
+            # Log model status info
+            for model in models:
+                model_id = model["model_id"]
+                model_name = model["name"]
+                processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
+                visible_count = visible_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
+                status = model_statuses.get(model_name, "")
+                logging.info(f"  Model: {model_name} (id={model_id}), Processed: {processed_count}, Visible: {visible_count}, Status: {status}")
+
+                # Debug: show what keys exist in processed_counts for this site
+                if site_id in processed_counts:
+                    logging.debug(f"    Available model IDs for site {site_id}: {list(processed_counts[site_id].keys())}")
+
+            row = {
                 "prefix": data["prefix"],
                 "site_id": site_id,
                 "wav_size_bytes": data["wav_size_bytes"],
@@ -448,10 +501,23 @@ def create_report():
                 "record_count": record_count,
                 "skipped_records": skipped_count,
                 "db_import": db_import_status,
-                "birdid_medium_processed": birdid_medium_count,
-                "birdid_medium": birdid_medium_status,
-                "birdid_medium_visible": birdid_visible_count
-            })
+            }
+
+            # Add model-specific data
+            for model in models:
+                model_id = model["model_id"]
+                model_name = model["name"]
+                processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
+                visible_count = visible_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
+                status = model_statuses.get(model_name, "")
+
+                row[f"{model_name}_processed"] = processed_count
+                row[f"{model_name}_visible"] = visible_count
+                row[f"{model_name}_status"] = status
+
+                logging.debug(f"Adding to row - {model_name}_processed={processed_count}, {model_name}_visible={visible_count}, {model_name}_status={status}")
+
+            enriched_rows.append(row)
 
         return enriched_rows
 
@@ -463,12 +529,26 @@ def create_report():
             return pd.DataFrame()
 
         df = pd.DataFrame(rows)
-        df = df[["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count", "skipped_records", "db_import", "birdid_medium_processed", "birdid_medium", "birdid_medium_visible"]]
+
+        # Define base columns that are always present
+        base_columns = ["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count",
+                       "skipped_records", "db_import"]
+
+        # Find all model-related columns (those ending with _processed, _visible, or _status)
+        model_columns = [col for col in df.columns if col.endswith(('_processed', '_visible', '_status'))]
+
+        # Combine all columns for selection
+        columns_to_select = base_columns + model_columns
+
+        # Only select columns that exist in the dataframe
+        columns_to_select = [col for col in columns_to_select if col in df.columns]
+
+        df = df[columns_to_select]
         df = df.sort_values(by="prefix")
         return df
 
     @task
-    def print_report(report_df):
+    def print_report(report_df, models):
         # Handle empty DataFrame
         if report_df.empty:
             logging.info("No new data to report - all directories up to date")
@@ -479,8 +559,20 @@ def create_report():
             size_mb = row['wav_size_bytes'] / (1024 * 1024)
             site_info = f"{row['site_id']}" if pd.notna(row['site_id']) else "Unknown"
             db_import_status = row['db_import'] if row['db_import'] else "N/A"
-            birdid_medium_status = row['birdid_medium'] if row['birdid_medium'] else "N/A"
-            logging.info(f"Prefix: {row['prefix']}, Site ID: {site_info}, Size: {size_mb:.2f} MB, WAV files: {row['wav_count']}, Records: {row['record_count']}, Skipped: {row['skipped_records']}, DB Import: {db_import_status}, BirdId Medium processed: {row['birdid_medium_processed']}, BirdID Medium: {birdid_medium_status}, Visible in UI: {row['birdid_medium_visible']}")
+            logging.info(f"Prefix: {row['prefix']}, Site ID: {site_info}, Size: {size_mb:.2f} MB, WAV files: {row['wav_count']}, Records: {row['record_count']}, Skipped: {row['skipped_records']}, DB Import: {db_import_status}")
+
+            # Log status for each model
+            for model in models:
+                model_name = model['name']
+                processed_col = f"{model_name}_processed"
+                visible_col = f"{model_name}_visible"
+                status_col = f"{model_name}_status"
+
+                processed = row.get(processed_col, 0) if processed_col in row and pd.notna(row.get(processed_col)) else 0
+                visible = row.get(visible_col, 0) if visible_col in row and pd.notna(row.get(visible_col)) else 0
+                status = row.get(status_col, "N/A") if status_col in row and row.get(status_col) else "N/A"
+
+                logging.info(f"  {model_name}: processed={processed}, visible={visible}, status={status}")
 
     @task
     def create_report_table():
@@ -498,9 +590,10 @@ def create_report():
             record_count INTEGER,
             skipped_records INTEGER,
             db_import VARCHAR(50),
-            birdid_medium_processed INTEGER,
-            birdid_medium VARCHAR(50),
-            birdid_medium_visible INTEGER,
+            model_name VARCHAR(100) NOT NULL,
+            model_processed INTEGER,
+            model_visible INTEGER,
+            model_status VARCHAR(50),
             visible_in_ui BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT fk_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
@@ -509,13 +602,14 @@ def create_report():
         CREATE INDEX IF NOT EXISTS idx_workflow_reports_date ON workflow_reports(report_date);
         CREATE INDEX IF NOT EXISTS idx_workflow_reports_site_id ON workflow_reports(site_id);
         CREATE INDEX IF NOT EXISTS idx_workflow_reports_prefix ON workflow_reports(prefix);
+        CREATE INDEX IF NOT EXISTS idx_workflow_reports_model ON workflow_reports(model_name);
         """
 
         postgres_hook.run(create_table_query)
         logging.info("Report table created or already exists")
 
     @task
-    def save_report_to_db(report_df):
+    def save_report_to_db(report_df, models):
         """Save the report data to the database"""
         # Handle empty DataFrame - don't save if no data to report
         if report_df.empty:
@@ -524,57 +618,77 @@ def create_report():
 
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-        insert_query = """
-        INSERT INTO workflow_reports (
-            report_date, prefix, site_id, wav_size_bytes, wav_count,
-            record_count, skipped_records, db_import, birdid_medium_processed, birdid_medium, birdid_medium_visible, visible_in_ui
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-
         report_date = datetime.now()
         rows_inserted = 0
 
+        # Debug: Log columns and sample data
+        logging.info(f"DataFrame columns: {list(report_df.columns)}")
+        if not report_df.empty:
+            logging.info(f"Sample row: {report_df.iloc[0].to_dict()}")
+
         for index, row in report_df.iterrows():
-            # Automatically set visible_in_ui based on birdid_medium status
-            birdid_medium_status = row['birdid_medium'] if row['birdid_medium'] else ""
-            visible_in_ui = birdid_medium_status in ["ready", "ready with losses"]
+            # Save data for each model
+            for model in models:
+                model_name = model['name']
+                processed_col = f"{model_name}_processed"
+                visible_col = f"{model_name}_visible"
+                status_col = f"{model_name}_status"
 
-            values = (
-                report_date,
-                row['prefix'],
-                int(row['site_id']) if pd.notna(row['site_id']) else None,
-                int(row['wav_size_bytes']) if pd.notna(row['wav_size_bytes']) else None,
-                int(row['wav_count']) if pd.notna(row['wav_count']) else None,
-                int(row['record_count']) if pd.notna(row['record_count']) else None,
-                int(row['skipped_records']) if pd.notna(row['skipped_records']) else None,
-                row['db_import'] if row['db_import'] else None,
-                int(row['birdid_medium_processed']) if pd.notna(row['birdid_medium_processed']) else None,
-                row['birdid_medium'] if row['birdid_medium'] else None,
-                int(row['birdid_medium_visible']) if pd.notna(row['birdid_medium_visible']) else None,
-                visible_in_ui
-            )
+                # Debug: Log values for each model
+                processed_value = row.get(processed_col, 0) if processed_col in row and pd.notna(row.get(processed_col)) else None
+                visible_value = row.get(visible_col, 0) if visible_col in row and pd.notna(row.get(visible_col)) else None
+                status_value = row.get(status_col, "") if status_col in row and row.get(status_col) else ""
+                logging.debug(f"Saving {row['prefix']} / {model_name}: processed={processed_value}, visible={visible_value}, status={status_value}")
 
-            postgres_hook.run(insert_query, parameters=values)
-            rows_inserted += 1
+                insert_query = """
+                INSERT INTO workflow_reports (
+                    report_date, prefix, site_id, wav_size_bytes, wav_count,
+                    record_count, skipped_records, db_import, model_name, model_processed, model_visible, model_status, visible_in_ui
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+
+                # Automatically set visible_in_ui based on model status
+                model_status = row.get(status_col, "") if status_col in row and row.get(status_col) else ""
+                visible_in_ui = model_status in ["ready", "ready with losses"]
+
+                values = (
+                    report_date,
+                    row['prefix'],
+                    int(row['site_id']) if pd.notna(row['site_id']) else None,
+                    int(row['wav_size_bytes']) if pd.notna(row['wav_size_bytes']) else None,
+                    int(row['wav_count']) if pd.notna(row['wav_count']) else None,
+                    int(row['record_count']) if pd.notna(row['record_count']) else None,
+                    int(row['skipped_records']) if pd.notna(row['skipped_records']) else None,
+                    row['db_import'] if row['db_import'] else None,
+                    model_name,
+                    int(processed_value) if processed_value is not None else None,
+                    int(visible_value) if visible_value is not None else None,
+                    model_status if model_status else None,
+                    visible_in_ui
+                )
+
+                postgres_hook.run(insert_query, parameters=values)
+                rows_inserted += 1
 
         logging.info(f"Saved {rows_inserted} rows to workflow_reports table")
         return rows_inserted
 
     # Task dependencies
     sites = get_sites_from_db()
+    models = fetch_models()
     create_report_table()
     last_report_dates = get_last_report_dates_by_directory()
     record_counts = get_record_counts_from_db(sites)
-    birdid_medium_counts = get_birdid_medium_processed_counts(sites)
-    birdid_visible_counts = get_birdid_medium_visible_counts(sites)
+    processed_counts = get_processed_counts_by_model(sites, models)
+    visible_counts = get_visible_counts_by_model(sites, models)
     skipped_counts = get_skipped_record_counts(sites)
     running_jobs = get_running_inference_jobs()
     directories = scan_directories()
     rows = list_wavs(directories, sites, last_report_dates)
-    aggregated_data = aggregate_wav_data_by_prefix(rows, sites, last_report_dates)  # Added last_report_dates
-    enriched_data = calculate_import_statuses(aggregated_data, record_counts, birdid_medium_counts, birdid_visible_counts, skipped_counts, running_jobs)
+    aggregated_data = aggregate_wav_data_by_prefix(rows, sites, last_report_dates)
+    enriched_data = calculate_import_statuses(aggregated_data, record_counts, processed_counts, visible_counts, skipped_counts, running_jobs, models)
     report_df = transform_data(enriched_data)
-    print_report(report_df)
-    save_report_to_db(report_df)
+    print_report(report_df, models)
+    save_report_to_db(report_df, models)
 
 create_report()

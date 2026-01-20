@@ -23,27 +23,25 @@
               {{ getStatusText(item.db_import) }}
             </span>
           </template>
-          <template #item.birdid_medium="{ item }">
+
+          <!-- Dynamic model status columns -->
+          <template v-for="modelName in availableModels" :key="`status-${modelName}`" #[`item.${modelName}_status`]="{ item }">
             <v-tooltip location="top">
               <template #activator="{ props }">
                 <span
                   v-bind="props"
-                  :class="getStatusColor(item.birdid_medium)"
+                  :class="getStatusColor(item[`${modelName}_status`])"
                   style="cursor: help;"
                 >
-                  {{ getStatusText(item.birdid_medium) }}
+                  {{ getStatusText(item[`${modelName}_status`]) }}
                 </span>
               </template>
               <span>
-                Processed: {{ (item.birdid_medium_processed || 0).toLocaleString('de-DE') }}<br>
+                Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }}<br>
                 Skipped: {{ (item.skipped_records || 0).toLocaleString('de-DE') }}<br>
                 Total Records: {{ (item.record_count || 0).toLocaleString('de-DE') }}
               </span>
             </v-tooltip>
-          </template>
-          <template #item.visible_in_ui="{ item }">
-            <v-icon v-if="item.visible_in_ui" color="green">mdi-check</v-icon>
-            <v-icon v-else color="red">mdi-close</v-icon>
           </template>
           <template #item.wav_size_bytes="{ item }">
             <v-tooltip location="top">
@@ -69,14 +67,10 @@
                 </span>
               </td>
               <td></td>
-              <td class="text-end">
-                {{ totalProcessed.toLocaleString() }}
-                <span v-if="totalRecords > 0 && totalProcessed > 0">
-                  ({{ ((totalProcessed / totalRecords) * 100).toFixed(2) }}%)
-                </span>
-              </td>
-              <td></td>
-              <td></td>
+              <!-- Totals for each model -->
+              <template v-for="modelName in availableModels" :key="`totals-${modelName}`">
+                <td></td>
+              </template>
             </tr>
           </template>
         </v-data-table>
@@ -131,14 +125,25 @@
                 {{ getStatusText(item.db_import) }}
               </span>
             </template>
-            <template #item.birdid_medium="{ item }">
-              <span :class="getStatusColor(item.birdid_medium)">
-                {{ getStatusText(item.birdid_medium) }}
-              </span>
-            </template>
-            <template #item.visible_in_ui="{ item }">
-              <v-icon v-if="item.visible_in_ui" color="green">mdi-check</v-icon>
-              <v-icon v-else color="red">mdi-close</v-icon>
+
+            <!-- Dynamic model status columns for ultrasound -->
+            <template v-for="modelName in availableModels" :key="`us-status-${modelName}`" #[`item.${modelName}_status`]="{ item }">
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span
+                    v-bind="props"
+                    :class="getStatusColor(item[`${modelName}_status`])"
+                    style="cursor: help;"
+                  >
+                    {{ getStatusText(item[`${modelName}_status`]) }}
+                  </span>
+                </template>
+                <span>
+                  Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }}<br>
+                  Skipped: {{ (item.skipped_records || 0).toLocaleString('de-DE') }}<br>
+                  Total Records: {{ (item.record_count || 0).toLocaleString('de-DE') }}
+                </span>
+              </v-tooltip>
             </template>
             <template #item.wav_size_bytes="{ item }">
               <v-tooltip location="top">
@@ -164,14 +169,10 @@
                   </span>
                 </td>
                 <td></td>
-                <td class="text-end">
-                  {{ ultrasoundTotalProcessed.toLocaleString() }}
-                  <span v-if="ultrasoundTotalRecords > 0 && ultrasoundTotalProcessed > 0">
-                    ({{ ((ultrasoundTotalProcessed / ultrasoundTotalRecords) * 100).toFixed(2) }}%)
-                  </span>
-                </td>
-                <td></td>
-                <td></td>
+                <!-- Totals for each model in ultrasound -->
+                <template v-for="modelName in availableModels" :key="`us-totals-${modelName}`">
+                  <td></td>
+                </template>
               </tr>
             </template>
           </v-data-table>
@@ -243,7 +244,11 @@ const totalRecords = computed(() => {
 });
 
 const totalProcessed = computed(() => {
-  return nonUltrasoundReports.value.reduce((sum, report) => sum + (report.birdid_medium_processed || 0), 0);
+  return availableModels.value.reduce((sumByModel, modelName) => {
+    const modelTotal = nonUltrasoundReports.value.reduce((sum, report) =>
+      sum + (report[`${modelName}_processed`] || 0), 0);
+    return { ...sumByModel, [modelName]: modelTotal };
+  }, {});
 });
 
 // Calculate totals for ultrasound
@@ -260,21 +265,44 @@ const ultrasoundTotalRecords = computed(() => {
 });
 
 const ultrasoundTotalProcessed = computed(() => {
-  return ultrasoundReports.value.reduce((sum, report) => sum + (report.birdid_medium_processed || 0), 0);
+  return availableModels.value.reduce((sumByModel, modelName) => {
+    const modelTotal = ultrasoundReports.value.reduce((sum, report) =>
+      sum + (report[`${modelName}_processed`] || 0), 0);
+    return { ...sumByModel, [modelName]: modelTotal };
+  }, {});
 });
 
-// Table headers
-const headers = [
-  { title: 'Prefix', key: 'prefix', sortable: true, width: '110px' },
-  { title: 'Site ID', key: 'site_id', sortable: true, width: '60px', align: 'end' },
-  { title: 'WAV Size (MB)', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
-  { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
-  { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
-  { title: 'DB Import', key: 'db_import', sortable: true, width: '200px', align: 'center' },
-  { title: 'BirdID Medium Processed', key: 'birdid_medium_processed', sortable: true, width: '120px', align: 'end' },
-  { title: 'BirdID Medium Status', key: 'birdid_medium', sortable: true, width: '200px', align: 'center'  },
-  { title: 'Visible in UI', key: 'visible_in_ui', sortable: true, width: '130px', align: 'center' },
-];
+// Get all available models from reports
+const availableModels = computed(() => {
+  const models = new Set<string>();
+  reports.value.forEach(report => {
+    if (report.models) {
+      report.models.forEach((model: any) => {
+        models.add(model.model_name);
+      });
+    }
+  });
+  return Array.from(models).sort();
+});
+
+// Table headers - now includes dynamic model columns
+const headers = computed(() => {
+  const baseHeaders = [
+    { title: 'Prefix', key: 'prefix', sortable: true, width: '110px' },
+    { title: 'Site ID', key: 'site_id', sortable: true, width: '60px', align: 'end' },
+    { title: 'WAV Size (MB)', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
+    { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
+    { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
+    { title: 'DB Import', key: 'db_import', sortable: true, width: '200px', align: 'center' },
+  ];
+
+  // Add dynamic model status columns only
+  const modelHeaders = availableModels.value.map(modelName =>
+    ({ title: `${modelName}`, key: `${modelName}_status`, sortable: true, width: '200px', align: 'center' })
+  );
+
+  return [...baseHeaders, ...modelHeaders];
+});
 
 // Format bytes to MB with 2 decimals (1 MB = 1,000,000 bytes, German locale)
 const formatBytesToMB = (bytes: number): string => {
