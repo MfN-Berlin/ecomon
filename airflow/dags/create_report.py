@@ -73,7 +73,7 @@ def create_report():
             model_counts[site_id] = {}
 
             for model in models:
-                model_id = model["model_id"]
+                model_id = int(model["model_id"])
                 query = f"""
                 WITH tmp_record_ids AS (
                     SELECT id
@@ -356,7 +356,7 @@ def create_report():
             visible_counts[site_id] = {}
 
             for model in models:
-                model_id = model["model_id"]
+                model_id = int(model["model_id"])
                 query = f"""
                 WITH tmp_record_ids AS (
                     SELECT id
@@ -418,12 +418,12 @@ def create_report():
         # Ensure processed_counts and visible_counts outer keys are integers
         processed_counts_int = {}
         for site_id, model_dict in processed_counts.items():
-            processed_counts_int[int(site_id)] = model_dict
+            processed_counts_int[int(site_id)] = {int(k): v for k, v in model_dict.items()}
         processed_counts = processed_counts_int
 
         visible_counts_int = {}
         for site_id, model_dict in visible_counts.items():
-            visible_counts_int[int(site_id)] = model_dict
+            visible_counts_int[int(site_id)] = {int(k): v for k, v in model_dict.items()}
         visible_counts = visible_counts_int
 
         logging.info(f"Record counts: {record_counts}")
@@ -446,21 +446,23 @@ def create_report():
             logging.info(f"  record_count={record_count}, skipped_count={skipped_count}, wav_count={wav_count}")
 
             # Calculate DB_IMPORT status
+            # If record_count >= wav_count, all files have been imported/processed -> "ready"
             if record_count == 0:
                 db_import_status = ""
             else:
-                diff = abs(wav_count - record_count)
-                if diff == 0:
+                logging.info(f"DB_IMPORT calculation for {data['prefix']}: wav_count={wav_count}, record_count={record_count}, MAX_DIFF={MAX_DIFF}")
+                if record_count >= wav_count:
                     db_import_status = "ready"
-                elif diff <= MAX_DIFF:
+                elif wav_count - record_count <= MAX_DIFF:
                     db_import_status = "ready with losses"
                 else:
                     db_import_status = "pending"
+                logging.info(f"  -> db_import_status={db_import_status}")
 
             # Calculate status for each model
             model_statuses = {}
             for model in models:
-                model_id = model["model_id"]
+                model_id = int(model["model_id"])
                 model_name = model["name"]
 
                 if record_count == 0:
@@ -471,9 +473,9 @@ def create_report():
                     processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
                     # Calculate the expected processed count (processed + skipped)
                     expected_processed = processed_count + skipped_count
-                    diff = abs(record_count - expected_processed)
+                    diff = record_count - expected_processed
 
-                    if diff == 0:
+                    if diff <= 0:
                         model_statuses[model_name] = "ready"
                     elif diff <= MAX_DIFF:
                         model_statuses[model_name] = "ready with losses"
@@ -482,7 +484,7 @@ def create_report():
 
             # Log model status info
             for model in models:
-                model_id = model["model_id"]
+                model_id = int(model["model_id"])
                 model_name = model["name"]
                 processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
                 visible_count = visible_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
@@ -505,7 +507,7 @@ def create_report():
 
             # Add model-specific data
             for model in models:
-                model_id = model["model_id"]
+                model_id = int(model["model_id"])
                 model_name = model["name"]
                 processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
                 visible_count = visible_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
@@ -634,10 +636,17 @@ def create_report():
                 visible_col = f"{model_name}_visible"
                 status_col = f"{model_name}_status"
 
-                # Debug: Log values for each model
-                processed_value = row.get(processed_col, 0) if processed_col in row and pd.notna(row.get(processed_col)) else None
-                visible_value = row.get(visible_col, 0) if visible_col in row and pd.notna(row.get(visible_col)) else None
-                status_value = row.get(status_col, "") if status_col in row and row.get(status_col) else ""
+                # Extract values from pandas Series using proper indexing
+                try:
+                    processed_value = int(row[processed_col]) if processed_col in row.index and pd.notna(row[processed_col]) else None
+                    visible_value = int(row[visible_col]) if visible_col in row.index and pd.notna(row[visible_col]) else None
+                    status_value = row[status_col] if status_col in row.index and pd.notna(row[status_col]) else ""
+                except (KeyError, ValueError, TypeError) as e:
+                    logging.warning(f"Error extracting values for {model_name}: {e}")
+                    processed_value = None
+                    visible_value = None
+                    status_value = ""
+
                 logging.debug(f"Saving {row['prefix']} / {model_name}: processed={processed_value}, visible={visible_value}, status={status_value}")
 
                 insert_query = """
@@ -648,8 +657,7 @@ def create_report():
                 """
 
                 # Automatically set visible_in_ui based on model status
-                model_status = row.get(status_col, "") if status_col in row and row.get(status_col) else ""
-                visible_in_ui = model_status in ["ready", "ready with losses"]
+                visible_in_ui = status_value in ["ready", "ready with losses"]
 
                 values = (
                     report_date,
@@ -659,11 +667,11 @@ def create_report():
                     int(row['wav_count']) if pd.notna(row['wav_count']) else None,
                     int(row['record_count']) if pd.notna(row['record_count']) else None,
                     int(row['skipped_records']) if pd.notna(row['skipped_records']) else None,
-                    row['db_import'] if row['db_import'] else None,
+                    row['db_import'] if pd.notna(row['db_import']) else None,
                     model_name,
-                    int(processed_value) if processed_value is not None else None,
-                    int(visible_value) if visible_value is not None else None,
-                    model_status if model_status else None,
+                    processed_value,
+                    visible_value,
+                    status_value if status_value else None,
                     visible_in_ui
                 )
 

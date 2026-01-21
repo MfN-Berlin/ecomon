@@ -2,8 +2,19 @@
   <v-container fluid class="pa-0 ma-0">
     <v-row no-gutters>
       <v-col cols="12" class="pa-0">
-        <div class="report-date">
-          <strong>Report Date:</strong> {{ formatDate(reports[0]?.report_date) }}
+        <div class="report-header">
+          <div class="report-date">
+            <strong>Report Date:</strong> {{ formatDate(reports[0]?.report_date) }}
+          </div>
+          <v-btn
+            color="primary"
+            :loading="pending"
+            @click="refetch"
+            class="refresh-btn"
+          >
+            <v-icon start>mdi-refresh</v-icon>
+            Refresh Data
+          </v-btn>
         </div>
 
         <!-- Main Table (Non-Ultrasound) -->
@@ -195,10 +206,22 @@ const { data, pending, error, fetchReports } = useWorkflowReports();
 // Fetch reports on mount
 onMounted(() => {
   fetchReports();
+
+  // Set up automatic polling every 30 seconds
+  const pollInterval = setInterval(() => {
+    console.log('Auto-refreshing workflow reports...');
+    fetchReports();
+  }, 30000);
+
+  // Clean up interval on unmount
+  onUnmounted(() => {
+    clearInterval(pollInterval);
+  });
 });
 
 // Refresh function
 const refetch = () => {
+  console.log('Manual refresh triggered');
   fetchReports();
 };
 
@@ -209,7 +232,20 @@ const reports = computed(() => {
     return [];
   }
 
-  console.log('Reports:', data.value.workflow_reports.length);
+  console.log('📊 Reports fetched:', data.value.workflow_reports.length);
+
+  // Log details of first report
+  const firstReport = data.value.workflow_reports[0];
+  if (firstReport) {
+    console.log('📋 First report:', {
+      prefix: firstReport.prefix,
+      report_date: firstReport.report_date,
+      models: firstReport.models?.length || 0,
+      sample_model_status: firstReport.models?.[0]?.model_status,
+      avesecho_v1_3_0_status: firstReport['avesecho_v1.3.0_status'],
+      birdnetplus_status: firstReport['birdnetplus-v3.0_euna_1k_preview2_status']
+    });
+  }
 
   return data.value.workflow_reports;
 });
@@ -282,7 +318,21 @@ const availableModels = computed(() => {
       });
     }
   });
-  return Array.from(models).sort();
+  const modelArray = Array.from(models).sort();
+  console.log('🎯 Available models found:', modelArray);
+
+  // Debug: log what fields are available in first report for each model
+  if (reports.value.length > 0 && modelArray.length > 0) {
+    const firstReport = reports.value[0];
+    console.log('🔍 Checking first report for model fields:');
+    modelArray.forEach(modelName => {
+      const statusField = `${modelName}_status`;
+      const statusValue = firstReport[statusField];
+      console.log(`  - ${statusField}: ${statusValue}`);
+    });
+  }
+
+  return modelArray;
 });
 
 // Table headers - now includes dynamic model columns
@@ -416,6 +466,17 @@ const getStatusColor = (status: string): string => {
 .report-date {
   margin-bottom: 16px;
   font-size: 1.2rem;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.refresh-btn {
+  margin-left: 24px;
 }
 
 /* Legend styles */

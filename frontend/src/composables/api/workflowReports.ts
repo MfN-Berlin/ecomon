@@ -98,12 +98,15 @@ export const useWorkflowReports = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         },
         body: {
           query: `
             query GetLatestWorkflowReports {
               workflow_reports(
-                order_by: [{prefix: asc}, {report_date: desc}, {model_name: asc}]
+                order_by: [{report_date: desc}, {prefix: asc}, {model_name: asc}]
               ) {
                 id
                 report_date
@@ -130,14 +133,37 @@ export const useWorkflowReports = () => {
         console.error('GraphQL errors:', result.errors);
         error.value = result.errors[0]?.message || 'GraphQL query failed';
       } else {
-        // Transform data: group by prefix and get latest report per prefix
+        // Transform data: get all models for the latest report per prefix
         const reports = result.data?.workflow_reports || [];
 
-        // Create a map to store the latest report per prefix
-        const reportsByPrefix = new Map();
+        console.log('📥 Raw reports from API:', reports.length, 'records');
 
+        // First pass: find the latest report_date for each prefix
+        const latestDatePerPrefix = new Map<string, string>();
         for (const report of reports) {
           const key = report.prefix;
+          const currentLatest = latestDatePerPrefix.get(key);
+          if (!currentLatest || report.report_date > currentLatest) {
+            latestDatePerPrefix.set(key, report.report_date);
+          }
+        }
+
+        console.log('📅 Latest dates per prefix:', Object.fromEntries(latestDatePerPrefix));
+
+        // Second pass: filter to keep only reports from the latest report_date for each prefix
+        const filteredReports = reports.filter(report => {
+          const latestDate = latestDatePerPrefix.get(report.prefix);
+          return report.report_date === latestDate;
+        });
+
+        console.log('✅ Filtered to latest reports:', filteredReports.length, 'records');
+
+        // Third pass: group by prefix and flatten model data
+        const reportsByPrefix = new Map();
+
+        for (const report of filteredReports) {
+          const key = report.prefix;
+
           if (!reportsByPrefix.has(key)) {
             reportsByPrefix.set(key, {
               id: report.id,
@@ -154,9 +180,9 @@ export const useWorkflowReports = () => {
             });
           }
 
-          const prefixData = reportsByPrefix.get(key);
+          const reportData = reportsByPrefix.get(key);
           // Add model data
-          prefixData.models.push({
+          reportData.models.push({
             model_name: report.model_name,
             model_processed: report.model_processed,
             model_visible: report.model_visible,
@@ -181,6 +207,9 @@ export const useWorkflowReports = () => {
 
           return transformed;
         });
+
+        console.log('🎉 Transformed reports:', transformedReports.length);
+        console.log('📦 Sample transformed report:', transformedReports[0]);
 
         data.value = {
           workflow_reports: transformedReports
