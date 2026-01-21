@@ -508,7 +508,7 @@ class ModelInferenceLogs(Base):
 
 
 class ModelInferenceResults(Base):
-    __tablename__ = "model_inference_results"
+    __tablename__ = "model_inference_results_view"
     __table_args__ = (
         ForeignKeyConstraint(
             ["label_id"], ["labels.id"], ondelete="CASCADE", name="fk_label"
