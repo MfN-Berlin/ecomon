@@ -10780,12 +10780,13 @@ input timestamptz_comparison_exp {
 columns and relationships of "workflow_reports"
 """
 type workflow_reports {
-  birdid_medium: String
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   created_at: timestamp!
   db_import: String
   id: Int!
+  model_name: String!
+  model_processed: Int
+  model_status: String
+  model_visible: Int
   prefix: String!
   record_count: Int
   report_date: timestamp!
@@ -10823,9 +10824,9 @@ type workflow_reports_aggregate_fields {
 
 """aggregate avg on columns"""
 type workflow_reports_avg_fields {
-  birdid_medium_processed: Float
-  birdid_medium_visible: Float
   id: Float
+  model_processed: Float
+  model_visible: Float
   record_count: Float
   site_id: Float
   skipped_records: Float
@@ -10840,12 +10841,13 @@ input workflow_reports_bool_exp {
   _and: [workflow_reports_bool_exp!]
   _not: workflow_reports_bool_exp
   _or: [workflow_reports_bool_exp!]
-  birdid_medium: String_comparison_exp
-  birdid_medium_processed: Int_comparison_exp
-  birdid_medium_visible: Int_comparison_exp
   created_at: timestamp_comparison_exp
   db_import: String_comparison_exp
   id: Int_comparison_exp
+  model_name: String_comparison_exp
+  model_processed: Int_comparison_exp
+  model_status: String_comparison_exp
+  model_visible: Int_comparison_exp
   prefix: String_comparison_exp
   record_count: Int_comparison_exp
   report_date: timestamp_comparison_exp
@@ -10863,16 +10865,16 @@ enum workflow_reports_constraint {
   """
   unique or primary key constraint on columns "id"
   """
-  workflow_reports_pkey
+  workflow_reports_pkey1
 }
 
 """
 input type for incrementing numeric columns in table "workflow_reports"
 """
 input workflow_reports_inc_input {
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   id: Int
+  model_processed: Int
+  model_visible: Int
   record_count: Int
   site_id: Int
   skipped_records: Int
@@ -10884,12 +10886,13 @@ input workflow_reports_inc_input {
 input type for inserting data into table "workflow_reports"
 """
 input workflow_reports_insert_input {
-  birdid_medium: String
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   created_at: timestamp
   db_import: String
   id: Int
+  model_name: String
+  model_processed: Int
+  model_status: String
+  model_visible: Int
   prefix: String
   record_count: Int
   report_date: timestamp
@@ -10902,12 +10905,13 @@ input workflow_reports_insert_input {
 
 """aggregate max on columns"""
 type workflow_reports_max_fields {
-  birdid_medium: String
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   created_at: timestamp
   db_import: String
   id: Int
+  model_name: String
+  model_processed: Int
+  model_status: String
+  model_visible: Int
   prefix: String
   record_count: Int
   report_date: timestamp
@@ -10919,12 +10923,13 @@ type workflow_reports_max_fields {
 
 """aggregate min on columns"""
 type workflow_reports_min_fields {
-  birdid_medium: String
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   created_at: timestamp
   db_import: String
   id: Int
+  model_name: String
+  model_processed: Int
+  model_status: String
+  model_visible: Int
   prefix: String
   record_count: Int
   report_date: timestamp
@@ -10956,12 +10961,13 @@ input workflow_reports_on_conflict {
 
 """Ordering options when selecting data from "workflow_reports"."""
 input workflow_reports_order_by {
-  birdid_medium: order_by
-  birdid_medium_processed: order_by
-  birdid_medium_visible: order_by
   created_at: order_by
   db_import: order_by
   id: order_by
+  model_name: order_by
+  model_processed: order_by
+  model_status: order_by
+  model_visible: order_by
   prefix: order_by
   record_count: order_by
   report_date: order_by
@@ -10982,15 +10988,6 @@ select columns of table "workflow_reports"
 """
 enum workflow_reports_select_column {
   """column name"""
-  birdid_medium
-
-  """column name"""
-  birdid_medium_processed
-
-  """column name"""
-  birdid_medium_visible
-
-  """column name"""
   created_at
 
   """column name"""
@@ -10998,6 +10995,18 @@ enum workflow_reports_select_column {
 
   """column name"""
   id
+
+  """column name"""
+  model_name
+
+  """column name"""
+  model_processed
+
+  """column name"""
+  model_status
+
+  """column name"""
+  model_visible
 
   """column name"""
   prefix
@@ -11028,12 +11037,13 @@ enum workflow_reports_select_column {
 input type for updating data in table "workflow_reports"
 """
 input workflow_reports_set_input {
-  birdid_medium: String
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   created_at: timestamp
   db_import: String
   id: Int
+  model_name: String
+  model_processed: Int
+  model_status: String
+  model_visible: Int
   prefix: String
   record_count: Int
   report_date: timestamp
@@ -11046,9 +11056,9 @@ input workflow_reports_set_input {
 
 """aggregate stddev on columns"""
 type workflow_reports_stddev_fields {
-  birdid_medium_processed: Float
-  birdid_medium_visible: Float
   id: Float
+  model_processed: Float
+  model_visible: Float
   record_count: Float
   site_id: Float
   skipped_records: Float
@@ -11058,9 +11068,9 @@ type workflow_reports_stddev_fields {
 
 """aggregate stddev_pop on columns"""
 type workflow_reports_stddev_pop_fields {
-  birdid_medium_processed: Float
-  birdid_medium_visible: Float
   id: Float
+  model_processed: Float
+  model_visible: Float
   record_count: Float
   site_id: Float
   skipped_records: Float
@@ -11070,9 +11080,9 @@ type workflow_reports_stddev_pop_fields {
 
 """aggregate stddev_samp on columns"""
 type workflow_reports_stddev_samp_fields {
-  birdid_medium_processed: Float
-  birdid_medium_visible: Float
   id: Float
+  model_processed: Float
+  model_visible: Float
   record_count: Float
   site_id: Float
   skipped_records: Float
@@ -11093,12 +11103,13 @@ input workflow_reports_stream_cursor_input {
 
 """Initial value of the column from where the streaming should start"""
 input workflow_reports_stream_cursor_value_input {
-  birdid_medium: String
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   created_at: timestamp
   db_import: String
   id: Int
+  model_name: String
+  model_processed: Int
+  model_status: String
+  model_visible: Int
   prefix: String
   record_count: Int
   report_date: timestamp
@@ -11111,9 +11122,9 @@ input workflow_reports_stream_cursor_value_input {
 
 """aggregate sum on columns"""
 type workflow_reports_sum_fields {
-  birdid_medium_processed: Int
-  birdid_medium_visible: Int
   id: Int
+  model_processed: Int
+  model_visible: Int
   record_count: Int
   site_id: Int
   skipped_records: Int
@@ -11126,15 +11137,6 @@ update columns of table "workflow_reports"
 """
 enum workflow_reports_update_column {
   """column name"""
-  birdid_medium
-
-  """column name"""
-  birdid_medium_processed
-
-  """column name"""
-  birdid_medium_visible
-
-  """column name"""
   created_at
 
   """column name"""
@@ -11142,6 +11144,18 @@ enum workflow_reports_update_column {
 
   """column name"""
   id
+
+  """column name"""
+  model_name
+
+  """column name"""
+  model_processed
+
+  """column name"""
+  model_status
+
+  """column name"""
+  model_visible
 
   """column name"""
   prefix
@@ -11181,9 +11195,9 @@ input workflow_reports_updates {
 
 """aggregate var_pop on columns"""
 type workflow_reports_var_pop_fields {
-  birdid_medium_processed: Float
-  birdid_medium_visible: Float
   id: Float
+  model_processed: Float
+  model_visible: Float
   record_count: Float
   site_id: Float
   skipped_records: Float
@@ -11193,9 +11207,9 @@ type workflow_reports_var_pop_fields {
 
 """aggregate var_samp on columns"""
 type workflow_reports_var_samp_fields {
-  birdid_medium_processed: Float
-  birdid_medium_visible: Float
   id: Float
+  model_processed: Float
+  model_visible: Float
   record_count: Float
   site_id: Float
   skipped_records: Float
@@ -11205,9 +11219,9 @@ type workflow_reports_var_samp_fields {
 
 """aggregate variance on columns"""
 type workflow_reports_variance_fields {
-  birdid_medium_processed: Float
-  birdid_medium_visible: Float
   id: Float
+  model_processed: Float
+  model_visible: Float
   record_count: Float
   site_id: Float
   skipped_records: Float

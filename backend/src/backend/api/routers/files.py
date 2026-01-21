@@ -4,6 +4,7 @@ import os
 import io
 import re
 import mimetypes
+import logging
 
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +14,8 @@ from backend.api.database import get_db
 from backend.shared.models.db.models import Records, ModelInferenceResults
 from backend.api.settings import ApiSettings
 from backend.shared.record_snippet import generate_snippet_buffer, SupportedFormat
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -79,7 +82,9 @@ async def get_record_inference_result(
     # Build the full file path using the base data directory and the record's filepath.
     settings = ApiSettings()
     file_path = os.path.join(settings.base_data_directory, record.filepath)
+    logger.info(f"Checking file: {file_path} (base_dir: {settings.base_data_directory}, record.filepath: {record.filepath})")
     if not os.path.isfile(file_path):
+        logger.error(f"File not found: {file_path}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Audio file not found"
         )
