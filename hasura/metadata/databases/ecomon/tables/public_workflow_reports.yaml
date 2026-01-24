@@ -5,20 +5,21 @@ select_permissions:
   - role: user
     permission:
       columns:
-        - birdid_medium
-        - birdid_medium_processed
-        - birdid_medium_visible
-        - created_at
+        - wav_size_bytes
+        - visible_in_ui
         - db_import
-        - id
+        - model_name
+        - model_status
         - prefix
+        - id
+        - model_processed
+        - model_visible
         - record_count
-        - report_date
         - site_id
         - skipped_records
-        - visible_in_ui
         - wav_count
-        - wav_size_bytes
+        - created_at
+        - report_date
       filter: {}
       allow_aggregations: true
     comment: ""
