@@ -684,9 +684,12 @@ def create_report():
     # Task dependencies
     sites = get_sites_from_db()
     models = fetch_models()
-    create_report_table()
+    table_ready = create_report_table()
     last_report_dates = get_last_report_dates_by_directory()
     record_counts = get_record_counts_from_db(sites)
+
+    # Ensure table is created before querying it
+    table_ready >> last_report_dates
     processed_counts = get_processed_counts_by_model(sites, models)
     visible_counts = get_visible_counts_by_model(sites, models)
     skipped_counts = get_skipped_record_counts(sites)
