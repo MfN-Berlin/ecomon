@@ -327,21 +327,22 @@ def create_report():
         # Execute query and fetch results
         records = postgres_hook.get_records(query)
 
-        # Extract site_ids from metadata JSON
-        running_site_ids = set()
+        # Extract (site_id, model_id) tuples from metadata JSON
+        running_jobs = set()
         for row in records:
             if row and row[0]:
                 import json
                 try:
                     metadata = json.loads(row[0]) if isinstance(row[0], str) else row[0]
                     site_id = metadata.get('site_id')
-                    if site_id:
-                        running_site_ids.add(int(site_id))
+                    model_id = metadata.get('model_id')
+                    if site_id and model_id:
+                        running_jobs.add((int(site_id), int(model_id)))
                 except (json.JSONDecodeError, KeyError, ValueError) as e:
                     logging.warning(f"Could not parse metadata: {row[0]}, Error: {e}")
 
-        logging.info(f"Found {len(running_site_ids)} sites with running inference jobs: {running_site_ids}")
-        return running_site_ids
+        logging.info(f"Found {len(running_jobs)} running inference jobs (site_id, model_id): {running_jobs}")
+        return running_jobs
 
     @task
     def get_visible_counts_by_model(sites, models):
@@ -467,7 +468,7 @@ def create_report():
 
                 if record_count == 0:
                     model_statuses[model_name] = ""
-                elif site_id in running_jobs:
+                elif (site_id, model_id) in running_jobs:
                     model_statuses[model_name] = "running"
                 else:
                     processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
