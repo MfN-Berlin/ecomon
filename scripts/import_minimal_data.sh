@@ -70,7 +70,7 @@ copy_and_count() {
 copy_and_count models           models.csv           ", NULL '',  FORCE_NULL (segment_duration, step_duration, updated_at, additional_docker_arguments, additional_model_arguments, remarks)"
 
 # Other CSVs use literal 'null' for missing values
-copy_and_count locations        locations.csv        ", NULL 'null', FORCE_NULL (remarks, updated_at)"
+copy_and_count locations        locations.csv        ", NULL '', FORCE_NULL (remarks, updated_at)"
 copy_and_count sites            sites.csv            ", NULL 'null', FORCE_NULL (remarks, updated_at)"
 copy_and_count site_directories site_directories.csv ", NULL 'null'"
 
