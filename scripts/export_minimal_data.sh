@@ -32,7 +32,7 @@ DATE_FILTER=""
 if [[ -n "$START_DATE" ]] && [[ -n "$END_DATE" ]]; then
   START_DATE_SQL=$(convert_date "$START_DATE")
   END_DATE_SQL=$(convert_date "$END_DATE")
-  DATE_FILTER="AND record_datetime >= '$START_DATE_SQL' AND record_datetime < '$END_DATE_SQL'::date + interval '1 day'"
+  DATE_FILTER="AND record_datetime >= '$START_DATE_SQL' AND record_datetime <= '$END_DATE_SQL'"
   echo "Filtering records between $START_DATE and $END_DATE (inclusive)"
 elif [[ -n "$START_DATE" ]]; then
   START_DATE_SQL=$(convert_date "$START_DATE")
@@ -40,7 +40,7 @@ elif [[ -n "$START_DATE" ]]; then
   echo "Filtering records from $START_DATE onwards"
 elif [[ -n "$END_DATE" ]]; then
   END_DATE_SQL=$(convert_date "$END_DATE")
-  DATE_FILTER="AND record_datetime < '$END_DATE_SQL'::date + interval '1 day'"
+  DATE_FILTER="AND record_datetime <= '$END_DATE_SQL'"
   echo "Filtering records up to $END_DATE (inclusive)"
 fi
 
