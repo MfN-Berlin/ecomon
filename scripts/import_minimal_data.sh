@@ -67,12 +67,13 @@ copy_and_count() {
 
 # Import in dependency-safe order
 # models: CSV may have empty strings for integers -> use NULL '' and FORCE_NULL for nullable cols
-copy_and_count models           models.csv           ", NULL '',  FORCE_NULL (segment_duration, step_duration, updated_at, additional_docker_arguments, additional_model_arguments, remarks)"
+# Table models has changed
+# copy_and_count models           models.csv           ", NULL '',  FORCE_NULL (segment_duration, step_duration, updated_at, additional_docker_arguments, additional_model_arguments, remarks)"
 
-# Other CSVs use literal 'null' for missing values
+# Other CSVs use empty strings for missing values
 copy_and_count locations        locations.csv        ", NULL '', FORCE_NULL (remarks, updated_at)"
-copy_and_count sites            sites.csv            ", NULL 'null', FORCE_NULL (remarks, updated_at)"
-copy_and_count site_directories site_directories.csv ", NULL 'null'"
+copy_and_count sites            sites.csv            ", NULL '', FORCE_NULL (remarks, updated_at)"
+copy_and_count site_directories site_directories.csv ", NULL ''"
 
 # site_reports explicit columns (matching origin schema)
 echo "Loading site_reports from site_reports.csv..."
