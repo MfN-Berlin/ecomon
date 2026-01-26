@@ -72,7 +72,12 @@ copy_and_count() {
 
 # Other CSVs use empty strings for missing values
 copy_and_count locations        locations.csv        ", NULL '', FORCE_NULL (remarks, updated_at)"
-copy_and_count sites            sites.csv            ", NULL '', FORCE_NULL (remarks, updated_at)"
+
+# sites explicit columns to handle empty updated_at
+echo "Loading sites from sites.csv..."
+run_psql -c "\copy sites FROM '$EXPORT_DIR/sites.csv' WITH (FORMAT csv, HEADER true, NULL '', FORCE_NULL (updated_at, remarks))"
+run_psql -c "SELECT 'sites' AS table, COUNT(*) AS rows FROM sites"
+
 copy_and_count site_directories site_directories.csv ", NULL ''"
 
 # site_reports explicit columns (matching origin schema)
