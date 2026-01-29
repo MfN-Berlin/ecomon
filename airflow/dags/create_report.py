@@ -410,7 +410,7 @@ def create_report():
             logging.info("No aggregated data - no directories were processed")
             return []
 
-        MAX_DIFF = 10  # acceptable difference between status "ready" and "ready with losses" and "pending"
+        MAX_DIFF = 50  # acceptable difference between status "ready" and "ready with losses" and "pending"
 
         # Convert record_counts and processed_counts keys from strings to integers
         record_counts = {int(k): v for k, v in record_counts.items()}

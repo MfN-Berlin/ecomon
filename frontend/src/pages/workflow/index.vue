@@ -96,7 +96,7 @@
             </div>
             <div class="legend-item">
               <span class="legend-badge status-ready-losses">ready</span>
-              <span class="legend-text">Processing complete with minor discrepancies (≤10 files)</span>
+              <span class="legend-text">Some recordings could not be read or generated no inferences</span>
             </div>
             <div class="legend-item">
               <span class="legend-badge status-pending">pending</span>
