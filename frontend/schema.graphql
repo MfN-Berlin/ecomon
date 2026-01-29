@@ -2828,7 +2828,7 @@ columns and relationships of "model_inference_results_view"
 """
 type model_inference_results_view {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
 
   """An object relationship"""
@@ -2839,7 +2839,7 @@ type model_inference_results_view {
   model: models
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 """
@@ -2886,14 +2886,14 @@ input model_inference_results_view_bool_exp {
   _not: model_inference_results_view_bool_exp
   _or: [model_inference_results_view_bool_exp!]
   confidence: Float_comparison_exp
-  end_time: numeric_comparison_exp
+  end_time: Float_comparison_exp
   id: bigint_comparison_exp
   label: labels_bool_exp
   label_id: Int_comparison_exp
   model: models_bool_exp
   model_id: Int_comparison_exp
   record_id: bigint_comparison_exp
-  start_time: numeric_comparison_exp
+  start_time: Float_comparison_exp
 }
 
 """
@@ -2901,12 +2901,12 @@ input type for incrementing numeric columns in table "model_inference_results_vi
 """
 input model_inference_results_view_inc_input {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
   label_id: Int
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 """
@@ -2914,36 +2914,36 @@ input type for inserting data into table "model_inference_results_view"
 """
 input model_inference_results_view_insert_input {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
   label: labels_obj_rel_insert_input
   label_id: Int
   model: models_obj_rel_insert_input
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 """aggregate max on columns"""
 type model_inference_results_view_max_fields {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
   label_id: Int
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 """aggregate min on columns"""
 type model_inference_results_view_min_fields {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
   label_id: Int
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 """
@@ -3003,12 +3003,12 @@ input type for updating data in table "model_inference_results_view"
 """
 input model_inference_results_view_set_input {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
   label_id: Int
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 """aggregate stddev on columns"""
@@ -3058,23 +3058,23 @@ input model_inference_results_view_stream_cursor_input {
 """Initial value of the column from where the streaming should start"""
 input model_inference_results_view_stream_cursor_value_input {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
   label_id: Int
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 """aggregate sum on columns"""
 type model_inference_results_view_sum_fields {
   confidence: Float
-  end_time: numeric
+  end_time: Float
   id: bigint
   label_id: Int
   model_id: Int
   record_id: bigint
-  start_time: numeric
+  start_time: Float
 }
 
 input model_inference_results_view_updates {
