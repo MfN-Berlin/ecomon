@@ -47,7 +47,7 @@ compress_backup = NoTemplateBashOperator(
 set -euo pipefail
 
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
-BACKUP_BASENAME="basebackup_$TIMESTAMP"
+BACKUP_BASENAME="basebackup_$SUB_PATH_$TIMESTAMP"
 BACKUP_PATH="/backup/$BACKUP_BASENAME"
 BACKUP_DIR="/backup/backup_$TIMESTAMP"
 CHUNK_SIZE="{CHUNK_SIZE}"
