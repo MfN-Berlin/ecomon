@@ -23,6 +23,44 @@ ALTER USER my_user WITH PASSWORD 'new_password';
 
 5. Restart the containers. Now all containers should run.
 
+# Transfer specific records
+Instead of transfering the complete database, you can transfer specific records selected by site and date
+
+This will export the relevant data from into these csv files
+```
+locations.csv
+model_inference_logs.csv
+models.csv
+records.csv
+site_directories.csv
+site_reports.csv  sites.csv
+```
+
+## Usage
+
+Export all data (original behavior)
+
+`./export_minimal_data.sh container_name user password site_prefix`
+
+Export data from a specific date onwards
+
+`./export_minimal_data.sh container_name user password site_prefix ecomon 01.01.2025`
+
+Export data between two dates (inclusive)
+
+`./export_minimal_data.sh container_name user password site_prefix ecomon 01.01.2025 31.01.2025`
+
+Export data up to a specific date
+
+`./export_minimal_data.sh container_name user password site_prefix ecomon "" 31.12.2025`
+
+Then import the data into the new database:
+
+```
+docker cp  <export_dir> <container_name>:/tmp
+./import_minimal_data.sh <container_name> <db_user> <db_password> /tmp/<export_dir>
+```
+For more options see ./import_minimal_data.sh
 
 # Transfer inference data from another instance of ecomon
 
