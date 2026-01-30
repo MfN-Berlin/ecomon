@@ -3,18 +3,22 @@
     <v-row no-gutters>
       <v-col cols="12" class="pa-0">
         <div class="report-header">
-          <div class="report-date">
-            <strong>Report Date:</strong> {{ formatDate(reports[0]?.report_date) }}
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="report-date">
+              <strong>Report Date:</strong> {{ formatDate(reports[0]?.report_date) }}
+            </div>
+            <v-btn
+              variant="text"
+              size="small"
+              :loading="pending"
+              @click="refetch"
+              class="refresh-btn"
+              icon
+            >
+              <v-icon>mdi-refresh</v-icon>
+              <v-tooltip activator="parent" location="bottom">Refresh Data</v-tooltip>
+            </v-btn>
           </div>
-          <v-btn
-            color="primary"
-            :loading="pending"
-            @click="refetch"
-            class="refresh-btn"
-          >
-            <v-icon start>mdi-refresh</v-icon>
-            Refresh Data
-          </v-btn>
         </div>
 
         <!-- Main Table (Non-Ultrasound) -->
@@ -100,7 +104,7 @@
             </div>
             <div class="legend-item">
               <span class="legend-badge status-pending">pending</span>
-              <span class="legend-text">Processing not yet started</span>
+              <span class="legend-text">Processing not complete</span>
             </div>
             <div class="legend-item">
               <span class="legend-badge status-running">running</span>
@@ -463,20 +467,30 @@ const getStatusColor = (status: string): string => {
   color: gray;
 }
 
-.report-date {
-  margin-bottom: 16px;
-  font-size: 1.2rem;
-}
-
 .report-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  position: relative;
+}
+
+.report-date {
+  margin-bottom: 0;
+  font-size: 1.2rem;
 }
 
 .refresh-btn {
-  margin-left: 24px;
+  opacity: 0.7;
+  min-width: 32px !important;
+  height: 32px !important;
+  margin-left: auto; /* This pushes the button to the right */
+  margin-right: 8px; /* Adds space from the right edge */
+}
+
+.refresh-btn:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Legend styles */
