@@ -103,12 +103,16 @@
               <span class="legend-text">Some recordings could not be read or generated no inferences</span>
             </div>
             <div class="legend-item">
-              <span class="legend-badge status-pending">pending</span>
-              <span class="legend-text">Processing not complete</span>
+              <span class="legend-badge status-partial">partial</span>
+              <span class="legend-text">Processing started but incomplete</span>
             </div>
             <div class="legend-item">
               <span class="legend-badge status-running">running</span>
               <span class="legend-text">Processing currently in progress</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-badge status-pending">pending</span>
+              <span class="legend-text">Not yet started</span>
             </div>
           </div>
         </div>
@@ -393,6 +397,8 @@ const getStatusColor = (status: string): string => {
       return 'status-ready';
     case 'ready with losses':
       return 'status-ready-losses';
+    case 'partial':
+      return 'status-partial';
     case 'pending':
       return 'status-pending';
     case 'running':
@@ -433,7 +439,7 @@ const getStatusColor = (status: string): string => {
 /* Status styles */
 .status-ready {
   color: white;
-  background-color: green !important;
+  background-color: #2D7A2D !important; /* darker green - complete */
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 4px;
@@ -441,23 +447,31 @@ const getStatusColor = (status: string): string => {
 
 .status-ready-losses {
   color: black;
-  background-color: yellowgreen !important;
+  background-color: #90EE90 !important; /* light green - mostly complete */
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 4px;
 }
 
-.status-pending {
+.status-partial {
   color: white;
-  background-color: magenta !important;
+  background-color: #FF8C00 !important; /* orange - in progress */
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 4px;
 }
 
 .status-running {
+  color: white;
+  background-color: #8B4513 !important; /* dark red/brown - processing */
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-pending {
   color: black;
-  background-color: lightgray !important;
+  background-color: #A9A9A9 !important; /* grey - not started */
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 4px;

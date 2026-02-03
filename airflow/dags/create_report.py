@@ -448,8 +448,10 @@ def create_report():
 
             # Calculate DB_IMPORT status
             # If record_count >= wav_count, all files have been imported/processed -> "ready"
-            if record_count == 0:
+            if record_count == 0 and wav_count == 0:
                 db_import_status = ""
+            elif record_count == 0:
+                db_import_status = "pending"
             else:
                 logging.info(f"DB_IMPORT calculation for {data['prefix']}: wav_count={wav_count}, record_count={record_count}, MAX_DIFF={MAX_DIFF}")
                 if record_count >= wav_count:
@@ -457,7 +459,7 @@ def create_report():
                 elif wav_count - record_count <= MAX_DIFF:
                     db_import_status = "ready with losses"
                 else:
-                    db_import_status = "pending"
+                    db_import_status = "partial"
                 logging.info(f"  -> db_import_status={db_import_status}")
 
             # Calculate status for each model
@@ -476,12 +478,14 @@ def create_report():
                     expected_processed = processed_count + skipped_count
                     diff = record_count - expected_processed
 
-                    if diff <= 0:
+                    if processed_count == 0:
+                        model_statuses[model_name] = "pending"
+                    elif diff <= 0:
                         model_statuses[model_name] = "ready"
                     elif diff <= MAX_DIFF:
                         model_statuses[model_name] = "ready with losses"
                     else:
-                        model_statuses[model_name] = "pending"
+                        model_statuses[model_name] = "partial"
 
             # Log model status info
             for model in models:
