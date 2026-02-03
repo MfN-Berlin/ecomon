@@ -61,6 +61,11 @@ def model_inference_site_task(
     # workerId will be passed to the name of the Docker container where the model runs.
     workerId = job_id
 
+    # Initialize GPU index environment variable if using all GPUs
+    if settings.use_gpu.lower() == "all":
+        if 'CURRENT_GPU_IX' not in os.environ:
+            os.environ['CURRENT_GPU_IX'] = '0'
+
     try:
         # get model string
         model = (
