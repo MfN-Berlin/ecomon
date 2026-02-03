@@ -211,14 +211,21 @@ def model_inference_site_task(
                 "--removeTemporaryResultFile",
                 f"-chown {uid}:{gid}",
                 "--f pkl",
-                *(
-                    [f"--gpuIx {settings.use_gpu}"]
-                    if settings.use_gpu.lower() != "none"
-                    else []
-                ),  # gpu
                 f"-w {workerId}",
                 "-on output",
             ]
+
+            # Handle GPU selection (for 2 GPUs only for now)
+            if settings.use_gpu.lower() != "none":
+                if settings.use_gpu.lower() == "all":
+                    # Get or initialize the current GPU index from environment variable
+                    current_gpu_ix = int(os.environ.get('CURRENT_GPU_IX', '0'))
+                    command_parts.append(f"--gpuIx {current_gpu_ix}")
+                    # Toggle between 0 and 1 for the next run
+                    next_gpu_ix = 1 if current_gpu_ix == 0 else 0
+                    os.environ['CURRENT_GPU_IX'] = str(next_gpu_ix)
+                else:
+                    command_parts.append(f"--gpuIx {settings.use_gpu}")
 
             command = " ".join(command_parts)
 
