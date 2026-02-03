@@ -61,10 +61,8 @@ def model_inference_site_task(
     # workerId will be passed to the name of the Docker container where the model runs.
     workerId = job_id
 
-    # Initialize GPU index environment variable if using all GPUs
-    if settings.use_gpu.lower() == "all":
-        if 'CURRENT_GPU_IX' not in os.environ:
-            os.environ['CURRENT_GPU_IX'] = '0'
+    # Path to store the current GPU index
+    gpu_index_file = os.path.join("/tmp", "current_gpu_ix.txt")
 
     try:
         # get model string
@@ -220,15 +218,24 @@ def model_inference_site_task(
                 "-on output",
             ]
 
-            # Handle GPU selection (for 2 GPUs only for now)
+            # Handle GPU selection
             if settings.use_gpu.lower() != "none":
                 if settings.use_gpu.lower() == "all":
-                    # Get or initialize the current GPU index from environment variable
-                    current_gpu_ix = int(os.environ.get('CURRENT_GPU_IX', '0'))
+                    # Read the current GPU index from file
+                    if os.path.exists(gpu_index_file):
+                        with open(gpu_index_file, 'r') as f:
+                            current_gpu_ix = int(f.read().strip())
+                    else:
+                        current_gpu_ix = 0
+
                     command_parts.append(f"--gpuIx {current_gpu_ix}")
                     # Toggle between 0 and 1 for the next run
                     next_gpu_ix = 1 if current_gpu_ix == 0 else 0
-                    os.environ['CURRENT_GPU_IX'] = str(next_gpu_ix)
+                    # Write the next GPU index to file
+                    with open(gpu_index_file, 'w') as f:
+                        f.write(str(next_gpu_ix))
+                    # Log the current GPU index for debugging
+                    logger.info(f"Using GPU index: {current_gpu_ix}")
                 else:
                     command_parts.append(f"--gpuIx {settings.use_gpu}")
 
