@@ -4,8 +4,10 @@ from datetime import datetime, timedelta
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 import requests
 import json
+import os
 
-API_URL = "https://${DOMAIN}${SUB_PATH}/api/v1/graphql"
+API_URL = os.environ.get("API_URL", "").strip()
+API_VERIFY_SSL = os.environ.get("API_VERIFY_SSL", "true").strip().lower() not in {"0", "false", "no"}
 
 @dag(
     dag_id='run_inferences',
@@ -85,7 +87,7 @@ def run_inferences():
 
         # Get actual date range if available
         query = f"""
-        SELECT MIN(created_at), MAX(created_at)
+        SELECT MIN(record_datetime), MAX(record_datetime)
         FROM records
         WHERE site_id = {model_info['site_id']}
         """
@@ -114,9 +116,15 @@ def run_inferences():
             }
         }
 
+        logging.info("Inference payload: %s", json.dumps(payload, default=str))
+
         # Make the POST request
+        if not API_URL:
+            raise ValueError("API_URL is not set. Ensure it is provided via docker-compose.yaml environment variables.")
         headers = {"Content-Type": "application/json"}
-        response = requests.post(API_URL, json=payload, headers=headers)
+        if API_URL.startswith("https://") and not API_VERIFY_SSL:
+            logging.warning("API_VERIFY_SSL is disabled; TLS certificates will not be verified for API_URL.")
+        response = requests.post(API_URL, json=payload, headers=headers, verify=API_VERIFY_SSL)
 
         if response.status_code == 200:
             job_id = response.json().get('data', {}).get('data', {}).get('jobId')
