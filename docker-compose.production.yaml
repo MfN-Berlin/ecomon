@@ -290,6 +290,7 @@ services:
       - PG_DATABASE=ecomon
       - MAX_BACKUPS=${MAX_BACKUPS}
       - CHUNK_SIZE=${BACKUP_CHUNK_SIZE}
+      - DOMAIN=${DOMAIN}
       - SUB_PATH=${SUB_PATH}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
