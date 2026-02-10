@@ -292,6 +292,8 @@ services:
       - CHUNK_SIZE=${BACKUP_CHUNK_SIZE}
       - DOMAIN=${DOMAIN}
       - SUB_PATH=${SUB_PATH}
+      - API_URL=http://graphql-engine:8080/v1/graphql
+      - API_VERIFY_SSL=false
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./.env:/opt/airflow/airflow.env
