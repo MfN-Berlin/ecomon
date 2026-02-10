@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 default_args = {
@@ -106,6 +106,7 @@ echo "$TIMESTAMP" > /backup/current_timestamp.txt
 # Task 2: Compress and split backup into chunks
 compress_backup = NoTemplateBashOperator(
     task_id='compress_backup',
+    execution_timeout=timedelta(hours=6),
     bash_command=f"""
 set -euo pipefail
 
