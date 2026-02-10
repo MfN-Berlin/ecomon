@@ -338,10 +338,10 @@ def swap_tables():
 
 # Define the DAG
 with DAG(
-    'Populate_Max_Table_Test',
+    'Populate_Max_Table',
     default_args=default_args,
-    description='Test Populate max table from partitioned data using a temporary table',
-    schedule_interval='0 4 * * 1-5',  # Run at 4:00 AM, Monday to Friday
+    description='Populate max table from partitioned data using a temporary table',
+    schedule_interval='0 5 * * 1-5',  # Run at 5:00 AM, Monday to Friday
     start_date=datetime(2025, 12, 30),
     catchup=False,
 ) as dag:

@@ -5,43 +5,49 @@ Automation is controlled through Airflow. The Airflow UI can be accessed at: htt
 ## PostgreSQL Backup DAG
 
 ### Overview
-The `postgres_weekly_backup` DAG performs automated weekly backups of the PostgreSQL database with compression and rotation management.
+The `postgres_weekly_backup` DAG performs automated weekly SQL dumps of the PostgreSQL database with compression, chunking, verification, and rotation management.
 
 ### Schedule
-- **Frequency**: Weekly (every Sunday at 03:00 AM)
+- **Frequency**: Weekly (every Friday at 21:00)
 - **Max Active Runs**: 1 (prevents overlapping backup operations)
 
 ### Tasks
 
 #### 1. Create Backup (`create_backup`)
 - **Type**: BashOperator (NoTemplateBashOperator)
-- **Script**: `/opt/airflow/dags/scripts/backup_pg.sh`
 - **Function**:
-  - Executes `pg_basebackup` to create a physical backup of the PostgreSQL database
-  - Creates a timestamped backup directory: `basebackup_YYYY-MM-DD_HH-MM-SS`
-  - Stores the timestamp in `$PGBACKUP_PATH/current_timestamp.txt` for subsequent tasks
-  - Logs output to `$PGBACKUP_PATH/backup_YYYY-MM-DD_HH-MM-SS.log`
+  - Executes `pg_dump` to create a SQL dump of the PostgreSQL database
+  - Creates a timestamped dump directory: `sql_dump_YYYYMMDD_HHMMSS`
+  - Writes the dump file: `dump_YYYYMMDD_HHMMSS.sql`
+  - Stores the timestamp in `/backup/current_timestamp.txt` for subsequent tasks
 - **Configuration**:
-  - Uses environment variables: `PGBACKUP_PATH`, `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_PORT`, `PG_DATABASE`
-  - Backup location: `$PGBACKUP_PATH` directory on the host (mounted on `/backup` in the container)
-  - Format: Plain format with streaming WAL
+  - Uses environment variables: `PGHOST`, `PGPORT`, `PGUSER`, `PGDATABASE`
+  - Backup location: `/backup` directory in the container
+  - Format: Plain SQL dump
 
 #### 2. Compress Backup (`compress_backup`)
 - **Type**: BashOperator (NoTemplateBashOperator)
 - **Function**:
   - Reads the timestamp from the previous task
-  - Compresses the backup directory into a `.tar.gz` archive
-  - Removes the original uncompressed backup directory to save space
-- **Output**: `$PGBACKUP_PATH/basebackup_YYYY-MM-DD_HH-MM-SS.tar.gz`
+  - Creates a tar.gz stream of the SQL dump file and splits it into chunks
+  - Removes the original uncompressed SQL dump file to save space
+- **Output**: `/backup/backup_YYYYMMDD_HHMMSS/sql_dump_YYYYMMDD_HHMMSS.tar.gz.part0000` (and subsequent parts)
 
-#### 3. Rotate Backups (`rotate_backups`)
+#### 3. Verify Backup (`verify_backup`)
 - **Type**: BashOperator (NoTemplateBashOperator)
 - **Function**:
-  - Lists all existing backup archives sorted by date (newest first)
+  - Verifies backup directory exists and chunk files are present
+  - Ensures all chunks are non-empty and totals size across chunks
+  - Validates chunk sequence (basic completeness check)
+
+#### 4. Rotate Backups (`rotate_backups`)
+- **Type**: BashOperator (NoTemplateBashOperator)
+- **Function**:
+  - Lists all existing backup directories sorted by date (newest first)
   - Keeps only the `MAX_BACKUPS` most recent backups
   - Deletes older backups to manage disk space
   - Cleans up the temporary timestamp file
-- **Configuration**: Uses `MAX_BACKUPS` environment variable (default: 2)
+- **Configuration**: Uses `MAX_BACKUPS` environment variable (default: 3)
 
 #### Time required for backup
 The time required for running a backup is relatively long, so backups have to be planed, specifically the transfer to a safe location requires consideration.
@@ -239,3 +245,61 @@ Notes
 * First run behavior differs (rename vs merge)
 * Designed for model_id = 3 only (modify filter if needed)
 * Zero downtime: Main table always available for queries during processing
+
+
+============================
+
+## Run Inferences DAG
+Automates the process of running machine learning model inferences on data stored in a PostgreSQL database.
+
+### Overview
+The DAG runs at 9:00 PM on weekdays (Monday through Friday) and orchestrates the process of identifying which machine learning models need to run inferences, then triggers those inference jobs through an API.
+
+### Detailed Workflow
+1. check_report_table_exists: Verifies if the required workflow_reports table exists in the database
+
+Action: Executes a SQL query to check if the table exists in the public schema
+
+Output: Returns a boolean indicating whether the table exists
+
+2. get_models_needing_processing: Identifies which models need to run inferences
+
+Action: Queries the workflow_reports table for models with:
+Status of 'pending' or 'partial'
+The most recent report date
+Records that still need processing (calculated as record_count - model_processed - skipped_records)
+
+Filtering: Limits to 2 models per run (configurable)
+
+Output: Returns a list of dictionaries containing:
+* site_id: The site identifier
+* model_name: The name of the model
+* records_to_process: Number of records needing inference
+
+3. trigger_inference_job: Triggers inference jobs for each model that needs processing
+
+Action: For each model identified:
+Looks up the model ID from the models table
+Determines the date range for inference (default: last 6 months, or the actual date range of available data)
+Constructs a GraphQL mutation request
+Sends the request to an API endpoint (configured via API_URL environment variable)
+Handles the API response
+
+Output: Returns the job ID if successful, or None if failed
+Technical Details
+API Integration: Uses GraphQL to trigger inference jobs through a POST request
+Date Handling: Automatically determines the appropriate date range for each inference job
+Error Handling: Includes basic error handling for API requests and missing configurations
+
+Security: Respects SSL verification settings via API_VERIFY_SSL environment variable
+
+Logging: Provides detailed logging at each step of the process
+
+Purpose
+This DAG serves as an automated pipeline to:
+
+* Identify which machine learning models need to run on which data
+* Trigger those inference jobs through an API
+* Handle the scheduling and orchestration of these jobs
+
+The workflow is designed to be efficient by only processing models that have pending or partially completed work, and by limiting the number of models processed in each run.

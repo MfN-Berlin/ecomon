@@ -16,38 +16,81 @@ dag = DAG(
     'postgres_weekly_backup',
     default_args=default_args,
     description='Weekly PostgreSQL backup with split chunks and rotation',
-    schedule_interval='0 3 * * 0',  # Every Sunday at 03:00 AM
+    schedule_interval='0 21 * * 5',  # Every Friday at 21:00
     start_date=datetime(2025, 12, 1),
     catchup=False,
     max_active_runs=1,
 )
 
-
 class NoTemplateBashOperator(BashOperator):
     template_fields = ()  # disables Jinja templating
 
 # Read configuration from environment variables
-CHUNK_SIZE = os.getenv('BACKUP_CHUNK_SIZE', '1G') or '1G'
+CHUNK_SIZE = os.getenv('BACKUP_CHUNK_SIZE', '10G') or '10G'
 MAX_BACKUPS = int(os.getenv('MAX_BACKUPS') or '3')  # Handle empty string
 
 # Task 1: Create backup (read from file)
-with open("/opt/airflow/dags/scripts/backup_pg.sh") as f:
-    backup_script = f.read()
+# dump the complete directory
+#with open("/opt/airflow/dags/scripts/backup_pg.sh") as f:
+#    backup_script = f.read()
+#
+#create_backup = NoTemplateBashOperator(
+#    task_id='postgres_backup_task',
+#    bash_command=backup_script,
+#    dag=dag,
+#)
 
+# Task 1: Create SQL dump (replaces the physical backup)
 create_backup = NoTemplateBashOperator(
     task_id='postgres_backup_task',
-    bash_command=backup_script,
+    bash_command="""
+set -euo pipefail
+
+# Configuration - adjust these values as needed
+PGHOST="${PGHOST:-localhost}"
+PGPORT="${PGPORT:-5432}"
+PGUSER="${PGUSER:-postgres}"
+PGDATABASE="${PGDATABASE:-ecomon}"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/backup/sql_dump_$TIMESTAMP"
+BACKUP_FILE="$BACKUP_DIR/dump_$TIMESTAMP.sql"
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
+
+# Create SQL dump
+echo "Creating PostgreSQL SQL dump..."
+echo "Host: $PGHOST:$PGPORT"
+echo "Database: $PGDATABASE"
+echo "User: $PGUSER"
+echo "Output: $BACKUP_FILE"
+
+# Use pg_dump to create SQL dump
+pg_dump -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -F p -f "$BACKUP_FILE"
+
+# Verify dump was created
+if [ ! -f "$BACKUP_FILE" ]; then
+    echo "ERROR: SQL dump file was not created!"
+    exit 1
+fi
+
+echo "SQL dump created successfully: $BACKUP_FILE"
+echo "Size: $(du -h "$BACKUP_FILE" | cut -f1)"
+
+# Write timestamp for subsequent tasks
+echo "$TIMESTAMP" > /backup/current_timestamp.txt
+    """,
     dag=dag,
 )
 
-# Task 2: Compress and split backup into chunks
+# Update the compress_backup task to work with SQL dumps
 compress_backup = NoTemplateBashOperator(
     task_id='compress_backup',
     bash_command=f"""
 set -euo pipefail
 
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
-BACKUP_BASENAME="basebackup_$SUB_PATH_$TIMESTAMP"
+BACKUP_BASENAME="sql_dump_$TIMESTAMP"
 BACKUP_PATH="/backup/$BACKUP_BASENAME"
 BACKUP_DIR="/backup/backup_$TIMESTAMP"
 CHUNK_SIZE="{CHUNK_SIZE}"
@@ -56,13 +99,12 @@ CHUNK_SIZE="{CHUNK_SIZE}"
 echo "Creating backup directory: $BACKUP_DIR"
 mkdir -p "$BACKUP_DIR"
 
-echo "Compressing and splitting backup: $BACKUP_BASENAME (chunk size: $CHUNK_SIZE)"
-# Stream tar through gzip and split into chunks inside the backup directory
-# -a 4 ensures 4-digit suffix (0000-9999) for up to 10,000 parts
-tar -C "/backup" -cf - "$BACKUP_BASENAME" | gzip -1 | split -b $CHUNK_SIZE -d -a 4 - "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
+echo "Compressing and splitting SQL dump (chunk size: $CHUNK_SIZE)"
+# Create tar.gz stream and split into chunks
+tar -C "$BACKUP_PATH" -cf - "dump_$TIMESTAMP.sql" | gzip | split -b $CHUNK_SIZE -d -a 4 - "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
 
-echo "Removing uncompressed backup directory..."
-rm -rf "$BACKUP_PATH"
+echo "Removing uncompressed SQL dump..."
+rm -f "$BACKUP_PATH/dump_$TIMESTAMP.sql"
 
 # List created chunks
 echo "Backup compressed and split into:"
@@ -82,7 +124,7 @@ verify_backup = NoTemplateBashOperator(
 set -euo pipefail
 
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
-BACKUP_BASENAME="basebackup_$TIMESTAMP"
+BACKUP_BASENAME="sql_dump_$TIMESTAMP"
 BACKUP_DIR="/backup/backup_$TIMESTAMP"
 BACKUP_PREFIX="$BACKUP_DIR/$BACKUP_BASENAME"
 

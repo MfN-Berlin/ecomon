@@ -11,7 +11,7 @@ API_VERIFY_SSL = os.environ.get("API_VERIFY_SSL", "true").strip().lower() not in
 
 @dag(
     dag_id='run_inferences',
-    schedule=None,
+    schedule="0 21 * * 1-5",  # 21:00 on weekdays (Monday=1 through Friday=5)
     start_date=datetime(2025, 12, 1),
     catchup=False,
 )
@@ -53,7 +53,7 @@ def run_inferences():
         WHERE model_status IN ('pending', 'partial')
         AND report_date = (SELECT MAX(report_date) FROM workflow_reports)
         ORDER BY records_to_process DESC
-        LIMIT 1;  -- Number of models to process in this DAG run. Adjust based on desired workload.
+        LIMIT 2;  -- Number of models to process in this DAG run. Adjust based on desired workload.
         """
 
         records = postgres_hook.get_records(query)

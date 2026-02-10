@@ -10,31 +10,31 @@ QUICK RESTORATION
 ================================================================================
 
 Prerequisites:
-- PostgreSQL must be stopped before restoration
+- PostgreSQL service must be running for SQL restore
 - Sufficient disk space for decompression
-- Root or postgres user access
+- Database user with restore privileges (typically postgres)
 
 --------------------------------------------------------------------------------
 Method 1: Direct Restoration (Recommended)
 --------------------------------------------------------------------------------
 
-# Stop PostgreSQL
-systemctl stop postgresql
-# OR for Docker:
-# docker stop <postgres_container>
-
 # Set variables
 TIMESTAMP="TIMESTAMP_PLACEHOLDER"
-RESTORE_PATH="/var/lib/postgresql/data"
+DB_NAME="ecomon"
+DB_USER="postgres"
+DB_HOST="localhost"
+DB_PORT="5432"
 BACKUP_DIR="/backup/backup_${TIMESTAMP}"
+BACKUP_PREFIX="sql_dump_${TIMESTAMP}"
 
-# Backup existing data (safety measure)
-if [ -d "$RESTORE_PATH" ]; then
-    mv "$RESTORE_PATH" "${RESTORE_PATH}.backup_$(date +%Y%m%d_%H%M%S)"
-fi
+# Reassemble and extract dump
+cat "$BACKUP_DIR"/"$BACKUP_PREFIX".tar.gz.part* | gunzip | tar -xf -
 
-# Create restore directory
-mkdir -p "$RESTORE_PATH"
+# Restore into database (drops/creates not included in plain SQL by default)
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "dump_${TIMESTAMP}.sql"
+
+# Optional: remove extracted dump after restore
+rm -f "dump_${TIMESTAMP}.sql"
 
 # Restore from chunks
 cat "$BACKUP_DIR"/basebackup_${TIMESTAMP}.tar.gz.part* | gunzip | tar -xf - -C "$RESTORE_PATH" --strip-components=1
@@ -56,35 +56,34 @@ Method 2: Extract to Temporary Location First
 TEMP_DIR="/tmp/pg_restore_$(date +%s)"
 mkdir -p "$TEMP_DIR"
 
-cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -xf - -C "$TEMP_DIR"
+cat "$BACKUP_DIR"/sql_dump_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -xf - -C "$TEMP_DIR"
 
 # Inspect the backup
 ls -la "$TEMP_DIR"
 
-# Then copy to PostgreSQL data directory when ready
+# Then restore the SQL dump when ready
+# psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$TEMP_DIR/dump_TIMESTAMP_PLACEHOLDER.sql"
 
 --------------------------------------------------------------------------------
 Method 3: Verify Before Restoring
 --------------------------------------------------------------------------------
 
 # Test integrity without extracting
-cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | head -20
+cat "$BACKUP_DIR"/sql_dump_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | head -20
 
 # Count files in backup
-cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | wc -l
+cat "$BACKUP_DIR"/sql_dump_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | wc -l
 
 # Search for specific files
-cat "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | grep "postgresql.conf"
+cat "$BACKUP_DIR"/sql_dump_TIMESTAMP_PLACEHOLDER.tar.gz.part* | gunzip | tar -t | grep "dump_"
 
 ================================================================================
 BACKUP CONTENTS
 ================================================================================
 
 This backup contains:
-- PostgreSQL data directory
-- Configuration files (postgresql.conf, pg_hba.conf)
-- Database files and WAL logs
-- All schemas, tables, and data
+- A SQL dump file (plain text)
+- All schemas, tables, and data in the dumped database
 
 ================================================================================
 VERIFICATION
@@ -92,7 +91,7 @@ VERIFICATION
 
 To verify backup integrity:
 
-for chunk in "$BACKUP_DIR"/basebackup_TIMESTAMP_PLACEHOLDER.tar.gz.part*; do
+for chunk in "$BACKUP_DIR"/sql_dump_TIMESTAMP_PLACEHOLDER.tar.gz.part*; do
     echo "Checking $chunk..."
     gunzip -t "$chunk" && echo "OK" || echo "FAILED"
 done
@@ -110,25 +109,19 @@ Solution: Check available space
     df -h /var/lib/postgresql
     du -sh "$BACKUP_DIR"
 
-Issue: PostgreSQL Won't Start After Restore
-Solution: Check PostgreSQL logs
-    journalctl -u postgresql -n 50
-    # OR for Docker:
-    # docker logs <postgres_container>
-
-    # Verify permissions
-    ls -la /var/lib/postgresql/data
-    # Should be owned by postgres:postgres with 700 permissions
+Issue: Restore Fails with Permission Errors
+Solution: Use a superuser or a user with restore privileges
+    psql -U postgres ...
 
 ================================================================================
 IMPORTANT NOTES
 ================================================================================
 
 - ALWAYS backup current data before restoring
-- STOP PostgreSQL before restoration to avoid data corruption
+- Keep PostgreSQL running during SQL restore
 - VERIFY backup integrity before restoring to production
 - TEST restoration in a non-production environment first
-- This backup was created using pg_basebackup and includes all databases
+- This backup was created using pg_dump and includes only the dumped database
 
 ================================================================================
 SUPPORT
@@ -142,5 +135,5 @@ For issues or questions:
 
 --------------------------------------------------------------------------------
 Backup created by: Airflow DAG postgres_weekly_backup
-Backup method: pg_basebackup with compression and chunking
+Backup method: pg_dump with compression and chunking
 ================================================================================
