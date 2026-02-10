@@ -3,7 +3,6 @@ from airflow.operators.bash import BashOperator
 from datetime import datetime
 import os
 
-
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -28,49 +27,70 @@ class NoTemplateBashOperator(BashOperator):
 # Read configuration from environment variables
 CHUNK_SIZE = os.getenv('BACKUP_CHUNK_SIZE', '10G') or '10G'
 MAX_BACKUPS = int(os.getenv('MAX_BACKUPS') or '3')  # Handle empty string
+SUB_PATH = os.getenv('SUB_PATH', '').strip('/').replace('/', '_')
 
-# Task 1: Create backup (read from file)
-# dump the complete directory
-#with open("/opt/airflow/dags/scripts/backup_pg.sh") as f:
-#    backup_script = f.read()
-#
-#create_backup = NoTemplateBashOperator(
-#    task_id='postgres_backup_task',
-#    bash_command=backup_script,
-#    dag=dag,
-#)
-
-# Task 1: Create SQL dump (replaces the physical backup)
+# Task 1: Create SQL dump with improved error handling
 create_backup = NoTemplateBashOperator(
     task_id='postgres_backup_task',
     bash_command="""
 set -euo pipefail
 
-# Configuration - adjust these values as needed
-PGHOST="${PGHOST:-localhost}"
-PGPORT="${PGPORT:-5432}"
-PGUSER="${PGUSER:-postgres}"
-PGDATABASE="${PGDATABASE:-ecomon}"
+# Configuration
+PGHOST="${PG_HOST:-db}"
+PGPORT="${PG_PORT:-5432}"
+PGUSER="${PG_USER:-${DB_USERNAME:-postgres}}"
+PGDATABASE="${PG_DATABASE:-ecomon}"
+PGPASSWORD="${PG_PASSWORD:-${DB_PASSWORD:-}}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/backup/sql_dump_$TIMESTAMP"
 BACKUP_FILE="$BACKUP_DIR/dump_$TIMESTAMP.sql"
+ERROR_FILE="$BACKUP_DIR/error.log"
 
 # Create backup directory
 mkdir -p "$BACKUP_DIR"
 
-# Create SQL dump
+# Create SQL dump with detailed error handling
 echo "Creating PostgreSQL SQL dump..."
 echo "Host: $PGHOST:$PGPORT"
 echo "Database: $PGDATABASE"
 echo "User: $PGUSER"
 echo "Output: $BACKUP_FILE"
 
-# Use pg_dump to create SQL dump
-pg_dump -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -F p -f "$BACKUP_FILE"
+if [ -z "$PGPASSWORD" ]; then
+    echo "WARNING: PGPASSWORD not set, authentication may fail"
+fi
 
-# Verify dump was created
-if [ ! -f "$BACKUP_FILE" ]; then
-    echo "ERROR: SQL dump file was not created!"
+# Test database connection first
+echo "Testing database connection..."
+if ! PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -c "SELECT 1" >/dev/null 2>"$ERROR_FILE"; then
+    echo "ERROR: Database connection failed"
+    echo "Error details:"
+    cat "$ERROR_FILE"
+    exit 1
+fi
+
+# Use pg_dump with password environment variable
+export PGPASSWORD
+echo "Running pg_dump command..."
+if ! pg_dump -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" \
+    --no-password \
+    -F p \
+    -f "$BACKUP_FILE" 2>"$ERROR_FILE"; then
+    echo "ERROR: pg_dump failed"
+    echo "Error details:"
+    cat "$ERROR_FILE"
+    echo "Environment variables:"
+    echo "PGHOST=$PGHOST"
+    echo "PGPORT=$PGPORT"
+    echo "PGUSER=$PGUSER"
+    echo "PGDATABASE=$PGDATABASE"
+    echo "PGPASSWORD is set: $[ -n "$PGPASSWORD" ] && echo "yes" || echo "no""
+    exit 1
+fi
+
+# Verify dump was created and has content
+if [ ! -s "$BACKUP_FILE" ]; then
+    echo "ERROR: SQL dump file is empty or was not created!"
     exit 1
 fi
 
@@ -83,28 +103,47 @@ echo "$TIMESTAMP" > /backup/current_timestamp.txt
     dag=dag,
 )
 
-# Update the compress_backup task to work with SQL dumps
+# Task 2: Compress and split backup into chunks
 compress_backup = NoTemplateBashOperator(
     task_id='compress_backup',
     bash_command=f"""
 set -euo pipefail
 
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
-BACKUP_BASENAME="sql_dump_$TIMESTAMP"
-BACKUP_PATH="/backup/$BACKUP_BASENAME"
+BACKUP_BASENAME="sql_dump{('_' + SUB_PATH) if SUB_PATH else ''}_$TIMESTAMP"
+SOURCE_DIR="/backup/sql_dump_$TIMESTAMP"
 BACKUP_DIR="/backup/backup_$TIMESTAMP"
 CHUNK_SIZE="{CHUNK_SIZE}"
+
+# Verify the SQL dump exists before trying to compress it
+if [ ! -d "$SOURCE_DIR" ]; then
+    echo "ERROR: Source directory not found at $SOURCE_DIR"
+    echo "Available directories in /backup:"
+    ls -la /backup
+    exit 1
+fi
+
+if [ ! -f "$SOURCE_DIR/dump_$TIMESTAMP.sql" ]; then
+    echo "ERROR: SQL dump file not found at $SOURCE_DIR/dump_$TIMESTAMP.sql"
+    echo "Files in $SOURCE_DIR:"
+    ls -la "$SOURCE_DIR"
+    exit 1
+fi
 
 # Create directory for this backup
 echo "Creating backup directory: $BACKUP_DIR"
 mkdir -p "$BACKUP_DIR"
 
 echo "Compressing and splitting SQL dump (chunk size: $CHUNK_SIZE)"
-# Create tar.gz stream and split into chunks
-tar -C "$BACKUP_PATH" -cf - "dump_$TIMESTAMP.sql" | gzip | split -b $CHUNK_SIZE -d -a 4 - "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
+# Create tar.gz file first, then split it to avoid pipe issues
+cd "$SOURCE_DIR" && tar -czf "../$BACKUP_BASENAME.tar.gz" "dump_$TIMESTAMP.sql"
+cd /backup && split -b "$CHUNK_SIZE" -d -a 4 "$BACKUP_BASENAME.tar.gz" "$BACKUP_DIR/$BACKUP_BASENAME.tar.gz.part"
+
+echo "Removing temporary tar.gz file..."
+rm -f "/backup/$BACKUP_BASENAME.tar.gz"
 
 echo "Removing uncompressed SQL dump..."
-rm -f "$BACKUP_PATH/dump_$TIMESTAMP.sql"
+rm -rf "$SOURCE_DIR"
 
 # List created chunks
 echo "Backup compressed and split into:"
@@ -117,14 +156,14 @@ echo "Total chunks created: $CHUNK_COUNT"
     dag=dag,
 )
 
-# Task 3: Verify backup integrity (no decompression)
+# Task 3: Verify backup integrity
 verify_backup = NoTemplateBashOperator(
     task_id='verify_backup',
-    bash_command="""
+    bash_command=f"""
 set -euo pipefail
 
 TIMESTAMP=$(cat /backup/current_timestamp.txt)
-BACKUP_BASENAME="sql_dump_$TIMESTAMP"
+BACKUP_BASENAME="sql_dump{('_' + SUB_PATH) if SUB_PATH else ''}_$TIMESTAMP"
 BACKUP_DIR="/backup/backup_$TIMESTAMP"
 BACKUP_PREFIX="$BACKUP_DIR/$BACKUP_BASENAME"
 
@@ -141,16 +180,19 @@ fi
 echo "✓ Backup directory exists"
 
 # Check 1: Chunks exist
-CHUNKS=($BACKUP_PREFIX.tar.gz.part*)
-if [ ${#CHUNKS[@]} -eq 0 ]; then
+CHUNKS=("$BACKUP_PREFIX".tar.gz.part*)
+if [ "${{#CHUNKS[@]}}" -eq 0 ]; then
     echo "ERROR: No backup chunks found!"
+    echo "Looking for: $BACKUP_PREFIX.tar.gz.part*"
+    echo "Files in $BACKUP_DIR:"
+    ls -la "$BACKUP_DIR" || true
     exit 1
 fi
-echo "✓ Found ${#CHUNKS[@]} backup chunks"
+echo "✓ Found ${{#CHUNKS[@]}} backup chunks"
 
 # Check 2: All chunks are not empty and calculate total size
 TOTAL_SIZE=0
-for chunk in "${CHUNKS[@]}"; do
+for chunk in "${{CHUNKS[@]}}"; do
     if [ ! -f "$chunk" ]; then
         echo "ERROR: Chunk $chunk does not exist!"
         exit 1
@@ -164,14 +206,15 @@ for chunk in "${CHUNKS[@]}"; do
     TOTAL_SIZE=$((TOTAL_SIZE + FILE_SIZE))
 done
 echo "✓ All chunks are non-empty"
-echo "✓ Total backup size: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE 2>/dev/null || echo ${TOTAL_SIZE} bytes)"
+echo "✓ Total backup size: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE 2>/dev/null || echo $TOTAL_SIZE bytes)"
 
 # Check 4: Verify file naming sequence
 echo "Verifying chunk sequence..."
-EXPECTED_COUNT=${#CHUNKS[@]}
-ACTUAL_SEQUENCE=$(ls -1 "$BACKUP_PREFIX.tar.gz.part"* | wc -l)
+EXPECTED_COUNT=${{#CHUNKS[@]}}
+ACTUAL_SEQUENCE=$(ls -1 "$BACKUP_PREFIX".tar.gz.part* 2>/dev/null | wc -l)
 if [ "$EXPECTED_COUNT" -ne "$ACTUAL_SEQUENCE" ]; then
     echo "WARNING: Chunk sequence may have gaps"
+    echo "Expected: $EXPECTED_COUNT, Found: $ACTUAL_SEQUENCE"
 else
     echo "✓ Chunk sequence is complete"
 fi
@@ -180,13 +223,9 @@ echo ""
 echo "=== Verification Summary ==="
 echo "Backup directory: $BACKUP_DIR"
 echo "Backup prefix: $BACKUP_PREFIX"
-echo "Chunks: ${#CHUNKS[@]}"
-echo "Total size: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE 2>/dev/null || echo ${TOTAL_SIZE} bytes)"
+echo "Chunks: ${{#CHUNKS[@]}}"
+echo "Total size: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE 2>/dev/null || echo $TOTAL_SIZE bytes)"
 echo "Status: ✓ All integrity checks passed"
-echo ""
-echo "Note: Full content verification skipped to save time."
-echo "To verify archive contents, run:"
-echo "  cat $BACKUP_PREFIX.tar.gz.part* | gunzip | tar -t | head"
     """,
     dag=dag,
 )
@@ -218,8 +257,8 @@ if [ "$COUNT" -eq 0 ]; then
     exit 0
 fi
 
-# Sort directories by timestamp (newest first) - extract timestamp and sort numerically
-IFS=$'\n' ALL_BACKUP_DIRS=($(printf '%s\n' "${{ALL_BACKUP_DIRS[@]}}" | sort -t_ -k2 -rn))
+# Sort directories by timestamp (newest first)
+IFS=$'\\n' ALL_BACKUP_DIRS=($(printf '%s\\n' "${{ALL_BACKUP_DIRS[@]}}" | sort -t_ -k2 -rn))
 unset IFS
 
 echo "Backup directories (sorted newest first):"
