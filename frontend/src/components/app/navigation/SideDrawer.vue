@@ -23,10 +23,6 @@ const getAirflowUrl = () => {
     // Production case: apiBaseUrl is set, use it directly
     return `${apiBaseUrl}/airflow/home`;
   } else {
-    // Development case: apiBaseUrl not set, construct URL manually
-    const devDomain = 'localhost:3000'; // Default dev domain
-    const devSubPath = '/ecomon_validate'; // Default dev subpath
-
     // Try to get the actual subpath from the current window location
     const currentPath = window.location.pathname;
     const pathParts = currentPath.split('/').filter(Boolean);
