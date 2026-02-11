@@ -1,39 +1,11 @@
-<!--
-  SideDrawer.vue
-
-  Description:
-    Main navigation drawer component that provides primary navigation for the application.
-    Features a collapsible sidebar with hierarchical menu structure supporting both
-    regular navigation items and grouped sub-items.
-
-  Key Functionalities:
-    • Primary Navigation: Direct links to main application sections
-    • Hierarchical Menu: Supports grouped sub-items with expandable sections
-    • State Management: Integrates with UI store for drawer visibility control
-    • Responsive Design: Collapsible drawer that adapts to different screen sizes
-    • Brand Display: Shows application logo at the top
-
-  Navigation Structure:
-    • Home - Dashboard/landing page
-    • Jobs - Job management and monitoring
-    • Sites - Site configuration and management
-    • Locations - Geographic location management
-    • Models - AI/ML model management
-    • Data Tables - Grouped section containing:
-      - Records - Data record management
-      - Labels - Classification label management
-
-  Integration:
-    • Uses Pinia store (useUiStore) for state management
-    • Integrates with Nuxt routing for navigation
-    • Supports both direct routes and custom actions
--->
 <script lang="ts" setup>
 import { ref } from "vue";
+import { useRuntimeConfig } from '#imports';
 
 import { useUiStore } from "~/stores/ui";
 
 const uiStore = useUiStore();
+const config = useRuntimeConfig();
 
 export type NavigationPoint = {
   icon?: string;
@@ -42,6 +14,28 @@ export type NavigationPoint = {
   action?: () => void;
   childs?: NavigationPoint[];
 };
+
+const getAirflowUrl = () => {
+  // Try to get apiBaseUrl from runtime config
+  const apiBaseUrl = config.public?.apiBaseUrl;
+
+  if (apiBaseUrl) {
+    // Production case: apiBaseUrl is set, use it directly
+    return `${apiBaseUrl}/airflow/home`;
+  } else {
+    // Development case: apiBaseUrl not set, construct URL manually
+    const devDomain = 'localhost:3000'; // Default dev domain
+    const devSubPath = '/ecomon_validate'; // Default dev subpath
+
+    // Try to get the actual subpath from the current window location
+    const currentPath = window.location.pathname;
+    const pathParts = currentPath.split('/').filter(Boolean);
+    const detectedSubPath = pathParts.length > 0 ? `/${pathParts[0]}` : devSubPath;
+
+    return `http://localhost${detectedSubPath}/airflow/home`;
+  }
+};
+
 const links: NavigationPoint[] = [
   { icon: "mdi-home", text: "Home", route: "/" },
   { icon: "mdi-access-point-network", text: "Sites", route: "/sites" },
@@ -64,6 +58,17 @@ const links: NavigationPoint[] = [
       { icon: "mdi-play-circle-outline", text: "Jobs", route: "/jobs" }
     ]
   },
+  {
+    icon: "mdi-cog-outline",
+    text: "Admin",
+    childs: [
+      {
+        icon: "mdi-robot-outline",
+        text: "Automation",
+        route: getAirflowUrl()
+      }
+    ]
+  }
 ];
 
 const drawerVisible = computed({
@@ -74,8 +79,8 @@ const drawerVisible = computed({
     uiStore.setDrawerVisibility(val);
   }
 });
-// Watch for changes in the drawerVisible property and update the store
 </script>
+
 <template>
   <v-navigation-drawer v-model="drawerVisible" :width="230">
     <v-sheet class="px-8 py-2">
@@ -85,34 +90,38 @@ const drawerVisible = computed({
     <v-divider></v-divider>
 
     <v-list color="primary" density="compact" nav>
-      <nuxt-link to="route" custom>
-        <template v-for="{ icon, text, route, childs, action } in links" :key="route">
-          <v-list-group v-if="childs" :value="text">
-            <template v-slot:activator="{ props }">
-              <v-list-item v-bind="props" :prepend-icon="icon" :title="text"></v-list-item>
+      <template v-for="{ icon, text, route, childs, action } in links" :key="route">
+        <v-list-group v-if="childs" :value="text">
+          <template v-slot:activator="{ props }">
+            <v-list-item v-bind="props" :prepend-icon="icon" :title="text"></v-list-item>
+          </template>
+          <v-list-item
+            v-for="{ icon: subIcon, text: subText, route: subRoute, action: childAction } in childs"
+            :key="subRoute"
+            :to="subText !== 'Automation' ? subRoute : undefined"
+            :href="subText === 'Automation' ? subRoute : undefined"
+            link
+            :target="subText === 'Automation' ? '_blank' : undefined"
+            @click="childAction"
+          >
+            <template v-if="subIcon" v-slot:prepend>
+              <v-icon>{{ subIcon }}</v-icon>
             </template>
-            <v-list-item
-              v-for="{ icon: subIcon, text: subText, route: subRoute, action: childAction } in childs"
-              :key="subRoute"
-              :to="subRoute"
-              link
-              @click="childAction"
-            >
-              <template v-if="subIcon" v-slot:prepend>
-                <v-icon>{{ subIcon }}</v-icon>
-              </template>
-              <v-list-item-title>{{ subText }}</v-list-item-title>
-            </v-list-item>
-          </v-list-group>
-          <v-list-item v-else :to="route" link class="p-0" @click="action">
-            <template v-slot:prepend>
-              <v-icon>{{ icon }}</v-icon>
-            </template>
-
-            <v-list-item-title>{{ text }}</v-list-item-title>
+            <v-list-item-title>
+              {{ subText }}
+              <v-tooltip activator="parent" location="end" v-if="subText === 'Automation'">
+                requires additional login
+              </v-tooltip>
+            </v-list-item-title>
           </v-list-item>
-        </template>
-      </nuxt-link>
+        </v-list-group>
+        <v-list-item v-else :to="route" link class="p-0" @click="action">
+          <template v-slot:prepend>
+            <v-icon>{{ icon }}</v-icon>
+          </template>
+          <v-list-item-title>{{ text }}</v-list-item-title>
+        </v-list-item>
+      </template>
     </v-list>
     <v-divider></v-divider>
 
