@@ -15,7 +15,7 @@ dag = DAG(
     'postgres_weekly_backup',
     default_args=default_args,
     description='Weekly PostgreSQL backup with split chunks and rotation',
-    schedule_interval='0 21 * * 5',  # Every Friday at 21:00
+    schedule_interval='0 21 * * 6',  # Every Saturday at 21:00
     start_date=datetime(2025, 12, 1),
     catchup=False,
     max_active_runs=1,
