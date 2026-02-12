@@ -130,33 +130,84 @@ def should_process_partition(postgres_hook, partition_name, current_row_count, p
 
 # Function to process a single partition
 def process_partition_data(postgres_hook, partition_name, results_temp_table, statement_timeout):
-    """Process the data for a single partition"""
+    """Optimized process for large partitions with batch processing and parallelism"""
     migration_query = f"""
     SET statement_timeout = '{statement_timeout}s';
-    SET work_mem = '1GB';
-    SET temp_buffers = '512MB';
+    SET work_mem = '4GB';
+    SET maintenance_work_mem = '4GB';
+    SET max_parallel_workers_per_gather = 4;
+    SET parallel_tuple_cost = 0.1;
+    SET parallel_setup_cost = 100;
+    SET max_parallel_workers = 8;
+    SET effective_cache_size = '16GB';
 
     BEGIN;
 
-    WITH ranked_rows AS (
-        SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
-               ROW_NUMBER() OVER (
-                   PARTITION BY record_id, label_id, model_id
-                   ORDER BY confidence DESC, id ASC
-               ) AS rank
-        FROM {partition_name}
-    )
-    INSERT INTO {results_temp_table}
-    (record_id, label_id, model_id, id, start_time, end_time, confidence)
-    SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
-    FROM ranked_rows
-    WHERE rank = 1  -- Select only the row with the highest confidence
-    ON CONFLICT (record_id, label_id, model_id)
-    DO UPDATE SET
-        id = EXCLUDED.id,
-        start_time = EXCLUDED.start_time,
-        end_time = EXCLUDED.end_time,
-        confidence = EXCLUDED.confidence;
+    -- Create a temporary table to store batch IDs
+    CREATE TEMP TABLE IF NOT EXISTS batch_ids AS
+    SELECT id FROM {partition_name} ORDER BY id;
+
+    -- Create index on the temp table for faster batch selection
+    CREATE INDEX IF NOT EXISTS idx_batch_ids ON batch_ids(id);
+
+    -- Process in batches of 1 million rows
+    DO $$
+    DECLARE
+        batch_size INT := 1000000;
+        total_rows BIGINT;
+        batch_count INT;
+        min_id BIGINT;
+        max_id BIGINT;
+        rows_processed BIGINT := 0;
+    BEGIN
+        -- Get total rows and calculate batch count
+        SELECT COUNT(*) INTO total_rows FROM batch_ids;
+        SELECT MIN(id), MAX(id) INTO min_id, max_id FROM batch_ids;
+        batch_count := CEIL(total_rows::FLOAT / batch_size);
+
+        RAISE NOTICE 'Processing % with % rows in % batches', '{partition_name}', total_rows, batch_count;
+
+        FOR i IN 0..(batch_count-1) LOOP
+            RAISE NOTICE 'Processing batch % of % (rows % to %)', i+1, batch_count,
+                         i*batch_size, LEAST((i+1)*batch_size, total_rows);
+
+            WITH batch_data AS (
+                SELECT t.*
+                FROM {partition_name} t
+                JOIN batch_ids b ON t.id = b.id
+                WHERE b.id BETWEEN min_id + (i * batch_size)
+                               AND min_id + ((i+1) * batch_size) - 1
+            ),
+            ranked_rows AS (
+                SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY record_id, label_id, model_id
+                           ORDER BY confidence DESC, id ASC
+                       ) AS rank
+                FROM batch_data
+            )
+            INSERT INTO {results_temp_table}
+            (record_id, label_id, model_id, id, start_time, end_time, confidence)
+            SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
+            FROM ranked_rows
+            WHERE rank = 1
+            ON CONFLICT (record_id, label_id, model_id)
+            DO UPDATE SET
+                id = EXCLUDED.id,
+                start_time = EXCLUDED.start_time,
+                end_time = EXCLUDED.end_time,
+                confidence = EXCLUDED.confidence;
+
+            GET DIAGNOSTICS rows_processed = ROW_COUNT;
+            RAISE NOTICE 'Processed % rows in batch %', rows_processed, i+1;
+
+            COMMIT;
+            BEGIN;
+        END LOOP;
+
+        -- Clean up
+        DROP TABLE batch_ids;
+    END $$;
 
     COMMIT;
     """
