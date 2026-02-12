@@ -5,9 +5,9 @@
 # See docs/automation.md for details
 #**************************************
 
-from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.decorators import dag
 from datetime import datetime, timedelta
 
 # Default arguments for the DAG
@@ -50,13 +50,13 @@ def ensure_and_clear_tables():
         );
 
         -- Create indexes if they don't exist
-        CREATE INDEX IF NOT EXISTS idx_mir_max_conf_compound
+        CREATE INDEX IF NOT EXISTS idx_mir_max_conf_temp_compound
         ON model_inference_results_max_confidence_temp (model_id, label_id, confidence DESC, record_id);
 
-        CREATE INDEX IF NOT EXISTS idx_mir_max_conf_label
+        CREATE INDEX IF NOT EXISTS idx_mir_max_conf_temp_label
         ON model_inference_results_max_confidence_temp (label_id, confidence DESC);
 
-        CREATE INDEX IF NOT EXISTS idx_mir_max_conf_model
+        CREATE INDEX IF NOT EXISTS idx_mir_max_conf_temp_model
         ON model_inference_results_max_confidence_temp (model_id);
         """
         postgres_hook.run(results_temp_table_query)
@@ -318,13 +318,13 @@ def swap_tables():
             );
 
             -- Create indexes on new temp table
-            CREATE INDEX idx_mir_max_conf_compound
+            CREATE INDEX idx_mir_max_conf_temp_compound
             ON model_inference_results_max_confidence_temp (model_id, label_id, confidence DESC, record_id);
 
-            CREATE INDEX idx_mir_max_conf_label
+            CREATE INDEX idx_mir_max_conf_temp_label
             ON model_inference_results_max_confidence_temp (label_id, confidence DESC);
 
-            CREATE INDEX idx_mir_max_conf_model
+            CREATE INDEX idx_mir_max_conf_temp_model
             ON model_inference_results_max_confidence_temp (model_id);
 
             COMMIT;
@@ -337,14 +337,16 @@ def swap_tables():
         raise
 
 # Define the DAG
-with DAG(
-    'Populate_Max_Table',
+@dag(
+    dag_id='Populate_Max_Table',
     default_args=default_args,
     description='Populate max table from partitioned data using a temporary table',
     schedule_interval='0 5 * * 1-5',  # Run at 5:00 AM, Monday to Friday
     start_date=datetime(2025, 12, 30),
     catchup=False,
-) as dag:
+    tags=['dashboard', 'etl'],
+)
+def populate_max_table_dag():
 
     # Task 1: Ensure and clear the migration progress table and temporary results table
     ensure_tables_task = PythonOperator(
@@ -369,7 +371,7 @@ with DAG(
         python_callable=summarize_migration,
     )
 
-    # Task 3: Swap the tables
+    # Task 4: Swap the tables
     swap_tables_task = PythonOperator(
         task_id='swap_tables',
         python_callable=swap_tables,
@@ -377,3 +379,6 @@ with DAG(
 
     # Set task dependencies
     ensure_tables_task >> process_partitions_task >> summarize_task >> swap_tables_task
+
+# This is required for the decorator to work
+populate_max_table_dag()
