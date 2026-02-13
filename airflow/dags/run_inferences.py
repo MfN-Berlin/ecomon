@@ -43,7 +43,7 @@ def run_inferences():
         query = """
         SELECT
             site_id,
-            model_name,
+            model_id,
             record_count,
             model_processed,
             skipped_records,
@@ -65,7 +65,7 @@ def run_inferences():
         for record in records:
             models.append({
                 'site_id': record[0],
-                'model_name': record[1],
+                'model_id': record[1],
                 'records_to_process': record[6]
             })
             logging.info(f"Site {record[0]}, Model '{record[1]}': {record[6]} records to process")
@@ -78,8 +78,7 @@ def run_inferences():
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
         # Get model ID
-        query = f"SELECT id FROM models WHERE name = '{model_info['model_name']}'"
-        model_id = postgres_hook.get_first(query)[0]
+        model_id = model_info['model_id']
 
         # Set date range (last 6 months)
         end_datetime = datetime.now().isoformat()

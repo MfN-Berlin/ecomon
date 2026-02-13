@@ -469,9 +469,9 @@ def create_report():
                 model_name = model["name"]
 
                 if record_count == 0:
-                    model_statuses[model_name] = ""
+                    model_statuses[model_id] = ""
                 elif (site_id, model_id) in running_jobs:
-                    model_statuses[model_name] = "running"
+                    model_statuses[model_id] = "running"
                 else:
                     processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
                     # Calculate the expected processed count (processed + skipped)
@@ -479,13 +479,13 @@ def create_report():
                     diff = record_count - expected_processed
 
                     if processed_count == 0:
-                        model_statuses[model_name] = "pending"
+                        model_statuses[model_id] = "pending"
                     elif diff <= 0:
-                        model_statuses[model_name] = "ready"
+                        model_statuses[model_id] = "ready"
                     elif diff <= MAX_DIFF:
-                        model_statuses[model_name] = "ready with losses"
+                        model_statuses[model_id] = "ready with losses"
                     else:
-                        model_statuses[model_name] = "partial"
+                        model_statuses[model_id] = "partial"
 
             # Log model status info
             for model in models:
@@ -493,7 +493,7 @@ def create_report():
                 model_name = model["name"]
                 processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
                 visible_count = visible_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
-                status = model_statuses.get(model_name, "")
+                status = model_statuses.get(model_id, "")
                 logging.info(f"  Model: {model_name} (id={model_id}), Processed: {processed_count}, Visible: {visible_count}, Status: {status}")
 
                 # Debug: show what keys exist in processed_counts for this site
@@ -516,14 +516,13 @@ def create_report():
                 model_name = model["name"]
                 processed_count = processed_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
                 visible_count = visible_counts.get(site_id, {}).get(model_id, 0) if site_id else 0
-                status = model_statuses.get(model_name, "")
+                status = model_statuses.get(model_id, "")
 
-                row[f"{model_name}_processed"] = processed_count
-                row[f"{model_name}_visible"] = visible_count
-                row[f"{model_name}_status"] = status
+                row[f"{model_id}_processed"] = processed_count
+                row[f"{model_id}_visible"] = visible_count
+                row[f"{model_id}_status"] = status
 
-                logging.debug(f"Adding to row - {model_name}_processed={processed_count}, {model_name}_visible={visible_count}, {model_name}_status={status}")
-
+                logging.debug(f"Adding to row - {model_id}_processed={processed_count}, {model_id}_visible={visible_count}, {model_id}_status={status}")
             enriched_rows.append(row)
 
         return enriched_rows
@@ -536,21 +535,21 @@ def create_report():
             return pd.DataFrame()
 
         df = pd.DataFrame(rows)
-
-        # Define base columns that are always present
-        base_columns = ["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count",
-                       "skipped_records", "db_import"]
-
-        # Find all model-related columns (those ending with _processed, _visible, or _status)
-        model_columns = [col for col in df.columns if col.endswith(('_processed', '_visible', '_status'))]
-
-        # Combine all columns for selection
-        columns_to_select = base_columns + model_columns
-
-        # Only select columns that exist in the dataframe
-        columns_to_select = [col for col in columns_to_select if col in df.columns]
-
-        df = df[columns_to_select]
+#
+#        # Define base columns that are always present
+#        base_columns = ["prefix", "site_id", "wav_size_bytes", "wav_count", "record_count",
+#                       "skipped_records", "db_import"]
+#
+#        # Find all model-related columns (those ending with _processed, _visible, or _status)
+#        model_columns = [col for col in df.columns if col.endswith(('_processed', '_visible', '_status'))]
+#
+#        # Combine all columns for selection
+#        columns_to_select = base_columns + model_columns
+#
+#        # Only select columns that exist in the dataframe
+#        columns_to_select = [col for col in columns_to_select if col in df.columns]
+#
+#        df = df[columns_to_select]
         df = df.sort_values(by="prefix")
         return df
 
@@ -570,16 +569,17 @@ def create_report():
 
             # Log status for each model
             for model in models:
+                model_id = model['model_id']
                 model_name = model['name']
-                processed_col = f"{model_name}_processed"
-                visible_col = f"{model_name}_visible"
-                status_col = f"{model_name}_status"
+                processed_col = f"{model_id}_processed"
+                visible_col = f"{model_id}_visible"
+                status_col = f"{model_id}_status"
 
                 processed = row.get(processed_col, 0) if processed_col in row and pd.notna(row.get(processed_col)) else 0
                 visible = row.get(visible_col, 0) if visible_col in row and pd.notna(row.get(visible_col)) else 0
                 status = row.get(status_col, "N/A") if status_col in row and row.get(status_col) else "N/A"
 
-                logging.info(f"  {model_name}: processed={processed}, visible={visible}, status={status}")
+                logging.info(f"  {model_name} (id={model_id}): processed={processed}, visible={visible}, status={status}")
 
     @task
     def create_report_table():
@@ -598,6 +598,7 @@ def create_report():
             skipped_records INTEGER,
             db_import VARCHAR(50),
             model_name VARCHAR(100) NOT NULL,
+            model_id INTEGER,
             model_processed INTEGER,
             model_visible INTEGER,
             model_status VARCHAR(50),
@@ -610,6 +611,7 @@ def create_report():
         CREATE INDEX IF NOT EXISTS idx_workflow_reports_site_id ON workflow_reports(site_id);
         CREATE INDEX IF NOT EXISTS idx_workflow_reports_prefix ON workflow_reports(prefix);
         CREATE INDEX IF NOT EXISTS idx_workflow_reports_model ON workflow_reports(model_name);
+        CREATE INDEX IF NOT EXISTS idx_workflow_reports_model_id ON workflow_reports(model_id);
         """
 
         postgres_hook.run(create_table_query)
@@ -636,10 +638,11 @@ def create_report():
         for index, row in report_df.iterrows():
             # Save data for each model
             for model in models:
+                model_id = int(model['model_id'])
                 model_name = model['name']
-                processed_col = f"{model_name}_processed"
-                visible_col = f"{model_name}_visible"
-                status_col = f"{model_name}_status"
+                processed_col = f"{model_id}_processed"
+                visible_col = f"{model_id}_visible"
+                status_col = f"{model_id}_status"
 
                 # Extract values from pandas Series using proper indexing
                 try:
@@ -647,18 +650,18 @@ def create_report():
                     visible_value = int(row[visible_col]) if visible_col in row.index and pd.notna(row[visible_col]) else None
                     status_value = row[status_col] if status_col in row.index and pd.notna(row[status_col]) else ""
                 except (KeyError, ValueError, TypeError) as e:
-                    logging.warning(f"Error extracting values for {model_name}: {e}")
+                    logging.warning(f"Error extracting values for {model_name} (id={model_id}): {e}")
                     processed_value = None
                     visible_value = None
                     status_value = ""
 
-                logging.debug(f"Saving {row['prefix']} / {model_name}: processed={processed_value}, visible={visible_value}, status={status_value}")
+                logging.debug(f"Saving {row['prefix']} / {model_name} (id={model_id})   : processed={processed_value}, visible={visible_value}, status={status_value}")
 
                 insert_query = """
                 INSERT INTO workflow_reports (
                     report_date, prefix, site_id, wav_size_bytes, wav_count,
-                    record_count, skipped_records, db_import, model_name, model_processed, model_visible, model_status, visible_in_ui
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    record_count, skipped_records, db_import, model_id, model_name, model_processed, model_visible, model_status, visible_in_ui
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 
                 # Automatically set visible_in_ui based on model status
@@ -673,6 +676,7 @@ def create_report():
                     int(row['record_count']) if pd.notna(row['record_count']) else None,
                     int(row['skipped_records']) if pd.notna(row['skipped_records']) else None,
                     row['db_import'] if pd.notna(row['db_import']) else None,
+                    model_id,
                     model_name,
                     processed_value,
                     visible_value,
