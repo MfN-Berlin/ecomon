@@ -16,14 +16,17 @@ export type NavigationPoint = {
 };
 
 const getAirflowUrl = () => {
-  // Try to get apiBaseUrl from runtime config
-  const apiBaseUrl = config.public?.apiBaseUrl;
+  // Read apiBaseUrl from environment variable
+  const apiBaseUrl = config.public.API_BASE_URL || config.public.apiBaseUrl;
 
-  if (apiBaseUrl) {
-    // Production case: apiBaseUrl is set, use it directly
+  const isLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+  if (apiBaseUrl && !isLocalhost) {
+    // Production case: apiBaseUrl is set and not on localhost, use it directly
     return `${apiBaseUrl}/airflow/home`;
   } else {
-    // Try to get the actual subpath from the current window location
+    // Development case: on localhost or no apiBaseUrl
     const currentPath = window.location.pathname;
     const pathParts = currentPath.split('/').filter(Boolean);
     const detectedSubPath = pathParts.length > 0 ? `/${pathParts[0]}` : devSubPath;

@@ -10783,6 +10783,7 @@ type workflow_reports {
   created_at: timestamp!
   db_import: String
   id: Int!
+  model_id: Int
   model_name: String!
   model_processed: Int
   model_status: String
@@ -10825,6 +10826,7 @@ type workflow_reports_aggregate_fields {
 """aggregate avg on columns"""
 type workflow_reports_avg_fields {
   id: Float
+  model_id: Float
   model_processed: Float
   model_visible: Float
   record_count: Float
@@ -10844,6 +10846,7 @@ input workflow_reports_bool_exp {
   created_at: timestamp_comparison_exp
   db_import: String_comparison_exp
   id: Int_comparison_exp
+  model_id: Int_comparison_exp
   model_name: String_comparison_exp
   model_processed: Int_comparison_exp
   model_status: String_comparison_exp
@@ -10873,6 +10876,7 @@ input type for incrementing numeric columns in table "workflow_reports"
 """
 input workflow_reports_inc_input {
   id: Int
+  model_id: Int
   model_processed: Int
   model_visible: Int
   record_count: Int
@@ -10889,6 +10893,7 @@ input workflow_reports_insert_input {
   created_at: timestamp
   db_import: String
   id: Int
+  model_id: Int
   model_name: String
   model_processed: Int
   model_status: String
@@ -10908,6 +10913,7 @@ type workflow_reports_max_fields {
   created_at: timestamp
   db_import: String
   id: Int
+  model_id: Int
   model_name: String
   model_processed: Int
   model_status: String
@@ -10926,6 +10932,7 @@ type workflow_reports_min_fields {
   created_at: timestamp
   db_import: String
   id: Int
+  model_id: Int
   model_name: String
   model_processed: Int
   model_status: String
@@ -10964,6 +10971,7 @@ input workflow_reports_order_by {
   created_at: order_by
   db_import: order_by
   id: order_by
+  model_id: order_by
   model_name: order_by
   model_processed: order_by
   model_status: order_by
@@ -10995,6 +11003,9 @@ enum workflow_reports_select_column {
 
   """column name"""
   id
+
+  """column name"""
+  model_id
 
   """column name"""
   model_name
@@ -11040,6 +11051,7 @@ input workflow_reports_set_input {
   created_at: timestamp
   db_import: String
   id: Int
+  model_id: Int
   model_name: String
   model_processed: Int
   model_status: String
@@ -11057,6 +11069,7 @@ input workflow_reports_set_input {
 """aggregate stddev on columns"""
 type workflow_reports_stddev_fields {
   id: Float
+  model_id: Float
   model_processed: Float
   model_visible: Float
   record_count: Float
@@ -11069,6 +11082,7 @@ type workflow_reports_stddev_fields {
 """aggregate stddev_pop on columns"""
 type workflow_reports_stddev_pop_fields {
   id: Float
+  model_id: Float
   model_processed: Float
   model_visible: Float
   record_count: Float
@@ -11081,6 +11095,7 @@ type workflow_reports_stddev_pop_fields {
 """aggregate stddev_samp on columns"""
 type workflow_reports_stddev_samp_fields {
   id: Float
+  model_id: Float
   model_processed: Float
   model_visible: Float
   record_count: Float
@@ -11106,6 +11121,7 @@ input workflow_reports_stream_cursor_value_input {
   created_at: timestamp
   db_import: String
   id: Int
+  model_id: Int
   model_name: String
   model_processed: Int
   model_status: String
@@ -11123,6 +11139,7 @@ input workflow_reports_stream_cursor_value_input {
 """aggregate sum on columns"""
 type workflow_reports_sum_fields {
   id: Int
+  model_id: Int
   model_processed: Int
   model_visible: Int
   record_count: Int
@@ -11144,6 +11161,9 @@ enum workflow_reports_update_column {
 
   """column name"""
   id
+
+  """column name"""
+  model_id
 
   """column name"""
   model_name
@@ -11196,6 +11216,7 @@ input workflow_reports_updates {
 """aggregate var_pop on columns"""
 type workflow_reports_var_pop_fields {
   id: Float
+  model_id: Float
   model_processed: Float
   model_visible: Float
   record_count: Float
@@ -11208,6 +11229,7 @@ type workflow_reports_var_pop_fields {
 """aggregate var_samp on columns"""
 type workflow_reports_var_samp_fields {
   id: Float
+  model_id: Float
   model_processed: Float
   model_visible: Float
   record_count: Float
@@ -11220,6 +11242,7 @@ type workflow_reports_var_samp_fields {
 """aggregate variance on columns"""
 type workflow_reports_variance_fields {
   id: Float
+  model_id: Float
   model_processed: Float
   model_visible: Float
   record_count: Float
