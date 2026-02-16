@@ -1,6 +1,7 @@
 fragment Model on models {
   id
   name
+  image
   additional_docker_arguments
   additional_model_arguments
   segment_duration

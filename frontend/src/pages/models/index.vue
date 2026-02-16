@@ -15,6 +15,7 @@ const {
 const headers = [
   { title: "id", key: "id", align: "end", search: { operator: "_eq", type: "number" } },
   { title: "name", key: "name", align: "end", search: { operator: "_like", type: "text" } },
+  { title: "image", key: "image", align: "end", search: { operator: "_like", type: "text" } },
   { title: "remarks", key: "remarks", align: "end", search: { operator: "_like", type: "text" } },
   {
     title: "additional_docker_arguments",

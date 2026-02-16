@@ -47,6 +47,7 @@ const propsUpdateForm = () => {
   resetForm({
     values: {
       name: data?.name,
+      image: data?.image,
       additional_docker_arguments: data?.additional_docker_arguments,
       additional_model_arguments: data?.additional_model_arguments,
       segment_duration: data?.segment_duration,
@@ -74,7 +75,13 @@ const propsUpdateForm = () => {
       label="Name"
       density="compact"
     ></v-text-field>
-
+    <v-text-field
+      v-model="image"
+      :disabled="data"
+      :error-messages="imageError"
+      label="Image"
+      density="compact"
+    ></v-text-field>
     <v-text-field
       v-model="additional_docker_arguments"
       :error-messages="additional_docker_argumentsError"

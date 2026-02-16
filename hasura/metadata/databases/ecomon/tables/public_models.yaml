@@ -24,11 +24,12 @@ select_permissions:
         - additional_model_arguments
         - created_at
         - id
+        - image
         - name
         - remarks
+        - segment_duration
         - step_duration
         - updated_at
-        - segment_duration
       filter: {}
       allow_aggregations: true
     comment: ""
