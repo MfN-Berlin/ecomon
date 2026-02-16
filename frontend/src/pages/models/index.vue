@@ -49,7 +49,7 @@ const headers = [
       :items="items"
       :items-length="totalItems"
       :loading="loading"
-      item-value="name"
+      item-value="metalabel"
     >
       <template v-slot:thead>
         <CommonTableSearchBar :headers="headers" @update:key="handleSearch" @update:reset="handleReset" />

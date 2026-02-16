@@ -21,7 +21,6 @@ query filterModel($search: String = "%%", $limit: Int = 10, $offset: Int = 0, $o
     ...Model
   }
 }
-
 query getModelList {
   data: models(order_by: { name: asc }) {
     ...Model

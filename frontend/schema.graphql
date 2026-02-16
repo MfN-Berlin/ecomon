@@ -3540,6 +3540,7 @@ type models {
   ): events_aggregate!
   id: Int!
   image: String
+  metalabel: String
 
   """An array relationship"""
   model_labels(
@@ -3629,6 +3630,7 @@ input models_bool_exp {
   events_aggregate: events_aggregate_bool_exp
   id: Int_comparison_exp
   image: String_comparison_exp
+  metalabel: String_comparison_exp
   model_labels: model_labels_bool_exp
   model_labels_aggregate: model_labels_aggregate_bool_exp
   name: String_comparison_exp
@@ -3672,6 +3674,7 @@ input models_insert_input {
   events: events_arr_rel_insert_input
   id: Int
   image: String
+  metalabel: String
   model_labels: model_labels_arr_rel_insert_input
   name: String
   remarks: String
@@ -3687,6 +3690,7 @@ type models_max_fields {
   created_at: timestamp
   id: Int
   image: String
+  metalabel: String
   name: String
   remarks: String
   segment_duration: float8
@@ -3701,6 +3705,7 @@ type models_min_fields {
   created_at: timestamp
   id: Int
   image: String
+  metalabel: String
   name: String
   remarks: String
   segment_duration: float8
@@ -3746,6 +3751,7 @@ input models_order_by {
   events_aggregate: events_aggregate_order_by
   id: order_by
   image: order_by
+  metalabel: order_by
   model_labels_aggregate: model_labels_aggregate_order_by
   name: order_by
   remarks: order_by
@@ -3779,6 +3785,9 @@ enum models_select_column {
   image
 
   """column name"""
+  metalabel
+
+  """column name"""
   name
 
   """column name"""
@@ -3803,6 +3812,7 @@ input models_set_input {
   created_at: timestamp
   id: Int
   image: String
+  metalabel: String
   name: String
   remarks: String
   segment_duration: float8
@@ -3849,6 +3859,7 @@ input models_stream_cursor_value_input {
   created_at: timestamp
   id: Int
   image: String
+  metalabel: String
   name: String
   remarks: String
   segment_duration: float8
@@ -3881,6 +3892,9 @@ enum models_update_column {
 
   """column name"""
   image
+
+  """column name"""
+  metalabel
 
   """column name"""
   name

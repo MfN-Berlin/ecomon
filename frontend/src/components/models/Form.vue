@@ -16,7 +16,8 @@ const { handleSubmit, handleReset, resetForm } = useForm({
 
 const dirty = useIsFormDirty();
 
-const { value: name, errorMessage: nameError } = useField("name");
+const { value: metalabel, errorMessage: metalabelError } = useField("metalabel");
+const { value: image, errorMessage: imageError } = useField("image");
 const { value: additional_docker_arguments, errorMessage: additional_docker_argumentsError } = useField(
   "additional_docker_arguments"
 );
@@ -46,7 +47,7 @@ onMounted(() => {
 const propsUpdateForm = () => {
   resetForm({
     values: {
-      name: data?.name,
+      metalabel: data?.metalabel,
       image: data?.image,
       additional_docker_arguments: data?.additional_docker_arguments,
       additional_model_arguments: data?.additional_model_arguments,
@@ -69,15 +70,15 @@ const propsUpdateForm = () => {
     @reset="handleReset"
   >
     <v-text-field
-      v-model="name"
-      :disabled="data"
-      :error-messages="nameError"
-      label="Name"
+      v-model="metalabel"
+      :disabled="!!data"
+      :error-messages="metalabelError"
+      label="Metalabel"
       density="compact"
     ></v-text-field>
     <v-text-field
       v-model="image"
-      :disabled="data"
+      :disabled="!!data"
       :error-messages="imageError"
       label="Image"
       density="compact"
