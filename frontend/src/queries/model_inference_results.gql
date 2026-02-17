@@ -25,3 +25,29 @@ query getRecordModelInferenceResults(
     }
   }
 }
+
+query CountMinutesWithActivity(
+  $modelId: Int!
+  $speciesId: Int!
+  $siteId: bigint!
+  $threshold: Float!
+  $startDate: timestamp!
+  $endDate: timestamp!
+) {
+  model_inference_results_max_confidence(
+    where: {
+      model_id: { _eq: $modelId }
+      label_id: { _eq: $speciesId }
+      confidence: { _gte: $threshold }
+      record: {
+        site_id: { _eq: $siteId }
+        record_datetime: {
+          _gte: $startDate
+          _lt: $endDate
+        }
+      }
+    }
+  ) {
+    record_id
+  }
+}

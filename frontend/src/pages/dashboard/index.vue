@@ -324,7 +324,7 @@ console.log("Initial selectedParams:", selectedParams.value);
               color="grey-lighten-4"
             >
               <div class="text-center pa-5">
-                <v-icon icon="mdi-tune" size="large" color="grey" class="mb-3"></v-icon>
+                <v-icon icon="mdi-monitor-dashboard" size="large" color="grey" class="mb-3"></v-icon>
                 <h3 class="text-h5 text-grey-darken-1">Select all parameters to display the dashboard</h3>
                 <p class="text-body-1 text-grey-darken-1">
                   Please choose a classifier, site, year, and species from the control panel

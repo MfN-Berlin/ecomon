@@ -417,7 +417,6 @@ watch(
 <template>
   <v-card class="page-controls v-theme--mfnLight">
     <v-card-title class="pb-0">
-      <h3>Analysis Parameters</h3>
     </v-card-title>
     <v-card-text>
 
