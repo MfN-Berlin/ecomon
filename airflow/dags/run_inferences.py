@@ -127,7 +127,7 @@ def run_inferences():
 
         if response.status_code == 200:
             job_id = response.json().get('data', {}).get('data', {}).get('jobId')
-            logging.info(f"Successfully triggered job {job_id} for site {model_info['site_id']}, model {model_info['model_name']}")
+            logging.info(f"Successfully triggered job {job_id} for site {model_info['site_id']}, model {model_info['model_id']}")
             return job_id
         else:
             logging.error(f"Failed to trigger job. Status: {response.status_code}, Response: {response.text}")
