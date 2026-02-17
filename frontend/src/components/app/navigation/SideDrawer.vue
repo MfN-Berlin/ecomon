@@ -54,20 +54,20 @@ const links: NavigationPoint[] = [
     text: "Workflow",
     childs: [
       { icon: "mdi-chart-box-outline", text: "Overview", route: "/workflow" },
-      { icon: "mdi-play-circle-outline", text: "Jobs", route: "/jobs" }
-    ]
-  },
-  {
-    icon: "mdi-cog-outline",
-    text: "Admin",
-    childs: [
+      { icon: "mdi-play-circle-outline", text: "Jobs", route: "/jobs" },
       {
         icon: "mdi-robot-outline",
         text: "Automation",
         route: getAirflowUrl()
       }
     ]
-  }
+  },
+//  {
+//    icon: "mdi-cog-outline",
+//    text: "Admin",
+//    childs: [
+//    ]
+//  }
 ];
 
 const drawerVisible = computed({
