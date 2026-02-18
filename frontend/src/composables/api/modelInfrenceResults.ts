@@ -61,3 +61,92 @@ export function useMinutesWithActivity(params: Ref<{
     retry: 1,
   });
 }
+
+/**
+ * Composable for fetching voucher data
+ */
+export async function fetchVoucherData(params: {
+  speciesId: number;
+  modelId: number;
+  siteId: number;
+  year: number;
+  threshold: number;
+}) {
+  const startDate = `${params.year}-01-01T00:00:00`;
+  const endDate = `${params.year + 1}-01-01T00:00:00`;
+
+  const variables = {
+    modelId: Number(params.modelId),
+    speciesId: Number(params.speciesId),
+    siteId: Number(params.siteId),
+    threshold: params.threshold,
+    startDate: startDate,
+    endDate: endDate
+  };
+
+  console.log('Fetching voucher data with variables:', variables);
+
+  try {
+    const response = await GqlGetVoucherData(variables);
+//    console.log('Voucher data response:', response);
+    console.log('First item record:', response.model_inference_results_max_confidence[0]?.record);
+    return response.model_inference_results_max_confidence;
+  } catch (error) {
+    console.error('Failed to fetch voucher data:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch voucher data with random sampling
+ */
+export async function fetchVoucherDataSampled(params: {
+  speciesId: number;
+  modelId: number;
+  siteId: number;
+  year: number;
+  threshold: number;
+  sampleSize: number;
+}) {
+  // Fetch all voucher data
+  const allData = await fetchVoucherData(params);
+
+  // If sample size is greater than or equal to available data, return all
+  if (params.sampleSize >= allData.length) {
+    console.log(`Sample size (${params.sampleSize}) >= available data (${allData.length}), returning all data`);
+    return allData;
+  }
+
+  // Random sampling without replacement
+  const sampled = [];
+  const indices = new Set<number>();
+
+  while (sampled.length < params.sampleSize) {
+    const randomIndex = Math.floor(Math.random() * allData.length);
+    if (!indices.has(randomIndex)) {
+      indices.add(randomIndex);
+      sampled.push(allData[randomIndex]);
+    }
+  }
+
+  // Sort the sampled data by site prefix, label name, record_datetime, and start_time
+  sampled.sort((a, b) => {
+    // Sort by site prefix
+    const siteCompare = (a.record.site?.prefix || '').localeCompare(b.record.site?.prefix || '');
+    if (siteCompare !== 0) return siteCompare;
+
+    // Sort by label name
+    const labelCompare = (a.label.name || '').localeCompare(b.label.name || '');
+    if (labelCompare !== 0) return labelCompare;
+
+    // Sort by record_datetime
+    const dateCompare = new Date(a.record.record_datetime).getTime() - new Date(b.record.record_datetime).getTime();
+    if (dateCompare !== 0) return dateCompare;
+
+    // Sort by start_time
+    return a.start_time - b.start_time;
+  });
+
+  console.log(`Randomly sampled ${sampled.length} records from ${allData.length} total`);
+  return sampled;
+}

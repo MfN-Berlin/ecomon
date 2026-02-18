@@ -51,3 +51,60 @@ query CountMinutesWithActivity(
     record_id
   }
 }
+
+query GetVoucherData(
+  $modelId: Int!
+  $speciesId: Int!
+  $siteId: bigint!
+  $threshold: Float!
+  $startDate: timestamp!
+  $endDate: timestamp!
+) {
+  model_inference_results_max_confidence(
+    where: {
+      model_id: { _eq: $modelId }
+      label_id: { _eq: $speciesId }
+      confidence: { _gte: $threshold }
+      record: {
+        site_id: { _eq: $siteId }
+        record_datetime: {
+          _gte: $startDate
+          _lt: $endDate
+        }
+      }
+    }
+    order_by: [
+      { record: { site: { prefix: asc } } },
+      { label: { name: asc } },
+      { record: { record_datetime: asc } },
+      { start_time: asc }
+    ]
+  ) {
+    record_id
+    model_id
+    label_id
+    start_time
+    end_time
+    confidence
+    record {
+      id
+      record_datetime
+      site_id
+      filepath
+      filename
+      duration
+      channels
+      sample_rate
+      mime_type
+      site {
+        id
+        prefix
+        name
+      }
+    }
+    label {
+      id
+      name
+    }
+  }
+}
