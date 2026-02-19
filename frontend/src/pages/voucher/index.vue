@@ -187,6 +187,9 @@ const {
   isError: isMinutesError
 } = useMinutesWithActivity(minutesParams);
 
+// Runtime config for API URL
+const config = useRuntimeConfig();
+
 // Voucher data state
 const voucherData = ref([]);
 const isLoadingVoucher = ref(false);
@@ -213,6 +216,32 @@ const handleCreateVoucher = async (sampleNumber: number) => {
   } finally {
     isLoadingVoucher.value = false;
   }
+};
+
+// Create voucher using backend task
+const { mutate: createVoucher, isPending: isCreatingVoucher } = useCreateVoucherSamples();
+const { $dayjs } = useNuxtApp();
+
+const downloadVoucherCsv = () => {
+  const params = minutesParams.value;
+  if (!params || !params.speciesId) {
+    console.warn('Cannot create voucher: missing required parameters');
+    return;
+  }
+
+  const startDatetime = $dayjs(`${params.year}-01-01`).local().toISOString();
+  const endDatetime = $dayjs(`${params.year + 1}-01-01`).local().toISOString();
+
+  createVoucher({
+    modelId: params.modelId,
+    siteId: params.siteId,
+    labelIds: [params.speciesId],
+    sampleCount: voucherData.value.length,
+    startDatetime: startDatetime,
+    endDatetime: endDatetime,
+    audioPaddingMs: 5000,
+    highPassFilterFrequencyHz: 100
+  });
 };
 
 </script>
@@ -250,7 +279,7 @@ const handleCreateVoucher = async (sampleNumber: number) => {
             <div class="text-center pa-5">
               <v-icon icon="mdi-tag-outline" size="large" color="grey" class="mb-3"></v-icon>
               <p class="text-body-1 text-grey-darken-1">
-                Select parameters and click "Create voucher" to view data
+                Select parameters and click "List samples" to view data
               </p>
             </div>
           </v-card-text>
@@ -267,6 +296,7 @@ const handleCreateVoucher = async (sampleNumber: number) => {
             >
               <template v-slot:headers>
                 <tr>
+                  <th></th>
                   <th>Site</th>
                   <th>Record Datetime</th>
                   <th>Start Time</th>
@@ -277,6 +307,15 @@ const handleCreateVoucher = async (sampleNumber: number) => {
               </template>
               <template v-slot:item="{ item }">
                 <tr>
+                  <td>
+                    <v-toolbar density="compact" color="surface">
+                      <app-play-button
+                        :src="`${config.public.API_BASE_URL}files/records/${item.record_id}/inference-result/${item.id}/flac?padding_ms=5000`"
+                        variant="text"
+                        size="small"
+                      />
+                    </v-toolbar>
+                  </td>
                   <td>{{ item.record.site?.prefix }}, {{ item.record.site?.name || item.record.site_id }}</td>
                   <td>{{ new Date(item.record.record_datetime).toLocaleString() }}</td>
                   <td>{{ item.start_time }}</td>
@@ -284,6 +323,24 @@ const handleCreateVoucher = async (sampleNumber: number) => {
                   <td>{{ item.label.name }}</td>
                   <td>{{ item.confidence.toFixed(3) }}</td>
                 </tr>
+              </template>
+              <template v-slot:bottom>
+                <div class="d-flex align-center justify-space-between pa-3">
+                  <v-btn
+                    color="primary"
+                    variant="elevated"
+                    size="large"
+                    prepend-icon="mdi-file-document-multiple"
+                    :loading="isCreatingVoucher"
+                    :disabled="!voucherData.length"
+                    @click="downloadVoucherCsv"
+                  >
+                    Create Voucher Package
+                  </v-btn>
+                  <div class="text-caption">
+                    Showing {{ voucherData.length }} sample{{ voucherData.length !== 1 ? 's' : '' }}
+                  </div>
+                </div>
               </template>
             </v-data-table>
           </v-card-text>

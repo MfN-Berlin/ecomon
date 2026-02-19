@@ -80,6 +80,7 @@ query GetVoucherData(
       { start_time: asc }
     ]
   ) {
+    id
     record_id
     model_id
     label_id
@@ -103,6 +104,10 @@ query GetVoucherData(
       }
     }
     label {
+      id
+      name
+    }
+    model {
       id
       name
     }

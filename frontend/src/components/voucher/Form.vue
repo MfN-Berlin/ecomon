@@ -147,7 +147,7 @@ const tooltipTexts = {
               <v-icon v-bind="props" size="x-small" class="info-icon">mdi-information</v-icon>
             </template>
           </v-tooltip>
-          <span class="hint-text activity-hint" style="min-width: 260px;">
+          <span class="hint-text activity-hint">
             <template v-if="selectedSpecies">
               Available samples with activity:
               <template v-if="isLoadingMinutes">
@@ -168,7 +168,7 @@ const tooltipTexts = {
             :disabled="!selectedSpecies || isLoadingMinutes"
             @click="emit('create-voucher', sampleNumber)"
           >
-            Create voucher
+            List samples
           </v-btn>
         </div>
       </div>
@@ -327,7 +327,7 @@ const tooltipTexts = {
 
 .activity-hint {
   margin-left: 0.5rem;
-  min-width: 220px;
+  min-width: 290px;
   display: inline-block;
 }
 
