@@ -141,8 +141,6 @@ def process_partition_data(postgres_hook, partition_name, results_temp_table, st
     SET max_parallel_workers = 8;
     SET effective_cache_size = '16GB';
 
-    BEGIN;
-
     -- Create a temporary table to store batch IDs
     CREATE TEMP TABLE IF NOT EXISTS batch_ids AS
     SELECT id FROM {partition_name} ORDER BY id;
@@ -200,16 +198,11 @@ def process_partition_data(postgres_hook, partition_name, results_temp_table, st
 
             GET DIAGNOSTICS rows_processed = ROW_COUNT;
             RAISE NOTICE 'Processed % rows in batch %', rows_processed, i+1;
-
-            COMMIT;
-            BEGIN;
         END LOOP;
 
         -- Clean up
         DROP TABLE batch_ids;
     END $$;
-
-    COMMIT;
     """
     postgres_hook.run(migration_query)
 
