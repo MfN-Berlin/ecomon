@@ -231,6 +231,11 @@ def process_single_partition(postgres_hook, partition_name, progress_table, resu
         if current_row_count is None:
             return False
 
+        # Skip empty partitions
+        if current_row_count == 0:
+            print(f"✓ {partition_name} is empty. Skipping.")
+            return True
+
         # Check if processing is needed
         if not should_process_partition(postgres_hook, partition_name, current_row_count, progress_table):
             return True
@@ -293,88 +298,90 @@ def swap_tables():
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
+        # Check row counts before merge
+        temp_count_query = "SELECT COUNT(*) FROM model_inference_results_max_confidence_temp;"
+        temp_count = postgres_hook.get_first(temp_count_query)[0]
+        print(f"→ Temp table has {temp_count} rows before merge")
+
         # Check if main table exists
         check_main_table = """
         SELECT EXISTS (
             SELECT FROM information_schema.tables
-            WHERE table_name = 'model_inference_results_max_confidence'
+            WHERE table_schema = 'public'
+              AND table_name = 'model_inference_results_max_confidence'
         );
         """
         main_table_exists = postgres_hook.get_first(check_main_table)[0]
+        print(f"→ Main table exists: {main_table_exists}")
 
         if main_table_exists:
-            merge_query = """
-            SET work_mem = '2GB';
-            SET maintenance_work_mem = '2GB';
+            # Drop indexes before merge (DDL - autocommit)
+            postgres_hook.run("""
+                DROP INDEX IF EXISTS idx_mir_max_conf_compound;
+                DROP INDEX IF EXISTS idx_mir_max_conf_label;
+                DROP INDEX IF EXISTS idx_mir_max_conf_model;
+            """, autocommit=True)
+            print("→ Indexes dropped")
 
-            BEGIN;
+            # Merge data (DML - in transaction managed by the hook)
+            postgres_hook.run("""
+                SET work_mem = '2GB';
+                SET maintenance_work_mem = '2GB';
+                INSERT INTO model_inference_results_max_confidence
+                (id, record_id, model_id, label_id, start_time, end_time, confidence)
+                SELECT id, record_id, model_id, label_id, start_time, end_time, confidence
+                FROM model_inference_results_max_confidence_temp
+                ON CONFLICT (record_id, label_id, model_id)
+                DO UPDATE SET
+                    id = EXCLUDED.id,
+                    start_time = EXCLUDED.start_time,
+                    end_time = EXCLUDED.end_time,
+                    confidence = EXCLUDED.confidence;
+            """)
+            print("→ Data merged")
 
-            -- Drop indexes
-            DROP INDEX IF EXISTS idx_mir_max_conf_compound;
-            DROP INDEX IF EXISTS idx_mir_max_conf_label;
-            DROP INDEX IF EXISTS idx_mir_max_conf_model;
+            # Recreate indexes (DDL - autocommit)
+            postgres_hook.run("""
+                CREATE INDEX idx_mir_max_conf_compound
+                ON model_inference_results_max_confidence (model_id, label_id, confidence DESC, record_id);
+                CREATE INDEX idx_mir_max_conf_label
+                ON model_inference_results_max_confidence (label_id, confidence DESC);
+                CREATE INDEX idx_mir_max_conf_model
+                ON model_inference_results_max_confidence (model_id);
+            """, autocommit=True)
 
-            -- Fast merge without index overhead
-            INSERT INTO model_inference_results_max_confidence
-            (id, record_id, model_id, label_id, start_time, end_time, confidence)
-            SELECT id, record_id, model_id, label_id, start_time, end_time, confidence
-            FROM model_inference_results_max_confidence_temp
-            ON CONFLICT (record_id, label_id, model_id)
-            DO UPDATE SET
-                id = EXCLUDED.id,
-                start_time = EXCLUDED.start_time,
-                end_time = EXCLUDED.end_time,
-                confidence = EXCLUDED.confidence;
-
-            -- Recreate indexes (parallel build if possible)
-            CREATE INDEX idx_mir_max_conf_compound
-            ON model_inference_results_max_confidence (model_id, label_id, confidence DESC, record_id);
-
-            CREATE INDEX idx_mir_max_conf_label
-            ON model_inference_results_max_confidence (label_id, confidence DESC);
-
-            CREATE INDEX idx_mir_max_conf_model
-            ON model_inference_results_max_confidence (model_id);
-
-            COMMIT;
-            """
-            postgres_hook.run(merge_query)
-            print("✓ Data merged from temp to main table")
+            main_count = postgres_hook.get_first("SELECT COUNT(*) FROM model_inference_results_max_confidence;")[0]
+            print(f"✓ Data merged from temp to main table. Main table now has {main_count} rows")
         else:
-            # First run - rename temp to main
-            first_run_query = """
-            BEGIN;
+            # First run - rename temp to main (DDL - autocommit)
+            postgres_hook.run("""
+                ALTER TABLE model_inference_results_max_confidence_temp
+                RENAME TO model_inference_results_max_confidence;
+            """, autocommit=True)
+            print("→ Temp table renamed to main table")
 
-            -- Rename temp table to main (first run)
-            ALTER TABLE model_inference_results_max_confidence_temp
-            RENAME TO model_inference_results_max_confidence;
+            # Create new empty temp table for next run (DDL - autocommit)
+            postgres_hook.run("""
+                CREATE TABLE model_inference_results_max_confidence_temp (
+                    id bigint NOT NULL,
+                    record_id bigint NOT NULL,
+                    model_id integer NOT NULL,
+                    label_id integer NOT NULL,
+                    start_time numeric(9,4) NOT NULL,
+                    end_time numeric(9,4) NOT NULL,
+                    confidence real NOT NULL,
+                    PRIMARY KEY (record_id, label_id, model_id)
+                );
+                CREATE INDEX idx_mir_max_conf_temp_compound
+                ON model_inference_results_max_confidence_temp (model_id, label_id, confidence DESC, record_id);
+                CREATE INDEX idx_mir_max_conf_temp_label
+                ON model_inference_results_max_confidence_temp (label_id, confidence DESC);
+                CREATE INDEX idx_mir_max_conf_temp_model
+                ON model_inference_results_max_confidence_temp (model_id);
+            """, autocommit=True)
 
-            -- Create new empty temp table for next run
-            CREATE TABLE model_inference_results_max_confidence_temp (
-                id bigint NOT NULL,
-                record_id bigint NOT NULL,
-                model_id integer NOT NULL,
-                label_id integer NOT NULL,
-                start_time numeric(9,4) NOT NULL,
-                end_time numeric(9,4) NOT NULL,
-                confidence real NOT NULL,
-                PRIMARY KEY (record_id, label_id, model_id)
-            );
-
-            -- Create indexes on new temp table
-            CREATE INDEX idx_mir_max_conf_temp_compound
-            ON model_inference_results_max_confidence_temp (model_id, label_id, confidence DESC, record_id);
-
-            CREATE INDEX idx_mir_max_conf_temp_label
-            ON model_inference_results_max_confidence_temp (label_id, confidence DESC);
-
-            CREATE INDEX idx_mir_max_conf_temp_model
-            ON model_inference_results_max_confidence_temp (model_id);
-
-            COMMIT;
-            """
-            postgres_hook.run(first_run_query)
-            print("✓ First run: Promoted temp table to main table")
+            main_count = postgres_hook.get_first("SELECT COUNT(*) FROM model_inference_results_max_confidence;")[0]
+            print(f"✓ First run: Promoted temp table to main table. Main table now has {main_count} rows")
 
     except Exception as e:
         print(f"✗ Failed to merge tables: {e}")
