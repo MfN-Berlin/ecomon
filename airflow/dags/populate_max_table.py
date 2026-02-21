@@ -130,79 +130,35 @@ def should_process_partition(postgres_hook, partition_name, current_row_count, p
 
 # Function to process a single partition
 def process_partition_data(postgres_hook, partition_name, results_temp_table, statement_timeout):
-    """Optimized process for large partitions with batch processing and parallelism"""
+    """Process the data for a single partition"""
     migration_query = f"""
     SET statement_timeout = '{statement_timeout}s';
-    SET work_mem = '4GB';
-    SET maintenance_work_mem = '4GB';
-    SET max_parallel_workers_per_gather = 4;
-    SET parallel_tuple_cost = 0.1;
-    SET parallel_setup_cost = 100;
-    SET max_parallel_workers = 8;
-    SET effective_cache_size = '16GB';
+    SET work_mem = '1GB';
+    SET temp_buffers = '512MB';
 
-    -- Create a temporary table to store batch IDs
-    CREATE TEMP TABLE IF NOT EXISTS batch_ids AS
-    SELECT id FROM {partition_name} ORDER BY id;
+    BEGIN;
 
-    -- Create index on the temp table for faster batch selection
-    CREATE INDEX IF NOT EXISTS idx_batch_ids ON batch_ids(id);
+    WITH ranked_rows AS (
+        SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
+               ROW_NUMBER() OVER (
+                   PARTITION BY record_id, label_id, model_id
+                   ORDER BY confidence DESC, id ASC
+               ) AS rank
+        FROM {partition_name}
+    )
+    INSERT INTO {results_temp_table}
+    (record_id, label_id, model_id, id, start_time, end_time, confidence)
+    SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
+    FROM ranked_rows
+    WHERE rank = 1  -- Select only the row with the highest confidence
+    ON CONFLICT (record_id, label_id, model_id)
+    DO UPDATE SET
+        id = EXCLUDED.id,
+        start_time = EXCLUDED.start_time,
+        end_time = EXCLUDED.end_time,
+        confidence = EXCLUDED.confidence;
 
-    -- Process in batches of 1 million rows
-    DO $$
-    DECLARE
-        batch_size INT := 1000000;
-        total_rows BIGINT;
-        batch_count INT;
-        min_id BIGINT;
-        max_id BIGINT;
-        rows_processed BIGINT := 0;
-    BEGIN
-        -- Get total rows and calculate batch count
-        SELECT COUNT(*) INTO total_rows FROM batch_ids;
-        SELECT MIN(id), MAX(id) INTO min_id, max_id FROM batch_ids;
-        batch_count := CEIL(total_rows::FLOAT / batch_size);
-
-        RAISE NOTICE 'Processing % with % rows in % batches', '{partition_name}', total_rows, batch_count;
-
-        FOR i IN 0..(batch_count-1) LOOP
-            RAISE NOTICE 'Processing batch % of % (rows % to %)', i+1, batch_count,
-                         i*batch_size, LEAST((i+1)*batch_size, total_rows);
-
-            WITH batch_data AS (
-                SELECT t.*
-                FROM {partition_name} t
-                JOIN batch_ids b ON t.id = b.id
-                WHERE b.id BETWEEN min_id + (i * batch_size)
-                               AND min_id + ((i+1) * batch_size) - 1
-            ),
-            ranked_rows AS (
-                SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
-                       ROW_NUMBER() OVER (
-                           PARTITION BY record_id, label_id, model_id
-                           ORDER BY confidence DESC, id ASC
-                       ) AS rank
-                FROM batch_data
-            )
-            INSERT INTO {results_temp_table}
-            (record_id, label_id, model_id, id, start_time, end_time, confidence)
-            SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
-            FROM ranked_rows
-            WHERE rank = 1
-            ON CONFLICT (record_id, label_id, model_id)
-            DO UPDATE SET
-                id = EXCLUDED.id,
-                start_time = EXCLUDED.start_time,
-                end_time = EXCLUDED.end_time,
-                confidence = EXCLUDED.confidence;
-
-            GET DIAGNOSTICS rows_processed = ROW_COUNT;
-            RAISE NOTICE 'Processed % rows in batch %', rows_processed, i+1;
-        END LOOP;
-
-        -- Clean up
-        DROP TABLE batch_ids;
-    END $$;
+    COMMIT;
     """
     postgres_hook.run(migration_query)
 
@@ -230,11 +186,6 @@ def process_single_partition(postgres_hook, partition_name, progress_table, resu
         current_row_count = get_partition_row_count(postgres_hook, partition_name)
         if current_row_count is None:
             return False
-
-        # Skip empty partitions
-        if current_row_count == 0:
-            print(f"✓ {partition_name} is empty. Skipping.")
-            return True
 
         # Check if processing is needed
         if not should_process_partition(postgres_hook, partition_name, current_row_count, progress_table):
@@ -298,90 +249,88 @@ def swap_tables():
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
 
-        # Check row counts before merge
-        temp_count_query = "SELECT COUNT(*) FROM model_inference_results_max_confidence_temp;"
-        temp_count = postgres_hook.get_first(temp_count_query)[0]
-        print(f"→ Temp table has {temp_count} rows before merge")
-
         # Check if main table exists
         check_main_table = """
         SELECT EXISTS (
             SELECT FROM information_schema.tables
-            WHERE table_schema = 'public'
-              AND table_name = 'model_inference_results_max_confidence'
+            WHERE table_name = 'model_inference_results_max_confidence'
         );
         """
         main_table_exists = postgres_hook.get_first(check_main_table)[0]
-        print(f"→ Main table exists: {main_table_exists}")
 
         if main_table_exists:
-            # Drop indexes before merge (DDL - autocommit)
-            postgres_hook.run("""
-                DROP INDEX IF EXISTS idx_mir_max_conf_compound;
-                DROP INDEX IF EXISTS idx_mir_max_conf_label;
-                DROP INDEX IF EXISTS idx_mir_max_conf_model;
-            """, autocommit=True)
-            print("→ Indexes dropped")
+            merge_query = """
+            SET work_mem = '2GB';
+            SET maintenance_work_mem = '2GB';
 
-            # Merge data (DML - in transaction managed by the hook)
-            postgres_hook.run("""
-                SET work_mem = '2GB';
-                SET maintenance_work_mem = '2GB';
-                INSERT INTO model_inference_results_max_confidence
-                (id, record_id, model_id, label_id, start_time, end_time, confidence)
-                SELECT id, record_id, model_id, label_id, start_time, end_time, confidence
-                FROM model_inference_results_max_confidence_temp
-                ON CONFLICT (record_id, label_id, model_id)
-                DO UPDATE SET
-                    id = EXCLUDED.id,
-                    start_time = EXCLUDED.start_time,
-                    end_time = EXCLUDED.end_time,
-                    confidence = EXCLUDED.confidence;
-            """)
-            print("→ Data merged")
+            BEGIN;
 
-            # Recreate indexes (DDL - autocommit)
-            postgres_hook.run("""
-                CREATE INDEX idx_mir_max_conf_compound
-                ON model_inference_results_max_confidence (model_id, label_id, confidence DESC, record_id);
-                CREATE INDEX idx_mir_max_conf_label
-                ON model_inference_results_max_confidence (label_id, confidence DESC);
-                CREATE INDEX idx_mir_max_conf_model
-                ON model_inference_results_max_confidence (model_id);
-            """, autocommit=True)
+            -- Drop indexes
+            DROP INDEX IF EXISTS idx_mir_max_conf_compound;
+            DROP INDEX IF EXISTS idx_mir_max_conf_label;
+            DROP INDEX IF EXISTS idx_mir_max_conf_model;
 
-            main_count = postgres_hook.get_first("SELECT COUNT(*) FROM model_inference_results_max_confidence;")[0]
-            print(f"✓ Data merged from temp to main table. Main table now has {main_count} rows")
+            -- Fast merge without index overhead
+            INSERT INTO model_inference_results_max_confidence
+            (id, record_id, model_id, label_id, start_time, end_time, confidence)
+            SELECT id, record_id, model_id, label_id, start_time, end_time, confidence
+            FROM model_inference_results_max_confidence_temp
+            ON CONFLICT (record_id, label_id, model_id)
+            DO UPDATE SET
+                id = EXCLUDED.id,
+                start_time = EXCLUDED.start_time,
+                end_time = EXCLUDED.end_time,
+                confidence = EXCLUDED.confidence;
+
+            -- Recreate indexes (parallel build if possible)
+            CREATE INDEX idx_mir_max_conf_compound
+            ON model_inference_results_max_confidence (model_id, label_id, confidence DESC, record_id);
+
+            CREATE INDEX idx_mir_max_conf_label
+            ON model_inference_results_max_confidence (label_id, confidence DESC);
+
+            CREATE INDEX idx_mir_max_conf_model
+            ON model_inference_results_max_confidence (model_id);
+
+            COMMIT;
+            """
+            postgres_hook.run(merge_query)
+            print("✓ Data merged from temp to main table")
         else:
-            # First run - rename temp to main (DDL - autocommit)
-            postgres_hook.run("""
-                ALTER TABLE model_inference_results_max_confidence_temp
-                RENAME TO model_inference_results_max_confidence;
-            """, autocommit=True)
-            print("→ Temp table renamed to main table")
+            # First run - rename temp to main
+            first_run_query = """
+            BEGIN;
 
-            # Create new empty temp table for next run (DDL - autocommit)
-            postgres_hook.run("""
-                CREATE TABLE model_inference_results_max_confidence_temp (
-                    id bigint NOT NULL,
-                    record_id bigint NOT NULL,
-                    model_id integer NOT NULL,
-                    label_id integer NOT NULL,
-                    start_time numeric(9,4) NOT NULL,
-                    end_time numeric(9,4) NOT NULL,
-                    confidence real NOT NULL,
-                    PRIMARY KEY (record_id, label_id, model_id)
-                );
-                CREATE INDEX idx_mir_max_conf_temp_compound
-                ON model_inference_results_max_confidence_temp (model_id, label_id, confidence DESC, record_id);
-                CREATE INDEX idx_mir_max_conf_temp_label
-                ON model_inference_results_max_confidence_temp (label_id, confidence DESC);
-                CREATE INDEX idx_mir_max_conf_temp_model
-                ON model_inference_results_max_confidence_temp (model_id);
-            """, autocommit=True)
+            -- Rename temp table to main (first run)
+            ALTER TABLE model_inference_results_max_confidence_temp
+            RENAME TO model_inference_results_max_confidence;
 
-            main_count = postgres_hook.get_first("SELECT COUNT(*) FROM model_inference_results_max_confidence;")[0]
-            print(f"✓ First run: Promoted temp table to main table. Main table now has {main_count} rows")
+            -- Create new empty temp table for next run
+            CREATE TABLE model_inference_results_max_confidence_temp (
+                id bigint NOT NULL,
+                record_id bigint NOT NULL,
+                model_id integer NOT NULL,
+                label_id integer NOT NULL,
+                start_time numeric(9,4) NOT NULL,
+                end_time numeric(9,4) NOT NULL,
+                confidence real NOT NULL,
+                PRIMARY KEY (record_id, label_id, model_id)
+            );
+
+            -- Create indexes on new temp table
+            CREATE INDEX idx_mir_max_conf_temp_compound
+            ON model_inference_results_max_confidence_temp (model_id, label_id, confidence DESC, record_id);
+
+            CREATE INDEX idx_mir_max_conf_temp_label
+            ON model_inference_results_max_confidence_temp (label_id, confidence DESC);
+
+            CREATE INDEX idx_mir_max_conf_temp_model
+            ON model_inference_results_max_confidence_temp (model_id);
+
+            COMMIT;
+            """
+            postgres_hook.run(first_run_query)
+            print("✓ First run: Promoted temp table to main table")
 
     except Exception as e:
         print(f"✗ Failed to merge tables: {e}")
