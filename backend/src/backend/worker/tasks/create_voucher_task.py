@@ -34,7 +34,6 @@ settings = WorkerSettings()
 # Configure logger level from settings
 logger.setLevel(settings.log_level)
 
-
 @app.task(
     name=f"{task_topic.CREATE_VOUCHER.value}",
     bind=True,
@@ -53,6 +52,31 @@ def create_voucher_task(
     audio_padding_ms: int,
     high_pass_filter_frequency_hz: int,
 ):
+    """
+    Create a voucher (audio samples and metadata) for specific labels detected at a site.
+
+    This task:
+    1. Creates a temporary directory for processing
+    2. For each label, finds the top N samples based on confidence
+    3. Extracts audio segments from the original recordings
+    4. Creates Excel files with metadata for each label
+    5. Packages everything into a ZIP file
+    6. Updates job status and stores the result
+
+    Args:
+        self: Celery task instance
+        site_id: ID of the site to create voucher for
+        model_id: ID of the model used for inference
+        label_ids: List of label IDs to include in voucher
+        sample_count: Number of samples to include per label
+        start_datetime: Start datetime for filtering records
+        end_datetime: End datetime for filtering records
+        audio_padding_ms: Milliseconds to pad around each audio segment
+        high_pass_filter_frequency_hz: Frequency for high-pass filter (currently unused)
+
+    Returns:
+        dict: Result containing status, message, filepath, and filename
+    """
     job_id = self.request.id
     session = db_session()
 
@@ -208,20 +232,31 @@ def create_voucher_task(
             shutil.rmtree(results_dir)
         raise e
 
-
 def format_time(seconds):
-    """Format seconds to MM_SS_ms format"""
+    """
+    Format seconds to MM_SS_ms format for filename generation.
+
+    Args:
+        seconds: Time in seconds to format
+
+    Returns:
+        str: Formatted time string in MM_SS_ms format
+    """
     minutes = int(seconds // 60)
     seconds = seconds % 60
     return f"{minutes:02d}_{seconds:05.2f}".replace(".", "_")
 
-
 def create_zip_archive(source_dir, output_path):
-    """Create a zip archive from a directory"""
+    """
+    Create a zip archive from a directory.
+
+    Args:
+        source_dir: Directory to archive
+        output_path: Path for the output zip file
+    """
     shutil.make_archive(
         os.path.splitext(output_path)[0], "zip", source_dir  # Remove .zip extension
     )
-
 
 def create_result_file_row(
     label_name: str,
@@ -234,6 +269,23 @@ def create_result_file_row(
     confidence: float,
     audio_padding: float,
 ):
+    """
+    Create a row for the result Excel file.
+
+    Args:
+        label_name: Name of the label/species
+        filename: Original filename
+        record_datetime: When the recording was made
+        start_time: Start time of detection in seconds
+        end_time: End time of detection in seconds
+        duration: Duration of the recording
+        channel: Audio channel
+        confidence: Detection confidence
+        audio_padding: Padding added to audio segment
+
+    Returns:
+        dict: Dictionary containing all row data
+    """
     return {
         "species": label_name,
         "filename": filename,
@@ -246,8 +298,14 @@ def create_result_file_row(
         "audio_padding": audio_padding / 1000,
     }
 
-
 def create_result_file(filepath: str, rows: list[dict]):
+    """
+    Create an Excel file with results for a specific label.
+
+    Args:
+        filepath: Path to save the Excel file
+        rows: List of dictionaries containing row data
+    """
     header = [
         ("Channel", "channel"),
         ("Begin Time (s)", "start_time"),
