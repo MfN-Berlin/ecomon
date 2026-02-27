@@ -19,11 +19,11 @@
     SSH_AUTH_SOCK: "{{ lookup('env', 'SSH_AUTH_SOCK') }}"
   when: repo_check.rc == 0
 
-- name: Checkout ecomon_validate branch
+- name: Checkout appropriate branch based on system type
   git:
     repo: "{{ repo_url }}"
     dest: "{{ install_dir }}"
-    version: ecomon_validate
+    version: "{% if system_type == 'dev' %}ansible{% else %}ecomon_validate{% endif %}"
   become: false
   environment:
     SSH_AUTH_SOCK: "{{ lookup('env', 'SSH_AUTH_SOCK') }}"

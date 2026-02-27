@@ -26,8 +26,8 @@
     path: "{{ db_data_directory }}"
     state: directory
     mode: '0750'
-    owner: "{{ lookup('env', 'USER') }}"
-    group: "{{ lookup('env', 'USER') }}"
+  become: yes
+  become_method: sudo
 
 # Update PGDATA_PATH in .env file
 - name: Update PGDATA_PATH in .env

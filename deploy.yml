@@ -5,6 +5,13 @@
   vars:
     repo_url: "git@github.com:MfN-Berlin/ecomon.git"
   vars_prompt:
+    - name: system_type
+      prompt: |
+        Is this a DEVELOPMENT or PRODUCTION system?
+        
+        Enter 'dev' for development or 'prod' for production:
+      private: false
+    
     - name: install_dir
       prompt: "Where would you like to install the app? Please provide the path to the installation directory."
       private: false

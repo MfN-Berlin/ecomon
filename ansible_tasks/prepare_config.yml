@@ -124,10 +124,10 @@
     path: "{{ pgbackup_directory }}"
     state: directory
 
-# Copy env-production to .env in the installation directory
-- name: Copy env-production to .env
+# Copy appropriate env file to .env based on system type
+- name: Copy env file to .env
   copy:
-    src: "{{ install_dir }}/env-production"
+    src: "{{ install_dir }}/env-{% if system_type == 'dev' %}default{% else %}production{% endif %}"
     dest: "{{ install_dir }}/.env"
     remote_src: yes
     owner: "{{ lookup('env', 'USER') }}"
