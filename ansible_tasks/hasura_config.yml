@@ -1,0 +1,75 @@
+# Hasura configuration - prompt for or generate HASURA_ADMIN_SECRET
+# This playbook handles Hasura admin secret setup
+
+# Prompt user to choose between providing a secret or generating one
+- name: Ask user if they want to provide a Hasura admin secret or generate one
+  pause:
+    prompt: |
+      Hasura Admin Secret Configuration
+      
+      You can either:
+      1. Provide your own Hasura admin secret
+      2. Let the system generate a secure random secret
+      
+      For security, generated secrets are recommended.
+      
+      Enter 'provide' to enter your own secret, or 'generate' to create a secure random secret:
+    echo: yes
+  register: secret_choice
+  until: secret_choice.user_input in ['provide', 'generate']
+  retries: 3
+  delay: 0
+
+# Generate a secure random secret if user chooses to generate
+- name: Generate secure random secret
+  set_fact:
+    hasura_admin_secret: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits,punctuation') }}"
+  when: secret_choice.user_input == 'generate'
+
+# Prompt for secret if user chooses to provide one
+- name: Prompt for Hasura admin secret
+  pause:
+    prompt: |
+      Enter the Hasura admin secret.
+      
+      Secret requirements:
+      - Minimum 16 characters (recommended for security)
+      - Can include letters, numbers, and common special characters
+      - Avoid quotes, backslashes, and shell-special characters
+      - Avoid common words or personal information
+      
+      Enter the Hasura admin secret:
+    echo: no
+  register: user_secret_input
+  when: secret_choice.user_input == 'provide'
+
+# Set the secret fact from user input
+- name: Set secret from user input
+  set_fact:
+    hasura_admin_secret: "{{ user_secret_input.user_input }}"
+  when: secret_choice.user_input == 'provide'
+
+# Validate secret strength (basic check)
+- name: Validate secret strength
+  fail:
+    msg: "ERROR: Hasura admin secret must be at least 16 characters long."
+  when: hasura_admin_secret | length < 16
+
+# Display confirmation (with masked secret for security)
+- name: Display secret configuration confirmation
+  debug:
+    msg: "Hasura admin secret has been {{ secret_choice.user_input }}. The secret will be stored in .env as HASURA_ADMIN_SECRET."
+
+# Update HASURA_ADMIN_SECRET in .env file
+- name: Update HASURA_ADMIN_SECRET in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^HASURA_ADMIN_SECRET='
+    line: "HASURA_ADMIN_SECRET={{ hasura_admin_secret }}"
+    backrefs: yes
+    mode: '0600'
+
+# Display completion message
+- name: Display completion message
+  debug:
+    msg: "Hasura configuration completed. The admin secret has been stored securely in {{ install_dir }}/.env"

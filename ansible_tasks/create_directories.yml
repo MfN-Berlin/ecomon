@@ -1,0 +1,37 @@
+---
+# Check if installation directory already exists
+- name: Check if installation directory exists
+  stat:
+    path: "{{ install_dir }}"
+  register: dir_stat
+
+# Warn and prompt user if directory exists
+- name: Warn if installation directory already exists
+  pause:
+    prompt: |
+      WARNING: The directory '{{ install_dir }}' already exists.
+      
+      Choose an option:
+      1. Continue using the existing directory (may overwrite files).
+      2. Fail the playbook.
+      
+      Enter '1' to continue or '2' to fail.
+  when: dir_stat.stat.exists
+  register: user_choice
+
+# Fail if user chooses to abort
+- name: Fail if user chooses to abort
+  fail:
+    msg: "Playbook aborted by user."
+  when: dir_stat.stat.exists and user_choice.user_input == '2'
+
+# Create installation directory if it doesn't exist
+- name: Create installation directory
+  file:
+    path: "{{ install_dir }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+  become: true
+  when: not dir_stat.stat.exists

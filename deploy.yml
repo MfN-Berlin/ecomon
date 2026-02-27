@@ -2,6 +2,8 @@
 - name: Install App
   hosts: localhost
   gather_facts: false
+  vars:
+    repo_url: "git@github.com:MfN-Berlin/ecomon.git"
   vars_prompt:
     - name: install_dir
       prompt: "Where would you like to install the app? Please provide the path to the installation directory."
@@ -11,10 +13,27 @@
     - name: Display installation directory
       debug:
         msg: "Installation directory is {{ install_dir }}"
-    - name: Create installation directory
-      file:
-        path: "{{ install_dir }}"
-        state: directory
-        mode: '0755'
-      become: true
-      when: install_dir is defined
+
+    # Import tasks to create directories
+    - name: Create directories
+      import_tasks: ansible_tasks/create_directories.yml
+
+    # Import tasks to checkout from Git
+    - name: Checkout from Git
+      import_tasks: ansible_tasks/checkout_git.yml
+
+    # Import tasks to prepare configuration
+    - name: Prepare configuration
+      import_tasks: ansible_tasks/prepare_config.yml
+
+    # Import tasks to configure database password
+    - name: Configure database password
+      import_tasks: ansible_tasks/db_config.yml
+
+    # Import tasks to configure Hasura admin secret
+    - name: Configure Hasura admin secret
+      import_tasks: ansible_tasks/hasura_config.yml
+
+    # Import tasks to configure Airflow admin password
+    - name: Configure Airflow admin password
+      import_tasks: ansible_tasks/airflow_config.yml

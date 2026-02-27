@@ -1,0 +1,35 @@
+---
+# Block to clone the repository into the installation directory
+- name: Check if repository is accessible
+  command: git ls-remote {{ repo_url }}
+  register: repo_check
+  changed_when: false
+  become: false
+  environment:
+    SSH_AUTH_SOCK: "{{ lookup('env', 'SSH_AUTH_SOCK') }}"
+  ignore_errors: true
+
+- name: Clone source code
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ install_dir }}"
+    clone: yes
+  become: false
+  environment:
+    SSH_AUTH_SOCK: "{{ lookup('env', 'SSH_AUTH_SOCK') }}"
+  when: repo_check.rc == 0
+
+- name: Checkout ecomon_validate branch
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ install_dir }}"
+    version: ecomon_validate
+  become: false
+  environment:
+    SSH_AUTH_SOCK: "{{ lookup('env', 'SSH_AUTH_SOCK') }}"
+  when: repo_check.rc == 0
+
+- name: Fail if repository is inaccessible
+  fail:
+    msg: "Failed to access the repository at {{ repo_url }}. Check your access permissions or network connection."
+  when: repo_check.rc != 0

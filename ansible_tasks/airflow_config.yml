@@ -1,0 +1,75 @@
+# Airflow configuration - prompt for or generate AIRFLOW_ADMIN_PASSWORD
+# This playbook handles Airflow admin password setup
+
+# Prompt user to choose between providing a password or generating one
+- name: Ask user if they want to provide an Airflow admin password or generate one
+  pause:
+    prompt: |
+      Airflow Admin Password Configuration
+      
+      You can either:
+      1. Provide your own Airflow admin password
+      2. Let the system generate a secure random password
+      
+      For security, generated passwords are recommended.
+      
+      Enter 'provide' to enter your own password, or 'generate' to create a secure random password:
+    echo: yes
+  register: airflow_password_choice
+  until: airflow_password_choice.user_input in ['provide', 'generate']
+  retries: 3
+  delay: 0
+
+# Generate a secure random password if user chooses to generate
+- name: Generate secure random password
+  set_fact:
+    airflow_admin_password: "{{ lookup('password', '/dev/null length=24 chars=ascii_letters,digits,punctuation') }}"
+  when: airflow_password_choice.user_input == 'generate'
+
+# Prompt for password if user chooses to provide one
+- name: Prompt for Airflow admin password
+  pause:
+    prompt: |
+      Enter the Airflow admin password.
+      
+      Password requirements:
+      - Minimum 12 characters (recommended for security)
+      - Can include letters, numbers, and common special characters
+      - Avoid quotes, backslashes, and shell-special characters
+      - Avoid common words or personal information
+      
+      Enter the Airflow admin password:
+    echo: no
+  register: user_airflow_password_input
+  when: airflow_password_choice.user_input == 'provide'
+
+# Set the password fact from user input
+- name: Set password from user input
+  set_fact:
+    airflow_admin_password: "{{ user_airflow_password_input.user_input }}"
+  when: airflow_password_choice.user_input == 'provide'
+
+# Validate password strength (basic check)
+- name: Validate password strength
+  fail:
+    msg: "ERROR: Airflow admin password must be at least 12 characters long."
+  when: airflow_admin_password | length < 12
+
+# Display confirmation (with masked password for security)
+- name: Display password configuration confirmation
+  debug:
+    msg: "Airflow admin password has been {{ airflow_password_choice.user_input }}. The password will be stored in .env as AIRFLOW_ADMIN_PASSWORD."
+
+# Update AIRFLOW_ADMIN_PASSWORD in .env file
+- name: Update AIRFLOW_ADMIN_PASSWORD in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^AIRFLOW_ADMIN_PASSWORD='
+    line: "AIRFLOW_ADMIN_PASSWORD={{ airflow_admin_password }}"
+    backrefs: yes
+    mode: '0600'
+
+# Display completion message
+- name: Display completion message
+  debug:
+    msg: "Airflow configuration completed. The admin password has been stored securely in {{ install_dir }}/.env"

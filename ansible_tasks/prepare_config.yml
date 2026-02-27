@@ -1,0 +1,167 @@
+# Copy env-production to .env in the installation directory
+# Prompt for SUB_PATH and validate input
+# Set default SUB_PATH (last part of installation directory)
+- name: Set default SUB_PATH
+  set_fact:
+    default_sub_path: "{{ install_dir.split('/')[-1] }}"
+
+# Prompt for SUB_PATH and validate input
+- name: Prompt for SUB_PATH
+  pause:
+    prompt: |
+      Enter the SUB_PATH for the application.
+      This will be part of the application's URL: "https://server-name/SUB_PATH/"
+
+      The SUB_PATH can contain alphanumeric characters and underscores (_).
+      You can enter it with or without leading/trailing slashes (e.g., 'my_app', '/my_app', or 'my_app/').
+
+      Default (press Enter to accept): "{{ default_sub_path }}"
+
+      Enter the SUB_PATH:
+  register: sub_path_input
+
+# Use default if user input is empty (before validation)
+- name: Set SUB_PATH input (use default if empty)
+  set_fact:
+    sub_path_raw: "{{ (sub_path_input.user_input | trim) if (sub_path_input.user_input | trim != '') else default_sub_path }}"
+
+# Validate SUB_PATH input (skip if default is used)
+- name: Validate SUB_PATH input
+  fail:
+    msg: "ERROR: SUB_PATH must contain only alphanumeric characters, underscores (_), or slashes (/)."
+  when:
+    - sub_path_raw != default_sub_path
+    - not sub_path_raw is match('^[a-zA-Z0-9_/]*[a-zA-Z0-9_][a-zA-Z0-9_/]*$')
+  register: validation_result
+  ignore_errors: yes
+
+# Re-prompt if validation fails
+- name: Re-prompt for SUB_PATH if validation fails
+  pause:
+    prompt: |
+      ERROR: Invalid SUB_PATH. It must contain only alphanumeric characters, underscores (_), or slashes (/).
+
+      Enter the SUB_PATH again (e.g., 'my_app', '/my_app', or 'my_app/'):
+  register: sub_path_input_retry
+  when: validation_result is defined and validation_result.failed | default(false)
+# Use default if user input is empty (after re-prompt)
+- name: Set SUB_PATH input after re-prompt (use default if empty)
+  set_fact:
+    sub_path_raw: "{{ (sub_path_input_retry.user_input | trim) if (sub_path_input_retry.user_input | trim != '') else default_sub_path }}"
+  when: validation_result is defined and validation_result.failed | default(false)
+# Normalize SUB_PATH: ensure leading slash, no trailing slash
+- name: Set SUB_PATH fact
+  set_fact:
+    sub_path: "{{ sub_path_raw | regex_replace('^/+', '') | regex_replace('/+$', '') | regex_replace('^', '/') }}"
+
+# Prompt for BASE_DATA_DIRECTORY and validate input
+- name: Prompt for BASE_DATA_DIRECTORY
+  pause:
+    prompt: |
+      Enter the directory where the WAV files are (or will be) stored.
+      This directory will be used to store and access audio files.
+
+      Example: /opt/ecomon_data or /home/user/audio_files
+
+      Enter the BASE_DATA_DIRECTORY:
+  register: base_data_dir_input
+
+# Normalize BASE_DATA_DIRECTORY: ensure leading slash, no trailing slash
+- name: Set BASE_DATA_DIRECTORY fact
+  set_fact:
+    base_data_directory: "{{ base_data_dir_input.user_input | regex_replace('^/+', '') | regex_replace('/+$', '') | regex_replace('^', '/') }}"
+
+# Ensure BASE_DATA_DIRECTORY exists
+- name: Ensure BASE_DATA_DIRECTORY exists
+  file:
+    path: "{{ base_data_directory }}"
+    state: directory
+    mode: '0755'
+
+# Prompt for TMP_DIR and validate input
+- name: Prompt for TMP_DIR
+  pause:
+    prompt: |
+      Enter the directory where temporary files will be stored.
+      This directory will be used for temporary operations.
+
+      Example: /opt/ecomon_tmp or /home/user/tmp
+
+      Enter the TMP_DIR:
+  register: tmp_dir_input
+
+# Normalize TMP_DIR: ensure leading slash, no trailing slash
+- name: Set TMP_DIR fact
+  set_fact:
+    tmp_directory: "{{ tmp_dir_input.user_input | regex_replace('^/+', '') | regex_replace('/+$', '') | regex_replace('^', '/') }}"
+
+# Ensure TMP_DIR exists
+- name: Ensure TMP_DIR exists
+  file:
+    path: "{{ tmp_directory }}"
+    state: directory
+
+# Prompt for PGBACKUP_PATH and validate input
+- name: Prompt for PGBACKUP_PATH
+  pause:
+    prompt: |
+      Enter the directory where database backups will be stored.
+      This directory will be used for PostgreSQL database backups.
+
+      Example: /opt/ecomon_backups or /home/user/db_backups
+
+      Enter the PGBACKUP_PATH:
+  register: pgbackup_path_input
+
+# Normalize PGBACKUP_PATH: ensure leading slash, no trailing slash
+- name: Set PGBACKUP_PATH fact
+  set_fact:
+    pgbackup_directory: "{{ pgbackup_path_input.user_input | regex_replace('^/+', '') | regex_replace('/+$', '') | regex_replace('^', '/') }}"
+
+# Ensure PGBACKUP_PATH exists
+- name: Ensure PGBACKUP_PATH exists
+  file:
+    path: "{{ pgbackup_directory }}"
+    state: directory
+
+# Copy env-production to .env in the installation directory
+- name: Copy env-production to .env
+  copy:
+    src: "{{ install_dir }}/env-production"
+    dest: "{{ install_dir }}/.env"
+    remote_src: yes
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    mode: '0644'
+
+# Update SUB_PATH in .env
+- name: Update SUB_PATH in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^SUB_PATH='
+    line: "SUB_PATH={{ sub_path }}"
+    backrefs: yes
+
+# Update BASE_DATA_DIRECTORY in .env
+- name: Update BASE_DATA_DIRECTORY in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^BASE_DATA_DIRECTORY='
+    line: "BASE_DATA_DIRECTORY={{ base_data_directory }}"
+    backrefs: yes
+
+# Update TMP_DIR in .env
+- name: Update TMP_DIR in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^TMP_DIR='
+    line: "TMP_DIR={{ tmp_directory }}"
+    backrefs: yes
+
+# Update PGBACKUP_PATH in .env
+- name: Update PGBACKUP_PATH in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^PGBACKUP_PATH='
+    line: "PGBACKUP_PATH={{ pgbackup_directory }}"
+    backrefs: yes

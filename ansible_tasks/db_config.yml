@@ -1,0 +1,76 @@
+# Database configuration - prompt for or generate DB_PASSWORD
+# This playbook handles database password setup for the ecomon user
+
+# Prompt user to choose between providing a password or generating one
+- name: Ask user if they want to provide a password or generate one
+  pause:
+    prompt: |
+      Database Password Configuration
+      
+      You can either:
+      1. Provide your own password for the ecomon database user
+      2. Let the system generate a secure random password
+      
+      For security, generated passwords are recommended.
+      
+      Enter 'provide' to enter your own password, or 'generate' to create a secure random password:
+    echo: yes
+  register: password_choice
+  until: password_choice.user_input in ['provide', 'generate']
+  retries: 3
+  delay: 0
+
+# Generate a secure random password if user chooses to generate
+- name: Generate secure random password
+  set_fact:
+    db_password: "{{ lookup('password', '/dev/null length=24 chars=ascii_letters,digits,punctuation') }}"
+  when: password_choice.user_input == 'generate'
+
+# Prompt for password if user chooses to provide one
+- name: Prompt for database password
+  pause:
+    prompt: |
+      Enter the password for the ecomon database user.
+      
+      Password requirements:
+      - Minimum 12 characters (recommended for security)
+      - Can include letters, numbers, and common special characters
+      - Avoid quotes, backslashes, colons (:), at signs (@), and shell-special characters
+      - Avoid common words or personal information
+      - Note: Password will be used in PostgreSQL connection strings
+      
+      Enter the database password:
+    echo: no
+  register: user_password_input
+  when: password_choice.user_input == 'provide'
+
+# Set the password fact from user input
+- name: Set password from user input
+  set_fact:
+    db_password: "{{ user_password_input.user_input }}"
+  when: password_choice.user_input == 'provide'
+
+# Validate password strength (basic check)
+- name: Validate password strength
+  fail:
+    msg: "ERROR: Password must be at least 12 characters long."
+  when: db_password | length < 12
+
+# Display confirmation (with masked password for security)
+- name: Display password configuration confirmation
+  debug:
+    msg: "Database password has been {{ password_choice.user_input }}. The password will be stored in .env as DB_PASSWORD."
+
+# Update DB_PASSWORD in .env file
+- name: Update DB_PASSWORD in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^DB_PASSWORD='
+    line: "DB_PASSWORD={{ db_password }}"
+    backrefs: yes
+    mode: '0600'
+
+# Display completion message
+- name: Display completion message
+  debug:
+    msg: "Database configuration completed. The password has been stored securely in {{ install_dir }}/.env"
