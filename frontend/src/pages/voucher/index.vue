@@ -233,8 +233,8 @@ const downloadVoucherCsv = () => {
   const endDatetime = $dayjs(`${params.year + 1}-01-01`).local().toISOString();
 
   createVoucher({
-    modelId: params.modelId,
     siteId: params.siteId,
+    modelId: params.modelId,
     labelIds: [params.speciesId],
     sampleCount: voucherData.value.length,
     startDatetime: startDatetime,

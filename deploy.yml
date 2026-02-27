@@ -1,0 +1,20 @@
+---
+- name: Install App
+  hosts: localhost
+  gather_facts: false
+  vars_prompt:
+    - name: install_dir
+      prompt: "Where would you like to install the app? Please provide the path to the installation directory."
+      private: false
+
+  tasks:
+    - name: Display installation directory
+      debug:
+        msg: "Installation directory is {{ install_dir }}"
+    - name: Create installation directory
+      file:
+        path: "{{ install_dir }}"
+        state: directory
+        mode: '0755'
+      become: true
+      when: install_dir is defined
