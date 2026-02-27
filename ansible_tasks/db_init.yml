@@ -1,0 +1,77 @@
+# Database initialization - create PostgreSQL users and set passwords
+# This playbook handles database user setup for the ecomon application
+
+# Start PostgreSQL service (assuming docker-compose is available)
+- name: Start PostgreSQL database service
+  command: docker compose -f {{ install_dir }}/docker-compose.production.yaml up -d db
+  args:
+    chdir: "{{ install_dir }}"
+  register: db_start_result
+  changed_when: "'Created' in db_start_result.stdout or 'Starting' in db_start_result.stdout"
+  until: db_start_result.rc == 0
+  retries: 3
+  delay: 10
+
+# Wait for PostgreSQL to be ready
+- name: Wait for PostgreSQL to be ready
+  wait_for:
+    host: localhost
+    port: 7432
+    delay: 5
+    timeout: 60
+  when: db_start_result.changed or db_start_result.rc == 0
+
+# Check if ecomon user exists
+- name: Check if ecomon database user exists
+  command: >
+    docker exec db psql -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='ecomon'" | grep -q 1
+  register: ecomon_user_exists
+  ignore_errors: yes
+  changed_when: false
+
+# Create ecomon user if it doesn't exist
+- name: Create ecomon database user
+  command: >
+    docker exec db psql -U postgres -c "CREATE USER ecomon WITH PASSWORD '{{ db_password }}';"
+  when: ecomon_user_exists.rc != 0
+
+# Set password for ecomon user (if user exists but we want to ensure password is set)
+- name: Set password for ecomon user
+  command: >
+    docker exec db psql -U postgres -c "ALTER USER ecomon WITH PASSWORD '{{ db_password }}';"
+  when: ecomon_user_exists.rc == 0
+
+# Check if ecomon database exists
+- name: Check if ecomon database exists
+  command: >
+    docker exec db psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='ecomon'" | grep -q 1
+  register: ecomon_db_exists
+  ignore_errors: yes
+  changed_when: false
+
+# Create ecomon database if it doesn't exist
+- name: Create ecomon database
+  command: >
+    docker exec db psql -U postgres -c "CREATE DATABASE ecomon OWNER ecomon;"
+  when: ecomon_db_exists.rc != 0
+
+# Set password for postgres (root) user
+- name: Set password for postgres root user
+  command: >
+    docker exec db psql -U postgres -c "ALTER USER postgres WITH PASSWORD '{{ db_password }}';"
+
+# Grant necessary privileges to ecomon user
+- name: Grant privileges to ecomon user
+  command: >
+    docker exec db psql -U postgres -d ecomon -c "
+    GRANT ALL PRIVILEGES ON DATABASE ecomon TO ecomon;
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ecomon;
+    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ecomon;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO ecomon;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO ecomon;
+    "
+
+# Display completion message
+- name: Display database initialization completion
+  debug:
+    msg: "Database initialization completed. Users 'ecomon' and 'postgres' have been configured with the specified password."

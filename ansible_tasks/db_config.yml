@@ -1,6 +1,42 @@
 # Database configuration - prompt for or generate DB_PASSWORD
 # This playbook handles database password setup for the ecomon user
 
+# Prompt for database data directory
+- name: Prompt for database data directory
+  pause:
+    prompt: |
+      Enter the directory where PostgreSQL database files will be stored.
+      
+      This directory should be on a fast disk with sufficient space (8TB+ recommended for production).
+      The directory will be created if it doesn't exist.
+      
+      Example: /opt/ecomon_db_data or /home/user/postgres_data
+      
+      Enter the database data directory path:
+  register: db_data_dir_input
+
+# Normalize database data directory path
+- name: Set database data directory fact
+  set_fact:
+    db_data_directory: "{{ db_data_dir_input.user_input | regex_replace('^/+', '') | regex_replace('/+$', '') | regex_replace('^', '/') }}"
+
+# Ensure database data directory exists
+- name: Ensure database data directory exists
+  file:
+    path: "{{ db_data_directory }}"
+    state: directory
+    mode: '0750'
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+
+# Update PGDATA_PATH in .env file
+- name: Update PGDATA_PATH in .env
+  lineinfile:
+    path: "{{ install_dir }}/.env"
+    regexp: '^PGDATA_PATH='
+    line: "PGDATA_PATH={{ db_data_directory }}"
+    backrefs: yes
+
 # Prompt user to choose between providing a password or generating one
 - name: Ask user if they want to provide a password or generate one
   pause:
@@ -23,7 +59,7 @@
 # Generate a secure random password if user chooses to generate
 - name: Generate secure random password
   set_fact:
-    db_password: "{{ lookup('password', '/dev/null length=24 chars=ascii_letters,digits,punctuation') }}"
+    db_password: "{{ lookup('password', '/dev/null length=24 chars=ascii_letters,digits') }}"
   when: password_choice.user_input == 'generate'
 
 # Prompt for password if user chooses to provide one
@@ -34,10 +70,11 @@
       
       Password requirements:
       - Minimum 12 characters (recommended for security)
-      - Can include letters, numbers, and common special characters
-      - Avoid quotes, backslashes, colons (:), at signs (@), and shell-special characters
+      - Can include letters (a-z, A-Z) and numbers (0-9)
+      - For maximum compatibility, avoid special characters
       - Avoid common words or personal information
       - Note: Password will be used in PostgreSQL connection strings
+      - Generated passwords use only letters and numbers for compatibility
       
       Enter the database password:
     echo: no

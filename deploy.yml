@@ -30,6 +30,10 @@
     - name: Configure database password
       import_tasks: ansible_tasks/db_config.yml
 
+    # Import tasks to initialize database users
+    - name: Initialize database users
+      import_tasks: ansible_tasks/db_init.yml
+
     # Import tasks to configure Hasura admin secret
     - name: Configure Hasura admin secret
       import_tasks: ansible_tasks/hasura_config.yml
