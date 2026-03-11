@@ -37,11 +37,10 @@ Open the `.env` file in an editor and set at least:
 * PGDATA_PATH=path-to-custom-place-for-database-data  # important: db needs 8TB+ on fast disk
 * AIRFLOW_ADMIN_PASSWORD=secure-password
 * HASURA_ADMIN_SECRET=secure-password
-* HASURA_URL=pdefault-docker-compose-gateway (typically 172.17.0.1, used by Dashboard)
+* HASURA_URL=pdefault-docker-compose-gateway (typically 172.17.0.1:10080/v1/graphql, used by Dashboard)
 * USE_GPU=1  # 1, 2, or all
 
 You might need to set in .env and/or docker-compose.production.yaml:
-* HASURA_URL=172.17.0.1:10080/v1/graphql
 * Port to dashboard service in docker-compose.production.yaml
 
 Start Docker containers
