@@ -300,7 +300,7 @@ const filteredSpecies = computed(() => {
   if (!hasOnlyPlaceholder.value) {
     console.log("- Filtering available species...");
     filtered = props.availableSpecies.filter(item => {
-      console.log("  - Checking item:", item.title, "isPlaceholder:", item.isPlaceholder);
+      // console.log("  - Checking item:", item.title, "isPlaceholder:", item.isPlaceholder);
       if (item.isPlaceholder) return false;
 
       // If there's search input, filter by it
