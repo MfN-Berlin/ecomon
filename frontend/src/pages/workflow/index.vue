@@ -52,7 +52,7 @@
                 </span>
               </template>
               <span>
-                Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }}<br>
+                Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }} ({{ Math.round((item[`${modelName}_processed`] || 0) / (item.record_count || 1) * 100) }}%)<br>
                 Skipped: {{ (item.skipped_records || 0).toLocaleString('de-DE') }}<br>
                 Total Records: {{ (item.record_count || 0).toLocaleString('de-DE') }}
               </span>
@@ -96,11 +96,11 @@
           <div class="legend-items">
             <div class="legend-item">
               <span class="legend-badge status-ready">ready</span>
-              <span class="legend-text">All files processed successfully</span>
+              <span class="legend-text">All recordings processed successfully</span>
             </div>
             <div class="legend-item">
               <span class="legend-badge status-ready-losses">ready</span>
-              <span class="legend-text">Some recordings could not be read or generated no inferences</span>
+              <span class="legend-text">At least 99% of recordings processed successfully</span>
             </div>
             <div class="legend-item">
               <span class="legend-badge status-partial">partial</span>
@@ -151,14 +151,14 @@
                 <template #activator="{ props }">
                   <span
                     v-bind="props"
-                    :class="getStatusColor(item[`${modelName}_status`])"
+                    :class="getStatusColor(getStatusText(item[`${modelName}_status`], item, modelName))"
                     style="cursor: help;"
                   >
-                    {{ getStatusText(item[`${modelName}_status`]) }}
+                    {{ getStatusText(item[`${modelName}_status`], item, modelName) }}
                   </span>
                 </template>
                 <span>
-                  Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }}<br>
+                  Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }} ({{ Math.round((item[`${modelName}_processed`] || 0) / (item.record_count || 1) * 100) }}%)<br>
                   Skipped: {{ (item.skipped_records || 0).toLocaleString('de-DE') }}<br>
                   Total Records: {{ (item.record_count || 0).toLocaleString('de-DE') }}
                 </span>
@@ -382,9 +382,20 @@ const formatDate = (date: string): string => {
 };
 
 // Get display text for status (converts "ready with losses" to "ready")
-const getStatusText = (status: string): string => {
+const getStatusText = (status: string, item: any = null, modelName: string = ''): string => {
   if (!status) return '';
   if (status.toLowerCase() === 'ready with losses') return 'ready';
+
+  // Check if status is partial but percentage is >= 99%
+  if (status.toLowerCase() === 'partial' && item && modelName) {
+    const processed = item[`${modelName}_processed`] || 0;
+    const total = item.record_count || 1;
+    const percentage = (processed / total) * 100;
+    if (percentage >= 99) {
+      return 'ready';
+    }
+  }
+
   return status;
 };
 
