@@ -429,9 +429,13 @@ def model_inference_site_task(
             JobService.update_job_progress_by_counter(
                 session, job_id, file_counter, total_count
             )
-            # delete all files in the job_temp_dir for the next batch
-            for file in os.listdir(job_temp_dir):
-                os.remove(os.path.join(job_temp_dir, file))
+            # delete all files and directories in the job_temp_dir for the next batch
+            for item in os.listdir(job_temp_dir):
+                item_path = os.path.join(job_temp_dir, item)
+                if os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+                else:
+                    os.remove(item_path)
             JobService.updateResult(session, job_id, {"inferred_records": file_counter})
 
         JobService.update_job_progress(session, job_id, 100)

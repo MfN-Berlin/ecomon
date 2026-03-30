@@ -33,12 +33,6 @@
           <template #item.prefix="{ item }">
             <span>{{ item.prefix }}</span>
           </template>
-          <template #item.db_import="{ item }">
-            <span :class="getStatusColor(item.db_import)">
-              {{ getStatusText(item.db_import) }}
-            </span>
-          </template>
-
           <!-- Dynamic model status columns -->
           <template v-for="modelName in availableModels" :key="`status-${modelName}`" #[`item.${modelName}_status`]="{ item }">
             <v-tooltip location="top">
@@ -52,9 +46,12 @@
                 </span>
               </template>
               <span>
+                Processed: {{ Math.round((item[`${modelName}_processed`] || 0) / (item.record_count || 1) * 100) }}%
+                <!--
                 Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }} ({{ Math.round((item[`${modelName}_processed`] || 0) / (item.record_count || 1) * 100) }}%)<br>
                 Skipped: {{ (item.skipped_records || 0).toLocaleString('de-DE') }}<br>
                 Total Records: {{ (item.record_count || 0).toLocaleString('de-DE') }}
+                -->
               </span>
             </v-tooltip>
           </template>
@@ -139,12 +136,6 @@
                 </v-icon>{{ item.prefix }}
               </span>
             </template>
-            <template #item.db_import="{ item }">
-              <span :class="getStatusColor(item.db_import)">
-                {{ getStatusText(item.db_import) }}
-              </span>
-            </template>
-
             <!-- Dynamic model status columns for ultrasound -->
             <template v-for="modelName in availableModels" :key="`us-status-${modelName}`" #[`item.${modelName}_status`]="{ item }">
               <v-tooltip location="top">
@@ -158,9 +149,12 @@
                   </span>
                 </template>
                 <span>
+                  Processed: {{ Math.round((item[`${modelName}_processed`] || 0) / (item.record_count || 1) * 100) }}%
+                  <!--
                   Processed: {{ ((item[`${modelName}_processed`] || 0).toLocaleString('de-DE')) }} ({{ Math.round((item[`${modelName}_processed`] || 0) / (item.record_count || 1) * 100) }}%)<br>
                   Skipped: {{ (item.skipped_records || 0).toLocaleString('de-DE') }}<br>
                   Total Records: {{ (item.record_count || 0).toLocaleString('de-DE') }}
+                -->
                 </span>
               </v-tooltip>
             </template>
@@ -351,7 +345,6 @@ const headers = computed(() => {
     { title: 'WAV Size (MB)', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
     { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
     { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
-    { title: 'DB Import', key: 'db_import', sortable: true, width: '200px', align: 'center' },
   ];
 
   // Add dynamic model status columns only
@@ -392,7 +385,7 @@ const getStatusText = (status: string, item: any = null, modelName: string = '')
     const total = item.record_count || 1;
     const percentage = (processed / total) * 100;
     if (percentage >= 99) {
-      return 'ready';
+      return 'ready with losses';
     }
   }
 
