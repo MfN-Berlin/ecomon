@@ -95,10 +95,12 @@
               <span class="legend-badge status-ready">ready</span>
               <span class="legend-text">All recordings processed successfully</span>
             </div>
+<!--
             <div class="legend-item">
               <span class="legend-badge status-ready-losses">ready</span>
               <span class="legend-text">At least 99% of recordings processed successfully</span>
             </div>
+-->
             <div class="legend-item">
               <span class="legend-badge status-partial">partial</span>
               <span class="legend-text">Processing started but incomplete</span>
