@@ -383,9 +383,9 @@ const getStatusText = (status: string, item: any = null, modelName: string = '')
   if (status.toLowerCase() === 'partial' && item && modelName) {
     const processed = item[`${modelName}_processed`] || 0;
     const total = item.record_count || 1;
-    const percentage = (processed / total) * 100;
+    const percentage = Math.round((processed / total) * 100);
     if (percentage >= 99) {
-      return 'ready with losses';
+      return 'ready';
     }
   }
 
