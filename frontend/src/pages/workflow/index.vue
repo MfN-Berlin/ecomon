@@ -39,10 +39,10 @@
               <template #activator="{ props }">
                 <span
                   v-bind="props"
-                  :class="getStatusColor(item[`${modelName}_status`])"
+                  :class="getStatusColor(getStatusText(item[`${modelName}_status`], item, modelName))"
                   style="cursor: help;"
                 >
-                  {{ getStatusText(item[`${modelName}_status`]) }}
+                  {{ getStatusText(item[`${modelName}_status`], item, modelName) }}
                 </span>
               </template>
               <span>
@@ -378,7 +378,7 @@ const formatDate = (date: string): string => {
 const getStatusText = (status: string, item: any = null, modelName: string = ''): string => {
   if (!status) return '';
   if (status.toLowerCase() === 'ready with losses') return 'ready';
-
+  console.log('Evaluating status text for:', { status, item, modelName });
   // Check if status is partial but percentage is >= 99%
   if (status.toLowerCase() === 'partial' && item && modelName) {
     const processed = item[`${modelName}_processed`] || 0;
