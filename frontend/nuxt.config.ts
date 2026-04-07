@@ -17,9 +17,9 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      link: [{ rel: "icon", type: "image/x-icon", href: `${process.env.SUB_PATH || '/ecomon_validate'}/favicon.ico` }]
+      link: [{ rel: "icon", type: "image/x-icon", href: `${process.env.SUB_PATH || '/ecomon'}/favicon.ico` }]
     },
-    baseURL: process.env.SUB_PATH || "/ecomon_validate/"
+    baseURL: process.env.SUB_PATH || "/ecomon/"
   },
   imports: {
     dirs: ["composables/**"]
@@ -32,13 +32,13 @@ export default defineNuxtConfig({
     public: {
       ALLOW_EDIT: process.env.ALLOW_EDIT,
       LOG_LEVEL: "debug",
-      GQL_HOST: "http://localhost:8080/v1/graphql",
-      API_BASE_URL: "/ecomon_validate/",
+      GQL_HOST: process.env.NUXT_PUBLIC_GQL_HOST || "http://localhost:8080/v1/graphql",
+      API_BASE_URL: process.env.NUXT_PUBLIC_API_BASE_URL || "/ecomon/",
       "graphql-client": {
         clients: {
           default: {
             schema: "../schema.graphql",
-            host: "http://localhost:8080/v1/graphql"
+            host: process.env.NUXT_PUBLIC_GQL_HOST || "http://localhost:8080/v1/graphql"
           }
         }
       },
