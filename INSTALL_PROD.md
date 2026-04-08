@@ -24,25 +24,34 @@ git checkout ecomon_validate
 
 Make a copy of the environment variables file for development
 ```
-cp env-default .env
+cp env-production .env
 ```
 
 Open the `.env` file in an editor and set at least:
 * DB_NAME=ecomon
 * DB_PASSWORD=secure-password
 * DB_ROOT_PASSWORD=secure-password
+* DB_PORT=a-port
 * BASE_DATA_DIRECTORY=path-to-audio-dir  # needs 50TB+, e.g. on 3fs storage
 * PGBACKUP_PATH=path-to-backup-dir  # needs 20TB+, e.g. on 3fs storage
-* SUB_PATH=/ecomon_validate
+* DOMAIN=your-domain-or-ip
+* SUB_PATH=/your-subpath
 * PGDATA_PATH=path-to-custom-place-for-database-data  # important: db needs 8TB+ on fast disk
 * AIRFLOW_ADMIN_PASSWORD=secure-password
 * HASURA_ADMIN_SECRET=secure-password
 * HASURA_URL=pdefault-docker-compose-gateway (typically 172.17.0.1, used by Dashboard)
 * USE_GPU=1  # 1, 2, or all
 
-You might need to set in .env and/or docker-compose.production.yaml:
+Make sure that these are the same in .env and/or docker-compose.production.yaml:
 * HASURA_URL=172.17.0.1:10080/v1/graphql
-* Port to dashboard service in docker-compose.production.yaml
+* Port to dashboard service
+* Port to DB service
+
+Check that PGDATA_PATH exists, and that it has yhe right owner, i.e. the user the postgres user in the database container (usually userid 999).
+
+Rename the redis service in docker-compose.production.yaml
+
+In .env, set the ENTRY_PORT to the port this instance of ecomon should listen to. This is the entry port that your reverse-proxy (which might be on another machine) is mapping the URL https://your-ip-adress/SUB_PATH to.
 
 Start Docker containers
 ```
@@ -63,3 +72,6 @@ This should start these containers:
 And these networks:
 * ecomon_validate_ecomon
 * ecomon_validate_traefik-ingress
+
+Restore the sql schema from backup
+`psql -U your_username -d target_database_name -f output_schema.sql`
