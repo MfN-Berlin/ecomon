@@ -35,7 +35,7 @@ Open the `.env` file in an editor and set at least:
 * BASE_DATA_DIRECTORY=path-to-audio-dir  # needs 50TB+, e.g. on 3fs storage
 * PGBACKUP_PATH=path-to-backup-dir  # needs 20TB+, e.g. on 3fs storage
 * DOMAIN=your-domain-or-ip
-* SUB_PATH=/your-subpath
+* SUB_PATH=/your-subpath  # if you change this, then you will have to rebuild the frotend container
 * PGDATA_PATH=path-to-custom-place-for-database-data  # important: db needs 8TB+ on fast disk
 * AIRFLOW_ADMIN_PASSWORD=secure-password
 * HASURA_ADMIN_SECRET=secure-password
@@ -47,7 +47,7 @@ Make sure that these are the same in .env and/or docker-compose.production.yaml:
 * Port to dashboard service
 * Port to DB service
 
-Check that PGDATA_PATH exists, and that it has yhe right owner, i.e. the user the postgres user in the database container (usually userid 999).
+Check that PGDATA_PATH exists, and that it has the right owner, i.e. the user the postgres user in the database container (usually userid 999).
 
 Rename the redis service in docker-compose.production.yaml
 
@@ -75,3 +75,7 @@ And these networks:
 
 Restore the sql schema from backup
 `psql -U your_username -d target_database_name -f output_schema.sql`
+
+
+## Multiple instances
+If you need multiple instances of ecomon, then the recommended solution is to put each instance in its own virtual machine.

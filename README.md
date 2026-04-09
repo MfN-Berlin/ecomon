@@ -27,9 +27,9 @@ This platform to analyze the audio monitoring data project.
 - **[Traefik](https://traefik.io/)**: A modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
 - **[Redis](https://redis.io/)**: An open-source, in-memory data structure store, used as a database, cache, and message broker used for communication between FastAPI and Celery.
 
-## Architekture
+## Components
 
-![Architekture](./docs/architekture.png)
+![Components](./docs/components.png)
 
 ### Celery Worker
 Service for handling asynchronous jobs started in the UI. In the current setup are two worker queues.

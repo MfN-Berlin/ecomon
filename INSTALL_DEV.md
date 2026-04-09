@@ -73,7 +73,7 @@ tail -n1000 -f /tmp/ecomon.log
 You can now open the application in a browser on http://localhost:3000/ecomon_validate
 
 ## Editing
-In the development environment, changes to teh folders frontend and backend are reflected immediately.
+In the development environment, changes to the folders frontend and backend are reflected immediately.
 
 Traefik will route http://localhost/ecomon to the frontend, http://localhost/static/files to the backend files endpoint and http://localhost/ecomon/api/v1/graphql to the hasura graphql endpoint
 
