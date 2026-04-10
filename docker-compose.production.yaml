@@ -276,6 +276,14 @@ services:
     image: apache/airflow:2.7.2
     depends_on:
       - db
+    deploy:
+      resources:
+        limits:
+          memory: 32G
+          cpus: 8.0
+        reservations:
+          memory: 16G
+          cpus: 4.0
     environment:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/ecomon
       - AIRFLOW_CONN_POSTGRES_DEFAULT=postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/ecomon

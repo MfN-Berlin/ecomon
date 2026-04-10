@@ -133,8 +133,38 @@ def process_partition_data(postgres_hook, partition_name, results_temp_table, st
     """Process the data for a single partition"""
     migration_query = f"""
     SET statement_timeout = '{statement_timeout}s';
-    SET work_mem = '1GB';
-    SET temp_buffers = '512MB';
+    SET work_mem = '256MB';
+    SET temp_buffers = '128MB';
+
+    BEGIN;
+
+    WITH ranked_rows AS (
+        SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
+               ROW_NUMBER() OVER (
+                   PARTITION BY record_id, label_id, model_id
+                   ORDER BY confidence DESC, id ASC
+               ) AS rank
+        FROM {partition_name}
+    )
+    INSERT INTO {results_temp_table}
+    (record_id, label_id, model_id, id, start_time, end_time, confidence)
+    SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
+    FROM ranked_rows
+    WHERE rank = 1  -- Select only the row with the highest confidence
+    ON CONFLICT (record_id, label_id, model_id)
+    DO UPDATE SET
+        id = EXCLUDED.id,
+        start_time = EXCLUDED.start_time,
+        end_time = EXCLUDED.end_time,
+        confidence = EXCLUDED.confidence;
+
+    COMMIT;
+    """
+    # Reduce memory settings to prevent OOM kills
+    migration_query = f"""
+    SET statement_timeout = '{statement_timeout}s';
+    SET work_mem = '256MB';
+    SET temp_buffers = '128MB';
 
     BEGIN;
 
@@ -260,8 +290,8 @@ def swap_tables():
 
         if main_table_exists:
             merge_query = """
-            SET work_mem = '2GB';
-            SET maintenance_work_mem = '2GB';
+            SET work_mem = '512MB';
+            SET maintenance_work_mem = '1GB';
 
             BEGIN;
 
