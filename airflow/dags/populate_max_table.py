@@ -9,6 +9,7 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.decorators import dag
 from datetime import datetime, timedelta
+import time
 
 # Default arguments for the DAG
 default_args = {
@@ -130,67 +131,62 @@ def should_process_partition(postgres_hook, partition_name, current_row_count, p
 
 # Function to process a single partition
 def process_partition_data(postgres_hook, partition_name, results_temp_table, statement_timeout):
-    """Process the data for a single partition"""
-    migration_query = f"""
-    SET statement_timeout = '{statement_timeout}s';
-    SET work_mem = '256MB';
-    SET temp_buffers = '128MB';
-
-    BEGIN;
-
-    WITH ranked_rows AS (
-        SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
-               ROW_NUMBER() OVER (
-                   PARTITION BY record_id, label_id, model_id
-                   ORDER BY confidence DESC, id ASC
-               ) AS rank
-        FROM {partition_name}
-    )
-    INSERT INTO {results_temp_table}
-    (record_id, label_id, model_id, id, start_time, end_time, confidence)
-    SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
-    FROM ranked_rows
-    WHERE rank = 1  -- Select only the row with the highest confidence
-    ON CONFLICT (record_id, label_id, model_id)
-    DO UPDATE SET
-        id = EXCLUDED.id,
-        start_time = EXCLUDED.start_time,
-        end_time = EXCLUDED.end_time,
-        confidence = EXCLUDED.confidence;
-
-    COMMIT;
+    """Process the data for a single partition with optimized index management"""
+    
+    # Drop indexes for faster INSERT (especially important for large partitions)
+    drop_indexes_query = f"""
+    DROP INDEX IF EXISTS idx_mir_max_conf_temp_compound;
+    DROP INDEX IF EXISTS idx_mir_max_conf_temp_label;
+    DROP INDEX IF EXISTS idx_mir_max_conf_temp_model;
     """
-    # Reduce memory settings to prevent OOM kills
-    migration_query = f"""
-    SET statement_timeout = '{statement_timeout}s';
-    SET work_mem = '256MB';
-    SET temp_buffers = '128MB';
+    postgres_hook.run(drop_indexes_query)
+    
+    try:
+        # Use reduced memory settings to prevent OOM kills
+        migration_query = f"""
+        SET statement_timeout = '{statement_timeout}s';
+        SET work_mem = '256MB';
+        SET temp_buffers = '128MB';
 
-    BEGIN;
+        BEGIN;
 
-    WITH ranked_rows AS (
-        SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
-               ROW_NUMBER() OVER (
-                   PARTITION BY record_id, label_id, model_id
-                   ORDER BY confidence DESC, id ASC
-               ) AS rank
-        FROM {partition_name}
-    )
-    INSERT INTO {results_temp_table}
-    (record_id, label_id, model_id, id, start_time, end_time, confidence)
-    SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
-    FROM ranked_rows
-    WHERE rank = 1  -- Select only the row with the highest confidence
-    ON CONFLICT (record_id, label_id, model_id)
-    DO UPDATE SET
-        id = EXCLUDED.id,
-        start_time = EXCLUDED.start_time,
-        end_time = EXCLUDED.end_time,
-        confidence = EXCLUDED.confidence;
+        WITH ranked_rows AS (
+            SELECT record_id, label_id, model_id, id, start_time, end_time, confidence,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY record_id, label_id, model_id
+                       ORDER BY confidence DESC, id ASC
+                   ) AS rank
+            FROM {partition_name}
+        )
+        INSERT INTO {results_temp_table}
+        (record_id, label_id, model_id, id, start_time, end_time, confidence)
+        SELECT record_id, label_id, model_id, id, start_time, end_time, confidence
+        FROM ranked_rows
+        WHERE rank = 1  -- Select only the row with the highest confidence
+        ON CONFLICT (record_id, label_id, model_id)
+        DO UPDATE SET
+            id = EXCLUDED.id,
+            start_time = EXCLUDED.start_time,
+            end_time = EXCLUDED.end_time,
+            confidence = EXCLUDED.confidence;
 
-    COMMIT;
-    """
-    postgres_hook.run(migration_query)
+        COMMIT;
+        """
+        postgres_hook.run(migration_query)
+        
+    finally:
+        # Recreate indexes after data is loaded
+        recreate_indexes_query = f"""
+        CREATE INDEX idx_mir_max_conf_temp_compound 
+        ON {results_temp_table} (model_id, label_id, confidence DESC, record_id);
+        
+        CREATE INDEX idx_mir_max_conf_temp_label 
+        ON {results_temp_table} (label_id, confidence DESC);
+        
+        CREATE INDEX idx_mir_max_conf_temp_model 
+        ON {results_temp_table} (model_id);
+        """
+        postgres_hook.run(recreate_indexes_query)
 
 # Function to update progress table
 def update_partition_progress(postgres_hook, partition_name, current_row_count, duration_seconds, progress_table):
