@@ -152,7 +152,6 @@ def run_inferences():
     from airflow.operators.python import BranchPythonOperator
     from airflow.utils.trigger_rule import TriggerRule
 
-    @task(branch_task=True)
     def should_continue(has_running_jobs):
         if has_running_jobs:
             return 'skip_remaining_tasks'
@@ -170,7 +169,11 @@ def run_inferences():
     # if there are running inference jobs, the rest of the DAG is skipped
     # to avoid overloading the system. Otherwise, it continues to check for models
     # needing processing and triggers inference jobs as needed.
-    branch = should_continue(has_running_jobs)
+    branch = BranchPythonOperator(
+        task_id='should_continue',
+        python_callable=should_continue,
+        op_kwargs={'has_running_jobs': '{{ task_instance.xcom_pull(task_ids="check_running_inference_jobs") }}'}
+    )
     skip_task = skip_remaining_tasks()
     models = get_models_needing_processing()
 
