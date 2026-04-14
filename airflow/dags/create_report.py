@@ -227,7 +227,9 @@ def create_report():
                         wav_count += 1
                         file_path = os.path.join(full_path, filename)
                         try:
-                            total_size += os.path.getsize(file_path)
+                            # total_size += os.path.getsize(file_path)
+                            # skipping, too slow
+                            total_size = 0
                         except OSError as e:
                             logging.warning(f"Could not get size of {file_path}: {e}")
 
