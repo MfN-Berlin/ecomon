@@ -262,8 +262,8 @@ services:
 
   dashboard:
     image: ghcr.io/mfn-berlin/akwamo-webservice-next-dashboard:latest
-    ports:
-      - "3838:3838"
+#    ports:
+#      - "3838:3838"
     environment:
       - HASURA_SECRET=${HASURA_ADMIN_SECRET}
       - HASURA_URL=${HASURA_URL}

@@ -36,6 +36,22 @@ def run_inferences():
         return table_exists
 
     @task
+    def check_running_inference_jobs():
+        """Check if there are any running inference jobs"""
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+
+        query = """
+        SELECT COUNT(*)
+        FROM jobs
+        WHERE status='running' AND topic='model_inference_site';
+        """
+
+        result = postgres_hook.get_first(query)
+        running_jobs = result[0] if result else 0
+        logging.info(f"Running inference jobs: {running_jobs}")
+        return running_jobs > 0
+
+    @task
     def get_models_needing_processing():
         """Find models with pending or partial status"""
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
@@ -133,9 +149,33 @@ def run_inferences():
             logging.error(f"Failed to trigger job. Status: {response.status_code}, Response: {response.text}")
             return None
 
+    from airflow.operators.python import BranchPythonOperator
+    from airflow.utils.trigger_rule import TriggerRule
+
+    @task(branch_task=True)
+    def should_continue(has_running_jobs):
+        if has_running_jobs:
+            return 'skip_remaining_tasks'
+        return 'get_models_needing_processing'
+
+    @task(trigger_rule=TriggerRule.NONE_FAILED)
+    def skip_remaining_tasks():
+        logging.info("Skipping inference jobs as there are already running jobs")
+        return []
+
     # Set up task flow
     table_exists = check_report_table_exists()
+    has_running_jobs = check_running_inference_jobs()
+
+    # if there are running inference jobs, the rest of the DAG is skipped
+    # to avoid overloading the system. Otherwise, it continues to check for models
+    # needing processing and triggers inference jobs as needed.
+    branch = should_continue(has_running_jobs)
+    skip_task = skip_remaining_tasks()
     models = get_models_needing_processing()
-    table_exists >> models >> trigger_inference_job.expand(model_info=models)
+
+    table_exists >> has_running_jobs >> branch
+    branch >> [skip_task, models]
+    models >> trigger_inference_job.expand(model_info=models)
 
 run_inferences()

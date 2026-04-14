@@ -43,13 +43,13 @@ Open the `.env` file in an editor and set at least:
 * USE_GPU=1  # 1, 2, or all
 
 Make sure that these are the same in .env and/or docker-compose.production.yaml:
-* HASURA_URL=172.17.0.1:10080/v1/graphql
+* The port in .env HASURA_URL should be set in the grpahql service in docker.compose.production.yaml
 * Port to dashboard service
-* Port to DB service
+* Port to DB service should be unique
 
-Check that PGDATA_PATH exists, and that it has the right owner, i.e. the user the postgres user in the database container (usually userid 999).
+Check that PGDATA_PATH exists.
 
-Rename the redis service in docker-compose.production.yaml
+Give the redis service in docker-compose.production.yaml a unique name
 
 In .env, set the ENTRY_PORT to the port this instance of ecomon should listen to. This is the entry port that your reverse-proxy (which might be on another machine) is mapping the URL https://your-ip-adress/SUB_PATH to.
 
