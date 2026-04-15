@@ -69,7 +69,7 @@ def run_inferences():
         WHERE model_status IN ('pending', 'partial')
         AND report_date = (SELECT MAX(report_date) FROM workflow_reports)
         ORDER BY records_to_process DESC
-        LIMIT 2;  -- Number of models to process in this DAG run. Adjust based on desired workload.
+        LIMIT 4;  -- Number of models to process in this DAG run. Adjust based on desired workload.
         """
 
         records = postgres_hook.get_records(query)
