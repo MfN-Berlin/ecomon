@@ -306,94 +306,106 @@ def model_inference_site_task(
 
             # if confidence is 0 or below confidence resolution
             df = df[df["confidence"] >= 0.01]
-            if len(df) == 0:
-                # No results to insert, skip to next batch
-                continue
+            has_results = len(df) > 0
 
             # Map filename to record_id and add model_id
             df["record_id"] = df["filename"].map(record_name_to_id)
             df["model_id"] = model_id
 
-            # CRITICAL: Sort by record_id for partition efficiency
-            # This ensures inserts go to the same partition sequentially,
-            # reducing partition switching overhead and improving cache utilization
-            df = df.sort_values("record_id")
+            if has_results:
+                # CRITICAL: Sort by record_id for partition efficiency
+                # This ensures inserts go to the same partition sequentially,
+                # reducing partition switching overhead and improving cache utilization
+                df = df.sort_values("record_id")
 
-            # Select and reorder columns for insertion
-            df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
+                # Select and reorder columns for insertion
+                df_results = df[["record_id", "model_id", "start_time", "end_time", "confidence", "label_id"]]
 
-            # ADD THIS DEBUGGING CODE RIGHT HERE:
-            logger.info(f"DataFrame shape before cleaning: {df_results.shape}")
-            logger.info(f"label_id column dtype: {df_results['label_id'].dtype}")
-            logger.info(f"label_id value counts:\n{df_results['label_id'].value_counts(dropna=False).head(20)}")
+                # ADD THIS DEBUGGING CODE RIGHT HERE:
+                logger.info(f"DataFrame shape before cleaning: {df_results.shape}")
+                logger.info(f"label_id column dtype: {df_results['label_id'].dtype}")
+                logger.info(f"label_id value counts:\n{df_results['label_id'].value_counts(dropna=False).head(20)}")
 
-            # Check for specific problematic values
-            problematic = df_results[~df_results['label_id'].apply(
-                lambda x: isinstance(x, (int, float)) and not (np.isnan(x) or np.isinf(x)) or x is None
-            )]
-            if not problematic.empty:
-                logger.warning(f"Found {len(problematic)} problematic label_id values")
-                logger.debug(f"Problematic records:\n{problematic[['record_id', 'label_id']].to_string()}")
+                # Check for specific problematic values
+                problematic = df_results[~df_results['label_id'].apply(
+                    lambda x: isinstance(x, (int, float)) and not (np.isnan(x) or np.isinf(x)) or x is None
+                )]
+                if not problematic.empty:
+                    logger.warning(f"Found {len(problematic)} problematic label_id values")
+                    logger.debug(f"Problematic records:\n{problematic[['record_id', 'label_id']].to_string()}")
 
-            # Log and handle NaN/inf values in label_id before converting to integer
-            nan_rows = df_results[df_results["label_id"].isna()]
-            if not nan_rows.empty:
-                logger.warning(f"Found {len(nan_rows)} records with NaN label_id values. Dropping these records.")
-                logger.debug(f"NaN label_id records details: {nan_rows.to_dict()}")
+                # Log and handle NaN/inf values in label_id before converting to integer
+                nan_rows = df_results[df_results["label_id"].isna()]
+                if not nan_rows.empty:
+                    logger.warning(f"Found {len(nan_rows)} records with NaN label_id values. Dropping these records.")
+                    logger.debug(f"NaN label_id records details: {nan_rows.to_dict()}")
 
-            inf_rows = df_results[df_results["label_id"].isin([np.inf, -np.inf])]
-            if not inf_rows.empty:
-                logger.warning(f"Found {len(inf_rows)} records with infinite label_id values. Dropping these records.")
-                logger.debug(f"Infinite label_id records details: {inf_rows.to_dict()}")
+                inf_rows = df_results[df_results["label_id"].isin([np.inf, -np.inf])]
+                if not inf_rows.empty:
+                    logger.warning(f"Found {len(inf_rows)} records with infinite label_id values. Dropping these records.")
+                    logger.debug(f"Infinite label_id records details: {inf_rows.to_dict()}")
 
-            # Handle NaN/inf values in label_id before converting to integer
-            original_count = len(df_results)
-            df_results = df_results.dropna(subset=["label_id"])  # Remove rows with NaN label_id
-            df_results = df_results[~df_results["label_id"].isin([np.inf, -np.inf])]  # Remove rows with inf label_id
+                # Handle NaN/inf values in label_id before converting to integer
+                original_count = len(df_results)
+                df_results = df_results.dropna(subset=["label_id"])  # Remove rows with NaN label_id
+                df_results = df_results[~df_results["label_id"].isin([np.inf, -np.inf])]  # Remove rows with inf label_id
 
-            if len(df_results) < original_count:
-                logger.warning(f"Dropped {original_count - len(df_results)} records with invalid label_id values")
+                if len(df_results) < original_count:
+                    logger.warning(f"Dropped {original_count - len(df_results)} records with invalid label_id values")
 
-            # Make sure label_id is integer
-            df_results["label_id"] = df_results["label_id"].astype(int)
+                # Make sure label_id is integer
+                df_results["label_id"] = df_results["label_id"].astype(int)
 
-            # Use COPY for maximum speed (10-50x faster than INSERT on indexed tables)
-            logger.info(f"Inserting {len(df_results)} results using COPY")
-            connection = session.connection().connection
-            cursor = connection.cursor()
+                # Use COPY for maximum speed (10-50x faster than INSERT on indexed tables)
+                logger.info(f"Inserting {len(df_results)} results using COPY")
+                connection = session.connection().connection
+                cursor = connection.cursor()
 
-            # Construct table name with model name postfix
-            if not model or not model.name:
-                error_msg = f"Model name not found for model_id {model_id}. Cannot determine target table."
-                logger.error(error_msg)
-                raise Exception(error_msg)
+                # Construct table name with model name postfix
+                if not model or not model.name:
+                    error_msg = f"Model name not found for model_id {model_id}. Cannot determine target table."
+                    logger.error(error_msg)
+                    raise Exception(error_msg)
 
-            # table_name = f"model_inference_results_{model.name}"
-            table_name = "model_inference_results_pt_record"
-            logger.info(f"Writing to table: {table_name}")
+                # table_name = f"model_inference_results_{model.name}"
+                table_name = "model_inference_results_pt_record"
+                logger.info(f"Writing to table: {table_name}")
 
-            # Create CSV buffer in memory
-            buffer = StringIO()
-            df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
-            buffer.seek(0)
+                # Create CSV buffer in memory
+                buffer = StringIO()
+                df_results.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
+                buffer.seek(0)
 
-            # COPY from buffer to table (bypasses most index overhead)
-            # Use %s placeholder with quoted identifier to handle special characters
-            cursor.copy_expert(
-                f"""
-                COPY "{table_name}"
-                (record_id, model_id, start_time, end_time, confidence, label_id)
-                FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
-                """,
-                buffer
-            )
+                # COPY from buffer to table (bypasses most index overhead)
+                # Use %s placeholder with quoted identifier to handle special characters
+                cursor.copy_expert(
+                    f"""
+                    COPY "{table_name}"
+                    (record_id, model_id, start_time, end_time, confidence, label_id)
+                    FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')
+                    """,
+                    buffer
+                )
+            else:
+                # No results, but we still need to set up connection for logs
+                connection = session.connection().connection
+                cursor = connection.cursor()
 
             # Insert logs using COPY
-            logs_df = pandas.DataFrame({
-                "model_id": model_id,
-                "record_id": sorted(df["record_id"].unique()),
-                "analyzed": True
-            })
+            if has_results:
+                logs_df = pandas.DataFrame({
+                    "model_id": model_id,
+                    "record_id": sorted(df["record_id"].unique()),
+                    "analyzed": True
+                })
+            else:
+                # No results found, but still log all records in the batch
+                logger.info("No inferences above threshold found, logging records as analyzed with no detections")
+                logs_df = pandas.DataFrame({
+                    "model_id": model_id,
+                    "record_id": sorted(record_name_to_id.values()),
+                    "analyzed": True
+                })
 
             logger.info(f"Inserting {len(logs_df)} logs using COPY")
             logs_buffer = StringIO()
