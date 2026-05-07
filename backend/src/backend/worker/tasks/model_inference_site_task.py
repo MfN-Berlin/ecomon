@@ -392,20 +392,13 @@ def model_inference_site_task(
                 cursor = connection.cursor()
 
             # Insert logs using COPY
-            if has_results:
-                logs_df = pandas.DataFrame({
-                    "model_id": model_id,
-                    "record_id": sorted(df["record_id"].unique()),
-                    "analyzed": True
-                })
-            else:
-                # No results found, but still log all records in the batch
-                logger.info("No inferences above threshold found, logging records as analyzed with no detections")
-                logs_df = pandas.DataFrame({
-                    "model_id": model_id,
-                    "record_id": sorted(record_name_to_id.values()),
-                    "analyzed": True
-                })
+            # Always log all records in the batch as analyzed, regardless of detection results
+            # This ensures every processed record has a log entry
+            logs_df = pandas.DataFrame({
+                "model_id": model_id,
+                "record_id": sorted(record_name_to_id.values()),
+                "analyzed": True
+            })
 
             logger.info(f"Inserting {len(logs_df)} logs using COPY")
             logs_buffer = StringIO()
