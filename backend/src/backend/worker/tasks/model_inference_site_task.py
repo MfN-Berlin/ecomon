@@ -222,11 +222,16 @@ def model_inference_site_task(
             if settings.use_gpu.lower() != "none":
                 if settings.use_gpu.lower() == "all":
                     # Read the current GPU index from file
+                    current_gpu_ix = 0  # Default value
                     if os.path.exists(gpu_index_file):
-                        with open(gpu_index_file, 'r') as f:
-                            current_gpu_ix = int(f.read().strip())
-                    else:
-                        current_gpu_ix = 0
+                        try:
+                            with open(gpu_index_file, 'r') as f:
+                                content = f.read().strip()
+                                if content:  # Only convert if content is not empty
+                                    current_gpu_ix = int(content)
+                        except (ValueError, IOError) as e:
+                            logger.warning(f"Failed to read GPU index file: {e}. Using default 0")
+                            current_gpu_ix = 0
 
                     command_parts.append(f"--gpuIx {current_gpu_ix}")
                     # Toggle between 0 and 1 for the next run
