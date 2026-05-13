@@ -151,6 +151,10 @@ def model_inference_site_task(
             )
         for attempt in range(3):  # Retry up to 3 times
             try:
+                if os.path.exists(job_temp_dir):
+                    if not os.path.isdir(job_temp_dir):
+                        logger.warning(f"Temp path {job_temp_dir!r} exists and is not a directory; removing it")
+                        os.remove(job_temp_dir)
                 os.makedirs(job_temp_dir, exist_ok=True)
                 break
             except OSError as e:
@@ -158,7 +162,7 @@ def model_inference_site_task(
                     logger.error(f"Failed to create temp directory {job_temp_dir!r} after 3 attempts: {e}")
                     raise
                 logger.warning(f"Failed to create temp directory {job_temp_dir!r} (attempt {attempt + 1}): {e}")
-                time.sleep(0.5)  # Longer delay before retry
+                time.sleep(2)  # Longer delay before retry
         if total_count == 0:
             JobService.update_job_progress(session, job_id, 100)
             return {
@@ -464,43 +468,26 @@ def model_inference_site_task(
             )
             # delete all files and directories in the job_temp_dir for the next batch
             if os.path.isdir(job_temp_dir):
-                for attempt in range(3):  # Retry up to 3 times
+                # Retry logic for listing the directory
+                for attempt in range(5):  # Retry up to 5 times
                     try:
                         items = os.listdir(job_temp_dir)
                         break
                     except OSError as e:
-                        if attempt == 2:  # Last attempt
-                            logger.warning(f"Failed to list temp directory {job_temp_dir!r} after 3 attempts: {e}")
+                        if attempt == 4:  # Last attempt
+                            logger.error(f"Failed to list directory {job_temp_dir!r} after 5 attempts: {e}")
                             raise
-                        logger.warning(f"Failed to list temp directory {job_temp_dir!r} (attempt {attempt + 1}): {e}")
-                        time.sleep(0.1)  # Short delay before retry
+                        logger.warning(f"Failed to list directory {job_temp_dir!r} (attempt {attempt + 1}): {e}")
+                        time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s, 4s, 8s, 16s
                 else:
                     items = []  # Fallback if all retries failed, but shouldn't reach here
 
                 for item in items:
                     item_path = os.path.join(job_temp_dir, item)
                     if os.path.isdir(item_path):
-                        for attempt in range(3):
-                            try:
-                                shutil.rmtree(item_path)
-                                break
-                            except OSError as e:
-                                if attempt == 2:
-                                    logger.warning(f"Failed to remove subdirectory {item_path!r} after 3 attempts: {e}")
-                                    break
-                                logger.warning(f"Failed to remove subdirectory {item_path!r} (attempt {attempt + 1}): {e}")
-                                time.sleep(0.1)
+                        shutil.rmtree(item_path)
                     else:
-                        for attempt in range(3):
-                            try:
-                                os.remove(item_path)
-                                break
-                            except OSError as e:
-                                if attempt == 2:
-                                    logger.warning(f"Failed to remove file {item_path!r} after 3 attempts: {e}")
-                                    break
-                                logger.warning(f"Failed to remove file {item_path!r} (attempt {attempt + 1}): {e}")
-                                time.sleep(0.1)
+                        os.remove(item_path)
             else:
                 logger.warning(f"Temp directory {job_temp_dir!r} not found during batch cleanup")
             JobService.updateResult(session, job_id, {"inferred_records": file_counter})
