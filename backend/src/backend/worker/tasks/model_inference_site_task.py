@@ -136,11 +136,29 @@ def model_inference_site_task(
             f"Found {total_count} records to process for site {site_id} and model {model.name}"
         )
         if os.path.exists(job_temp_dir) and not os.path.isdir(job_temp_dir):
+            for attempt in range(3):  # Retry up to 3 times
+                try:
+                    os.remove(job_temp_dir)
+                    break
+                except OSError as e:
+                    if attempt == 2:  # Last attempt
+                        logger.warning(f"Failed to remove existing file {job_temp_dir!r} after 3 attempts: {e}")
+                        raise
+                    logger.warning(f"Failed to remove existing file {job_temp_dir!r} (attempt {attempt + 1}): {e}")
+                    time.sleep(0.1)
             logger.warning(
                 f"Temp path {job_temp_dir!r} exists and is not a directory; removing it"
             )
-            os.remove(job_temp_dir)
-        os.makedirs(job_temp_dir, exist_ok=True)
+        for attempt in range(3):  # Retry up to 3 times
+            try:
+                os.makedirs(job_temp_dir, exist_ok=True)
+                break
+            except OSError as e:
+                if attempt == 2:  # Last attempt
+                    logger.error(f"Failed to create temp directory {job_temp_dir!r} after 3 attempts: {e}")
+                    raise
+                logger.warning(f"Failed to create temp directory {job_temp_dir!r} (attempt {attempt + 1}): {e}")
+                time.sleep(0.5)  # Longer delay before retry
         if total_count == 0:
             JobService.update_job_progress(session, job_id, 100)
             return {
@@ -462,9 +480,27 @@ def model_inference_site_task(
                 for item in items:
                     item_path = os.path.join(job_temp_dir, item)
                     if os.path.isdir(item_path):
-                        shutil.rmtree(item_path)
+                        for attempt in range(3):
+                            try:
+                                shutil.rmtree(item_path)
+                                break
+                            except OSError as e:
+                                if attempt == 2:
+                                    logger.warning(f"Failed to remove subdirectory {item_path!r} after 3 attempts: {e}")
+                                    break
+                                logger.warning(f"Failed to remove subdirectory {item_path!r} (attempt {attempt + 1}): {e}")
+                                time.sleep(0.1)
                     else:
-                        os.remove(item_path)
+                        for attempt in range(3):
+                            try:
+                                os.remove(item_path)
+                                break
+                            except OSError as e:
+                                if attempt == 2:
+                                    logger.warning(f"Failed to remove file {item_path!r} after 3 attempts: {e}")
+                                    break
+                                logger.warning(f"Failed to remove file {item_path!r} (attempt {attempt + 1}): {e}")
+                                time.sleep(0.1)
             else:
                 logger.warning(f"Temp directory {job_temp_dir!r} not found during batch cleanup")
             JobService.updateResult(session, job_id, {"inferred_records": file_counter})
@@ -485,7 +521,17 @@ def model_inference_site_task(
             pass
         # Clean up temp directory only if it exists and is a directory
         if os.path.isdir(job_temp_dir):
-            shutil.rmtree(job_temp_dir)
+            for attempt in range(3):  # Retry up to 3 times
+                try:
+                    shutil.rmtree(job_temp_dir)
+                    break
+                except OSError as e:
+                    if attempt == 2:  # Last attempt
+                        logger.warning(f"Failed to remove temp directory {job_temp_dir!r} after 3 attempts: {e}")
+                        # Don't raise here, as this is cleanup
+                        break
+                    logger.warning(f"Failed to remove temp directory {job_temp_dir!r} (attempt {attempt + 1}): {e}")
+                    time.sleep(0.5)
         elif os.path.exists(job_temp_dir):
             logger.warning(
                 f"Temp path {job_temp_dir!r} exists but is not a directory; skipping rmtree"
