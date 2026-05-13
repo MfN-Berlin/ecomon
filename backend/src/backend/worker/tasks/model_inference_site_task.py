@@ -135,6 +135,11 @@ def model_inference_site_task(
         logger.info(
             f"Found {total_count} records to process for site {site_id} and model {model.name}"
         )
+        if os.path.exists(job_temp_dir) and not os.path.isdir(job_temp_dir):
+            logger.warning(
+                f"Temp path {job_temp_dir!r} exists and is not a directory; removing it"
+            )
+            os.remove(job_temp_dir)
         os.makedirs(job_temp_dir, exist_ok=True)
         if total_count == 0:
             JobService.update_job_progress(session, job_id, 100)
@@ -440,12 +445,28 @@ def model_inference_site_task(
                 session, job_id, file_counter, total_count
             )
             # delete all files and directories in the job_temp_dir for the next batch
-            for item in os.listdir(job_temp_dir):
-                item_path = os.path.join(job_temp_dir, item)
-                if os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
+            if os.path.isdir(job_temp_dir):
+                for attempt in range(3):  # Retry up to 3 times
+                    try:
+                        items = os.listdir(job_temp_dir)
+                        break
+                    except OSError as e:
+                        if attempt == 2:  # Last attempt
+                            logger.warning(f"Failed to list temp directory {job_temp_dir!r} after 3 attempts: {e}")
+                            raise
+                        logger.warning(f"Failed to list temp directory {job_temp_dir!r} (attempt {attempt + 1}): {e}")
+                        time.sleep(0.1)  # Short delay before retry
                 else:
-                    os.remove(item_path)
+                    items = []  # Fallback if all retries failed, but shouldn't reach here
+
+                for item in items:
+                    item_path = os.path.join(job_temp_dir, item)
+                    if os.path.isdir(item_path):
+                        shutil.rmtree(item_path)
+                    else:
+                        os.remove(item_path)
+            else:
+                logger.warning(f"Temp directory {job_temp_dir!r} not found during batch cleanup")
             JobService.updateResult(session, job_id, {"inferred_records": file_counter})
 
         JobService.update_job_progress(session, job_id, 100)
@@ -462,9 +483,13 @@ def model_inference_site_task(
             session.commit()
         except:
             pass
-        # Clean up temp directory only if it exists
-        if os.path.exists(job_temp_dir):
+        # Clean up temp directory only if it exists and is a directory
+        if os.path.isdir(job_temp_dir):
             shutil.rmtree(job_temp_dir)
+        elif os.path.exists(job_temp_dir):
+            logger.warning(
+                f"Temp path {job_temp_dir!r} exists but is not a directory; skipping rmtree"
+            )
 
     return {
         "status": "success",
