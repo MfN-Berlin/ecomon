@@ -145,7 +145,7 @@ def model_inference_site_task(
                         logger.warning(f"Failed to remove existing file {job_temp_dir!r} after 3 attempts: {e}")
                         raise
                     logger.warning(f"Failed to remove existing file {job_temp_dir!r} (attempt {attempt + 1}): {e}")
-                    time.sleep(0.1)
+                    time.sleep(2)
             logger.warning(
                 f"Temp path {job_temp_dir!r} exists and is not a directory; removing it"
             )
