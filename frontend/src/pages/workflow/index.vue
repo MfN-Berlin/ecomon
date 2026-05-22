@@ -55,6 +55,7 @@
               </span>
             </v-tooltip>
           </template>
+          <!--
           <template #item.wav_size_bytes="{ item }">
             <v-tooltip location="top">
               <template #activator="{ props }">
@@ -65,12 +66,15 @@
               <span>{{ (item.wav_size_bytes || 0).toLocaleString('de-DE') }} bytes</span>
             </v-tooltip>
           </template>
+          -->
           <!-- Totals row -->
           <template #body.append>
             <tr class="totals-row">
               <td><strong>Totals:</strong></td>
               <td></td>
+              <!--
               <td class="text-end">{{ (totalSize / (1024**4)).toFixed(2) }} TB</td>
+              -->
               <td class="text-end">{{ totalWavCount.toLocaleString('de-DE') }}</td>
               <td class="text-end">
                 {{ totalRecords.toLocaleString() }}
@@ -344,7 +348,7 @@ const headers = computed(() => {
   const baseHeaders = [
     { title: 'Prefix', key: 'prefix', sortable: true, width: '110px' },
     { title: 'Site ID', key: 'site_id', sortable: true, width: '60px', align: 'end' },
-    { title: 'WAV Size (MB)', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
+//    { title: 'WAV Size (MB)', key: 'wav_size_bytes', sortable: true, width: '180px', align: 'end' },
     { title: 'WAV Count', key: 'wav_count', sortable: true, width: '120px', align: 'end' },
     { title: 'Records', key: 'record_count', sortable: true, width: '120px', align: 'end' },
   ];
