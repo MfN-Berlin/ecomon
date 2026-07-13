@@ -18,8 +18,14 @@ DB_USER=$2
 DB_PASSWORD=$3
 DB_NAME="ecomon"
 
+# Configurable partition settings
+PARTITION_COUNT=${PARTITION_COUNT:-200}
+RECORDS_PER_PARTITION=${RECORDS_PER_PARTITION:-25000}
+
 echo "Creating partitioned table and view"
 echo "Using database: $DB_NAME in container: $CONTAINER_NAME"
+echo "Partition count: $PARTITION_COUNT"
+echo "Records per partition: $RECORDS_PER_PARTITION"
 
 # Create SQL script
 SQL_SCRIPT=$(cat <<EOF
@@ -38,47 +44,63 @@ CREATE TABLE public."model_inference_results_pt_record" (
     PRIMARY KEY (record_id, id)
 ) PARTITION BY RANGE (record_id);
 
--- 3. Create 200 partitions in the new schema using a loop
+-- 3. Create partitions in the new schema using a loop
 DO \$\$
 DECLARE
     partition_num integer;
-    range_size integer := 25000;
+    partition_count integer := ${PARTITION_COUNT};
+    range_size integer := ${RECORDS_PER_PARTITION};
     range_start bigint;
     range_end bigint;
     partition_name text;
+    digit_width integer := GREATEST(3, length(partition_count::text));
 BEGIN
-    -- Create first partition with MINVALUE
-    EXECUTE format(
-        'CREATE TABLE "mir_partitions".model_inference_results_p001
-         PARTITION OF public."model_inference_results_pt_record"
-         FOR VALUES FROM (MINVALUE) TO (%s)',
-        range_size
-    );
-
-    -- Create partitions 2-199
-    FOR partition_num IN 2..199 LOOP
-        range_start := (partition_num - 1) * range_size;
-        range_end := partition_num * range_size;
-        partition_name := 'model_inference_results_p' || lpad(partition_num::text, 3, '0');
-
+    IF partition_count < 1 THEN
+        RAISE EXCEPTION 'partition_count must be at least 1';
+    END IF;
+    -- Create first partition with MINVALUE or MAXVALUE when there is only one partition
+    IF partition_count = 1 THEN
         EXECUTE format(
-            'CREATE TABLE "mir_partitions".%I
+            'CREATE TABLE "mir_partitions".model_inference_results_p%0' || digit_width || 's
              PARTITION OF public."model_inference_results_pt_record"
-             FOR VALUES FROM (%s) TO (%s)',
-            partition_name,
-            range_start,
-            range_end
+             FOR VALUES FROM (MINVALUE) TO (MAXVALUE)',
+            1
         );
-    END LOOP;
+    ELSE
+        EXECUTE format(
+            'CREATE TABLE "mir_partitions".model_inference_results_p%0' || digit_width || 's
+             PARTITION OF public."model_inference_results_pt_record"
+             FOR VALUES FROM (MINVALUE) TO (%s)',
+            1,
+            range_size
+        );
 
-    -- Create last partition with MAXVALUE
-    range_start := 199 * range_size;
-    EXECUTE format(
-        'CREATE TABLE "mir_partitions".model_inference_results_p200
-         PARTITION OF public."model_inference_results_pt_record"
-         FOR VALUES FROM (%s) TO (MAXVALUE)',
-        range_start
-    );
+        -- Create intermediate partitions
+        FOR partition_num IN 2..(partition_count - 1) LOOP
+            range_start := (partition_num - 1) * range_size;
+            range_end := partition_num * range_size;
+            partition_name := format('model_inference_results_p%0' || digit_width || 's', partition_num);
+
+            EXECUTE format(
+                'CREATE TABLE "mir_partitions".%I
+                 PARTITION OF public."model_inference_results_pt_record"
+                 FOR VALUES FROM (%s) TO (%s)',
+                partition_name,
+                range_start,
+                range_end
+            );
+        END LOOP;
+
+        -- Create last partition with MAXVALUE
+        range_start := (partition_count - 1) * range_size;
+        EXECUTE format(
+            'CREATE TABLE "mir_partitions".model_inference_results_p%0' || digit_width || 's
+             PARTITION OF public."model_inference_results_pt_record"
+             FOR VALUES FROM (%s) TO (MAXVALUE)',
+            partition_count,
+            range_start
+        );
+    END IF;
 END \$\$;
 
 -- 4. Create view that selects from this partitioned table
