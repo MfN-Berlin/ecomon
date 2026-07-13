@@ -5,6 +5,7 @@ on:
     branches:
       - next
       - ecomon_validate
+      - new-main
 
 jobs:
   docker:
