@@ -59,19 +59,20 @@ BEGIN
         RAISE EXCEPTION 'partition_count must be at least 1';
     END IF;
     -- Create first partition with MINVALUE or MAXVALUE when there is only one partition
+    partition_name := 'model_inference_results_p' || lpad('1', digit_width, '0');
     IF partition_count = 1 THEN
         EXECUTE format(
-            'CREATE TABLE "mir_partitions".model_inference_results_p%0' || digit_width || 's
+            'CREATE TABLE "mir_partitions".%I
              PARTITION OF public."model_inference_results_pt_record"
              FOR VALUES FROM (MINVALUE) TO (MAXVALUE)',
-            1
+            partition_name
         );
     ELSE
         EXECUTE format(
-            'CREATE TABLE "mir_partitions".model_inference_results_p%0' || digit_width || 's
+            'CREATE TABLE "mir_partitions".%I
              PARTITION OF public."model_inference_results_pt_record"
              FOR VALUES FROM (MINVALUE) TO (%s)',
-            1,
+            partition_name,
             range_size
         );
 
@@ -79,7 +80,7 @@ BEGIN
         FOR partition_num IN 2..(partition_count - 1) LOOP
             range_start := (partition_num - 1) * range_size;
             range_end := partition_num * range_size;
-            partition_name := format('model_inference_results_p%0' || digit_width || 's', partition_num);
+            partition_name := 'model_inference_results_p' || lpad(partition_num::text, digit_width, '0');
 
             EXECUTE format(
                 'CREATE TABLE "mir_partitions".%I
@@ -93,11 +94,12 @@ BEGIN
 
         -- Create last partition with MAXVALUE
         range_start := (partition_count - 1) * range_size;
+        partition_name := 'model_inference_results_p' || lpad(partition_count::text, digit_width, '0');
         EXECUTE format(
-            'CREATE TABLE "mir_partitions".model_inference_results_p%0' || digit_width || 's
+            'CREATE TABLE "mir_partitions".%I
              PARTITION OF public."model_inference_results_pt_record"
              FOR VALUES FROM (%s) TO (MAXVALUE)',
-            partition_count,
+            partition_name,
             range_start
         );
     END IF;
@@ -161,7 +163,7 @@ if [ $? -eq 0 ]; then
     echo "✓ Successfully created partitioned table and view"
     echo "  - Table: public.model_inference_results_pt_record"
     echo "  - View: public.model_inference_results_view"
-    echo "  - Schema: mir_partitions (with 200 partitions)"
+    echo "  - Schema: mir_partitions (with ${PARTITION_COUNT} partitions)"
 else
     echo "✗ Failed to create partitioned table and view"
     exit 1

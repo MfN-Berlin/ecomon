@@ -97,5 +97,15 @@ Run the script `scripts/create_extra_tables.sh` to create the partitioned tables
 
 The default configuration is to create 200 partitions each holding the inferences generated from 25.000 records. So ideally the number of records should not exceed 5.000.000. Depending on the expected number of inferences per record and the total number of records, you can change the parameters PARTITION_COUNT and RECORDS_PER_PARTITION inside the script. These parameters will affect the performance of the system in a great measure, so give them a thought before starting the script.
 
-Restore the sql schema from backup
-`psql -U your_username -d target_database_name -f output_schema.sql`
+So for example
+
+`PARTITION_COUNT=200 RECORDS_PER_PARTITION=25000 ./scripts/create_extra_tables.sh NAME-OF-INSTANCE-db-1 ecomon passwd`
+
+The site should now be accessible. See docs folder on how to enter new data.
+
+## Troubleshooting
+To see what's running, cd into the installation directory and do:
+`docker compose ps`
+
+To see some logs, do:
+`docker logs -f -n1000 NAME-OF-DOCKER-CONTAINER`, the "worker" container is a good place to start.
