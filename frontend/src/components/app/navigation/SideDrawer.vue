@@ -47,7 +47,8 @@ const links: NavigationPoint[] = [
     text: "Data Tables",
     childs: [
       { icon: "mdi-record-rec", text: "Records", route: "/records" },
-      { icon: "mdi-bird", text: "Labels", route: "/labels" }
+      { icon: "mdi-bird", text: "Labels", route: "/labels" },
+      { icon: "mdi-gauge", text: "Thresholds", route: "/thresholds" }
     ]
   },
   {

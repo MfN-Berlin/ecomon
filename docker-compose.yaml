@@ -27,7 +27,7 @@ services:
   db:
     image: postgres:16
     shm_size: ${POSTGRES_SHM_SIZE}
-    restart: always
+#    restart: always
     environment:
       POSTGRES_DB: ecomon
       POSTGRES_USER: ${DB_USERNAME}
@@ -102,7 +102,7 @@ services:
         reservations:
           memory: ${HASURA_MEMORY_RESERVATION}
           cpus: ${HASURA_CPU_RESERVATION}
-    restart: always
+#    restart: always
     environment:
       # Database connections
       HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/hasura
@@ -208,7 +208,7 @@ services:
                airflow db init &&
                airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
                airflow scheduler & airflow webserver"
-    restart: always
+#    restart: always
     networks:
       - traefik-ingress
       - ecomon

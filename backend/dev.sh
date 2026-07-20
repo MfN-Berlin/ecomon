@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Combined development starter for API + workers
+cd "$(dirname "$0")" || exit 1
 set -x
 
 # Start API server

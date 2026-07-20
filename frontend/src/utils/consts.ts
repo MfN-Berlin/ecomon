@@ -17,7 +17,8 @@ export const enum QUERY_KEYS {
   siteFirstLastRecordDate = "siteFirstLastRecordDate",
   recordModelInferenceResults = "recordModelInferenceResults",
   modelLabels = "modelLabels",
-  minutesWithActivity = "minutesWithActivity"
+  minutesWithActivity = "minutesWithActivity",
+  thresholds = "threshold"
 }
 
 export const enum RECORD_ERRORS {
