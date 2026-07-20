@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ThresholdItem } from "~/composables/api/thresholds";
-import { useThresholdsPaginated } from "~/composables/api/thresholds";
+import { useThresholdsPaginated, useThresholdUpdate } from "~/composables/api/thresholds";
 
 // Set page layout to full-width for better table display
 definePageMeta({ layout: "full-width" });
@@ -28,7 +28,8 @@ const {
   totalItems,          // Total number of records
   isLoading: loading,  // Loading state
   handleReset,         // Reset search filters
-  handleSearch         // Apply search filters
+  handleSearch,        // Apply search filters
+  refetch              // Function to manually refetch data
 } = useThresholdsPaginated();
 
 // Set default sorting by id in descending order
@@ -89,13 +90,71 @@ const headers = [
     search: { operator: "_eq", type: "boolean" }
   },
   {
-    title: "Set At",
-    key: "set_at",
-    align: "start",
-    sortable: true,
+    title: "Actions",
+    key: "actions",
+    align: "center",
+    sortable: false,
     search: false
-  },
+  }
 ] as const;
+
+// Get the update mutation
+const { mutate: updateThreshold, isPending: isUpdating } = useThresholdUpdate();
+
+// Dialog state
+const dialog = ref(false);
+const selectedThreshold = ref<ThresholdItem | null>(null);
+
+// Handle button click
+const handleActionClick = (item: ThresholdItem) => {
+  selectedThreshold.value = item;
+  dialog.value = true;
+};
+
+// Handle confirmation
+const confirmAction = () => {
+  const threshold = selectedThreshold.value;
+  if (!threshold) return;
+
+  updateThreshold(
+    { id: threshold.id, is_final: false },
+    {
+      onSuccess: () => {
+        dialog.value = false;
+        selectedThreshold.value = null;
+        // Refetch the data to show the updated value
+        refetch?.();
+      },
+      onError: (error) => {
+        console.error("Error setting threshold to preliminary:", error);
+        dialog.value = false;
+        selectedThreshold.value = null;
+      }
+    }
+  );
+};
+
+// Cancel action
+const cancelAction = () => {
+  dialog.value = false;
+  selectedThreshold.value = null;
+};
+
+// Handle "Set as final" click
+const setAsFinal = (item: ThresholdItem) => {
+  updateThreshold(
+    { id: item.id, is_final: true },
+    {
+      onSuccess: () => {
+        // Refetch the data to show the updated value
+        refetch?.();
+      },
+      onError: (error) => {
+        console.error("Error setting threshold as final:", error);
+      }
+    }
+  );
+};
 </script>
 
 <template>
@@ -113,16 +172,48 @@ const headers = [
       >
       <!--
         Table Row Template
-        Custom template for each data row with proper nested data handling
+        Custom template for each data row with proper nested data handling and alignment
       -->
       <template #item="{ item }">
         <tr>
-          <td v-for="header in headers" :key="header.key">
-            {{ getNested(item, header.key) }}
+          <td v-for="header in headers" :key="header.key" :style="{ textAlign: header.align === 'end' ? 'right' : header.align === 'center' ? 'center' : 'left' }">
+            <template v-if="header.key !== 'actions'">
+              {{ getNested(item, header.key) }}
+            </template>
+            <template v-else>
+              <v-btn
+                size="small"
+                color="primary"
+                variant="outlined"
+                :loading="isUpdating"
+                @click.stop="item.is_final ? handleActionClick(item) : setAsFinal(item)"
+              >
+                {{ item.is_final ? 'Enable editing' : 'Set as final' }}
+              </v-btn>
+            </template>
           </td>
         </tr>
       </template>
     </v-data-table-server>
+
+    <!-- Confirmation Dialog -->
+    <v-dialog v-model="dialog" max-width="500">
+      <v-card>
+        <v-card-title class="headline">Confirm Action</v-card-title>
+        <v-card-text>
+          The threshold will be set to "preliminary", are you sure?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey" variant="text" @click="cancelAction">
+            Cancel
+          </v-btn>
+          <v-btn color="primary" variant="text" @click="confirmAction">
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 
 </template>

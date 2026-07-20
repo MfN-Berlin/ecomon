@@ -32,3 +32,16 @@ select_permissions:
         - set_at
       filter: {}
     comment: ""
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - is_final
+        - id
+        - label_id
+        - model_id
+        - threshold
+        - set_at
+      filter: {}
+      check: null
+    comment: ""
