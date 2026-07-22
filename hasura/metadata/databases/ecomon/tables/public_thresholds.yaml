@@ -13,35 +13,38 @@ insert_permissions:
     permission:
       check: {}
       columns:
-        - is_final
         - id
+        - is_final
         - label_id
         - model_id
-        - threshold
         - set_at
+        - threshold
+        - threshold_type
     comment: ""
 select_permissions:
   - role: user
     permission:
       columns:
-        - is_final
         - id
+        - is_final
         - label_id
         - model_id
-        - threshold
         - set_at
+        - threshold
+        - threshold_type
       filter: {}
     comment: ""
 update_permissions:
   - role: user
     permission:
       columns:
-        - is_final
         - id
+        - is_final
         - label_id
         - model_id
-        - threshold
         - set_at
+        - threshold
+        - threshold_type
       filter: {}
       check: null
     comment: ""

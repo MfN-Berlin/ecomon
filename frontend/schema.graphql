@@ -10941,6 +10941,7 @@ type thresholds {
   model_id: Int
   set_at: timestamptz!
   threshold: Float!
+  threshold_type: String
 }
 
 """
@@ -10991,6 +10992,7 @@ input thresholds_bool_exp {
   model_id: Int_comparison_exp
   set_at: timestamptz_comparison_exp
   threshold: Float_comparison_exp
+  threshold_type: String_comparison_exp
 }
 
 """
@@ -11025,6 +11027,7 @@ input thresholds_insert_input {
   model_id: Int
   set_at: timestamptz
   threshold: Float
+  threshold_type: String
 }
 
 """aggregate max on columns"""
@@ -11034,6 +11037,7 @@ type thresholds_max_fields {
   model_id: Int
   set_at: timestamptz
   threshold: Float
+  threshold_type: String
 }
 
 """aggregate min on columns"""
@@ -11043,6 +11047,7 @@ type thresholds_min_fields {
   model_id: Int
   set_at: timestamptz
   threshold: Float
+  threshold_type: String
 }
 
 """
@@ -11075,6 +11080,7 @@ input thresholds_order_by {
   model_id: order_by
   set_at: order_by
   threshold: order_by
+  threshold_type: order_by
 }
 
 """primary key columns input for table: thresholds"""
@@ -11103,6 +11109,9 @@ enum thresholds_select_column {
 
   """column name"""
   threshold
+
+  """column name"""
+  threshold_type
 }
 
 """
@@ -11115,6 +11124,7 @@ input thresholds_set_input {
   model_id: Int
   set_at: timestamptz
   threshold: Float
+  threshold_type: String
 }
 
 """aggregate stddev on columns"""
@@ -11160,6 +11170,7 @@ input thresholds_stream_cursor_value_input {
   model_id: Int
   set_at: timestamptz
   threshold: Float
+  threshold_type: String
 }
 
 """aggregate sum on columns"""
@@ -11191,6 +11202,9 @@ enum thresholds_update_column {
 
   """column name"""
   threshold
+
+  """column name"""
+  threshold_type
 }
 
 input thresholds_updates {
