@@ -10930,7 +10930,6 @@ columns and relationships of "thresholds"
 """
 type thresholds {
   id: Int!
-  is_final: Boolean
 
   """An object relationship"""
   label: labels
@@ -10985,7 +10984,6 @@ input thresholds_bool_exp {
   _not: thresholds_bool_exp
   _or: [thresholds_bool_exp!]
   id: Int_comparison_exp
-  is_final: Boolean_comparison_exp
   label: labels_bool_exp
   label_id: Int_comparison_exp
   model: models_bool_exp
@@ -11020,7 +11018,6 @@ input type for inserting data into table "thresholds"
 """
 input thresholds_insert_input {
   id: Int
-  is_final: Boolean
   label: labels_obj_rel_insert_input
   label_id: Int
   model: models_obj_rel_insert_input
@@ -11073,7 +11070,6 @@ input thresholds_on_conflict {
 """Ordering options when selecting data from "thresholds"."""
 input thresholds_order_by {
   id: order_by
-  is_final: order_by
   label: labels_order_by
   label_id: order_by
   model: models_order_by
@@ -11096,9 +11092,6 @@ enum thresholds_select_column {
   id
 
   """column name"""
-  is_final
-
-  """column name"""
   label_id
 
   """column name"""
@@ -11119,7 +11112,6 @@ input type for updating data in table "thresholds"
 """
 input thresholds_set_input {
   id: Int
-  is_final: Boolean
   label_id: Int
   model_id: Int
   set_at: timestamptz
@@ -11165,7 +11157,6 @@ input thresholds_stream_cursor_input {
 """Initial value of the column from where the streaming should start"""
 input thresholds_stream_cursor_value_input {
   id: Int
-  is_final: Boolean
   label_id: Int
   model_id: Int
   set_at: timestamptz
@@ -11187,9 +11178,6 @@ update columns of table "thresholds"
 enum thresholds_update_column {
   """column name"""
   id
-
-  """column name"""
-  is_final
 
   """column name"""
   label_id

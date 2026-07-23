@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ThresholdItem } from "~/composables/api/thresholds";
 import { useThresholdsPaginated, useThresholdUpdate } from "~/composables/api/thresholds";
+import * as XLSX from 'xlsx';
 
 // Set page layout to full-width for better table display
 definePageMeta({ layout: "full-width" });
@@ -32,8 +33,8 @@ const {
   refetch              // Function to manually refetch data
 } = useThresholdsPaginated();
 
-// Set default sorting by id in descending order
-sortBy.value = [{ key: 'id', order: 'desc' }];
+// Set default sorting by label name in ascending order
+sortBy.value = [{ key: 'label.name', order: 'asc' }];
 
 // Get runtime configuration (may be used for API endpoints)
 const config = useRuntimeConfig();
@@ -120,7 +121,7 @@ const confirmAction = () => {
   if (!threshold) return;
 
   updateThreshold(
-    { id: threshold.id, is_final: false, threshold_type: selectedThresholdType.value },
+    { id: threshold.id, threshold_type: selectedThresholdType.value },
     {
       onSuccess: () => {
         dialog.value = false;
@@ -146,7 +147,7 @@ const cancelAction = () => {
 // Handle "Set as final" click
 const setAsFinal = (item: ThresholdItem) => {
   updateThreshold(
-    { id: item.id, is_final: true, threshold_type: "final" },
+    { id: item.id, threshold_type: "final" },
     {
       onSuccess: () => {
         // Refetch the data to show the updated value
@@ -158,21 +159,169 @@ const setAsFinal = (item: ThresholdItem) => {
     }
   );
 };
+
+// Helper function to fetch and filter threshold data
+const fetchFilteredThresholds = async (): Promise<ThresholdItem[]> => {
+  const config = useRuntimeConfig();
+  
+  const result = await $fetch(config.public.GQL_HOST, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: {
+      query: `
+        query getAllThresholds {
+          thresholds {
+            id
+            label_id
+            model_id
+            threshold
+            threshold_type
+            set_at
+            label {
+              id
+              name
+            }
+            model {
+              id
+              name
+            }
+          }
+        }
+      `,
+    },
+  });
+
+  const allThresholds: ThresholdItem[] = result.data?.thresholds || [];
+  
+  // Filter to keep only the latest (by set_at) for each model_id + label_id combination
+  const latestMap = new Map<string, ThresholdItem>();
+  allThresholds.forEach((item) => {
+    const key = `${item.model_id}_${item.label_id}`;
+    const existing = latestMap.get(key);
+    if (!existing || new Date(item.set_at) > new Date(existing.set_at)) {
+      latestMap.set(key, item);
+    }
+  });
+  
+  const filteredItems = Array.from(latestMap.values());
+  
+  // Sort by label name ascending (same as table default)
+  filteredItems.sort((a, b) => {
+    const aLabel = a.label?.name || '';
+    const bLabel = b.label?.name || '';
+    return aLabel.localeCompare(bLabel);
+  });
+  
+  return filteredItems;
+};
+
+// Function to export thresholds as CSV
+const exportToCSV = async () => {
+  try {
+    const filteredItems = await fetchFilteredThresholds();
+    
+    // Create CSV content
+    const csvHeaders = ['ID', 'Label', 'Model', 'Threshold', 'Type', 'Set At'];
+    const csvRows = [];
+    
+    // Add header row
+    csvRows.push(csvHeaders.join(','));
+    
+    // Add data rows
+    filteredItems.forEach((item) => {
+      const row = [
+        item.id,
+        `"${item.label?.name?.replace(/"/g, '""') || ''}"`,
+        `"${item.model?.name?.replace(/"/g, '""') || ''}"`,
+        item.threshold,
+        item.threshold_type || '',
+        item.set_at,
+      ];
+      csvRows.push(row.join(','));
+    });
+    
+    const csvContent = csvRows.join('\n');
+    
+    // Create and download the CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'thresholds.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error("Error exporting to CSV:", error);
+    alert("Failed to export thresholds as CSV");
+  }
+};
+
+// Function to export thresholds as Excel
+const exportToExcel = async () => {
+  try {
+    const filteredItems = await fetchFilteredThresholds();
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Build complete array of arrays (headers + all data rows)
+    const aoa = [];
+    aoa.push(['ID', 'Label', 'Model', 'Threshold', 'Type', 'Set At']);
+    filteredItems.forEach((item) => {
+      aoa.push([
+        item.id,
+        item.label?.name || '',
+        item.model?.name || '',
+        item.threshold,
+        item.threshold_type || '',
+        item.set_at,
+      ]);
+    });
+    
+    // Create worksheet from the complete array
+    const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Thresholds');
+    
+    // Generate Excel file and download
+    const excelBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx', ProBook: false });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'thresholds.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error("Error exporting to Excel:", error);
+    alert("Failed to export thresholds as Excel");
+  }
+};
 </script>
 
 <template>
   <v-container fluid>
-    <v-data-table-server
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      v-model:sort-by="sortBy"
-      :headers="headers"
-      :items="items"
-      :items-length="totalItems"
-      :loading="loading"
-      item-value="id"
-      :items-per-page-options="paginationOptions"
-      >
+    <div class="position-relative">
+      <v-data-table-server
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        v-model:sort-by="sortBy"
+        :headers="headers"
+        :items="items"
+        :items-length="totalItems"
+        :loading="loading"
+        item-value="id"
+        :items-per-page-options="paginationOptions"
+        >
       <!--
         Table Row Template
         Custom template for each data row with proper nested data handling and alignment
@@ -198,15 +347,39 @@ const setAsFinal = (item: ThresholdItem) => {
                 color="primary"
                 variant="outlined"
                 :loading="isUpdating"
-                @click.stop="item.is_final ? handleActionClick(item) : setAsFinal(item)"
+                @click.stop="item.threshold_type === 'final' ? handleActionClick(item) : setAsFinal(item)"
               >
-                {{ item.is_final ? 'Enable editing' : 'Set as final' }}
+                {{ item.threshold_type === 'final' ? 'Enable editing' : 'Set as final' }}
               </v-btn>
             </template>
           </td>
         </tr>
       </template>
-    </v-data-table-server>
+      </v-data-table-server>
+
+      <!-- Download Buttons - positioned at bottom left, same height as paginator -->
+      <div class="position-absolute bottom-0 left-0 d-flex">
+        <v-btn 
+          color="primary"
+          variant="outlined"
+          prepend-icon="mdi-download"
+          @click.stop="exportToCSV"
+          :loading="loading"
+          class="mr-2"
+        >
+          Download as CSV
+        </v-btn>
+        <v-btn 
+          color="primary"
+          variant="outlined"
+          prepend-icon="mdi-file-excel"
+          @click.stop="exportToExcel"
+          :loading="loading"
+        >
+          Download as Excel
+        </v-btn>
+      </div>
+    </div>
 
     <!-- Confirmation Dialog -->
     <v-dialog v-model="dialog" max-width="500">
