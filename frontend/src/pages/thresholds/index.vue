@@ -83,12 +83,13 @@ const headers = [
     search: { operator: "_eq", type: "number" }
   },
   {
-    title: "Is Final",
-    key: "is_final",
-    align: "center",
+    title: "Type",
+    key: "threshold_type",
+    align: "start",
     sortable: true,
-    search: { operator: "_eq", type: "boolean" }
+    search: { operator: "_like", type: "text" }
   },
+
   {
     title: "Actions",
     key: "actions",
@@ -104,10 +105,12 @@ const { mutate: updateThreshold, isPending: isUpdating } = useThresholdUpdate();
 // Dialog state
 const dialog = ref(false);
 const selectedThreshold = ref<ThresholdItem | null>(null);
+const selectedThresholdType = ref<string>("preliminary");
 
 // Handle button click
 const handleActionClick = (item: ThresholdItem) => {
   selectedThreshold.value = item;
+  selectedThresholdType.value = "preliminary";
   dialog.value = true;
 };
 
@@ -117,7 +120,7 @@ const confirmAction = () => {
   if (!threshold) return;
 
   updateThreshold(
-    { id: threshold.id, is_final: false },
+    { id: threshold.id, is_final: false, threshold_type: selectedThresholdType.value },
     {
       onSuccess: () => {
         dialog.value = false;
@@ -126,7 +129,7 @@ const confirmAction = () => {
         refetch?.();
       },
       onError: (error) => {
-        console.error("Error setting threshold to preliminary:", error);
+        console.error("Error updating threshold:", error);
         dialog.value = false;
         selectedThreshold.value = null;
       }
@@ -143,7 +146,7 @@ const cancelAction = () => {
 // Handle "Set as final" click
 const setAsFinal = (item: ThresholdItem) => {
   updateThreshold(
-    { id: item.id, is_final: true },
+    { id: item.id, is_final: true, threshold_type: "final" },
     {
       onSuccess: () => {
         // Refetch the data to show the updated value
@@ -175,10 +178,19 @@ const setAsFinal = (item: ThresholdItem) => {
         Custom template for each data row with proper nested data handling and alignment
       -->
       <template #item="{ item }">
-        <tr>
+        <tr :style="{
+          backgroundColor: item.threshold_type === 'experimental' ? 'rgb(255, 230, 178)' :
+                           item.threshold_type === 'preliminary' ? 'rgb(255, 249, 196)' :
+                           item.threshold_type === 'final' ? 'rgb(200, 230, 201)' : ''
+        }">
           <td v-for="header in headers" :key="header.key" :style="{ textAlign: header.align === 'end' ? 'right' : header.align === 'center' ? 'center' : 'left' }">
             <template v-if="header.key !== 'actions'">
-              {{ getNested(item, header.key) }}
+              <span v-if="header.key === 'label.name'" style="font-style: italic;">
+                {{ getNested(item, header.key) }}
+              </span>
+              <span v-else>
+                {{ getNested(item, header.key) }}
+              </span>
             </template>
             <template v-else>
               <v-btn
@@ -199,9 +211,12 @@ const setAsFinal = (item: ThresholdItem) => {
     <!-- Confirmation Dialog -->
     <v-dialog v-model="dialog" max-width="500">
       <v-card>
-        <v-card-title class="headline">Confirm Action</v-card-title>
+        <v-card-title class="headline">Set Threshold Type</v-card-title>
         <v-card-text>
-          The threshold will be set to "preliminary", are you sure?
+          <v-radio-group v-model="selectedThresholdType">
+            <v-radio label="Experimental" value="experimental"></v-radio>
+            <v-radio label="Preliminary" value="preliminary"></v-radio>
+          </v-radio-group>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>

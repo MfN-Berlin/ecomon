@@ -5,6 +5,7 @@ export type ThresholdItem = {
   label_id: number;
   model_id: number;
   threshold: number;
+  threshold_type?: string;
   is_final: boolean;
   set_at: string;
   label?: {
@@ -53,6 +54,7 @@ export const GqlGetThresholdsPaginated = async (variables: any) => {
               label_id
               model_id
               threshold
+              threshold_type
               is_final
               set_at
               label {
@@ -76,6 +78,7 @@ export const GqlGetThresholdsPaginated = async (variables: any) => {
 
     // Filter to keep only the latest (by set_at) for each model_id + label_id combination
     let allItems: ThresholdItem[] = allItemsResult.data?.thresholds || [];
+    console.log("All items with threshold_type:", allItems.map(item => ({ id: item.id, threshold_type: item.threshold_type })));
     const latestMap = new Map<string, ThresholdItem>();
     allItems.forEach((item) => {
       const key = `${item.model_id}_${item.label_id}`;
@@ -192,10 +195,10 @@ export const useThresholdsPaginated = useCreatePaginated({
 /**
  * GraphQL mutation to update a threshold's is_final status
  */
-export const GqlUpdateThresholdIsFinal = async (variables: { id: number; is_final: boolean }) => {
+export const GqlUpdateThresholdIsFinal = async (variables: { id: number; is_final: boolean; threshold_type: string }) => {
   const config = useRuntimeConfig();
 
-  console.log("Updating threshold is_final:", variables);
+  console.log("Updating threshold:", variables);
 
   try {
     const result = await $fetch(config.public.GQL_HOST, {
@@ -205,13 +208,14 @@ export const GqlUpdateThresholdIsFinal = async (variables: { id: number; is_fina
       },
       body: {
         query: `
-          mutation updateThresholdIsFinal($id: Int!, $is_final: Boolean!) {
+          mutation updateThresholdIsFinal($id: Int!, $is_final: Boolean!, $threshold_type: String!) {
             update_thresholds_by_pk(
               pk_columns: { id: $id }
-              _set: { is_final: $is_final, set_at: "now()" }
+              _set: { is_final: $is_final, threshold_type: $threshold_type, set_at: "now()" }
             ) {
               id
               is_final
+              threshold_type
               set_at
             }
           }
@@ -219,6 +223,7 @@ export const GqlUpdateThresholdIsFinal = async (variables: { id: number; is_fina
         variables: {
           id: variables.id,
           is_final: variables.is_final,
+          threshold_type: variables.threshold_type,
         },
       },
     });
