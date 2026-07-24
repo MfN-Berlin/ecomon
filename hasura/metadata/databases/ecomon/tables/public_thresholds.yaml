@@ -14,7 +14,6 @@ insert_permissions:
       check: {}
       columns:
         - id
-        - is_final
         - label_id
         - model_id
         - set_at
@@ -26,7 +25,6 @@ select_permissions:
     permission:
       columns:
         - id
-        - is_final
         - label_id
         - model_id
         - set_at
@@ -39,7 +37,6 @@ update_permissions:
     permission:
       columns:
         - id
-        - is_final
         - label_id
         - model_id
         - set_at

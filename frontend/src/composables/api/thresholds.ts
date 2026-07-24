@@ -6,7 +6,6 @@ export type ThresholdItem = {
   model_id: number;
   threshold: number;
   threshold_type?: string;
-  is_final: boolean;
   set_at: string;
   label?: {
     id: number;
@@ -55,7 +54,6 @@ export const GqlGetThresholdsPaginated = async (variables: any) => {
               model_id
               threshold
               threshold_type
-              is_final
               set_at
               label {
                 id
@@ -193,9 +191,9 @@ export const useThresholdsPaginated = useCreatePaginated({
 });
 
 /**
- * GraphQL mutation to update a threshold's is_final status
+ * GraphQL mutation to update a threshold's type
  */
-export const GqlUpdateThresholdIsFinal = async (variables: { id: number; is_final: boolean; threshold_type: string }) => {
+export const GqlUpdateThresholdIsFinal = async (variables: { id: number; threshold_type: string }) => {
   const config = useRuntimeConfig();
 
   console.log("Updating threshold:", variables);
@@ -208,13 +206,12 @@ export const GqlUpdateThresholdIsFinal = async (variables: { id: number; is_fina
       },
       body: {
         query: `
-          mutation updateThresholdIsFinal($id: Int!, $is_final: Boolean!, $threshold_type: String!) {
+          mutation updateThresholdIsFinal($id: Int!, $threshold_type: String!) {
             update_thresholds_by_pk(
               pk_columns: { id: $id }
-              _set: { is_final: $is_final, threshold_type: $threshold_type, set_at: "now()" }
+              _set: { threshold_type: $threshold_type, set_at: "now()" }
             ) {
               id
-              is_final
               threshold_type
               set_at
             }
@@ -222,7 +219,6 @@ export const GqlUpdateThresholdIsFinal = async (variables: { id: number; is_fina
         `,
         variables: {
           id: variables.id,
-          is_final: variables.is_final,
           threshold_type: variables.threshold_type,
         },
       },
