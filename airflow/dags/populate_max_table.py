@@ -233,7 +233,7 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
         processed_count = 0
         failed_count = 0
 
-        for i in range(1, 201):
+        for i in range(1, 501):
             partition_name = f"mir_partitions.model_inference_results_p{i:03d}"
 
             success = process_single_partition(
