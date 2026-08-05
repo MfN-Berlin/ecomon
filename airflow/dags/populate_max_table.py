@@ -19,6 +19,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
+    'min_confidence': 0.1,
 }
 
 # Function to ensure the migration progress table and temporary results table exist and are cleared
@@ -269,6 +270,22 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
         print(f"✗ FAILED processing partitions - {str(e)}")
         raise
 
+def remove_low_confidence_inferences(results_temp_table, min_confidence):
+    """Remove inferences with confidence below min_confidence + 0.1"""
+    try:
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+        threshold = min_confidence + 0.1
+        delete_query = f"""
+        DELETE FROM {results_temp_table}
+        WHERE confidence < %s;
+        """
+        postgres_hook.run(delete_query, parameters=(threshold,))
+        print(f"✓ Removed inferences with confidence below {threshold}")
+    except Exception as e:
+        print(f"✗ Failed to remove low confidence inferences: {e}")
+        raise
+
+
 def swap_tables():
     """Merge temp table data into main table, preserving existing data"""
     try:
@@ -390,6 +407,16 @@ def populate_max_table_dag():
         },
     )
 
+    # Task 2.5: Remove low confidence inferences
+    remove_low_conf_task = PythonOperator(
+        task_id='remove_low_confidence_inferences',
+        python_callable=remove_low_confidence_inferences,
+        op_kwargs={
+            'results_temp_table': 'model_inference_results_max_confidence_temp',
+            'min_confidence': default_args['min_confidence'],
+        },
+    )
+
     # Task 3: Summarize the migration using the migration progress table
     summarize_task = PythonOperator(
         task_id='summarize_migration',
@@ -403,7 +430,7 @@ def populate_max_table_dag():
     )
 
     # Set task dependencies
-    ensure_tables_task >> process_partitions_task >> summarize_task >> swap_tables_task
+    ensure_tables_task >> process_partitions_task >> remove_low_conf_task >> summarize_task >> swap_tables_task
 
 # This is required for the decorator to work
 populate_max_table_dag()
