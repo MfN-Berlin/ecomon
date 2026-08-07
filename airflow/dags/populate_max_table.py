@@ -5,11 +5,12 @@
 # See docs/automation.md for details
 #**************************************
 
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, ShortCircuitOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.decorators import dag
 from datetime import datetime, timedelta
 import time
+import logging
 
 # Default arguments for the DAG
 default_args = {
@@ -390,6 +391,22 @@ def swap_tables():
 )
 def populate_max_table_dag():
 
+    def _check_running_jobs():
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+        query = "SELECT COUNT(*) FROM jobs WHERE status = 'running'"
+        result = postgres_hook.get_first(query)
+        count = result[0] if result else 0
+        if count > 0:
+            logging.info(f"Found {count} running jobs - skipping DAG execution")
+            return False
+        logging.info("No running jobs found - proceeding with DAG")
+        return True
+
+    check_running_task = ShortCircuitOperator(
+        task_id='check_no_running_jobs',
+        python_callable=_check_running_jobs,
+    )
+
     # Task 1: Ensure and clear the migration progress table and temporary results table
     ensure_tables_task = PythonOperator(
         task_id='ensure_and_clear_tables',
@@ -430,7 +447,7 @@ def populate_max_table_dag():
     )
 
     # Set task dependencies
-    ensure_tables_task >> process_partitions_task >> remove_low_conf_task >> summarize_task >> swap_tables_task
+    check_running_task >> ensure_tables_task >> process_partitions_task >> remove_low_conf_task >> summarize_task >> swap_tables_task
 
 # This is required for the decorator to work
 populate_max_table_dag()
