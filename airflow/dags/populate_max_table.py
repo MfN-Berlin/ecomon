@@ -253,13 +253,13 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
         # Recreate indexes after all partitions are processed
         print("Recreating indexes...")
         recreate_indexes_query = f"""
-        CREATE INDEX idx_mir_max_conf_temp_compound 
+        CREATE INDEX idx_mir_max_conf_temp_compound
         ON {results_temp_table} (model_id, label_id, confidence DESC, record_id);
-        
-        CREATE INDEX idx_mir_max_conf_temp_label 
+
+        CREATE INDEX idx_mir_max_conf_temp_label
         ON {results_temp_table} (label_id, confidence DESC);
-        
-        CREATE INDEX idx_mir_max_conf_temp_model 
+
+        CREATE INDEX idx_mir_max_conf_temp_model
         ON {results_temp_table} (model_id);
         """
         postgres_hook.run(recreate_indexes_query)
@@ -271,10 +271,10 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
         raise
 
 def remove_low_confidence_inferences(results_temp_table, min_confidence):
-    """Remove inferences with confidence below min_confidence + 0.1"""
+    """Remove inferences with confidence below min_confidence"""
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
-        threshold = min_confidence + 0.1
+        threshold = min_confidence
         delete_query = f"""
         DELETE FROM {results_temp_table}
         WHERE confidence < %s;
