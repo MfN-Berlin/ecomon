@@ -26,13 +26,15 @@ services:
       - SUB_PATH=${SUB_PATH}
 
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-frontend:latest
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ecomon-frontend:ecomon_BRITZ01_glob11k
     # build:
     #   context: ./frontend
     #   dockerfile: Dockerfile
     restart: unless-stopped
     # ports:
     #   - "10300:3000"
+    volumes:
+      - ./nitro.mjs:/app/server/chunks/nitro/nitro.mjs
     networks:
       - traefik-ingress
     environment:
@@ -155,7 +157,7 @@ services:
   graphql-engine:
     image: hasura/graphql-engine:v2.38.0-ce
     ports:
-      - "10080:8080"
+      - "10093:8080"
     deploy:
       resources:
         limits:
@@ -232,7 +234,7 @@ services:
       - ${REDIS_TIMEOUT}
       - --tcp-backlog
       - ${REDIS_TCP_BACKLOG}
-    container_name: redis
+    container_name: redis-ecomon_BRITZ01_glob11k
     restart: unless-stopped
     volumes:
       - redis_data:/data  # Redis can use a Docker volume since it's smaller

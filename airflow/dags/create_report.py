@@ -4,6 +4,7 @@ from airflow.decorators import dag, task
 from datetime import datetime
 import logging
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.operators.python import ShortCircuitOperator
 
 @dag(
     dag_id='create_report',
@@ -13,6 +14,22 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
     catchup=False,
 )
 def create_report():
+
+    def _check_running_jobs():
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+        query = "SELECT COUNT(*) FROM jobs WHERE status = 'running'"
+        result = postgres_hook.get_first(query)
+        count = result[0] if result else 0
+        if count > 0:
+            logging.info(f"Found {count} running jobs - skipping DAG execution")
+            return False
+        logging.info("No running jobs found - proceeding with DAG")
+        return True
+
+    check_running = ShortCircuitOperator(
+        task_id='check_no_running_jobs',
+        python_callable=_check_running_jobs,
+    )
 
     @task
     def get_sites_from_db():
@@ -711,7 +728,13 @@ def create_report():
     aggregated_data = aggregate_wav_data_by_prefix(rows, sites, last_report_dates)
     enriched_data = calculate_import_statuses(aggregated_data, record_counts, processed_counts, visible_counts, skipped_counts, running_jobs, models)
     report_df = transform_data(enriched_data)
-    print_report(report_df, models)
-    save_report_to_db(report_df, models)
+    print_report_task = print_report(report_df, models)
+    save_report_to_db_task = save_report_to_db(report_df, models)
+
+    # Skip all tasks if there are running jobs
+    check_running >> sites
+    check_running >> models
+    check_running >> table_ready
+    check_running >> directories
 
 create_report()

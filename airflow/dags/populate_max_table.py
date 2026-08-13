@@ -5,11 +5,12 @@
 # See docs/automation.md for details
 #**************************************
 
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, ShortCircuitOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.decorators import dag
 from datetime import datetime, timedelta
 import time
+import logging
 
 # Default arguments for the DAG
 default_args = {
@@ -19,6 +20,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
+    'min_confidence': 0.1,
 }
 
 # Function to ensure the migration progress table and temporary results table exist and are cleared
@@ -233,7 +235,7 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
         processed_count = 0
         failed_count = 0
 
-        for i in range(1, 201):
+        for i in range(1, 501):
             partition_name = f"mir_partitions.model_inference_results_p{i:03d}"
 
             success = process_single_partition(
@@ -252,13 +254,13 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
         # Recreate indexes after all partitions are processed
         print("Recreating indexes...")
         recreate_indexes_query = f"""
-        CREATE INDEX idx_mir_max_conf_temp_compound 
+        CREATE INDEX idx_mir_max_conf_temp_compound
         ON {results_temp_table} (model_id, label_id, confidence DESC, record_id);
-        
-        CREATE INDEX idx_mir_max_conf_temp_label 
+
+        CREATE INDEX idx_mir_max_conf_temp_label
         ON {results_temp_table} (label_id, confidence DESC);
-        
-        CREATE INDEX idx_mir_max_conf_temp_model 
+
+        CREATE INDEX idx_mir_max_conf_temp_model
         ON {results_temp_table} (model_id);
         """
         postgres_hook.run(recreate_indexes_query)
@@ -268,6 +270,22 @@ def process_all_partitions(progress_table, results_temp_table, statement_timeout
     except Exception as e:
         print(f"✗ FAILED processing partitions - {str(e)}")
         raise
+
+def remove_low_confidence_inferences(results_temp_table, min_confidence):
+    """Remove inferences with confidence below min_confidence"""
+    try:
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+        threshold = min_confidence
+        delete_query = f"""
+        DELETE FROM {results_temp_table}
+        WHERE confidence < %s;
+        """
+        postgres_hook.run(delete_query, parameters=(threshold,))
+        print(f"✓ Removed inferences with confidence below {threshold}")
+    except Exception as e:
+        print(f"✗ Failed to remove low confidence inferences: {e}")
+        raise
+
 
 def swap_tables():
     """Merge temp table data into main table, preserving existing data"""
@@ -373,6 +391,22 @@ def swap_tables():
 )
 def populate_max_table_dag():
 
+    def _check_running_jobs():
+        postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+        query = "SELECT COUNT(*) FROM jobs WHERE status = 'running'"
+        result = postgres_hook.get_first(query)
+        count = result[0] if result else 0
+        if count > 0:
+            logging.info(f"Found {count} running jobs - skipping DAG execution")
+            return False
+        logging.info("No running jobs found - proceeding with DAG")
+        return True
+
+    check_running_task = ShortCircuitOperator(
+        task_id='check_no_running_jobs',
+        python_callable=_check_running_jobs,
+    )
+
     # Task 1: Ensure and clear the migration progress table and temporary results table
     ensure_tables_task = PythonOperator(
         task_id='ensure_and_clear_tables',
@@ -390,6 +424,16 @@ def populate_max_table_dag():
         },
     )
 
+    # Task 2.5: Remove low confidence inferences
+    remove_low_conf_task = PythonOperator(
+        task_id='remove_low_confidence_inferences',
+        python_callable=remove_low_confidence_inferences,
+        op_kwargs={
+            'results_temp_table': 'model_inference_results_max_confidence_temp',
+            'min_confidence': default_args['min_confidence'],
+        },
+    )
+
     # Task 3: Summarize the migration using the migration progress table
     summarize_task = PythonOperator(
         task_id='summarize_migration',
@@ -403,7 +447,7 @@ def populate_max_table_dag():
     )
 
     # Set task dependencies
-    ensure_tables_task >> process_partitions_task >> summarize_task >> swap_tables_task
+    check_running_task >> ensure_tables_task >> process_partitions_task >> remove_low_conf_task >> summarize_task >> swap_tables_task
 
 # This is required for the decorator to work
 populate_max_table_dag()

@@ -1,7 +1,10 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
+from airflow.operators.python import ShortCircuitOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import datetime, timedelta
 import os
+import logging
 
 default_args = {
     'owner': 'airflow',
@@ -23,6 +26,25 @@ dag = DAG(
 
 class NoTemplateBashOperator(BashOperator):
     template_fields = ()  # disables Jinja templating
+
+
+def check_running_jobs():
+    postgres_hook = PostgresHook(postgres_conn_id='postgres_default')
+    query = "SELECT COUNT(*) FROM jobs WHERE status = 'running'"
+    result = postgres_hook.get_first(query)
+    count = result[0] if result else 0
+    if count > 0:
+        logging.info(f"Found {count} running jobs - skipping DAG execution")
+        return False
+    logging.info("No running jobs found - proceeding with DAG")
+    return True
+
+
+check_running_task = ShortCircuitOperator(
+    task_id='check_no_running_jobs',
+    python_callable=check_running_jobs,
+    dag=dag,
+)
 
 # Read configuration from environment variables
 CHUNK_SIZE = os.getenv('BACKUP_CHUNK_SIZE', '10G') or '10G'
@@ -290,4 +312,4 @@ echo "Backup rotation complete"
 )
 
 # Define task dependencies
-create_backup >> compress_backup >> verify_backup >> rotate_backups
+check_running_task >> create_backup >> compress_backup >> verify_backup >> rotate_backups
