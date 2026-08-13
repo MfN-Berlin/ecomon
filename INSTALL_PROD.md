@@ -41,7 +41,7 @@ Open the `.env` file in an editor and set at least:
 * HASURA_URL=pdefault-docker-compose-gateway (typically 172.17.0.1, used by Dashboard)
 * USE_GPU=1  # 1, 2, or all
 * TMP_DIR=/mnt/akwamotmp/your-subpath # this should be unique, and should exist
-* PGBACKUP_PATH=/mnt/akwamodb/ecomon_BRITZ01_glob11k # this should be unique, and should exist, and by convention the name should end with "_backup"
+* PGBACKUP_PATH=/mnt/akwamodb/unique-name # this should be unique, and should exist, and by convention the name should end with "_backup"
 
 Make sure that these are the same in .env and/or docker-compose.production.yaml:
 * The port in .env HASURA_URL should be unique and the port exposed by the graphql-engine service in docker.compose.production.yaml
